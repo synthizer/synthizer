@@ -3,9 +3,9 @@
 #include <chrono>
 #include <stdio.h>
 
-const unsigned int BLOCK_SIZE = 1<<24;
-const unsigned int IMPULSE_SIZE = 32;
-const unsigned int LANES = 4;
+const unsigned int BLOCK_SIZE = 1<<20;
+const unsigned int IMPULSE_SIZE = 16;
+const unsigned int LANES = 16;
 alignas(16) synthizer::AudioSample input[(BLOCK_SIZE+IMPULSE_SIZE)*LANES] = {0 };
 alignas(16) synthizer::AudioSample impulse[IMPULSE_SIZE*LANES] = { 0 };
 alignas(16) synthizer::AudioSample output[BLOCK_SIZE*LANES] = { 0 };
