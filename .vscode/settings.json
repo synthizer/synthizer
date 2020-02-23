@@ -1,3 +1,8 @@
 {
-	"cmake.ctestArgs": ["--output-on-failure"]
+	"cmake.ctestArgs": [
+		"--output-on-failure"
+	],
+	"files.associations": {
+		"chrono": "cpp"
+	}
 }

@@ -24,13 +24,17 @@ namespace synthizer {
 template<typename T, unsigned int bsize, unsigned int csize, bool add=false>
 void constantSizeConvolver(const T *input, T *output, const  T *response, unsigned int stride = 1) {
 	for(unsigned int i = 0; i < bsize; i++) {
-		T result = ZeroValue<T>();
+
+		T result = zeroValue<T>();
 		if(add == false)
-			output[i] = ZeroValue<T>();
+			output[i] = zeroValue<T>();
 		for(unsigned int j = 0; j < csize; j++) {
 			result += input[i+j]*response[csize-j-1];
 		}
-		output[i] = result;
+		if(add == false)
+			output[i] = result;
+		else
+			output[i] += result;
 	}
 }
 
@@ -42,9 +46,10 @@ void constantSizeConvolver(const T *input, T *output, const  T *response, unsign
 template<unsigned int block_size, unsigned int impulse_size, unsigned int lanes, bool add=false>
 auto constantSizeMultilaneConvolver(AudioSample *input, AudioSample *output, AudioSample *responses)
 -> All<void, PowerOfTwo<lanes>, MultipleOf<lanes, 4>, MultipleOf<impulse_size, 4>, MultipleOf<block_size, 4>> {
-	for(unsigned int l = 0; l < lanes; l++) {
-		constantSizeConvolver<AudioSample, block_size, impulse_size, add>(
-			input, output, response, lanes);
+	const auto stride = lanes/4;
+	for(unsigned int l = 0; l < lanes/4; l++) {
+		constantSizeConvolver<AudioSample4, block_size, impulse_size, add>(
+			((AudioSample4*)input)+l, ((AudioSample4*)output)+l, ((AudioSample4*)responses)+l, stride);
 	}
 }
 

@@ -8,4 +8,6 @@ enable_testing()
 include_directories(include)
 
 add_executable(delay_line_test test/delay_line.cpp)
+add_executable(convolve_bench convolve_bench.cpp)
+
 add_test(NAME delay_line COMMAND delay_line_test)
