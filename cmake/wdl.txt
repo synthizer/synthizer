@@ -1,0 +1,20 @@
+SET(WDL_FILES
+	audiobuffercontainer.cpp
+	blowfish.c
+	convoengine.cpp
+	des.cpp
+	fft.c
+	projectcontext.cpp
+	resample.cpp
+	rfb_client.cpp
+	rng.cpp
+	scsrc.cpp
+	sha.cpp
+	shm_connection.cpp
+	timing.c
+	win32_utf8.c
+)
+
+list(TRANSFORM WDL_FILES PREPEND third_party/wdl/wdl/)
+
+add_library(wdl STATIC ${WDL_FILES})
