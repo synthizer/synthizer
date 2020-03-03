@@ -3,6 +3,7 @@
 #include <tuple>
 
 #include "error.hpp"
+#include "decoding.hpp"
 
 namespace synthizer {
 
@@ -24,6 +25,7 @@ class UnsupportedByteStreamOperationError: public ByteStreamError {
  * All kinds of streams that we might care about have a lot of functionality in common. The only difference is whether or not they support seek.
  * */
 class ByteStream {
+	public:
 	virtual std::string &getName() = 0;
 	/*
 	 * Fill destination with count bytes.
@@ -40,6 +42,21 @@ class ByteStream {
 	virtual void seek(unsigned int position) {
 		throw new UnsupportedByteStreamOperationError("Streams of type " + this->getName() + " don't support seek");
 	}
+	/* If specified, we know the approximate underlying encoded format and will try that first when attempting to find a decoder. */
+	virtual AudioFormat getFormatHint() { return AudioFormat::Unknown; }
+};
+
+/*
+ * Used for audio format detection. Supports a reset() method, which resets to the beginning of the stream.
+ * 
+ * This works by caching bytes in memory if necessary. Reset always works, even if the underlying stream doesn't support seeking.
+ * */
+class LookaheadByteStream: public ByteStream {
+	public:
+	/* Reset to the beginning of the stream. */
+	virtual void reset();
+	/* Reset to the beginning of the stream, permanently disabling lookahead functionality. */
+	void resetFinal();
 };
 
 /*
@@ -61,5 +78,7 @@ ByteStream* getStreamForProtocol(const std::string &protocol, const std::string 
  * Throws UnsupportedByteStreamOperationError in the event of duplicate registration.
  * */
 void registerByteStreamProtocol(std::string &name, std::function<ByteStream*(const std::string &, std::vector<std::tuple<std::string, std::string>>)> factory);
+
+ByteStream *getLookaheadByteStream(ByteStream *stream);
 
 }
