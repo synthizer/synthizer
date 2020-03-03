@@ -1,6 +1,8 @@
 #include <functional>
 #include <vector>
 #include <tuple>
+#include <memory>
+#include <cstddef>
 
 #include "error.hpp"
 #include "decoding.hpp"
@@ -26,7 +28,7 @@ class UnsupportedByteStreamOperationError: public ByteStreamError {
  * */
 class ByteStream {
 	public:
-	virtual std::string &getName() = 0;
+	virtual std::string getName() = 0;
 	/*
 	 * Fill destination with count bytes.
 	 * 
@@ -34,12 +36,12 @@ class ByteStream {
 	 * 
 	 * Calls after the stream is finished should return 0 to indicate stream end.
 	 * */
-	virtual unsigned int read(unsigned int count, char *destination) = 0;
+	virtual std::size_t read(std::size_t count, char *destination) = 0;
 	/* If seek is supported, override this to return true. */
 	virtual bool supportsSeek() { return false; }
 	/* Get the position of the stream in bytes. */
-	virtual unsigned int getPosition() = 0;
-	virtual void seek(unsigned int position) {
+	virtual std::size_t getPosition() = 0;
+	virtual void seek(std::size_t position) {
 		throw new UnsupportedByteStreamOperationError("Streams of type " + this->getName() + " don't support seek");
 	}
 	/* If specified, we know the approximate underlying encoded format and will try that first when attempting to find a decoder. */
@@ -68,7 +70,7 @@ class LookaheadByteStream: public ByteStream {
  * Path: A protocol-specific path, i.e. a file, etc.
  * Options: space-separated string of key-value pairs specific to a given protocol.
  * */
-ByteStream* getStreamForProtocol(const std::string &protocol, const std::string &path, const std::string &options);
+std::shared_ptr<ByteStream> getStreamForProtocol(const std::string &protocol, const std::string &path, const std::string &options);
 
 /*
  * Register a protocol handler, a factory function for getting a protocol.
@@ -77,8 +79,8 @@ ByteStream* getStreamForProtocol(const std::string &protocol, const std::string 
  * 
  * Throws UnsupportedByteStreamOperationError in the event of duplicate registration.
  * */
-void registerByteStreamProtocol(std::string &name, std::function<ByteStream*(const std::string &, std::vector<std::tuple<std::string, std::string>>)> factory);
+void registerByteStreamProtocol(std::string &name, std::function<std::shared_ptr<ByteStream>(const std::string &, std::vector<std::tuple<std::string, std::string>>)> factory);
 
-ByteStream *getLookaheadByteStream(ByteStream *stream);
+std::shared_ptr<ByteStream> getLookaheadByteStream(std::shared_ptr<ByteStream> stream);
 
 }
