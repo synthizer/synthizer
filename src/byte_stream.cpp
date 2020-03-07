@@ -8,7 +8,6 @@
 #include <sstream>
 #include <iterator>
 #include <map>
-#include <list>
 #include <assert.h>
 
 #include "synthizer/byte_stream.hpp"
@@ -95,7 +94,7 @@ void DirectLookaheadStream::resetFinal() {
 class MemoryLookaheadStream: public ForwardingStream<LookaheadByteStream> {
 	public:
 	MemoryLookaheadStream(std::shared_ptr<ByteStream> stream): ForwardingStream(stream) {
-		this->block_iter = this->blocks.begin();
+		this->blocks.reserve(5);
 	}
 
 	void reset();
@@ -108,26 +107,22 @@ class MemoryLookaheadStream: public ForwardingStream<LookaheadByteStream> {
 		std::array<char, LOOKAHEAD_BLOCK_SIZE> data;
 		std::size_t count;
 	};
-	std::list<std::shared_ptr<LookaheadBytes>> blocks;
-	decltype(blocks)::iterator block_iter;
-	std::shared_ptr<LookaheadBytes> current_block = nullptr;
-	std::size_t current_block_pos = 0;
+	std::vector<std::shared_ptr<LookaheadBytes>> blocks;
+	std::size_t current_block = 0, current_block_pos = 0;
 	bool recording = true;
 };
 
 std::size_t MemoryLookaheadStream::read(std::size_t count, char *destination) {
 	std::size_t got = 0;
 	while (got < count) {
-		if (this->current_block && this->current_block_pos < this->current_block->count) {
-			char *d = this->current_block->data.data();
-			std::size_t needed = std::min(got-count, this->current_block->count-this->current_block_pos);
+		if (this->blocks.size() > this->current_block) {
+			auto &cur = this->blocks[this->current_block];
+			char *d = cur->data.data();
+			std::size_t needed = std::min(got-count, cur->count-this->current_block_pos);
 			std::copy(d, d+needed, destination);
 			destination += needed;
 			this->current_block_pos += needed;
-		} else if (this->block_iter != this->blocks.end()) {
-			this->block_iter ++;
-			if (this->block_iter != this->blocks.end()) this->current_block = *this->block_iter;
-			continue;
+			if (this->current_block_pos == LOOKAHEAD_BLOCK_SIZE) this->current_block ++;
 		} else {
 			/* No more blocks are recorded, so we need to do a read. */
 			std::array<char, LOOKAHEAD_BLOCK_SIZE> data;
@@ -137,10 +132,8 @@ std::size_t MemoryLookaheadStream::read(std::size_t count, char *destination) {
 			auto block = std::make_shared<LookaheadBytes>();
 			block->count = count;
 			block->data = data;
-			this->current_block = block;
-			this->blocks.push_back(this->current_block);
-			this->block_iter = this->blocks.end();
-			this->block_iter --;
+			this->blocks.push_back(block);
+			this->current_block_pos = 0;
 		}
 	}
 	return got;
@@ -148,12 +141,8 @@ std::size_t MemoryLookaheadStream::read(std::size_t count, char *destination) {
 
 void MemoryLookaheadStream::reset() {
 	assert(this->recording == false);
-	this->block_iter = this->blocks.begin();
-	if (blocks.empty() != false) {
-		this->current_block = blocks.front();
-		this->current_block_pos = 0;
-	}
-	/* Otherwise we didn't get anything yet. */
+	this->current_block = 0;
+	this->current_block_pos = 0;
 }
 
 void MemoryLookaheadStream::resetFinal() {
