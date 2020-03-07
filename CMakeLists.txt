@@ -15,12 +15,14 @@ include(cmake/wdl.txt)
 include_directories(
 	include
 	third_party/miniaudio
+	third_party/dr_libs
+	third_party/stb
 )
 
 add_library(synthizer STATIC
 	src/byte_stream.cpp
 	src/error.cpp
-	src/miniaudio_impl.c
+	src/single_file_libs.c
 )
 target_compile_features(synthizer PUBLIC cxx_std_17)
 target_link_libraries(synthizer wdl)
