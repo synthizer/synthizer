@@ -1,3 +1,5 @@
+#pragma once
+
 #include <functional>
 #include <vector>
 #include <tuple>
@@ -9,17 +11,22 @@
 
 namespace synthizer {
 
-class ByteStreamError: public Error {
+class EByteStream: public Error {
 	public:
-	ByteStreamError(std::string message): Error(message) {}
+	EByteStream(std::string message): Error(message) {}
 };
 
+#define BERROR3(name, msg, base) \
+class name: public base { \
+	public: \
+	name(): base(msg) {}\
+	name(std::string message): base(message){}\
+}
+#define BERROR(name, msg) BERROR3(name, msg, EByteStream)
 
-class UnsupportedByteStreamOperationError: public ByteStreamError {
-	public:
-	UnsupportedByteStreamOperationError(): ByteStreamError(std::string("Unsupported stream operation")) {}
-	UnsupportedByteStreamOperationError(std::string message): ByteStreamError(message) {}
-};
+BERROR(EByteStreamUnsupportedOperation, "Unsupported byte stream operation");
+BERROR(EByteStreamNotFound, "Resource not found");
+
 
 /*
  * A class representing a stream of bytes.
@@ -42,7 +49,7 @@ class ByteStream {
 	/* Get the position of the stream in bytes. */
 	virtual std::size_t getPosition() = 0;
 	virtual void seek(std::size_t position) {
-		throw new UnsupportedByteStreamOperationError("Streams of type " + this->getName() + " don't support seek");
+		throw EByteStreamUnsupportedOperation("Streams of type " + this->getName() + " don't support seek");
 	}
 	/* If specified, we know the approximate underlying encoded format and will try that first when attempting to find a decoder. */
 	virtual AudioFormat getFormatHint() { return AudioFormat::Unknown; }
@@ -56,9 +63,9 @@ class ByteStream {
 class LookaheadByteStream: public ByteStream {
 	public:
 	/* Reset to the beginning of the stream. */
-	virtual void reset();
+	virtual void reset() = 0;
 	/* Reset to the beginning of the stream, permanently disabling lookahead functionality. */
-	void resetFinal();
+	virtual void resetFinal() = 0;
 };
 
 /*
@@ -77,10 +84,32 @@ std::shared_ptr<ByteStream> getStreamForProtocol(const std::string &protocol, co
  * 
  * It is not possible to register a protocol twice.
  * 
- * Throws UnsupportedByteStreamOperationError in the event of duplicate registration.
+ * Throws EByteStreamUnsupportedOperation in the event of duplicate registration.
  * */
 void registerByteStreamProtocol(std::string &name, std::function<std::shared_ptr<ByteStream>(const std::string &, std::vector<std::tuple<std::string, std::string>>)> factory);
 
-std::shared_ptr<ByteStream> getLookaheadByteStream(std::shared_ptr<ByteStream> stream);
+std::shared_ptr<LookaheadByteStream> getLookaheadByteStream(std::shared_ptr<ByteStream> stream);
+
+/*
+ * Some audio formats (namely stb_ogg) use libraries which aren't flexible enough to be driven via callbacks, but we can't assume files.
+ * 
+ * This function builds a buffer in memory for those formats. Using it is an anti-pattern, but for i.e. ogg, it makes sense to go ahead and do it this way,
+ * since we might as well push the performance problem down the road and ogg is usually pretty small even for large assets.
+ * 
+ * The alternative is modify upstream libraries, which we'd rather not do for the time being.
+ * 
+ * The returned buffer should be be freed with delete.
+ * */
+char *byteStreamToBuffer(std::shared_ptr<ByteStream> stream);
+
+/*
+ * Kinds of stream. Probably self-explanatory.
+ * */
+
+/* data must outlive the stream. */
+std::shared_ptr<ByteStream> memoryStream(std::size_t size, const char *data);
+
+/* file stream. Throws EByteStreamNotFound. */
+std::shared_ptr<ByteStream> fileStream(const std::string &name, const std::vector<std::tuple<std::string, std::string>> &options);
 
 }

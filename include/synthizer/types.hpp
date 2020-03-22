@@ -23,11 +23,11 @@ template<typename T>
 T zeroValue();
 
 template<>
-float zeroValue<float>() { return 0.0f; }
+inline float zeroValue<float>() { return 0.0f; }
 template<>
-double zeroValue<double>() { return 0.0; }
+inline double zeroValue<double>() { return 0.0; }
 template<>
-AudioSample4 zeroValue<AudioSample4>() { return { 0, 0, 0, 0 }; }
+inline AudioSample4 zeroValue<AudioSample4>() { return { 0, 0, 0, 0 }; }
 
 
 /*

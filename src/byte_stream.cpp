@@ -1,3 +1,4 @@
+#include <new>
 #include <thread>
 #include <array>
 #include <vector>
@@ -9,6 +10,7 @@
 #include <iterator>
 #include <map>
 #include <assert.h>
+#include <cstdlib>
 
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/threadsafe_initializer.hpp"
@@ -18,13 +20,15 @@ namespace synthizer {
 /*
  * Infrastructure for the registry.
  * */
-static ThreadsafeInitializer<std::shared_mutex> byte_stream_registry_lock{};
-static std::map<std::string, std::function<std::shared_ptr<ByteStream> (const std::string &, std::vector<std::tuple<std::string, std::string>>)>> byte_stream_registry;
+static std::shared_mutex byte_stream_registry_lock{};
+static std::map<std::string, std::function<std::shared_ptr<ByteStream> (const std::string &, std::vector<std::tuple<std::string, std::string>> &)>> byte_stream_registry {
+	{ "file", fileStream },
+};
 
 void registerByteStreamProtocol(std::string &name, std::function<std::shared_ptr<ByteStream> (const std::string &, std::vector<std::tuple<std::string, std::string>>)> factory) {
-	auto guard = std::lock_guard(byte_stream_registry_lock.get());
+	auto guard = std::lock_guard(byte_stream_registry_lock);
 	if (byte_stream_registry.count(name))
-		throw new UnsupportedByteStreamOperationError("Attempted duplicate registry of protocol "+name);
+		throw EByteStreamUnsupportedOperation("Attempted duplicate registry of protocol "+name);
 
 	byte_stream_registry[name] = factory;
 }
@@ -49,12 +53,14 @@ static std::vector<std::tuple<std::string, std::string>> parseOptions(const std:
 
 std::shared_ptr<ByteStream> getStreamForProtocol(const std::string &protocol, const std::string &path, const std::string &options) {
 	auto parsed = parseOptions(options);
-	auto l = std::shared_lock{byte_stream_registry_lock.get()};
-	std::lock_guard guard{l};
+	auto l = std::shared_lock{byte_stream_registry_lock};
 	if (byte_stream_registry.count(protocol) == 0)
-		throw UnsupportedByteStreamOperationError("Unregistered protocol " + protocol);
+		throw EByteStreamUnsupportedOperation("Unregistered protocol " + protocol);
 	auto &f = byte_stream_registry[protocol];
-	return f(path, parsed);
+	auto o = f(path, parsed);
+	if (o == nullptr)
+		throw EByteStream("Protocol " + protocol + " returned nullptr. No further information available.");
+	return o;
 }
 
 template<typename T>
@@ -150,12 +156,36 @@ void MemoryLookaheadStream::resetFinal() {
 	this->recording = false;
 }
 
-std::shared_ptr<ByteStream> getLookaheadByteStream(std::shared_ptr<ByteStream> stream) {
+std::shared_ptr<LookaheadByteStream> getLookaheadByteStream(std::shared_ptr<ByteStream> stream) {
 	if (stream->supportsSeek()) {
 		return std::make_shared<DirectLookaheadStream>(stream);
 	} else {
 		return std::make_shared<MemoryLookaheadStream>(stream);
 	}
+}
+
+char *byteStreamToBuffer(std::shared_ptr<ByteStream> stream) {
+	static const std::size_t BLOCK_SIZE = 8192;
+	std::list<std::vector<char>> blocks{};
+	std::size_t got = 0;
+	std::size_t total_size = 0;
+
+	do {
+		blocks.emplace_back(BLOCK_SIZE);
+		got = stream->read(BLOCK_SIZE, blocks.back().data());
+		blocks.back().resize(got);
+		total_size += got;
+	} while(got);
+
+	char *buffer = new char[total_size];
+
+	char *cur = buffer;
+	for(auto &b: blocks) {
+		std::copy(b.begin(), b.end(), cur);
+		cur += b.size();
+	}
+
+	return buffer;
 }
 
 }

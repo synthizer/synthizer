@@ -1,4 +1,7 @@
+#pragma once
+
 #include <string>
+#include <exception>
 
 namespace synthizer {
 
@@ -9,11 +12,13 @@ namespace synthizer {
 	 * 
 	 * Since we don't have a C API yet, right now this doesn't have an error code.
 	 * */
-class Error {
+class Error: public std::exception  {
 	public:
 	Error(std::string message);
 	virtual const std::string &getMessage() const;
 	virtual ~Error() {}
+
+	const char *what() { return this->message.c_str(); }
 
 	template<typename T>
 	bool is() {
