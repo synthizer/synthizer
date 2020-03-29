@@ -1,6 +1,10 @@
 #pragma once
 
+#include <array>
+#include <cstddef>
 #include <type_traits>
+
+#include "config.hpp"
 
 namespace synthizer {
 
@@ -17,7 +21,7 @@ typedef AudioSample AudioSample4 __attribute__((may_alias, vector_size(16), alig
 /*
  * Some types, i.e. SIMD extensions, may not have a simple way to be zero initialized.
  * In particular, Clang and GCC don't document the interaction with C++ initializer lists.
- * Since the only operation that varies is the zeroing operation for most of this library,w e deal wit that here.
+ * Since the only operation that varies is the zeroing operation for most of this library,we deal with that here.
  */
 template<typename T>
 T zeroValue();

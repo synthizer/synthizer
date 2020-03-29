@@ -30,9 +30,9 @@ std::string MemoryByteStream::getName() {
 
 std::size_t MemoryByteStream::read(std::size_t count, char *destination) {
 	std::size_t will_read = std::min(count, this->length-this->position);
-	std::copy(this->data+position, this->data+position+count, destination);
-	this->position += count;
-	return count;
+	std::copy(this->data+position, this->data+position+will_read, destination);
+	this->position += will_read;
+	return will_read;
 }
 
 bool MemoryByteStream::supportsSeek() {

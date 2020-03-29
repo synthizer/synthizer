@@ -5,7 +5,7 @@
 
 const unsigned int BLOCK_SIZE = 1<<20;
 const unsigned int IMPULSE_SIZE = 16;
-const unsigned int LANES = 16;
+const unsigned int LANES = 64;
 alignas(16) synthizer::AudioSample input[(BLOCK_SIZE+IMPULSE_SIZE)*LANES] = {0 };
 alignas(16) synthizer::AudioSample impulse[IMPULSE_SIZE*LANES] = { 0 };
 alignas(16) synthizer::AudioSample output[BLOCK_SIZE*LANES] = { 0 };

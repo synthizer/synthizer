@@ -35,6 +35,8 @@ BERROR(EByteStreamNotFound, "Resource not found");
  * */
 class ByteStream {
 	public:
+	virtual ~ByteStream() {}
+
 	virtual std::string getName() = 0;
 	/*
 	 * Fill destination with count bytes.

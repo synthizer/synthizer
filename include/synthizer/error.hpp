@@ -18,7 +18,7 @@ class Error: public std::exception  {
 	virtual const std::string &getMessage() const;
 	virtual ~Error() {}
 
-	const char *what() { return this->message.c_str(); }
+	const char *what() const noexcept { return this->message.c_str(); }
 
 	template<typename T>
 	bool is() {
@@ -34,5 +34,15 @@ class Error: public std::exception  {
 	private:
 	std::string message;
 };
+
+#define ERRDEF3(type, default_msg, base) \
+class type: public base { \
+	public: \
+	type(std::string msg = default_msg): base(msg) {} \
+}
+#define ERRDEF(type, default_msg) ERRDEF3(type, default_msg, Error)
+
+/* Some module agnostic errors. */
+ERRDEF(EUninitialized, "The library is not initialized.");
 
 }

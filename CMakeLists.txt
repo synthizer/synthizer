@@ -17,9 +17,12 @@ include_directories(
 	third_party/miniaudio
 	third_party/dr_libs
 	third_party/stb
+	third_party/cpp11-on-multicore/common
+	third_party/wdl
 )
 
 add_library(synthizer
+	src/audio_output.cpp
 	src/byte_stream.cpp
 	src/decoding.cpp
 	src/error.cpp
@@ -36,6 +39,7 @@ add_library(synthizer
 )
 target_compile_features(synthizer PUBLIC cxx_std_17)
 target_link_libraries(synthizer wdl)
+target_compile_options(synthizer PRIVATE -Wall -Werror)
 
 add_executable(delay_line_test test/delay_line.cpp)
 target_link_libraries(delay_line_test synthizer)

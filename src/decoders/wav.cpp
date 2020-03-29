@@ -109,7 +109,6 @@ std::int64_t WavDecoder::getLength() {
 
 std::shared_ptr<AudioDecoder> decodeWav(std::shared_ptr<LookaheadByteStream> stream) {
 	drwav test_wav;
-	drwav_bool32 test_wav_initialized = false;
 	drwav_uint32 flags = 0;
 
 	/* Disable seeking if necessary. */

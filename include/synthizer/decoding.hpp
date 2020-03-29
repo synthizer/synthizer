@@ -39,8 +39,6 @@ class AudioDecoder {
 	public:
 	virtual ~AudioDecoder() {}
 	/*
-	 * Like streams, should only return less than num samples if at the end and 0 samples thereafter.
-	 * 
 	 * If channels is <1 (the default) then the number of output channels is equal to this asset. Otherwise channels are either truncated or filled with zero.
 	 * 
 	 * This class isn't responsible for channel conversion. Only audio I/O.
