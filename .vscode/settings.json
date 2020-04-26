@@ -4,5 +4,9 @@
 	],
 	"files.associations": {
 		"chrono": "cpp"
+	},
+	"[python]": {
+		"editor.insertSpaces": true,
+		"editor.tabSize": 4
 	}
 }

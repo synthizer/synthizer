@@ -22,15 +22,11 @@ const int SR = 44100;
 const int BLOCK_SIZE = 256;
 
 /*
- * The minimum size of the ringbuffers used for audio output are BLOCK_SIZE * BLOCKS_PER_RING frames.
+ * When doing various internal crossfades (i.e. HRTF), how many samples do we use?
  * 
- * Must be at least 1, should probably never be below 2.
- * 
- * Essentially, this is the minimum allowed maximum latency: if the audio backend would let us use a smaller buffer, we don't.
- * 
- * Algorithms upstream of audio outputs will adapt their latency to be lower or higher depending on other factors.
+ * Must be a multiple of 4 and less than the block size; ideally keep this as a mutliple of 8.
  * */
-const int BLOCKS_PER_RING = 2;
+const int CROSSFADE_SAMPLES = 64;
 
 /*
  * The fundamental alignment, in bytes, of arrays holding samples.
@@ -38,6 +34,16 @@ const int BLOCKS_PER_RING = 2;
  * SSE2 requires 16 byte alignment. Note that a float is 4 bytes, so we don't waste much.
  * */
 const int ALIGNMENT = 16;
+
+/*
+ * The maximum delay for the ITD, in samples.
+ * 
+ * Must be at least 2.
+ * 
+ * This default comes from the woodworth ITD formula's maximum value for a 0.15 CM radius: (0.15/343)*(math.pi/2+1)*44100
+ * Rounded up to a power of 2.
+ * */
+const int HRTF_MAX_ITD = 64;
 
 }
 }

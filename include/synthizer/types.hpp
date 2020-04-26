@@ -51,4 +51,18 @@ class AllHelper {
 template<typename T, typename... ARGS>
 using All = typename AllHelper<T, ARGS...>::type;
 
+/*
+ * This is terribly, terribly, terribly slow; use only at compile time.
+ * */
+constexpr unsigned int nextPowerOfTwo(unsigned int input) {
+	unsigned int ret = 1;
+	while(ret < input) ret <<= 1;
+	return ret;
+}
+
+constexpr unsigned int nextMultipleOf(unsigned int value, unsigned int multiplier) {
+	if (value % multiplier == 0) return value;
+	else return (value / multiplier + 1) * value;
+}
+
 }
