@@ -40,6 +40,8 @@ add_library(synthizer
 	src/filters/audio_eq_cookbook.cpp
 	src/filters/simple_filters.cpp
 
+	src/generators/decoding.cpp
+
 	src/streams/file.cpp
 	src/streams/memory.cpp
 )

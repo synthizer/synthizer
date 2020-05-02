@@ -22,6 +22,13 @@ const int SR = 44100;
 const int BLOCK_SIZE = 256;
 
 /*
+ * The maximum number of channels that any piece of Synthizer architecture can ever output.
+ * 
+ * This is used to allocate a number of buffers as static thread locals and/or on the stack, as opposed to on the heap.
+ * */
+const int MAX_CHANNELS = 16;
+
+/*
  * When doing various internal crossfades (i.e. HRTF), how many samples do we use?
  * 
  * Must be a multiple of 4 and less than the block size; ideally keep this as a mutliple of 8.

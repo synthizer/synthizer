@@ -15,6 +15,8 @@
 #include "synthizer/logging.hpp"
 #include "synthizer/math.hpp"
 
+#include "synthizer/generators/decoding.hpp"
+
 using namespace synthizer;
 
 int main(int argc, char *argv[]) {
@@ -27,25 +29,29 @@ int main(int argc, char *argv[]) {
 	initializeAudioOutputDevice();
 	auto output = createAudioOutput();
 	auto decoder = getDecoderForProtocol("file", argv[1], {});
+	DecodingGenerator generator{};
 	auto filter = makeIIRFilter<2>(designAudioEqLowpass((double) 2000 / config::SR / 2, 0.5));
 	bool started = false;
 
 	HrtfConvolver *hrtf = new HrtfConvolver();
 
+	generator.setDecoder(decoder);
+	generator.setPitchBend(1.0);
 	double angle = 0;
 	double delta = (360.0/10)*((double)config::BLOCK_SIZE/config::SR);
 	//delta = 0;
 	printf("angle delta %f\n", delta);
 	for(unsigned int q = 0;;q++) {
-		float wav[config::BLOCK_SIZE*2] = {0.0f};
+		float wav[config::BLOCK_SIZE*config::MAX_CHANNELS] = {0.0f};
 		alignas(config::ALIGNMENT) float hrtf_buf[config::BLOCK_SIZE*8] = { 0.0f };
 
 		auto b = output->beginWrite();
-		decoder->writeSamplesInterleaved(config::BLOCK_SIZE, wav);
+		unsigned int nch = generator.getChannels();
+		generator.generateBlock(wav);
 
 		auto [buf, stride] = hrtf->getInputBuffer(0);
 		for(unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-			buf[i*stride] = 0.9*(0.5*wav[i*2]+0.5*wav[i*2+1]);
+			buf[i*stride] = 0.9*(0.5*wav[i*nch]+0.5*wav[i*nch+1]);
 		}
 		hrtf->computeOutput({angle, 0, 0, 0}, {0, 0, 0, 0}, {true, false, false, false}, hrtf_buf);
 		angle += delta;
