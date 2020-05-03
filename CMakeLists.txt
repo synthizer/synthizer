@@ -29,6 +29,7 @@ add_library(synthizer
 	src/error.cpp
 	src/hrtf.cpp
 	src/logging.cpp
+	src/panner_bank.cpp
 	src/single_file_libs.c
 
 	src/data/hrtf.cpp

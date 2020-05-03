@@ -32,17 +32,18 @@ class AbstractPanner {
 	virtual unsigned int getLaneCount() = 0;
 	/* writes lanes*channels. Should add to the output. The pannerBank will collapse/remix as necessary. */
 	virtual void runPanning(AudioSample *output) = 0;
-	virtual PannerLane getLane(unsigned int lane) = 0;
+	/* (destination, stride). Allocation and freeing is handled elsewhere. */
+	virtual std::tuple<AudioSample *, unsigned int> getLane(unsigned int lane) = 0;
 
 	/*
 	 * These set panning, either as azimuth and elevation, or as -1 to 1.
 	 * The -1 to 1 interface is for stereo panning; HRTF and surround sound fake it out.
 	 * 
-	 * Azimuth and elevation are degrees, matching the HRETF dataset.
+	 * Azimuth and elevation are degrees, matching the HRTF dataset.
 	 * */
-	virtual setPanningAngles(double azimuth, double elevation) = 0;
+	virtual void setPanningAngles(double azimuth, double elevation) = 0;
 	/* -1 is left, 1 is right. */
-	virtual setPanningScalar(double scalar) = 0;
+	virtual void setPanningScalar(double scalar) = 0;
 };
 
 /*
