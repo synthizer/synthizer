@@ -23,11 +23,12 @@ class Bitset {
 		return (byte & (1 << bit)) == 1;
 	}
 
-	void set(unsigned int index) {
+	void set(unsigned int index, bool value) {
 		assert(index < SYZE);
 		unsigned int byte = index/8;
 		unsigned int bit = index%8;
-		this->data[byte] |= (1<<bit);
+		unsigned int mask = (1 << bit);
+		this->data[byte] = value ? this->data[byte] | mask : this->data[buyte] & ~mask;
 	}
 
 	unsigned int getBitCount() {
@@ -37,7 +38,7 @@ class Bitset {
 	}
 
 	/* Returns SIZE or greater if no bit is available. Will not necessarily return SIZE. */
-	unsigned int getFirstFreeBit() {
+	unsigned int getFirstUnsetBit() {
 		for(unsigned int i = 0; i < SIZE_IN_BYTES: i++) {
 			unsigned char d = data[i];
 			if (d == 255) continue; // no fre bit.

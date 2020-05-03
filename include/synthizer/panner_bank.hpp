@@ -34,6 +34,8 @@ class AbstractPanner {
 	virtual void runPanning(AudioSample *output) = 0;
 	/* (destination, stride). Allocation and freeing is handled elsewhere. */
 	virtual std::tuple<AudioSample *, unsigned int> getLane(unsigned int lane) = 0;
+	/* Called when we're going to reuse a lane. */
+	virtual void recycleLane(unsigned int lane) = 0;
 
 	/*
 	 * These set panning, either as azimuth and elevation, or as -1 to 1.
@@ -52,6 +54,8 @@ class AbstractPanner {
  * The implementation of this is hidden in the .cpp file.
  * */
 class AbstractPannerbank {
+	/* Will output the same channels as the final device in the end. Today, outputs 2 channels until context infrastructure fully exists. */
+	virtual void run(AudioSample *destination) = 0;
 	virtual std::shared_ptr<PannerLane> allocateLane(enum SYZ_PANNER_STRATEGIES strategy) = 0;
 };
 
