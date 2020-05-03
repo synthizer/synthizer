@@ -19,6 +19,7 @@ include_directories(
 	third_party/stb
 	third_party/cpp11-on-multicore/common
 	third_party/wdl
+	third_party/plf_colony
 )
 
 add_library(synthizer
