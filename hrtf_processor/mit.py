@@ -58,15 +58,15 @@ print("Building magnitude responses")
 for i, j in indices:
     azimuths[i][j] = np.abs(np.fft.fft(azimuths[i][j]))
 
-print("Equalizing magnitude response")
+print("Equalizing power response")
 presp = np.zeros(len(azimuths[0][0]), dtype=np.float64)
 c = 0
 for i, j in indices:
     c += 1
-    presp += azimuths[i][j]
-average_gain = presp/c
+    presp += azimuths[i][j]**2
+average_power = presp/c
 for i, j in indices:
-    azimuths[i][j] = azimuths[i][j] / average_gain
+    azimuths[i][j] = np.sqrt(azimuths[i][j]**2 / average_power)
     azimuths[i][j][0] = 1.0
 
 print("Clamping responses to be between -60 db and 3 db")
@@ -80,7 +80,7 @@ print("Converting to minimum phase")
 for i, j in indices:
     azimuths[i][j] = minimum_phase(azimuths[i][j])
 
-hrir_length_final = 16
+hrir_length_final = 32
 print(f"Windowing to {hrir_length_final} points")
 # We use blackman-harris because the WDL likes it for its resampler, so proceeding under the assumption that it's good enough for us too.
 blackman = signal.blackmanharris(hrir_length_final*2-1)[-hrir_length_final:]

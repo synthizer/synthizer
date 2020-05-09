@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 	generator.setDecoder(decoder);
 	generator.setPitchBend(1.0);
 	double angle = 0;
-	double delta = (360.0/10)*((double)config::BLOCK_SIZE/config::SR);
+	double delta = (360.0/20)*((double)config::BLOCK_SIZE/config::SR);
 	//delta = 0;
 	printf("angle delta %f\n", delta);
 	for(unsigned int q = 0;;q++) {

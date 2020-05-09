@@ -11,9 +11,9 @@
 
 namespace synthizer::hrtf_data {
 
-typedef std::array<std::array<float, 16>, 710> ImpulseArray;
+typedef std::array<std::array<float, 32>, 710> ImpulseArray;
 extern const ImpulseArray IMPULSES;
-const std::size_t IMPULSE_LENGTH = 16;
+const std::size_t IMPULSE_LENGTH = 32;
 
 struct ElevationDef {
     double angle;
