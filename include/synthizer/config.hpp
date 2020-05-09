@@ -15,7 +15,7 @@ const int SR = 44100;
 /*
  * Number of samples to process in one block. This should be a multiple of 16 for future-proofing.
  * 
- * 256 samples is 172updatesper second, fast enough for anything rasonable.
+ * 256 samples is 172updatesper second, fast enough for anything reasonable.
  * 
  * We may have to raise this later for performance.
  * */

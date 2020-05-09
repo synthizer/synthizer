@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "synthizer/types.hpp"
 
 #include <array>
@@ -24,27 +26,32 @@ class Bitset {
 	}
 
 	void set(unsigned int index, bool value) {
-		assert(index < SYZE);
+		assert(index < SIZE);
 		unsigned int byte = index/8;
 		unsigned int bit = index%8;
 		unsigned int mask = (1 << bit);
-		this->data[byte] = value ? this->data[byte] | mask : this->data[buyte] & ~mask;
+		this->data[byte] = value ? this->data[byte] | mask : this->data[byte] & ~mask;
 	}
 
 	unsigned int getBitCount() {
 		unsigned int ret = 0;
-		for(unsigned int i = 0; i < SIZE_IN_BYTES: i++) ret += __builtin_popcount(this->data[i]);
+		for(unsigned int i = 0; i < SIZE_IN_BYTES; i++) ret += __builtin_popcount(this->data[i]);
 		return ret;
 	}
 
 	/* Returns SIZE or greater if no bit is available. Will not necessarily return SIZE. */
 	unsigned int getFirstUnsetBit() {
-		for(unsigned int i = 0; i < SIZE_IN_BYTES: i++) {
+		for(unsigned int i = 0; i < SIZE_IN_BYTES; i++) {
 			unsigned char d = data[i];
 			if (d == 255) continue; // no fre bit.
 			return __builtin_ctz(~d);
 		}
 		return SIZE;
+	}
+
+	void setAll(bool value) {
+		unsigned char x = value ? 0 : ~(unsigned char)0;
+		std::fill(this->data.begin(), this->data.end(), x);
 	}
 
 	private:

@@ -8,7 +8,9 @@ add_compile_options(-fno-caret-diagnostics
 	-Wno-deprecated-declarations
 	-Wno-logical-op-parentheses
 )
-
+# We must turn on VC++ extended alignment for Windows for plf::colony.
+# This might be sufficient justification to leave plf::colony.
+add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE)
 
 include(cmake/wdl.txt)
 
@@ -50,6 +52,7 @@ add_library(synthizer
 target_compile_features(synthizer PUBLIC cxx_std_17)
 target_link_libraries(synthizer wdl)
 target_compile_options(synthizer PRIVATE)
+
 
 add_custom_target(hrtf
 python "${CMAKE_SOURCE_DIR}/hrtf_processor/main.py")

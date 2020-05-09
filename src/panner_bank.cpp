@@ -2,6 +2,7 @@
 
 #include "synthizer/bitset.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/hrtf.hpp"
 
 #include "plf_colony.h"
 
@@ -21,27 +22,46 @@ class PannerBlock {
 	public:
 	T panner{};
 	unsigned int reference_count = 0;
-	Bitset<config::MAX_CHANNELS> allocated_channels;
+	Bitset<config::MAX_CHANNELS> allocated_lanes;
 };
 
 template<typename T>
-class ConcretePannerLane: PannerLane {
+class ConcretePannerLane: public PannerLane {
 	public:
 	~ConcretePannerLane() {
-		this->block->bitset.set(lane, false);
+		this->block->allocated_lanes.set(lane, false);
 		this->block->reference_count--;
 	}
+
+	void update();
+	void setPanningAngles(double azimuth, double elvation);
+	void setPanningScalar(double scalar);
 
 	PannerBlock<T> *block;
 	unsigned int lane;
 };
 
 template<typename T>
+void ConcretePannerLane<T>::update() {
+	std::tie(this->destination, this->stride) = this->block->panner.getLane(this->lane);
+}
+
+template<typename T>
+void ConcretePannerLane<T>::setPanningAngles(double azimuth, double elevation) {
+	this->block->panner.setPanningAngles(this->lane, azimuth, elevation);
+}
+
+template<typename T>
+void ConcretePannerLane<T>::setPanningScalar(double scalar) {
+	this->block->panner.setPanningScalar(this->lane, scalar);
+}
+
+template<typename T>
 static std::shared_ptr<PannerLane> allocateLaneHelper(plf::colony<PannerBlock<T>> &colony) {
-	std::shared_ptr<ConcretePannerLane> ret = std::make_shared<ConcretePannerLane();
+	std::shared_ptr<ConcretePannerLane<T>> ret = std::make_shared<ConcretePannerLane<T>>();
 	PannerBlock<T> *found = nullptr;
 	for(auto &i: colony) {
-		if(i.reference_count < i.getLanes()) {
+		if(i.reference_count < i.panner.getLaneCount()) {
 			found = &i;
 			break;
 		}
@@ -50,8 +70,8 @@ static std::shared_ptr<PannerLane> allocateLaneHelper(plf::colony<PannerBlock<T>
 		found = & (*colony.emplace());
 	}
 	found->reference_count++;
-	unsigned int lane = found->bitset.getFirstUnsetBit();
-	assert(lane < decltype(found->bitset)::SIZE);
+	unsigned int lane = found->allocated_lanes.getFirstUnsetBit();
+	assert(lane < decltype(found->allocated_lanes)::SIZE);
 	ret->lane = lane;
 	ret->block = found;
 	std::tie(ret->destination, ret->stride) = found->panner.getLane(lane);
@@ -83,7 +103,7 @@ class StrategyBank {
 	void run(AudioSample *destination) {
 		dropPanners(this->panners);
 		for(auto &i: this->panners) {
-			i.run(destination);
+			i.panner.run(destination);
 		}
 	}
 
@@ -91,7 +111,7 @@ class StrategyBank {
 	plf::colony<PannerBlock<T>> panners;
 };
 
-class PannerBank: public AbstractPannerbank {
+class PannerBank: public AbstractPannerBank {
 	public:
 	void run(AudioSample *destination) {
 		hrtf.run(destination);
@@ -106,7 +126,7 @@ class PannerBank: public AbstractPannerbank {
 	StrategyBank<HrtfPanner> hrtf;
 };
 
-std::shared_ptr<AbstractPannerbank> makePannerBank() {
+std::shared_ptr<AbstractPannerBank> makePannerBank() {
 	return std::make_shared<PannerBank>();
 }
 

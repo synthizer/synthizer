@@ -161,21 +161,33 @@ void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned
 	computeHrtfImpulseSingleChannel(360 - azimuth, elevation, elev_lower, elev_upper, right, right_stride);
 }
 
-std::tuple<AudioSample *, std::size_t>
-HrtfConvolver::getInputBuffer(unsigned int channel) {
-	assert(channel < HrtfConvolver::CHANNELS);
+HrtfPanner::HrtfPanner() {
+	this->moved.setAll(true);
+}
+
+unsigned int HrtfPanner::getOutputChannels() {
+	return 2;
+}
+
+unsigned int HrtfPanner::getLaneCount() {
+	return CHANNELS;
+}
+
+std::tuple<AudioSample *, unsigned int>
+HrtfPanner::getLane(unsigned int channel) {
+	assert(channel < HrtfPanner::CHANNELS);
 	AudioSample *ptr = this->input_line.getNextBlock();
 	return { ptr + channel, CHANNELS };
 }
 
-void HrtfConvolver::clearChannel(unsigned int channel) {
-	assert(channel < CHANNELS);
+void HrtfPanner::recycleLane(unsigned int lane) {
+	assert(lane < CHANNELS);
 
-	this->input_line.clearChannel(channel);
+	this->input_line.clearChannel(lane);
 }
 
 template<typename R>
-void HrtfConvolver::stepConvolution(R &&reader, const float *hrir, AudioSample4 *dest_l, AudioSample4 *dest_r) {
+void HrtfPanner::stepConvolution(R &&reader, const float *hrir, AudioSample4 *dest_l, AudioSample4 *dest_r) {
 	AudioSample4 accumulator_left = { 0.0f };
 	AudioSample4 accumulator_right = { 0.0f };
 	for(unsigned int j = 0; j < hrtf_data::IMPULSE_LENGTH; j++) {
@@ -190,24 +202,38 @@ void HrtfConvolver::stepConvolution(R &&reader, const float *hrir, AudioSample4 
 	*dest_r = { accumulator_left[2], accumulator_right[2], accumulator_left[3], accumulator_right[3] };
 }
 
-void HrtfConvolver::computeOutput(const std::array<double, 4> &azimuths,
-	const std::array<double, 4> &elevations,
-	const std::array<bool, 4> &moved,
-	AudioSample *output) {
+void HrtfPanner::run(AudioSample *output) {
+	AudioSample *prev_hrir = nullptr;
 	AudioSample *current_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * hrtf_data::IMPULSE_LENGTH ];
-	/* Set current_hrir to the other slot. */
-	this->current_hrir ^= 1;
-	AudioSample *prev_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * hrtf_data::IMPULSE_LENGTH ];
-	std::array<std::tuple<double, double>, CHANNELS> itds;
 
+	bool crossfade = false;
 	for(unsigned int i = 0; i < CHANNELS; i++) {
-		computeHrtfImpulses(azimuths[i], elevations[i], &current_hrir[i], 8, &current_hrir[i + 4], 8);
-		itds[i] = computeInterauralTimeDifference(azimuths[i], elevations[i]);
+		crossfade |= this->moved.get(i);
+		this->moved.set(i, false);
 	}
+
+	if (crossfade) {
+		prev_hrir = current_hrir;
+		this->current_hrir ^= 1;
+		current_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * hrtf_data::IMPULSE_LENGTH ];
+	}
+
+	std::array<std::tuple<double, double>, CHANNELS> itds = this->prev_itds;
+
+	if (crossfade) {
+		for(unsigned int i = 0; i < CHANNELS; i++) {
+			computeHrtfImpulses(this->azimuths[i], this->elevations[i], &current_hrir[i], 8, &current_hrir[i + 4], 8);
+			itds[i] = computeInterauralTimeDifference(azimuths[i], elevations[i]);
+		}
+	}
+
+	unsigned int crossfade_samples = crossfade ? config::CROSSFADE_SAMPLES : 0;
+	unsigned int normal_samples = config::BLOCK_SIZE - crossfade_samples;
+	assert(crossfade_samples + normal_samples == config::BLOCK_SIZE);
 
 	AudioSample *itd_block = this->itd_line.getNextBlock();
 	input_line.runReadLoopSplit(hrtf_data::IMPULSE_LENGTH - 1,
-	config::CROSSFADE_SAMPLES, [&](unsigned int i, auto &reader) {
+	crossfade_samples, [&](unsigned int i, auto &reader) {
 		AudioSample4 l_old, l_new, r_old, r_new;
 		this->stepConvolution(reader, prev_hrir, &l_old, &r_old);
 		this->stepConvolution(reader, current_hrir, &l_new, &r_new);
@@ -216,7 +242,7 @@ void HrtfConvolver::computeOutput(const std::array<double, 4> &azimuths,
 		out[0] = l_new*weight + l_old*(1.0f-weight);
 		out[1] = r_new*weight + r_old*(1.0f-weight);
 	},
-	config::BLOCK_SIZE - config::CROSSFADE_SAMPLES, [&](unsigned int i, auto &reader) {
+	normal_samples, [&](unsigned int i, auto &reader) {
 		AudioSample4 l, r;
 		this->stepConvolution(reader, current_hrir, &l, &r);
 		AudioSample4 *out = (AudioSample4*)(itd_block + CHANNELS * 2 * i);
@@ -236,15 +262,17 @@ void HrtfConvolver::computeOutput(const std::array<double, 4> &azimuths,
 		auto [l, r] = itds[i];
 		delays[i*2] = l;
 		delays[i*2+1] = r;
-		weights_late[i*2] = l-floor(l);
-		weights_early[i*2] = 1.0 - weights_late[i*2];
-		weights_late[i*2+1] = r-floor(r);
-		weights_early[i*2+1] = 1.0-weights_late[i*2+1];
+		if (crossfade) {
+			weights_late[i*2] = l-floor(l);
+			weights_early[i*2] = 1.0 - weights_late[i*2];
+			weights_late[i*2+1] = r-floor(r);
+			weights_early[i*2+1] = 1.0-weights_late[i*2+1];
+		}
 	}
 
 	this->itd_line.runReadLoopSplit(config::HRTF_MAX_ITD,
 		/* Crossfade the delays, if necessary. */
-		config::CROSSFADE_SAMPLES, [&](unsigned int i, auto &reader) {
+		crossfade_samples, [&](unsigned int i, auto &reader) {
 			AudioSample *o = output + i * CHANNELS * 2;
 			double fraction = i/(float)config::CROSSFADE_SAMPLES;
 			for(unsigned int c = 0; c < CHANNELS; c++) {
@@ -261,19 +289,31 @@ void HrtfConvolver::computeOutput(const std::array<double, 4> &azimuths,
 				float rse = reader.read(c*2+1, right_s), rsl = reader.read(c*2+1, right_s+1);
 				float ls = lsl*wl + lse*(1.0f-wl);
 				float rs = rsl*wr + rse*(1.0f-wr);
-				o[c*2] = ls;
-				o[c*2 + 1] = rs;
+				o[c*2] += ls;
+				o[c*2 + 1] += rs;
 			}
 		},
 		/* Then do the main loop. */
-		config::BLOCK_SIZE - config::CROSSFADE_SAMPLES, [&](unsigned int i, auto &reader) {
+		normal_samples, [&](unsigned int i, auto &reader) {
 			AudioSample *o = output + i * CHANNELS * 2;
 			for(unsigned int j = 0; j < CHANNELS*2; j++) {
-				o[j] = reader.read(j, delays[j]);
+				o[j] += reader.read(j, delays[j]);
 			}
 		});
 
 	this->prev_itds = itds;
+}
+
+void HrtfPanner::setPanningAngles(unsigned int lane, double azimuth, double elevation) {
+	assert(lane < CHANNELS);
+	this->azimuths[lane] = azimuth;
+	this->elevations[lane] = elevation;
+	this->moved.set(lane, true);
+}
+
+void HrtfPanner::setPanningScalar(unsigned int lane, double scalar) {
+	assert(scalar >= -1.0 && scalar <= 1.0);
+	this->setPanningAngles(lane, -90+180*scalar, 0.0);
 }
 
 }

@@ -5,8 +5,10 @@
 #include <tuple>
 
 #include "synthizer/config.hpp"
+#include "synthizer/bitset.hpp"
 #include "synthizer/block_delay_line.hpp"
 #include "synthizer/data/hrtf.hpp"
+#include "synthizer/panner_bank.hpp"
 #include "synthizer/types.hpp"
 
 namespace synthizer {
@@ -26,7 +28,6 @@ namespace synthizer {
  * Also the dataset is asumed to be for the left ear. Getting this backward will cause the impulses to be flipped.
  * */
 
-
 /*
  * Parameters for an Hrir model.
  * 
@@ -39,7 +40,7 @@ struct HrirParameters {
 };
 
 /*
- * Compute the interaural time difference for a source in oversampled samples.
+ * Compute the interaural time difference for a source.
  * 
  * Returns a tuple {l, r} where one of l or r is always 0.
  * 
@@ -58,30 +59,18 @@ void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned
  * 
  * We don't template this because anything bigger than 4 is likely as not to cause problems, and it's convenient to not have all of this code inline. That said, note the class-level consts: this is intentionally written so that it can be templatized later.
  * */
-class HrtfConvolver {
+class HrtfPanner: public AbstractPanner {
 	public:
 	static const std::size_t CHANNELS = 4;
 
-	/*
-	 * Returns a tuple of (pointer, stride).
-	 * */
-	std::tuple<AudioSample *, std::size_t> getInputBuffer(unsigned int channel);
-
-	/*
-	 * Parameters:
-	 * output: buffer to write to. We add, so zero it first.
-	 * azimuths: 4 floats, the azimuths for the channels.
-	 * elevations: the elevations for the channels.
-	 * moved: An array of 4 bools, whether each of these sources moved. Should be false for the first update.
-	 * 
-	 * */
-	void computeOutput(const std::array<double, 4> &azimuths,
-		const std::array<double, 4> &elevations,
-		const std::array<bool, 4> &moved,
-		AudioSample *output);
-
-	/* Used when recycling a channel for another source. Sets that channel to 0. */
-	void clearChannel(unsigned int channel);
+	HrtfPanner();
+	unsigned int getOutputChannels();
+	unsigned int getLaneCount();
+	std::tuple<AudioSample *, unsigned int> getLane(unsigned int channel);
+	void recycleLane(unsigned int channel);
+	void run(AudioSample *output);
+	void setPanningAngles(unsigned int lane, double azimuth, double elevation);
+	void setPanningScalar(unsigned int lane, double scalar);
 
 	private:
 	template<typename R>
@@ -107,6 +96,9 @@ class HrtfConvolver {
 	alignas(config::ALIGNMENT) std::array<AudioSample, hrtf_data::IMPULSE_LENGTH*CHANNELS*2*2> hrirs = { 0.0f };
 	unsigned int current_hrir = 0;
 	std::array<std::tuple<double, double>, CHANNELS> prev_itds{};
+	std::array<double, CHANNELS> azimuths = { { 0.0 } };
+	std::array<double, CHANNELS> elevations = { { 0.0 } };
+	Bitset<CHANNELS> moved;
 };
 
 }
