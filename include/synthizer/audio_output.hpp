@@ -1,5 +1,6 @@
 #include <atomic>
 #include <cstddef>
+#include <functional>
 #include <memory>
 
 #include "audio_ring.hpp"
@@ -29,12 +30,13 @@ ERRDEF(EAudioDevice, "Audio device error");
  * */
 void initializeAudioOutputDevice();
 
-
 /*
  * Allocates an output.
  * 
  * Outputs remain docked for the lifetime of the output or unless shutdown is called.
+ * 
+ * The argument is a callback which will be called on underflow and/or when a buffer is available in the queue.
  * */
-std::shared_ptr<AudioOutput> createAudioOutput();
+std::shared_ptr<AudioOutput> createAudioOutput(std::function<void(void)> availability_callback = {});
 
 }

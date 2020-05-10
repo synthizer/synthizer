@@ -51,6 +51,9 @@ class BoundedBlockQueue {
 	void setQueueSize(std::size_t size);
 	std::size_t getQueueSize();
 
+	/* Set whether writes block until a slot is available. This controls wheher or not an internal semaphore increments. */
+	void setWritesWillBlock(bool blocking);
+
 private:
 	struct Block: public VyukovHeader<Block> {
 		T *data;
@@ -63,6 +66,7 @@ private:
 	Semaphore read_sema;
 	Block *read_block = nullptr;
 	Block *write_block = nullptr;
+	std::atomic<int> writes_will_block = 1;
 
 	void allocateBlocksIfNeeded();
 };
@@ -104,14 +108,16 @@ template<typename T>
 T* BoundedBlockQueue<T>::beginWrite() {
 	assert(this->write_block == nullptr);
 
+	bool will_block = this->writes_will_block.load(std::memory_order_relaxed);
+
 	this->allocateBlocksIfNeeded();
-	this->read_sema.wait();
+	if (will_block) this->read_sema.wait();
 
 	BoundedBlockQueue<T>::Block *b = nullptr;
-	while (b == nullptr) {
+	do {
 		b = this->free_queue.dequeue();
 		if (b) break;
-	}
+	} while(will_block && b == nullptr);
 
 	this->write_block = b;
 	return b->data;
@@ -165,4 +171,8 @@ std::size_t BoundedBlockQueue<T>::getQueueSize() {
 	return this->queue_size.load(std::memory_order_relaxed);
 }
 
+template<typename T>
+void BoundedBlockQueue<T>::setWritesWillBlock(bool blocking) {
+	this->writes_will_block.store(blocking, std::memory_order_relaxed);
+}
 }
