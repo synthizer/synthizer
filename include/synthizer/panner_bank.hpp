@@ -37,7 +37,7 @@ class AbstractPanner {
 	public:
 	virtual ~AbstractPanner() {}
 
-	virtual unsigned int getOutputChannels() = 0;
+	virtual unsigned int getOutputChannelCount() = 0;
 	virtual unsigned int getLaneCount() = 0;
 	/* writes lanes*channels. Should add to the output. The pannerBank will collapse/remix as necessary. */
 	virtual void run(AudioSample *output) = 0;
@@ -65,7 +65,7 @@ class AbstractPanner {
 class AbstractPannerBank {
 	public:
 	/* Will output the same channels as the final device in the end. Today, outputs 2 channels until context infrastructure fully exists. */
-	virtual void run(AudioSample *destination) = 0;
+	virtual void run(unsigned int channels, AudioSample *destination) = 0;
 	virtual std::shared_ptr<PannerLane> allocateLane(enum SYZ_PANNER_STRATEGIES strategy) = 0;
 };
 

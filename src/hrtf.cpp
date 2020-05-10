@@ -165,7 +165,7 @@ HrtfPanner::HrtfPanner() {
 	this->moved.setAll(true);
 }
 
-unsigned int HrtfPanner::getOutputChannels() {
+unsigned int HrtfPanner::getOutputChannelCount() {
 	return 2;
 }
 

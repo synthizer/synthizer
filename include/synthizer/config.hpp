@@ -52,5 +52,9 @@ const int ALIGNMENT = 16;
  * */
 const int HRTF_MAX_ITD = 64;
 
+/*
+ * The maximum number of lanes a panner can ever have.
+ * */
+const unsigned int PANNER_MAX_LANES = 4;
 }
 }

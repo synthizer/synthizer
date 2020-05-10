@@ -47,7 +47,6 @@ int main(int argc, char *argv[]) {
 	printf("angle delta %f\n", delta);
 	for(unsigned int q = 0;;q++) {
 		float wav[config::BLOCK_SIZE*config::MAX_CHANNELS] = {0.0f};
-		alignas(config::ALIGNMENT) float hrtf_buf[config::BLOCK_SIZE*8] = { 0.0f };
 
 		auto b = output->beginWrite();
 		unsigned int nch = generator.getChannels();
@@ -62,13 +61,8 @@ int main(int argc, char *argv[]) {
 		angle += delta;
 		angle -= (int(angle)/360)*360;
 
-		panner_bank->run(hrtf_buf);
-
-		for(int i = 0; i < config::BLOCK_SIZE; i++) {
-			b[i*2] = hrtf_buf[i*8];
-			b[i*2+1] = hrtf_buf[i*8+1];
-		}
-
+		std::fill(b, b+config::BLOCK_SIZE*2, 0.0f);
+		panner_bank->run(2, b);
 		output->endWrite();
 	}
 

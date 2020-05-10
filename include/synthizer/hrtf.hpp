@@ -64,7 +64,7 @@ class HrtfPanner: public AbstractPanner {
 	static const std::size_t CHANNELS = 4;
 
 	HrtfPanner();
-	unsigned int getOutputChannels();
+	unsigned int getOutputChannelCount();
 	unsigned int getLaneCount();
 	std::tuple<AudioSample *, unsigned int> getLane(unsigned int channel);
 	void recycleLane(unsigned int channel);

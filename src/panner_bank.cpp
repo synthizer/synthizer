@@ -6,6 +6,7 @@
 
 #include "plf_colony.h"
 
+#include <algorithm>
 #include <cassert>
 #include <memory>
 #include <tuple>
@@ -100,21 +101,53 @@ class StrategyBank {
 		return allocateLaneHelper(this->panners);
 	}
 
-	void run(AudioSample *destination) {
+	void fold(unsigned int channels, unsigned int lanes, unsigned int dest_channels, AudioSample *destination) {
+		unsigned int needed_channels = std::min(channels, dest_channels);
+		unsigned int stride = channels*lanes;
+		for(unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
+			for(unsigned int l = 0; l < lanes; l++) {
+				for(unsigned int c = 0; c < needed_channels; c++) {
+					destination[dest_channels*i+c] += this->working_buffer[stride*i+channels*l+c];
+				}
+			}
+		}
+	}
+
+	void run(unsigned int channels, AudioSample *destination) {
+		unsigned int last_channel_count = 0;
+		unsigned int last_lane_count = 0;
+		bool needs_final_fold = false;
 		dropPanners(this->panners);
+
+		std::fill(this->working_buffer.begin(), this->working_buffer.end(), 0.0f);
+
 		for(auto &i: this->panners) {
-			i.panner.run(destination);
+			needs_final_fold = true;
+			unsigned int nch = i.panner.getOutputChannelCount();
+			unsigned int nl = i.panner.getLaneCount();
+			i.panner.run(&working_buffer[0]);
+			if (nch != last_channel_count || nl != last_lane_count) {
+				this->fold(nch, nl, channels, destination);
+				std::fill(this->working_buffer.begin(), this->working_buffer.end(), 0.0f);
+				needs_final_fold = false;
+				last_channel_count = nch;
+				last_lane_count = nl;
+			}
+		}
+		if (needs_final_fold) {
+			this->fold(last_channel_count, last_lane_count, channels, destination);
 		}
 	}
 
 	private:
 	plf::colony<PannerBlock<T>> panners;
+	alignas(config::ALIGNMENT) std::array<AudioSample, config::BLOCK_SIZE*config::MAX_CHANNELS*config::PANNER_MAX_LANES> working_buffer;
 };
 
 class PannerBank: public AbstractPannerBank {
 	public:
-	void run(AudioSample *destination) {
-		hrtf.run(destination);
+	void run(unsigned int channels, AudioSample *destination) {
+		hrtf.run(channels, destination);
 	}
 
 	std::shared_ptr<PannerLane> allocateLane(enum SYZ_PANNER_STRATEGIES strategy) {
