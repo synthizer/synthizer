@@ -62,7 +62,7 @@ constexpr unsigned int nextPowerOfTwo(unsigned int input) {
 
 constexpr unsigned int nextMultipleOf(unsigned int value, unsigned int multiplier) {
 	if (value % multiplier == 0) return value;
-	else return (value / multiplier + 1) * value;
+	else return (value / multiplier + 1) * multiplier;
 }
 
 }

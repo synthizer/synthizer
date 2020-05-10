@@ -15,7 +15,7 @@ const int SR = 44100;
 /*
  * Number of samples to process in one block. This should be a multiple of 16 for future-proofing.
  * 
- * 256 samples is 172updatesper second, fast enough for anything rasonable.
+ * 256 samples is 172updatesper second, fast enough for anything reasonable.
  * 
  * We may have to raise this later for performance.
  * */
@@ -52,5 +52,9 @@ const int ALIGNMENT = 16;
  * */
 const int HRTF_MAX_ITD = 64;
 
+/*
+ * The maximum number of lanes a panner can ever have.
+ * */
+const unsigned int PANNER_MAX_LANES = 4;
 }
 }
