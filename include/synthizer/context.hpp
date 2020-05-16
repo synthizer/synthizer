@@ -9,6 +9,7 @@
 #include "sema.h"
 
 #include <atomic>
+#include <functional>
 #include <thread>
 
 namespace synthizer {
@@ -53,6 +54,16 @@ class Context: public BaseObject {
 	/* Allocate a panner lane intended to be used by a source. */
 	std::shared_ptr<PannerLane> allocateSourcePannerLane(enum SYZ_PANNER_STRATEGIES strategy);
 
+	/*
+	 * add a callback that will get called before every block.
+	 * 
+	 * This is primarily for testing; once we have a proper source model, we'll move away from it.
+	 * */
+	template<typename F>
+	void addPregenerateCallback(F &&c) {
+		this->pregenerate_callbacks.emplace_back(c);
+	}
+
 	private:
 
 	/*
@@ -76,6 +87,9 @@ class Context: public BaseObject {
 
 	/* Collections of objects that require execution: sources, etc. all go here eventually. */
 	std::shared_ptr<AbstractPannerBank> source_panners = nullptr;
+
+	/* for testing. A list of functions to call before every audio output. */
+	std::vector<std::function<void(void)>> pregenerate_callbacks;
 };
 
 }

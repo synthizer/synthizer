@@ -51,8 +51,8 @@ int main(int argc, char *argv[]) {
 	context->enqueueInvokable(&alloc_panner_inv);
 	lane = alloc_panner_inv.wait();
 
-	for(;;) {
-		auto inv = WaitableInvokable([&] () {
+	auto inv = WaitableInvokable([&] () {
+		context->addPregenerateCallback([&] () {
 			float wav[config::BLOCK_SIZE*config::MAX_CHANNELS] = {0.0f};
 			unsigned int nch = generator.getChannels();
 			generator.generateBlock(wav);
@@ -65,7 +65,11 @@ int main(int argc, char *argv[]) {
 			angle += delta;
 			angle -= (int(angle)/360)*360;
 		});
-		context->enqueueInvokable(&inv);
+	});
+	context->enqueueInvokable(&inv);
+	inv.wait();
+
+	for(;;) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));
 	}
 

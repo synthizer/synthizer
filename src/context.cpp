@@ -4,6 +4,7 @@
 #include "synthizer/config.hpp"
 #include "synthizer/types.hpp"
 
+#include <functional>
 #include <memory>
 #include <utility>
 
@@ -44,6 +45,11 @@ std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_ST
 
 void Context::generateAudio(unsigned int channels, AudioSample *destination) {
 	std::fill(destination, destination + channels * config::BLOCK_SIZE, 0.0f);
+
+	for(auto f: this->pregenerate_callbacks) {
+		f();
+	}
+
 	this->source_panners->run(channels, destination);
 }
 
