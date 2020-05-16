@@ -69,6 +69,6 @@ class AbstractPannerBank {
 	virtual std::shared_ptr<PannerLane> allocateLane(enum SYZ_PANNER_STRATEGIES strategy) = 0;
 };
 
-std::shared_ptr<AbstractPannerBank> makePannerBank();
+std::shared_ptr<AbstractPannerBank> createPannerBank();
 
 }

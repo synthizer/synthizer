@@ -27,6 +27,7 @@ include_directories(
 add_library(synthizer
 	src/audio_output.cpp
 	src/byte_stream.cpp
+	src/context.cpp
 	src/decoding.cpp
 	src/error.cpp
 	src/hrtf.cpp

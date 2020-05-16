@@ -120,7 +120,7 @@ T* BoundedBlockQueue<T>::beginWrite() {
 	} while(will_block && b == nullptr);
 
 	this->write_block = b;
-	return b->data;
+	return b ? b->data : nullptr;
 }
 
 template<typename T>

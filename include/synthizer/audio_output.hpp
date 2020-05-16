@@ -37,6 +37,6 @@ void initializeAudioOutputDevice();
  * 
  * The argument is a callback which will be called on underflow and/or when a buffer is available in the queue.
  * */
-std::shared_ptr<AudioOutput> createAudioOutput(std::function<void(void)> availability_callback = {});
+std::shared_ptr<AudioOutput> createAudioOutput(std::function<void(void)> availability_callback = {}, bool blocking = true);
 
 }

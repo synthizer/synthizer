@@ -194,7 +194,7 @@ void AudioOutputImpl::shutdown() {
 	dev->dock.undock(us);
 }
 
-std::shared_ptr<AudioOutput> createAudioOutput(std::function<void(void)> availability_callback) {
+std::shared_ptr<AudioOutput> createAudioOutput(std::function<void(void)> availability_callback, bool blocking) {
 	if (output_device == nullptr) {
 		throw EUninitialized();
 	}
@@ -202,6 +202,8 @@ std::shared_ptr<AudioOutput> createAudioOutput(std::function<void(void)> availab
 	auto ao = std::make_shared<AudioOutputImpl>(output_device->queue_size.load(std::memory_order_relaxed), availability_callback);
 	ao->self = ao;
 	ao->device = output_device;
+	ao->queue.setWritesWillBlock(blocking);
+
 	output_device->dock.dock(ao);
 	return ao;
 }

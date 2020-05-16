@@ -10,6 +10,7 @@ namespace synthizer {
  * To use this properly, make sure that you virtual inherit from this directly or indirectly if adding a new object type.
  * */
 class BaseObject {
+	public:
 	virtual ~BaseObject() {}
 };
 
