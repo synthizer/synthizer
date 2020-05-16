@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstddef>
+#include <functional>
 #include <memory>
 
 #include "miniaudio.h"
@@ -15,18 +16,18 @@ class AudioOutputDevice;
 
 class AudioOutputImpl: public AudioOutput {
 	public:
-	AudioOutputImpl(std::size_t initial_queue_size);
+	AudioOutputImpl(std::size_t initial_queue_size, std::function<void(void)> &availability_callback);
 	~AudioOutputImpl();
 	AudioSample *beginWrite();
 	void endWrite();
 	void fillBuffer(AudioSample *buffer, bool add = true);
 	void shutdown();
-
 	std::weak_ptr<AudioOutputDevice> device;
 	std::weak_ptr<AudioOutputImpl> self;
 	int writes_to_start;
 	std::atomic<int> started = 0;
 	BoundedBlockQueue<AudioSample> queue;
+	std::function<void(void)> availability_callback;
 };
 
 /*
@@ -145,7 +146,8 @@ void shutdownOutputDevice() {
 	output_device = nullptr;
 }
 
-AudioOutputImpl::AudioOutputImpl(std::size_t initial_queue_size): writes_to_start(initial_queue_size) , queue(config::BLOCK_SIZE * 2, initial_queue_size) {
+AudioOutputImpl::AudioOutputImpl(std::size_t initial_queue_size, std::function<void(void)> &availability_callback):
+	writes_to_start(initial_queue_size) , queue(config::BLOCK_SIZE * 2, initial_queue_size), availability_callback(availability_callback) {
 }
 
 AudioOutputImpl::~AudioOutputImpl() {
@@ -180,6 +182,9 @@ void AudioOutputImpl::fillBuffer(AudioSample *buffer, bool add) {
 		std::copy(avail, avail + config::BLOCK_SIZE * 2, buffer);
 	}
 	this->queue.endRead();
+	if (this->availability_callback) {
+		this->availability_callback();
+	}
 }
 
 void AudioOutputImpl::shutdown() {
@@ -189,14 +194,16 @@ void AudioOutputImpl::shutdown() {
 	dev->dock.undock(us);
 }
 
-std::shared_ptr<AudioOutput> createAudioOutput() {
+std::shared_ptr<AudioOutput> createAudioOutput(std::function<void(void)> availability_callback, bool blocking) {
 	if (output_device == nullptr) {
 		throw EUninitialized();
 	}
 
-	auto ao = std::make_shared<AudioOutputImpl>(output_device->queue_size.load(std::memory_order_relaxed));
+	auto ao = std::make_shared<AudioOutputImpl>(output_device->queue_size.load(std::memory_order_relaxed), availability_callback);
 	ao->self = ao;
 	ao->device = output_device;
+	ao->queue.setWritesWillBlock(blocking);
+
 	output_device->dock.dock(ao);
 	return ao;
 }

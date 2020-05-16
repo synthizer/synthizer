@@ -159,7 +159,7 @@ class PannerBank: public AbstractPannerBank {
 	StrategyBank<HrtfPanner> hrtf;
 };
 
-std::shared_ptr<AbstractPannerBank> makePannerBank() {
+std::shared_ptr<AbstractPannerBank> createPannerBank() {
 	return std::make_shared<PannerBank>();
 }
 
