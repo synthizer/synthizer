@@ -1,7 +1,7 @@
 #pragma once
 
-#include "synthizer/abstract_generator.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/generator.hpp"
 #include "synthizer/types.hpp"
 
 #include <memory>
@@ -17,7 +17,7 @@ class AudioDecoder;
  * 
  * This works over decoders, not streams, because that lets us enforce that whatever audio the user wanted to decode was properly decodable before it gets as far as the audio thread.
  * */
-class DecodingGenerator: public AbstractGenerator {
+class DecodingGenerator: public Generator {
 	public:
 	DecodingGenerator() {}
 	~DecodingGenerator();

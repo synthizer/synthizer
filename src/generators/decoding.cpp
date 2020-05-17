@@ -4,7 +4,6 @@
 #include "synthizer/decoding.hpp"
 #include "synthizer/memory.hpp"
 
-
 #include "WDL/resample.h"
 
 #include <algorithm>
