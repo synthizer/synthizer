@@ -2,6 +2,7 @@
 
 #include "synthizer/audio_output.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/sources.hpp"
 #include "synthizer/types.hpp"
 
 #include <functional>
@@ -39,6 +40,10 @@ void Context::enqueueInvokable(Invokable *invokable) {
 	this->context_semaphore.signal();
 }
 
+void Context::registerSource(std::shared_ptr<Source> &source) {
+	this->sources[source.get()] = source;
+}
+
 std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_STRATEGIES strategy) {
 	return this->source_panners->allocateLane(strategy);
 }
@@ -46,8 +51,16 @@ std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_ST
 void Context::generateAudio(unsigned int channels, AudioSample *destination) {
 	std::fill(destination, destination + channels * config::BLOCK_SIZE, 0.0f);
 
-	for(auto f: this->pregenerate_callbacks) {
-		f();
+	auto i = this->sources.begin();
+	while (i != this->sources.end()) {
+		auto [k, v] = *i;
+		auto s = v.lock();
+		if (s == nullptr) {
+			i = this->sources.erase(i);
+			continue;
+		}
+		s->run();
+		i++;
 	}
 
 	this->source_panners->run(channels, destination);
