@@ -139,8 +139,9 @@ void PannedSource::run() {
 	this->panner_lane->update();
 	unsigned int stride = this->panner_lane->stride;
 	AudioSample *dest = this->panner_lane->destination;
+	float g = this->gain;
 	for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-		dest[i * stride] = mono_buffer[i];
+		dest[i * stride] = g * mono_buffer[i];
 	}
 }
 
