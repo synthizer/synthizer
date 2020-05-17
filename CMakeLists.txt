@@ -47,6 +47,8 @@ add_library(synthizer
 
 	src/generators/decoding.cpp
 
+	src/sources/panned_source.cpp
+
 	src/streams/file.cpp
 	src/streams/memory.cpp
 )
