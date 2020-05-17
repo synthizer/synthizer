@@ -2,6 +2,7 @@
 
 #include "synthizer/audio_output.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/invokable.hpp"
 #include "synthizer/sources.hpp"
 #include "synthizer/types.hpp"
 
@@ -38,6 +39,48 @@ void Context::shutdown() {
 void Context::enqueueInvokable(Invokable *invokable) {
 	pending_invokables.enqueue(invokable);
 	this->context_semaphore.signal();
+}
+
+template<typename T>
+static T propertyGetter(Context *ctx, std::shared_ptr<BaseObject> &obj, int property) {
+	auto inv = WaitableInvokable([&] () {
+		return std::get<T>(obj->getProperty(property));
+	});
+	ctx->enqueueInvokable(&inv);
+	return inv.wait();
+}
+
+template<typename T>
+static void propertySetter(Context *ctx, std::shared_ptr<BaseObject> &obj, int property, T &value) {
+	auto inv = WaitableInvokable([&] () {
+		obj->setProperty(property, value);
+	});
+	ctx->enqueueInvokable(&inv);
+	inv.wait();
+}
+
+int Context::getIntProperty(std::shared_ptr<BaseObject> &obj, int property) {
+	return propertyGetter<int>(this, obj, property);
+}
+
+void Context::setIntProperty(std::shared_ptr<BaseObject> &obj, int property, int value) {
+	propertySetter<int>(this, obj, property, value);
+}
+
+double Context::getDoubleProperty(std::shared_ptr<BaseObject> &obj, int property) {
+	return propertyGetter<double>(this, obj, property);
+}
+
+void Context::setDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, double value) {
+	propertySetter<double>(this, obj, property, value);
+}
+
+std::shared_ptr<BaseObject> Context::getObjectProperty(std::shared_ptr<BaseObject> &obj, int property) {
+	return propertyGetter<std::shared_ptr<BaseObject>>(this, obj, property);
+}
+
+void Context::setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<BaseObject> &value) {
+	propertySetter<std::shared_ptr<BaseObject>>(this, obj, property, value);
 }
 
 void Context::registerSource(std::shared_ptr<Source> &source) {

@@ -1,5 +1,8 @@
 #pragma once
 
+#include "synthizer/error.hpp"
+#include "synthizer/property_internals.hpp"
+
 namespace synthizer {
 
 /*
@@ -12,6 +15,20 @@ namespace synthizer {
 class BaseObject {
 	public:
 	virtual ~BaseObject() {}
+
+	/* A baseObject has no properties whatsoever. */
+	virtual bool hasProperty(int property) {
+		return false;
+	}
+
+	virtual property_impl::PropertyValue getProperty(int property) {
+		throw EInvalidProperty();
+	}
+
+	/* And getting and setting them immediately throws. */
+	virtual void setProperty(int property, const property_impl::PropertyValue &value) {
+		throw EInvalidProperty();
+	}
 };
 
 }

@@ -53,6 +53,19 @@ class Context: public BaseObject {
 	void enqueueInvokable(Invokable *invokable);
 
 	/*
+	 * Helpers for the C API. to get/set properties in the context's thread.
+	 * These create and manage the invokables and can be called directly.
+	 * 
+	 * Eventually this will be extended to handle batched/deferred things as well.
+	 * */
+	int getIntProperty(std::shared_ptr<BaseObject> &obj, int property);
+	void setIntProperty(std::shared_ptr<BaseObject> &obj, int property, int value);
+	double getDoubleProperty(std::shared_ptr<BaseObject> &obj, int property);
+	void setDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, double value);
+	std::shared_ptr<BaseObject> getObjectProperty(std::shared_ptr<BaseObject> &obj, int property);
+	void setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<BaseObject> &object);
+
+	/*
 	 * Ad a weak reference to the specified source.
 	 * */
 	void registerSource(std::shared_ptr<Source> &source);

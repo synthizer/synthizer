@@ -4,6 +4,7 @@
 
 #include "sema.h"
 
+#include <exception>
 #include <type_traits>
 
 namespace synthizer {
@@ -51,16 +52,24 @@ class WaitableInvokable<C, true>: public Invokable {
 	WaitableInvokable(C &&callable): callable(callable) {}
 
 	void invoke() {
-		this->callable();
+		try {
+			this->callable();
+		} catch(...) {
+			this->exception = std::current_exception();
+		}
+
 		this->semaphore.signal();
 	}
 
 	RESULT_TYPE wait() {
 		this->semaphore.wait();
+		if (this->exception) std::rethrow_exception(this->exception);
 	}
+
 	private:
 	C callable;
 	Semaphore semaphore;
+	std::exception_ptr exception;
 };
 
 template<typename C>
@@ -71,12 +80,17 @@ class WaitableInvokable<C, false>: public Invokable {
 	WaitableInvokable(C &&callable): callable(callable) {}
 
 	void invoke() {
-		this->result = this->callable();
+		try {
+			this->result = this->callable();
+		} catch(...) {
+			this->exception = std::current_exception();
+		}
 		this->semaphore.signal();
 	}
 
 	RESULT_TYPE wait() {
 		this->semaphore.wait();
+		if (this->exception) std::rethrow_exception(this->exception);
 		return this->result;
 	}
 
@@ -84,6 +98,7 @@ class WaitableInvokable<C, false>: public Invokable {
 	C callable;
 	Semaphore semaphore;
 	RESULT_TYPE result;
+	std::exception_ptr exception;
 };
 
 /* Type deduction guide: pick a WaitableInvokable specialization from above. */

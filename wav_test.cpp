@@ -58,15 +58,13 @@ int main(int argc, char *argv[]) {
 	});
 	context->enqueueInvokable(&source_inv);
 	source = source_inv.wait();
+	/* We use references for efficiency, so implicit conversion isn't possible when setting properties. */
+	auto source_base = std::static_pointer_cast<BaseObject>(source);
 
 	for(;;) {
-		auto inv = WaitableInvokable([&] () {
-			source->setAzimuth(angle);
-			angle += delta;
-			angle -= (int(angle)/360)*360;
-		});
-		context->enqueueInvokable(&inv);
-		inv.wait();
+		context->setDoubleProperty(source_base, SYZ_PANNED_SOURCE_AZIMUTH, angle);
+		angle += delta;
+		angle -= (int(angle)/360)*360;
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));
 	}
 

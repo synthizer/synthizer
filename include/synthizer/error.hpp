@@ -45,4 +45,8 @@ class type: public base { \
 /* Some module agnostic errors. */
 ERRDEF(EUninitialized, "The library is not initialized.");
 
+ERRDEF(EInvalidProperty, "Not a valid property for this object type");
+ERRDEF(EPropertyType, "Property type mismatch");
+ERRDEF(ERange, "Value out of range");
+
 }

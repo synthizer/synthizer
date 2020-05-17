@@ -47,13 +47,13 @@ void PannedSource::setPanningScalar(double panning_scalar) {
 	this->needs_panner_set = true;
 }
 
-enum SYZ_PANNER_STRATEGIES PannedSource::getPannerStrategy() {
+int PannedSource::getPannerStrategy() {
 	return this->panner_strategy;
 }
 
-void PannedSource::setPannerStrategy(enum SYZ_PANNER_STRATEGIES strategy) {
+void PannedSource::setPannerStrategy(int strategy) {
 	this->panner_lane = nullptr;
-	this->panner_strategy = strategy;
+	this->panner_strategy = (enum SYZ_PANNER_STRATEGIES) strategy;
 }
 
 double PannedSource::getGain() {
@@ -146,3 +146,9 @@ void PannedSource::run() {
 }
 
 }
+
+/* Do properties. */
+#define PROPERTY_CLASS PannedSource
+#define PROPERTY_LIST PANNED_SOURCE_PROPERTIES
+#define PROPERTY_BASE BaseObject
+#include "synthizer/property_impl.hpp"
