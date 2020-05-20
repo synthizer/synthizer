@@ -1,7 +1,12 @@
 #pragma once
 
+#include "synthizer.h"
+
+#include "synthizer/error.hpp"
+
 #include <algorithm>
 #include <cstdlib>
+#include <memory>
 #include <new>
 
 #ifdef _WIN32
@@ -12,11 +17,6 @@
 
 namespace synthizer {
 
-/*
- * The main point of this file is to provide an aligned allocator/free mechanism.
- * 
- * Unfortunately windows doesn't have aligned_alloc/free, so we have to route through here for portability.
- * */
 #ifdef _WIN32
 template<typename T>
 T* allocAligned(std::size_t elements, std::size_t alignment = config::ALIGNMENT) {
@@ -47,4 +47,64 @@ void freeAligned(T* ptr) {
 	std::free((void*)ptr);
 }
 #endif
+
+/*
+ * Infrastructure for marshalling C objects to/from Synthizer.
+ * */
+
+class CExposable  {
+	public:
+	CExposable();
+	virtual ~CExposable() {}
+
+	syz_Handle getCHandle() {
+		return this->c_handle;
+	}
+
+	private:
+	syz_Handle c_handle;
+};
+
+/*
+ * Given an object, increment the C-side reference count.
+ * */
+void incRefCImpl(std::shared_ptr<CExposable> &obj);
+
+template<typename T>
+void incRefC(std::shared_ptr<T> &obj) {
+	std::shared_ptr<CExposable> b = std::static_pointer_cast<CExposable>(obj);
+	return incRefCImpl(b);
+}
+
+void decRefCImpl(std::shared_ptr<CExposable> &obj);
+
+template<typename T>
+void decRefC(std::shared_ptr<T> &obj) {
+	std::shared_ptr<CExposable> b = std::static_pointer_cast<CExposable>(obj);
+	decRefCImpl(obj);
+}
+
+/*
+ * Safely convert an object into a C handle which can be passed to the external world.
+ * 
+ * Does the first refcount.
+ * */
+template<typename T>
+syz_Handle toC(std::shared_ptr<T> &obj) {
+	increfC(obj);
+	return obj->getCHandle();
+}
+
+/* Throws EInvalidHandle. */
+std::shared_ptr<CExposable> getExposableFromHandle(syz_Handle handle);
+
+/* Throws EType if the handle is of the wrong type. */
+template<typename T>
+std::shared_ptr<T> fromC(syz_Handle handle) {
+	auto h = getExposableFromHandle(handle);
+	auto ret = std::dynamic_pointer_cast<T>(h);
+	if (ret == nullptr) throw EHandleType();
+	return ret;
+}
+
 }

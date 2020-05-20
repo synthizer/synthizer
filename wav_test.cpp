@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 	//delta = 0;
 	printf("angle delta %f\n", delta);
 
-	auto source_inv = WaitableInvokable([&] () {
+	source = context->call([&] () {
 		auto src = std::make_shared<PannedSource>(context);
 		auto base = std::static_pointer_cast<Source>(src);
 		context->registerSource(base);
@@ -56,8 +56,6 @@ int main(int argc, char *argv[]) {
 		src->addGenerator(g);
 		return src;
 	});
-	context->enqueueInvokable(&source_inv);
-	source = source_inv.wait();
 	/* We use references for efficiency, so implicit conversion isn't possible when setting properties. */
 	auto source_base = std::static_pointer_cast<BaseObject>(source);
 

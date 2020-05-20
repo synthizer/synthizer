@@ -27,11 +27,13 @@ include_directories(
 add_library(synthizer
 	src/audio_output.cpp
 	src/byte_stream.cpp
+	src/c_api.cpp
 	src/context.cpp
 	src/decoding.cpp
 	src/error.cpp
 	src/hrtf.cpp
 	src/logging.cpp
+	src/memory.cpp
 	src/panner_bank.cpp
 	src/single_file_libs.c
 

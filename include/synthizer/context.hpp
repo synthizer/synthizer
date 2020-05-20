@@ -53,6 +53,19 @@ class Context: public BaseObject {
 	void enqueueInvokable(Invokable *invokable);
 
 	/*
+	 * Call a callable in the audio thread.
+	 * Convenience method to not have to make invokables everywhere.
+	 * */
+	template<typename C, typename... ARGS>
+	auto call(C &&callable, ARGS&& ...args) {
+		auto invokable = WaitableInvokable([&]() {
+			return callable(args...);
+		});
+		this->enqueueInvokable(&invokable);
+		return invokable.wait();
+	}
+
+	/*
 	 * Helpers for the C API. to get/set properties in the context's thread.
 	 * These create and manage the invokables and can be called directly.
 	 * 
