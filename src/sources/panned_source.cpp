@@ -64,29 +64,6 @@ void PannedSource::setGain(double gain) {
 	this->gain = gain;
 }
 
-void PannedSource::addGenerator(std::shared_ptr<Generator> &generator) {
-	if (this->hasGenerator(generator)) return;
-	this->generators.emplace_back(generator);
-}
-
-void PannedSource::removeGenerator(std::shared_ptr<Generator> &generator) {
-	if (this->generators.empty()) return;
-	if (this->hasGenerator(generator) == false) return;
-
-	unsigned int index = 0;
-	for(; index < this->generators.size(); index++) {
-		auto s = this->generators[index].lock();
-		if (s == generator) break;
-	}
-
-	std::swap(this->generators[this->generators.size()-1], this->generators[index]);
-	this->generators.resize(this->generators.size() - 1);
-}
-
-bool PannedSource::hasGenerator(std::shared_ptr<Generator> &generator) {
-	return weak_vector::contains(this->generators, generator);
-}
-
 void PannedSource::run() {
 	alignas(config::ALIGNMENT) static thread_local std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> multichannel_buffer_array;
 	alignas(config::ALIGNMENT) static thread_local std::array<AudioSample, config::BLOCK_SIZE> mono_buffer_array;

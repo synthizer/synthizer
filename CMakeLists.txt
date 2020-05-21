@@ -36,6 +36,7 @@ add_library(synthizer
 	src/memory.cpp
 	src/panner_bank.cpp
 	src/single_file_libs.c
+	src/source.cpp
 
 	src/data/hrtf.cpp
 
