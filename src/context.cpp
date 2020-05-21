@@ -1,6 +1,9 @@
+#include "synthizer.h"
+
 #include "synthizer/context.hpp"
 
 #include "synthizer/audio_output.hpp"
+#include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/invokable.hpp"
 #include "synthizer/sources.hpp"
@@ -136,4 +139,13 @@ void Context::audioThreadFunc() {
 	this->audio_output->shutdown();
 }
 
+}
+
+using namespace synthizer;
+
+SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out) {
+	SYZ_PROLOGUE
+	*out = toC(std::make_shared<Context>());
+	return 0;
+	SYZ_EPILOGUE
 }

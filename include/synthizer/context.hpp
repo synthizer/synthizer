@@ -13,6 +13,7 @@
 #include <map>
 #include <memory>
 #include <thread>
+#include <utility>
 
 namespace synthizer {
 
@@ -66,6 +67,15 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 		});
 		this->enqueueInvokable(&invokable);
 		return invokable.wait();
+	}
+
+	template<typename T, typename... ARGS>
+	std::shared_ptr<T> createObject(ARGS&& ...args) {
+		auto ret = this->call([&] () {
+			return std::make_shared<T>(args...);
+		});
+		ret->setContext(this->shared_from_this());
+		return ret;
 	}
 
 	/*

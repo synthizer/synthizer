@@ -1,5 +1,8 @@
+#include "synthizer.h"
+
 #include "synthizer/sources.hpp"
 
+#include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/generator.hpp"
@@ -36,4 +39,24 @@ bool Source::hasGenerator(std::shared_ptr<Generator> &generator) {
 	return weak_vector::contains(this->generators, generator);
 }
 
+}
+
+using namespace synthizer;
+
+SYZ_CAPI syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle generator) {
+	SYZ_PROLOGUE
+	auto src = fromC<Source>(source);
+	auto gen = fromC<Generator>(generator);
+	src->addGenerator(gen);
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle generator) {
+	SYZ_PROLOGUE
+	auto src = fromC<Source>(source);
+	auto gen = fromC<Generator>(generator);
+	src->removeGenerator(gen);
+	return 0;
+	SYZ_EPILOGUE
 }

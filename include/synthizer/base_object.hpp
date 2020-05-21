@@ -43,6 +43,10 @@ class BaseObject: public CExposable {
 		this->context = ctx;
 	}
 
+	void setContext(std::shared_ptr<Context> &&ctx) {
+		this->context = ctx;
+	}
+
 	private:
 	std::shared_ptr<Context> context;
 };

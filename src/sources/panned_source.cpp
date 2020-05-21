@@ -1,5 +1,8 @@
+#include "synthizer.h"
+
 #include "synthizer/sources.hpp"
 
+#include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/generator.hpp"
@@ -129,3 +132,14 @@ void PannedSource::run() {
 #define PROPERTY_LIST PANNED_SOURCE_PROPERTIES
 #define PROPERTY_BASE BaseObject
 #include "synthizer/property_impl.hpp"
+
+using namespace synthizer;
+
+SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context) {
+	SYZ_PROLOGUE
+	auto ctx = fromC<Context>(context);
+	auto ret = ctx->createObject<PannedSource>(ctx);
+	*out = toC(ret);
+	return 0;
+	SYZ_EPILOGUE
+}

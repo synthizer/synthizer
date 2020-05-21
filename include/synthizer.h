@@ -75,6 +75,44 @@ SYZ_CAPI syz_ErrorCode syz_setD(syz_Handle target, int property, double value);
 SYZ_CAPI syz_ErrorCode syz_getO(syz_Handle *out, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle value);
 
+/*
+ * Create a context. This represents the audio device itself, and all other Synthizer objects need one.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out);
+
+/*
+ * Create a generator that represents reading from a stream.
+ * 
+ * @param protocol: The protocol. You probably want file.
+ * @param path: The path.
+ * @param options: Options. You probably want the empty string.
+ * 
+ * This will be documented better when there's a manual and more than one type of protocol.
+ * 
+ * This is a shortcut for creating the stream yourself and adding it to a DecodingGenerator; advanced use cases can use the alternate path for other optimizations in future.
+ * 
+ * Note to maintainers: lives in src/generators/decoding.cpp, because it's a shortcut for that.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createStraemingGenerator(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options);
+
+/*
+ * Add/remove generators from a PannedSource. The PannedSource weak references the generators; they must be kept alive on the external side for the time being.
+ * 
+ * This will probably change as lifetimes get narrowed down, and as sources are extended with more functionality to manage their generators.
+ * 
+ * Each generator may only be added to a source once. Duplicate calls are ignored.
+ * If a generator isn't on a source, the call silently does nothing.
+ * */
+SYZ_CAPI syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle generator);
+SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle generator);
+
+/*
+ * Create a panned source, a source with azimuth/elevation as the underlying panning strategy.
+ * 
+ * For spatialized audio like games, use SpatializedSource, which has x/y/z and other interesting spatialization properties.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context);
+
 #ifdef __cplusplus
 }
 #endif

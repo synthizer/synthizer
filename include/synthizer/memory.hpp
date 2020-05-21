@@ -87,10 +87,10 @@ void decRefC(std::shared_ptr<T> &obj) {
 /*
  * Safely convert an object into a C handle which can be passed to the external world.
  * 
- * Does the first refcount.
+ * Expectes std::shared_ptr, Does the first refcount. Unfortunately we need this to be a forwarding reference so the type can't constrain it further.
  * */
 template<typename T>
-syz_Handle toC(std::shared_ptr<T> &&obj) {
+syz_Handle toC(T &&obj) {
 	incRefC(obj);
 	return obj->getCHandle();
 }
