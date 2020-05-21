@@ -11,6 +11,7 @@
 #include <atomic>
 #include <functional>
 #include <map>
+#include <memory>
 #include <thread>
 
 namespace synthizer {
@@ -34,11 +35,13 @@ class Source;
  * 
  * Later, if necessary, we'll extend synthizer to use atomics for some properties.
  * */
-class Context: public BaseObject {
+class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	public:
 
 	Context();
 	~Context();
+
+	std::shared_ptr<Context> getContext() override;
 
 	/*
 	 * Shut the context down.

@@ -90,8 +90,8 @@ void decRefC(std::shared_ptr<T> &obj) {
  * Does the first refcount.
  * */
 template<typename T>
-syz_Handle toC(std::shared_ptr<T> &obj) {
-	increfC(obj);
+syz_Handle toC(std::shared_ptr<T> &&obj) {
+	incRefC(obj);
 	return obj->getCHandle();
 }
 

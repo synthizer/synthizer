@@ -1,7 +1,9 @@
 #include "synthizer.h"
 
 #include "synthizer/audio_output.hpp"
+#include "synthizer/base_object.hpp"
 #include "synthizer/c_api.hpp"
+#include "synthizer/context.hpp"
 #include "synthizer/memory.hpp"
 
 #include <string>
@@ -69,39 +71,57 @@ SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle) {
 	SYZ_EPILOGUE
 }
 
-
 SYZ_CAPI syz_ErrorCode syz_getI(int *out, syz_Handle target, int property) {
 	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto ctx = o->getContext();
+	*out = ctx->getIntProperty(o, property);
 	return 0;
 	SYZ_EPILOGUE
 }
 
 SYZ_CAPI syz_ErrorCode syz_setI(syz_Handle target, int property, int value) {
 	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto ctx = o->getContext();
+	ctx->setIntProperty(o, property, value);
 	return 0;
 	SYZ_EPILOGUE
 }
 
 SYZ_CAPI syz_ErrorCode syz_getD(double *out, syz_Handle target, int property) {
 	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto ctx = o->getContext();
+	*out = ctx->getDoubleProperty(o, property);
 	return 0;
 	SYZ_EPILOGUE
 }
 
 SYZ_CAPI syz_ErrorCode syz_setD(syz_Handle target, int property, double value) {
 	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto ctx = o->getContext();
+	ctx->setDoubleProperty(o, property, value);
 	return 0;
 	SYZ_EPILOGUE
 }
 
 SYZ_CAPI syz_ErrorCode syz_getO(syz_Handle *out, syz_Handle target, int property) {
 	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto ctx = o->getContext();
+	*out = toC(ctx->getObjectProperty(o, property));
 	return 0;
 	SYZ_EPILOGUE
 }
 
 SYZ_CAPI syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle value) {
 	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto ctx = o->getContext();
+	auto val = fromC<BaseObject>(value);
+	ctx->setObjectProperty(o, property, val);
 	return 0;
 	SYZ_EPILOGUE
 }

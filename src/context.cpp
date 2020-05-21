@@ -30,6 +30,10 @@ Context::~Context() {
 	}
 }
 
+std::shared_ptr<Context> Context::getContext() {
+	return this->shared_from_this();
+}
+
 void Context::shutdown() {
 	this->running.store(0);
 	this->context_semaphore.signal();
