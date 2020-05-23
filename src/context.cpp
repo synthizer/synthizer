@@ -1,7 +1,12 @@
+#include "synthizer.h"
+
 #include "synthizer/context.hpp"
 
 #include "synthizer/audio_output.hpp"
+#include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/invokable.hpp"
+#include "synthizer/logging.hpp"
 #include "synthizer/sources.hpp"
 #include "synthizer/types.hpp"
 
@@ -29,15 +34,72 @@ Context::~Context() {
 	}
 }
 
+std::shared_ptr<Context> Context::getContext() {
+	return this->shared_from_this();
+}
+
 void Context::shutdown() {
 	this->running.store(0);
 	this->context_semaphore.signal();
 	this->context_thread.join();
+
+	this->delete_directly.store(1);
+	/* Drain the queue. */
+	DeletionRecord *rec;
+	while ((rec = this->pending_deletes.dequeue())) {
+		rec->callback(rec->arg);
+		delete rec;
+	}
+	while ((rec = this->free_deletes.dequeue())) {
+		delete rec;
+	}
 }
 
 void Context::enqueueInvokable(Invokable *invokable) {
 	pending_invokables.enqueue(invokable);
 	this->context_semaphore.signal();
+}
+
+template<typename T>
+static T propertyGetter(Context *ctx, std::shared_ptr<BaseObject> &obj, int property) {
+	auto inv = WaitableInvokable([&] () {
+		return std::get<T>(obj->getProperty(property));
+	});
+	ctx->enqueueInvokable(&inv);
+	return inv.wait();
+}
+
+template<typename T>
+static void propertySetter(Context *ctx, std::shared_ptr<BaseObject> &obj, int property, T &value) {
+	auto inv = WaitableInvokable([&] () {
+		obj->setProperty(property, value);
+	});
+	ctx->enqueueInvokable(&inv);
+	inv.wait();
+}
+
+int Context::getIntProperty(std::shared_ptr<BaseObject> &obj, int property) {
+	return propertyGetter<int>(this, obj, property);
+}
+
+void Context::setIntProperty(std::shared_ptr<BaseObject> &obj, int property, int value) {
+	propertySetter<int>(this, obj, property, value);
+}
+
+double Context::getDoubleProperty(std::shared_ptr<BaseObject> &obj, int property) {
+	return propertyGetter<double>(this, obj, property);
+}
+
+void Context::setDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, double value) {
+	propertySetter<double>(this, obj, property, value);
+}
+
+std::shared_ptr<BaseObject> Context::getObjectProperty(std::shared_ptr<BaseObject> &obj, int property) {
+	return propertyGetter<std::shared_ptr<BaseObject>>(this, obj, property);
+}
+
+void Context::setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<BaseObject> &value) {
+	propertySetter<std::shared_ptr<BaseObject>>(this, obj, property, value);
 }
 
 void Context::registerSource(std::shared_ptr<Source> &source) {
@@ -84,9 +146,42 @@ void Context::audioThreadFunc() {
 			inv->invoke();
 			inv = this->pending_invokables.dequeue();
 		}
+
+		/*
+		 * This needs to be moved to a dedicated thread. eventually, but this will do for now.
+		 * Unfortunately doing better is going to require migrating off shared_ptr, though it's not clear yet as to what it will be replaced with.
+		 * */
+		DeletionRecord *rec;
+		while ((rec = this->pending_deletes.dequeue())) {
+			rec->callback(rec->arg);
+			this->free_deletes.enqueue(rec);
+		}
 	}
 
 	this->audio_output->shutdown();
 }
 
+void Context::enqueueDeletionRecord(DeletionCallback cb, void *arg) {
+	DeletionRecord *rec;
+	{
+		std::lock_guard g(this->free_deletes_mutex);
+		rec = this->free_deletes.dequeue();
+	}
+	if (rec == nullptr) {
+		rec = new DeletionRecord();
+	}
+	rec->callback = cb;
+	rec->arg = arg;
+	this->pending_deletes.enqueue(rec);
+}
+
+}
+
+using namespace synthizer;
+
+SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out) {
+	SYZ_PROLOGUE
+	*out = toC(std::make_shared<Context>());
+	return 0;
+	SYZ_EPILOGUE
 }

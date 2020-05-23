@@ -1,5 +1,8 @@
+#include "synthizer.h"
+
 #include "synthizer/sources.hpp"
 
+#include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/generator.hpp"
@@ -47,13 +50,13 @@ void PannedSource::setPanningScalar(double panning_scalar) {
 	this->needs_panner_set = true;
 }
 
-enum SYZ_PANNER_STRATEGIES PannedSource::getPannerStrategy() {
+int PannedSource::getPannerStrategy() {
 	return this->panner_strategy;
 }
 
-void PannedSource::setPannerStrategy(enum SYZ_PANNER_STRATEGIES strategy) {
+void PannedSource::setPannerStrategy(int strategy) {
 	this->panner_lane = nullptr;
-	this->panner_strategy = strategy;
+	this->panner_strategy = (enum SYZ_PANNER_STRATEGIES) strategy;
 }
 
 double PannedSource::getGain() {
@@ -62,29 +65,6 @@ double PannedSource::getGain() {
 
 void PannedSource::setGain(double gain) {
 	this->gain = gain;
-}
-
-void PannedSource::addGenerator(std::shared_ptr<Generator> &generator) {
-	if (this->hasGenerator(generator)) return;
-	this->generators.emplace_back(generator);
-}
-
-void PannedSource::removeGenerator(std::shared_ptr<Generator> &generator) {
-	if (this->generators.empty()) return;
-	if (this->hasGenerator(generator) == false) return;
-
-	unsigned int index = 0;
-	for(; index < this->generators.size(); index++) {
-		auto s = this->generators[index].lock();
-		if (s == generator) break;
-	}
-
-	std::swap(this->generators[this->generators.size()-1], this->generators[index]);
-	this->generators.resize(this->generators.size() - 1);
-}
-
-bool PannedSource::hasGenerator(std::shared_ptr<Generator> &generator) {
-	return weak_vector::contains(this->generators, generator);
 }
 
 void PannedSource::run() {
@@ -145,4 +125,23 @@ void PannedSource::run() {
 	}
 }
 
+}
+
+/* Do properties. */
+#define PROPERTY_CLASS PannedSource
+#define PROPERTY_LIST PANNED_SOURCE_PROPERTIES
+#define PROPERTY_BASE BaseObject
+#include "synthizer/property_impl.hpp"
+
+using namespace synthizer;
+
+SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context) {
+	SYZ_PROLOGUE
+	auto ctx = fromC<Context>(context);
+	auto ret = ctx->createObject<PannedSource>(ctx);
+	std::shared_ptr<Source> src_ptr = ret;
+	ctx->registerSource(src_ptr);
+	*out = toC(ret);
+	return 0;
+	SYZ_EPILOGUE
 }

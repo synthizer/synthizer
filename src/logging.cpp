@@ -18,12 +18,12 @@ void disableLogging() {
 	logging_enabled.store(0);
 }
 
-void logToStdout() {
+void logToStderr() {
 	logging_enabled.store(1);
 }
 
 void logFragment(const char *message) {
-	std::printf("%s", message);
+	std::fprintf(stderr, "%s", message);
 }
 
 void logFragment(const std::string &message) {

@@ -27,49 +27,45 @@
 
 using namespace synthizer;
 
-#define CHECKED(x) do { \
-auto ret = x; \
-	if (ret) { \
-		printf(#x ": Synthizer error code %i message %s\n", ret, syz_getLastErrorMessage());\
-		ecode = 1; \
-		if (ending == 0) goto end; \
-		else return 1; \
-	} \
-} while(0)
-
 int main(int argc, char *argv[]) {
-	syz_Handle context, generator, source;
-	int ecode = 0, ending = 1;
-	double angle, delta;
-
-
 	if (argc != 2) {
 		printf("Usage: wav_test <path>\n");
 		return 1;
 	}
 
-	CHECKED(syz_configureLoggingBackend(SYZ_LOGGING_BACKEND_STDERR, nullptr));
-	CHECKED(syz_initialize());
+	logToStdout();
+	initializeAudioOutputDevice();
 
-	CHECKED(syz_createContext(&context));
-	CHECKED(syz_createPannedSource(&source, context));
-	CHECKED(syz_createStreamingGenerator(&generator, context, "file", argv[1], ""));
-	CHECKED(syz_sourceAddGenerator(source, generator));
+	auto context = std::make_shared<Context>();
+	std::shared_ptr<PannedSource> source;
 
-	angle = 0;
-	delta = (360.0/20)*0.02;
+
+	auto decoder = getDecoderForProtocol("file", argv[1], {});
+	auto generator = std::make_shared<DecodingGenerator>();
+	generator->setDecoder(decoder);
+	generator->setPitchBend(1.0);
+	double angle = 0;
+	double delta = (360.0/20)*0.02;
 	//delta = 0;
 	printf("angle delta %f\n", delta);
 
-	for(unsigned int i = 0; i < 100; i++) {
-		CHECKED(syz_setD(source, SYZ_PANNED_SOURCE_AZIMUTH, angle));
+	source = context->call([&] () {
+		auto src = std::make_shared<PannedSource>(context);
+		auto base = std::static_pointer_cast<Source>(src);
+		context->registerSource(base);
+		auto g = std::static_pointer_cast<Generator>(generator);
+		src->addGenerator(g);
+		return src;
+	});
+	/* We use references for efficiency, so implicit conversion isn't possible when setting properties. */
+	auto source_base = std::static_pointer_cast<BaseObject>(source);
+
+	for(;;) {
+		context->setDoubleProperty(source_base, SYZ_PANNED_SOURCE_AZIMUTH, angle);
 		angle += delta;
 		angle -= (int(angle)/360)*360;
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));
 	}
 
-end:
-	ending = 1;
-	CHECKED(syz_shutdown());
-	return ecode;
+	return 0;
 }

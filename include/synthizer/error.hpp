@@ -1,4 +1,5 @@
 #pragma once
+#include "synthizer.h"
 
 #include <string>
 #include <exception>
@@ -19,6 +20,8 @@ class Error: public std::exception  {
 	virtual ~Error() {}
 
 	const char *what() const noexcept { return this->message.c_str(); }
+	/* Get the code for the C API. Will differentiate later. */
+	syz_ErrorCode cCode() { return 1; }
 
 	template<typename T>
 	bool is() {
@@ -44,5 +47,11 @@ class type: public base { \
 
 /* Some module agnostic errors. */
 ERRDEF(EUninitialized, "The library is not initialized.");
+
+ERRDEF(EInvalidHandle, "C handle is invalid");
+ERRDEF(EHandleType, "Handle of the wrong type provided");
+ERRDEF(EInvalidProperty, "Not a valid property for this object type");
+ERRDEF(EPropertyType, "Property type mismatch");
+ERRDEF(ERange, "Value out of range");
 
 }

@@ -9,7 +9,7 @@
 			"type": "cppvsdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build/wav_test.exe",
-			"args": ["corpus/test.wav"],
+			"args": ["corpus/test.wavasdf"],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",
 			"environment": [],

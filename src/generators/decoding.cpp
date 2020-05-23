@@ -1,6 +1,10 @@
+#include "synthizer.h"
+
 #include "synthizer/generators/decoding.hpp"
 
+#include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/context.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/memory.hpp"
 
@@ -156,4 +160,17 @@ void DecodingGenerator::reallocateBuffers() {
 	this->working_buffer_used = WORKING_BUFFER_SIZE;
 }
 
+}
+
+using namespace synthizer;
+
+SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options) {
+	SYZ_PROLOGUE
+	auto ctx = fromC<Context>(context);
+	auto decoder = getDecoderForProtocol(protocol, path, options);
+	auto generator = ctx->createObject<DecodingGenerator>();
+	generator->setDecoder(decoder);
+	*out = toC(generator);
+	return 0;
+	SYZ_EPILOGUE
 }

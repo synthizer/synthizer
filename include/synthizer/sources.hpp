@@ -2,6 +2,9 @@
 
 #include "synthizer_constants.h"
 
+#include "synthizer/base_object.hpp"
+#include "synthizer/property_internals.hpp"
+
 #include <array>
 #include <memory>
 #include <vector>
@@ -14,12 +17,20 @@ class Context;
 class Generator;
 class PannerLane;
 
-class Source {
+class Source: public BaseObject {
 	public:
 	virtual ~Source() {}
 
 	/* Should write to appropriate places in the context on its own. */
 	virtual void run() = 0;
+
+	/* Weak add and/or remove a generator from this source. */
+	virtual void addGenerator(std::shared_ptr<Generator> &gen);
+	virtual void removeGenerator(std::shared_ptr<Generator> &gen);
+	bool hasGenerator(std::shared_ptr<Generator> &generator);
+
+	protected:
+	std::vector<std::weak_ptr<Generator>> generators;
 };
 
 /*
@@ -37,22 +48,15 @@ class PannedSource: public Source {
 	void setElevation(double elevation);
 	double getPanningScalar();
 	void setPanningScalar(double scalar);
-	enum SYZ_PANNER_STRATEGIES getPannerStrategy();
-	void setPannerStrategy(enum SYZ_PANNER_STRATEGIES srategy);
+	int getPannerStrategy();
+	void setPannerStrategy(int strategy);
 	double getGain();
 	void setGain(double gain);
 
-	/*
-	 * Adds a weak reference to the generator. Callers must keep it alive.
-	 * */
-	void addGenerator(std::shared_ptr<Generator> &generator);
-	void removeGenerator(std::shared_ptr<Generator> &generator);
-	bool hasGenerator(std::shared_ptr<Generator> &generator);
-
 	void run();
 
+	PROPERTY_METHODS;
 	private:
-	std::vector<std::weak_ptr<Generator>> generators;
 	enum SYZ_PANNER_STRATEGIES panner_strategy = SYZ_PANNER_STRATEGY_HRTF;
 	std::shared_ptr<PannerLane> panner_lane;
 	std::shared_ptr<Context> context;

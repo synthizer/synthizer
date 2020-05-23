@@ -11,12 +11,24 @@
 #include <atomic>
 #include <functional>
 #include <map>
+#include <memory>
+#include <mutex>
 #include <thread>
+#include <utility>
 
 namespace synthizer {
 
 class AudioOutput;
 class Source;
+
+/*
+ * Infrastructure for deletion.
+ * */
+template<typename T>
+void deletionCallback(void *p) {
+	T *y = (T*) p;
+	delete y;
+}
 
 /*
  * The context is the main entrypoint to Synthizer, holding the device, etc.
@@ -34,11 +46,13 @@ class Source;
  * 
  * Later, if necessary, we'll extend synthizer to use atomics for some properties.
  * */
-class Context: public BaseObject {
+class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	public:
 
 	Context();
 	~Context();
+
+	std::shared_ptr<Context> getContext() override;
 
 	/*
 	 * Shut the context down.
@@ -51,6 +65,48 @@ class Context: public BaseObject {
 	 * Submit an invokable which will be invoked on the context thread.
 	 * */
 	void enqueueInvokable(Invokable *invokable);
+
+	/*
+	 * Call a callable in the audio thread.
+	 * Convenience method to not have to make invokables everywhere.
+	 * */
+	template<typename C, typename... ARGS>
+	auto call(C &&callable, ARGS&& ...args) {
+		auto invokable = WaitableInvokable([&]() {
+			return callable(args...);
+		});
+		this->enqueueInvokable(&invokable);
+		return invokable.wait();
+	}
+
+	template<typename T, typename... ARGS>
+	std::shared_ptr<T> createObject(ARGS&& ...args) {
+		auto ret = this->call([&] () {
+			std::weak_ptr<Context> ctx_weak = this->shared_from_this();
+			auto obj = new T(args...);
+			std::shared_ptr<T> v(obj, [&] (T *ptr) {
+				auto ctx_strong = ctx_weak.lock();
+				if (ctx_strong && ctx_strong->delete_directly.load(std::memory_order_relaxed) == 0) ctx_strong->enqueueDeletionRecord(&deletionCallback<T>, (void *)ptr);
+				else delete ptr;
+			});
+			return v;
+		});
+		ret->setContext(this->shared_from_this());
+		return ret;
+	}
+
+	/*
+	 * Helpers for the C API. to get/set properties in the context's thread.
+	 * These create and manage the invokables and can be called directly.
+	 * 
+	 * Eventually this will be extended to handle batched/deferred things as well.
+	 * */
+	int getIntProperty(std::shared_ptr<BaseObject> &obj, int property);
+	void setIntProperty(std::shared_ptr<BaseObject> &obj, int property, int value);
+	double getDoubleProperty(std::shared_ptr<BaseObject> &obj, int property);
+	void setDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, double value);
+	std::shared_ptr<BaseObject> getObjectProperty(std::shared_ptr<BaseObject> &obj, int property);
+	void setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<BaseObject> &object);
 
 	/*
 	 * Ad a weak reference to the specified source.
@@ -77,10 +133,33 @@ class Context: public BaseObject {
 
 	VyukovQueue<Invokable> pending_invokables;
 	std::thread context_thread;
-	/* Wake the context thread, either because a command was submitted or a block of audio was removed. */
+	/*
+	 * Wake the context thread, either because a command was submitted or a block of audio was removed.
+	 * */
 	Semaphore context_semaphore;
 	std::atomic<int> running;
 	std::shared_ptr<AudioOutput> audio_output;
+
+	/*
+	 * Deletion. This queue is read from when the semaphore for the context is incremented.
+	 * 
+	 * Objects are safe to delete when the iteration of the context at which the deletion was enqueued is greater.
+	 * This means that all shared_ptr decremented in the previous iteration, and all weak_ptr were invalidated.
+	 * */
+	typedef void (*DeletionCallback)(void *);
+	class DeletionRecord: public VyukovHeader<DeletionRecord> {
+		public:
+		uint64_t iteration;
+		DeletionCallback callback;
+		void *arg;
+	};
+	VyukovQueue<DeletionRecord> pending_deletes;
+	/* These are reused to prevent needless allocation. */
+	std::mutex free_deletes_mutex;
+	VyukovQueue<DeletionRecord> free_deletes;
+	std::atomic<int> delete_directly = 0;
+
+	void enqueueDeletionRecord(DeletionCallback cb, void *arg);
 
 	/* Collections of objects that require execution: sources, etc. all go here eventually. */
 
