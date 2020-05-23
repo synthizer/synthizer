@@ -15,7 +15,7 @@ SET(WDL_FILES
 	win32_utf8.c
 )
 
-list(TRANSFORM WDL_FILES PREPEND third_party/wdl/wdl/)
+list(TRANSFORM WDL_FILES PREPEND third_party/wdl/WDL/)
 
 add_library(wdl STATIC ${WDL_FILES})
 target_compile_definitions(wdl PUBLIC
