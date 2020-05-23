@@ -164,7 +164,7 @@ void DecodingGenerator::reallocateBuffers() {
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_createStraemingGenerator(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options) {
+SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
 	auto decoder = getDecoderForProtocol(protocol, path, options);

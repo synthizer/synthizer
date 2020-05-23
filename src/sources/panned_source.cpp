@@ -139,6 +139,8 @@ SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle contex
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
 	auto ret = ctx->createObject<PannedSource>(ctx);
+	std::shared_ptr<Source> src_ptr = ret;
+	ctx->registerSource(src_ptr);
 	*out = toC(ret);
 	return 0;
 	SYZ_EPILOGUE

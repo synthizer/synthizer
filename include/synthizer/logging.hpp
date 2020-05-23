@@ -3,7 +3,7 @@
 
 namespace synthizer {
 
-void logToStdout();
+void logToStderr();
 void disableLogging();
 bool isLoggingEnabled();
 

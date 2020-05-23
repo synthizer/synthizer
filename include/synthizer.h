@@ -24,6 +24,22 @@ typedef unsigned int syz_Handle;
 typedef int syz_ErrorCode;
 
 /*
+* Configure logging.  Do this before your program calls anything else for reliability.
+*
+* It is possible to change the level at any time.
+*/
+enum SYZ_LOGGING_BACKEND {
+	SYZ_LOGGING_BACKEND_STDERR = 0,
+};
+
+/**
+ * The parameter is specific to the backend:
+ *
+ * - For STDERR, ignored.
+ */
+SYZ_CAPI syz_ErrorCode syz_configureLoggingBackend(enum SYZ_LOGGING_BACKEND backend, void *param);
+
+/*
  * Get the current error code for this thread. This is like errno, except that functions also return their error codes.
  * 
  * If the last function succeeded, the return value is undefined.
@@ -53,7 +69,6 @@ SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle);
  * */
 SYZ_CAPI syz_ErrorCode syz_initialize();
 SYZ_CAPI syz_ErrorCode syz_shutdown();
-
 
 /*
  * Property getters and setters.
@@ -93,7 +108,7 @@ SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out);
  * 
  * Note to maintainers: lives in src/generators/decoding.cpp, because it's a shortcut for that.
  * */
-SYZ_CAPI syz_ErrorCode syz_createStraemingGenerator(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options);
+SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options);
 
 /*
  * Add/remove generators from a PannedSource. The PannedSource weak references the generators; they must be kept alive on the external side for the time being.

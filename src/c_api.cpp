@@ -4,6 +4,7 @@
 #include "synthizer/base_object.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"
+#include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
 
 #include <string>
@@ -23,6 +24,17 @@ void setCThreadError(syz_ErrorCode error, const char *message) {
 
 /* C stuff itself; note we're outside the namespace. */
 using namespace synthizer;
+
+SYZ_CAPI syz_ErrorCode syz_configureLoggingBackend(enum SYZ_LOGGING_BACKEND backend, void *param) {
+	SYZ_PROLOGUE
+	switch (backend) {
+	case SYZ_LOGGING_BACKEND_STDERR:
+		logToStderr();
+		break;
+	}
+	return 0;
+	SYZ_EPILOGUE
+}
 
 static std::atomic<unsigned int> initialization_count = 0;
 SYZ_CAPI syz_ErrorCode syz_initialize() {
