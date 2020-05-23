@@ -49,7 +49,7 @@ SYZ_CAPI syz_ErrorCode syz_initialize() {
 SYZ_CAPI syz_ErrorCode syz_shutdown() {
 	SYZ_PROLOGUE
 	if (initialization_count.fetch_sub(1) == 1) {
-		/* TODO: deinitialize. */
+		clearAllCHandles();
 	}
 	return 0;
 	SYZ_EPILOGUE

@@ -75,4 +75,9 @@ std::shared_ptr<CExposable> getExposableFromHandle(syz_Handle handle) {
 	return it->second.value;
 }
 
+void clearAllCHandles() {
+	auto g = std::lock_guard(c_handles_mutex);
+	c_handles.clear();
+}
+
 }

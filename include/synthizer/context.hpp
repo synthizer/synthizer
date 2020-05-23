@@ -12,6 +12,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <thread>
 #include <utility>
 
@@ -19,6 +20,15 @@ namespace synthizer {
 
 class AudioOutput;
 class Source;
+
+/*
+ * Infrastructure for deletion.
+ * */
+template<typename T>
+void deletionCallback(void *p) {
+	T *y = (T*) p;
+	delete y;
+}
 
 /*
  * The context is the main entrypoint to Synthizer, holding the device, etc.
@@ -72,7 +82,14 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	template<typename T, typename... ARGS>
 	std::shared_ptr<T> createObject(ARGS&& ...args) {
 		auto ret = this->call([&] () {
-			return std::make_shared<T>(args...);
+			std::weak_ptr<Context> ctx_weak = this->shared_from_this();
+			auto obj = new T(args...);
+			std::shared_ptr<T> v(obj, [&] (T *ptr) {
+				auto ctx_strong = ctx_weak.lock();
+				if (ctx_strong && ctx_strong->delete_directly.load(std::memory_order_relaxed) == 0) ctx_strong->enqueueDeletionRecord(&deletionCallback<T>, (void *)ptr);
+				else delete ptr;
+			});
+			return v;
 		});
 		ret->setContext(this->shared_from_this());
 		return ret;
@@ -116,10 +133,33 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 
 	VyukovQueue<Invokable> pending_invokables;
 	std::thread context_thread;
-	/* Wake the context thread, either because a command was submitted or a block of audio was removed. */
+	/*
+	 * Wake the context thread, either because a command was submitted or a block of audio was removed.
+	 * */
 	Semaphore context_semaphore;
 	std::atomic<int> running;
 	std::shared_ptr<AudioOutput> audio_output;
+
+	/*
+	 * Deletion. This queue is read from when the semaphore for the context is incremented.
+	 * 
+	 * Objects are safe to delete when the iteration of the context at which the deletion was enqueued is greater.
+	 * This means that all shared_ptr decremented in the previous iteration, and all weak_ptr were invalidated.
+	 * */
+	typedef void (*DeletionCallback)(void *);
+	class DeletionRecord: public VyukovHeader<DeletionRecord> {
+		public:
+		uint64_t iteration;
+		DeletionCallback callback;
+		void *arg;
+	};
+	VyukovQueue<DeletionRecord> pending_deletes;
+	/* These are reused to prevent needless allocation. */
+	std::mutex free_deletes_mutex;
+	VyukovQueue<DeletionRecord> free_deletes;
+	std::atomic<int> delete_directly = 0;
+
+	void enqueueDeletionRecord(DeletionCallback cb, void *arg);
 
 	/* Collections of objects that require execution: sources, etc. all go here eventually. */
 

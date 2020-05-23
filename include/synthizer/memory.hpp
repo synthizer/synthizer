@@ -107,4 +107,6 @@ std::shared_ptr<T> fromC(syz_Handle handle) {
 	return ret;
 }
 
+void clearAllCHandles();
+
 }

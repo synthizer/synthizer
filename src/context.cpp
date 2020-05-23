@@ -6,6 +6,7 @@
 #include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/invokable.hpp"
+#include "synthizer/logging.hpp"
 #include "synthizer/sources.hpp"
 #include "synthizer/types.hpp"
 
@@ -41,6 +42,17 @@ void Context::shutdown() {
 	this->running.store(0);
 	this->context_semaphore.signal();
 	this->context_thread.join();
+
+	this->delete_directly.store(1);
+	/* Drain the queue. */
+	DeletionRecord *rec;
+	while ((rec = this->pending_deletes.dequeue())) {
+		rec->callback(rec->arg);
+		delete rec;
+	}
+	while ((rec = this->free_deletes.dequeue())) {
+		delete rec;
+	}
 }
 
 void Context::enqueueInvokable(Invokable *invokable) {
@@ -134,9 +146,33 @@ void Context::audioThreadFunc() {
 			inv->invoke();
 			inv = this->pending_invokables.dequeue();
 		}
+
+		/*
+		 * This needs to be moved to a dedicated thread. eventually, but this will do for now.
+		 * Unfortunately doing better is going to require migrating off shared_ptr, though it's not clear yet as to what it will be replaced with.
+		 * */
+		DeletionRecord *rec;
+		while ((rec = this->pending_deletes.dequeue())) {
+			rec->callback(rec->arg);
+			this->free_deletes.enqueue(rec);
+		}
 	}
 
 	this->audio_output->shutdown();
+}
+
+void Context::enqueueDeletionRecord(DeletionCallback cb, void *arg) {
+	DeletionRecord *rec;
+	{
+		std::lock_guard g(this->free_deletes_mutex);
+		rec = this->free_deletes.dequeue();
+	}
+	if (rec == nullptr) {
+		rec = new DeletionRecord();
+	}
+	rec->callback = cb;
+	rec->arg = arg;
+	this->pending_deletes.enqueue(rec);
 }
 
 }
