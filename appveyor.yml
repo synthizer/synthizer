@@ -1,6 +1,7 @@
 version: 1.0.{build}
 image: Visual Studio 2019
 build_script:
+- cmd: "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 - cmd: mkdir build_static_debug
 - cmd: cd build_static_debug
 - cmd: cmake -G Ninja .. -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_BUILD_TYPE=Debug -DCI_SYNTHIZER_NAME=synthizerd_static.lib -DSYNTHIZER_LIB_TYPE=STATIC
@@ -9,14 +10,18 @@ build_script:
 - cmd: mkdir build_dynamic_debug
 - cmd: cd build_dynamic_debug
 - cmd: cmake -G Ninja .. -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_BUILD_TYPE=Debug -DCI_SYNTHIZER_NAME=synthizerd.lib -DSYNTHIZER_LIB_TYPE=SHARED
+- cmd: ninja
 - cmd: cd ..
 - cmd: mkdir build_static_release
 - cmd: cd build_static_release
 - cmd: cmake -G Ninja .. -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_BUILD_TYPE=Release -DCI_SYNTHIZER_NAME=synthizer_static.lib -DSYNTHIZER_LIB_TYPE=STATIC
+- cmd: ninja
 - cmd: cd ..
 - cmd: mkdir build_dynamic_release
 - cmd: cd build_dynamic_release
 - cmd: cmake -G Ninja .. -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_BUILD_TYPE=Release -DCI_SYNTHIZER_NAME=synthizer.lib -DSYNTHIZER_LIB_TYPE=SHARED
+- cmd: ninja
+- cmd: cd ..
 - cmd: mkdir artifacts
 - cmd: copy build_dynamic_debug\synthizerd* artifacts
 - cmd: copy build_static_debug\synthizerd_static* artifacts
