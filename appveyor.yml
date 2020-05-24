@@ -23,13 +23,15 @@ build_script:
 - cmd: ninja
 - cmd: cd ..
 - cmd: mkdir artifacts
-- cmd: copy build_dynamic_debug\synthizerd* artifacts
-- cmd: copy build_static_debug\synthizerd_static* artifacts
-- cmd: copy build_dynamic_release\synthizer* artifacts
-- cmd: copy build_static_release\synthizer_static* artifacts
-- cmd: copy include\synthizer.h artifacts
-- cmd: copy include\synthizer_constants.h artifacts
-- cmd: copy include\synthizer_properties.h artifacts
+- cmd: mkdir artifacts\lib
+- cmd: mkdir artifacts\include
+- cmd: copy build_dynamic_debug\synthizerd* artifacts\lib
+- cmd: copy build_static_debug\synthizerd_static* artifacts\lib
+- cmd: copy build_dynamic_release\synthizer* artifacts\lib
+- cmd: copy build_static_release\synthizer_static* artifacts\lib
+- cmd: copy include\synthizer.h artifacts\include
+- cmd: copy include\synthizer_constants.h artifacts\include
+- cmd: copy include\synthizer_properties.h artifacts\include
 
 
 artifacts:
