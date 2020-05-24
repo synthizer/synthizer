@@ -29,7 +29,7 @@ build_script:
 - cmd: copy build_static_release\synthizer_static* artifacts
 - cmd: copy include\synthizer.h artifacts
 - cmd: copy include\synthizer_constants.h artifacts
-- cmd: copy include/synthizer_properties.h artifacts
+- cmd: copy include\synthizer_properties.h artifacts
 
 
 artifacts:
