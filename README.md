@@ -1,5 +1,7 @@
 # Synthizer
 
+[![Build status](https://ci.appveyor.com/api/projects/status/1rm9gb8cythqc14q/branch/master?svg=true)](https://ci.appveyor.com/project/camlorn/synthizer/branch/master)
+
 This will be 3D environmental audio for headphones eventually. There may also be surround sound support. Watch this space.
 
 I'm doing this around work as time allows.
