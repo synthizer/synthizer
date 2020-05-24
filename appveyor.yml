@@ -1,5 +1,5 @@
 version: 1.0.{build}
-build_cloud: AUSTIN-TOWER
+#build_cloud: AUSTIN-TOWER
 image: Visual Studio 2019
 build_script:
 - cmd: mkdir build
