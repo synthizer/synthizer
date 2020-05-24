@@ -29,6 +29,7 @@ ERRDEF(EAudioDevice, "Audio device error");
  * Throws a standard error exception on error to be translated by the C API.
  * */
 void initializeAudioOutputDevice();
+void shutdownOutputDevice();
 
 /*
  * Allocates an output.

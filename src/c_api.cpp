@@ -52,6 +52,7 @@ SYZ_CAPI syz_ErrorCode syz_shutdown() {
 	SYZ_PROLOGUE
 	if (initialization_count.fetch_sub(1) == 1) {
 		clearAllCHandles();
+		shutdownOutputDevice();
 		stopBackgroundThread();
 	}
 	return 0;
