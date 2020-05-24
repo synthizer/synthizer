@@ -39,7 +39,7 @@ auto ret = x; \
 
 int main(int argc, char *argv[]) {
 	syz_Handle context, generator, source;
-	int ecode = 0, ending = 1;
+	int ecode = 0, ending = 0;
 	double angle, delta;
 
 
@@ -70,6 +70,9 @@ int main(int argc, char *argv[]) {
 
 end:
 	ending = 1;
+	CHECKED(syz_handleDecRef(source));
+	CHECKED(syz_handleDecRef(generator));
+	CHECKED(syz_handleDecRef(context));
 	CHECKED(syz_shutdown());
 	return ecode;
 }
