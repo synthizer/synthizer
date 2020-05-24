@@ -19,6 +19,7 @@ class PannerLane;
 
 class Source: public BaseObject {
 	public:
+	Source(std::shared_ptr<Context> ctx): BaseObject(ctx) {}
 	virtual ~Source() {}
 
 	/* Should write to appropriate places in the context on its own. */
@@ -40,7 +41,7 @@ class Source: public BaseObject {
  * */
 class PannedSource: public Source {
 	public:
-	PannedSource(const std::shared_ptr<Context> &context);
+	PannedSource(std::shared_ptr<Context> context);
 
 	double getAzimuth();
 	void setAzimuth(double azimuth);
@@ -59,11 +60,12 @@ class PannedSource: public Source {
 	private:
 	enum SYZ_PANNER_STRATEGIES panner_strategy = SYZ_PANNER_STRATEGY_HRTF;
 	std::shared_ptr<PannerLane> panner_lane;
-	std::shared_ptr<Context> context;
 	double azimuth = 0.0, elevation = 0.0, panning_scalar = 0.5, gain = 1.0;
 	bool needs_panner_set = true;
 	/* If true, the last thing set was scalar and we use that; otherwise use azimuth/elevation. */
 	bool is_scalar_panning = false;
+	/* Set to false to make the audio thread reallocate the lane on strategy changes. */
+	bool valid_lane = false;
 };
 
 }

@@ -82,8 +82,9 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	template<typename T, typename... ARGS>
 	std::shared_ptr<T> createObject(ARGS&& ...args) {
 		auto ret = this->call([&] () {
-			std::weak_ptr<Context> ctx_weak = this->shared_from_this();
-			auto obj = new T(args...);
+			auto tmp = this->shared_from_this();
+			std::weak_ptr<Context> ctx_weak = tmp;
+			auto obj = new T(tmp, args...);
 			std::shared_ptr<T> v(obj, [&] (T *ptr) {
 				auto ctx_strong = ctx_weak.lock();
 				if (ctx_strong && ctx_strong->delete_directly.load(std::memory_order_relaxed) == 0) ctx_strong->enqueueDeletionRecord(&deletionCallback<T>, (void *)ptr);
@@ -91,7 +92,6 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 			});
 			return v;
 		});
-		ret->setContext(this->shared_from_this());
 		return ret;
 	}
 

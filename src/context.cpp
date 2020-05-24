@@ -16,7 +16,7 @@
 
 namespace synthizer {
 
-Context::Context() {
+Context::Context(): BaseObject(nullptr) {
 	this->audio_output = createAudioOutput([&] () {
 		this->context_semaphore.signal();
 	}, false);

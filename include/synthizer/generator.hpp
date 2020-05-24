@@ -3,7 +3,11 @@
 #include "synthizer/base_object.hpp"
 #include "synthizer/types.hpp"
 
+#include <memory>
+
 namespace synthizer {
+
+class Context;
 
 /*
  * A generator: an abstraction over the concept of producing audio.
@@ -17,6 +21,8 @@ namespace synthizer {
  * */
 class Generator: public BaseObject {
 	public:
+	Generator(std::shared_ptr<Context> ctx): BaseObject(ctx) {}
+
 	/* Return the number of channels this generator wants to output on the next block. */
 	virtual unsigned int getChannels() = 0;
 	/* Output a complete block of audio of config::BLOCK_SIZE. Is expected to add to the output, not replace. This buffer is always aligned. */

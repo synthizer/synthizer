@@ -11,6 +11,7 @@ class WDL_Resampler;
 namespace synthizer {
 
 class AudioDecoder;
+class Context;
 
 /*
  * A decoding generator generates audio from a specific decoder, which can be changed at runtime.
@@ -19,7 +20,7 @@ class AudioDecoder;
  * */
 class DecodingGenerator: public Generator {
 	public:
-	DecodingGenerator() {}
+	DecodingGenerator(std::shared_ptr<Context> ctx): Generator(ctx)  {}
 	~DecodingGenerator();
 
 	unsigned int getChannels();

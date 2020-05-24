@@ -18,6 +18,7 @@ class Context;
  * */
 class BaseObject: public CExposable {
 	public:
+	BaseObject(std::shared_ptr<Context> ctx): context(ctx) {}
 	virtual ~BaseObject() {}
 
 	/* A baseObject has no properties whatsoever. */
@@ -39,15 +40,7 @@ class BaseObject: public CExposable {
 		return this->context;
 	}
 
-	void setContext(std::shared_ptr<Context> &ctx) {
-		this->context = ctx;
-	}
-
-	void setContext(std::shared_ptr<Context> &&ctx) {
-		this->context = ctx;
-	}
-
-	private:
+	protected:
 	std::shared_ptr<Context> context;
 };
 

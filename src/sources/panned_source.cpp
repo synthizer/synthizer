@@ -16,7 +16,7 @@
 
 namespace synthizer {
 
-PannedSource::PannedSource(const std::shared_ptr<Context> &context): context(context) {
+PannedSource::PannedSource(const std::shared_ptr<Context> context): Source(context) {
 	this->panner_lane = context->allocateSourcePannerLane(this->panner_strategy);
 }
 
@@ -55,7 +55,7 @@ int PannedSource::getPannerStrategy() {
 }
 
 void PannedSource::setPannerStrategy(int strategy) {
-	this->panner_lane = nullptr;
+	this->valid_lane = false;
 	this->panner_strategy = (enum SYZ_PANNER_STRATEGIES) strategy;
 }
 
@@ -75,9 +75,10 @@ void PannedSource::run() {
 
 	std::fill(mono_buffer, mono_buffer + config::BLOCK_SIZE, 0.0f);
 
-	if (this->panner_lane == nullptr) {
+	if (this->valid_lane == false) {
 		this->panner_lane = this->context->allocateSourcePannerLane(this->panner_strategy);
 		this->needs_panner_set = true;
+		this->valid_lane = true;
 	}
 
 	if (this->needs_panner_set == true) {
@@ -138,7 +139,7 @@ using namespace synthizer;
 SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
-	auto ret = ctx->createObject<PannedSource>(ctx);
+	auto ret = ctx->createObject<PannedSource>();
 	std::shared_ptr<Source> src_ptr = ret;
 	ctx->registerSource(src_ptr);
 	*out = toC(ret);
