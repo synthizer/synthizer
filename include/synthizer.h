@@ -4,8 +4,17 @@
 extern "C" {
 #endif
 
+
 /* Inject DLL attributes etc here. */
-#define SYZ_CAPI
+#ifdef _WIN32
+	#ifdef BUILDING_SYNTHIZER
+		#define SYZ_CAPI __declspec(dllexport)
+	#else
+		#define SYZ_CAPI
+	#endif
+#else
+	#define SYZ_CAPI
+#endif
 
 /*
  * Note to maintainers: C API methods that obviously go with  a type live in the main .cpp file for that type, even if it is necessary to introduce a cpp file for that type to hold the C API (i.e. pure abstract classes).

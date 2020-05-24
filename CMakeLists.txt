@@ -1,15 +1,17 @@
-cmake_minimum_required(VERSION 3.13.0)
+cmake_minimum_required(VERSION 3.15.0)
 project(synthizer VERSION 0.1.0)
 
 include(CTest)
 enable_testing()
 
-add_compile_options(-fno-caret-diagnostics
-	-Wno-deprecated-declarations
-	-Wno-logical-op-parentheses
+add_compile_options(-Xclang -fno-caret-diagnostics
+	-Xclang -Wno-deprecated-declarations
+	-Xclang -Wno-logical-op-parentheses
 )
+
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 # We must turn on VC++ extended alignment for Windows for plf::colony.
-# This might be sufficient justification to leave plf::colony.
 add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE)
 
 include(cmake/wdl.txt)
@@ -24,7 +26,8 @@ include_directories(
 	third_party/plf_colony
 )
 
-add_library(synthizer
+set(SYNTHIZER_LIB_TYPE STATIC CACHE STRING "The build type for Synthizer. Either STATIC or SHARED")
+add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/audio_output.cpp
 	src/byte_stream.cpp
 	src/c_api.cpp
@@ -57,8 +60,13 @@ add_library(synthizer
 )
 target_compile_features(synthizer PUBLIC cxx_std_17)
 target_link_libraries(synthizer wdl)
-target_compile_options(synthizer PRIVATE)
+# tells synthizer.h to define SYZ_CAPI for exporting.
+target_compile_definitions(synthizer PRIVATE BUILDING_SYNTHIZER)
 
+# For CI artifacts:
+if(DEFINED CI_SYNTHIZER_NAME)
+set_target_properties(synthizer PROPERTIES OUTPUT_NAME ${CI_SYNTHIZER_NAME})
+endif()
 
 add_custom_target(hrtf
 python "${CMAKE_SOURCE_DIR}/hrtf_processor/main.py")
