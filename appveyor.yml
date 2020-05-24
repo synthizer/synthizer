@@ -1,7 +1,7 @@
 version: 1.0.{build}
 image: Visual Studio 2019
 build_script:
-- cmd: "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+- cmd: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"'
 - cmd: mkdir build_static_debug
 - cmd: cd build_static_debug
 - cmd: cmake -G Ninja .. -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_BUILD_TYPE=Debug -DCI_SYNTHIZER_NAME=synthizerd_static.lib -DSYNTHIZER_LIB_TYPE=STATIC
