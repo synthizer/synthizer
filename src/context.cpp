@@ -1,5 +1,6 @@
 #include "synthizer.h"
 
+#include "synthizer/background_thread.hpp"
 #include "synthizer/context.hpp"
 
 #include "synthizer/audio_output.hpp"
@@ -16,9 +17,13 @@
 
 namespace synthizer {
 
-Context::Context(): BaseObject(nullptr) {
-	this->audio_output = createAudioOutput([&] () {
-		this->context_semaphore.signal();
+Context::Context(): BaseObject(nullptr) { }
+
+void Context::initContext() {
+	std::weak_ptr<Context> ctx_weak = this->shared_from_this();
+	this->audio_output = createAudioOutput([ctx_weak] () {
+		auto ctx_strong = ctx_weak.lock();
+		if (ctx_strong) ctx_strong->context_semaphore.signal();
 	}, false);
 
 	this->source_panners = createPannerBank();
@@ -181,7 +186,10 @@ using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out) {
 	SYZ_PROLOGUE
-	*out = toC(std::make_shared<Context>());
+	auto *ctx = new Context();
+	std::shared_ptr<Context> ptr{ctx, deleteInBackground<Context>};
+	ptr->initContext();
+	*out = toC(ptr);
 	return 0;
 	SYZ_EPILOGUE
 }

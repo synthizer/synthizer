@@ -1,6 +1,7 @@
 #include "synthizer.h"
 
 #include "synthizer/audio_output.hpp"
+#include "synthizer/background_thread.hpp"
 #include "synthizer/base_object.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"
@@ -40,6 +41,7 @@ static std::atomic<unsigned int> initialization_count = 0;
 SYZ_CAPI syz_ErrorCode syz_initialize() {
 	SYZ_PROLOGUE
 	if (	initialization_count.fetch_add(1) == 0) {
+		startBackgroundThread();
 		initializeAudioOutputDevice();
 	}
 	return 0;
@@ -50,6 +52,7 @@ SYZ_CAPI syz_ErrorCode syz_shutdown() {
 	SYZ_PROLOGUE
 	if (initialization_count.fetch_sub(1) == 1) {
 		clearAllCHandles();
+		stopBackgroundThread();
 	}
 	return 0;
 	SYZ_EPILOGUE

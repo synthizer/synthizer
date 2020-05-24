@@ -29,6 +29,7 @@ include_directories(
 set(SYNTHIZER_LIB_TYPE STATIC CACHE STRING "The build type for Synthizer. Either STATIC or SHARED")
 add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/audio_output.cpp
+	src/background_thread.cpp
 	src/byte_stream.cpp
 	src/c_api.cpp
 	src/context.cpp

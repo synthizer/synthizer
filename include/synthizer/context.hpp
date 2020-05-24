@@ -50,6 +50,13 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	public:
 
 	Context();
+	/*
+	 * Initialization occurs in two phases. The constructor does almost nothing, then this is called.
+	 * 
+	 * Why is because it is unfortunately necessary for the audio thread from miniaudio to hold a weak_ptr, which needs us to be able to use shared_from_this.
+	 * */
+	void initContext();
+
 	~Context();
 
 	std::shared_ptr<Context> getContext() override;
@@ -85,9 +92,9 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 			auto tmp = this->shared_from_this();
 			std::weak_ptr<Context> ctx_weak = tmp;
 			auto obj = new T(tmp, args...);
-			std::shared_ptr<T> v(obj, [&] (T *ptr) {
+			std::shared_ptr<T> v(obj, [ctx_weak] (T *ptr) {
 				auto ctx_strong = ctx_weak.lock();
-				if (ctx_strong && ctx_strong->delete_directly.load(std::memory_order_relaxed) == 0) ctx_strong->enqueueDeletionRecord(&deletionCallback<T>, (void *)ptr);
+				if (ctx_strong && ctx_strong->delete_directly.load(std::memory_order_relaxed) == 1) ctx_strong->enqueueDeletionRecord(&deletionCallback<T>, (void *)ptr);
 				else delete ptr;
 			});
 			return v;

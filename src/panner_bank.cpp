@@ -83,7 +83,7 @@ static std::shared_ptr<PannerLane> allocateLaneHelper(plf::colony<PannerBlock<T>
 template<typename T>
 static void dropPanners(plf::colony<PannerBlock<T>> &colony) {
 	for(auto i = colony.begin(); i != colony.end(); i++) {
-		if(i->reference_count == 0) colony.erase(i);
+		if(i->reference_count == 0) i = colony.erase(i);
 	}
 }
 

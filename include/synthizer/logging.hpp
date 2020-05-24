@@ -1,5 +1,7 @@
 #pragma once
+
 #include <string>
+#include <utility>
 
 namespace synthizer {
 
@@ -33,6 +35,11 @@ template<typename... T>
 void log(T&& ...args) {
 	if(isLoggingEnabled())
 		logInner(args...);
+}
+
+template<typename ... T>
+void logError(T&& ...args) {
+	log(std::forward<T>(args)...);
 }
 
 }
