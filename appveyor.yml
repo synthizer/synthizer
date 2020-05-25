@@ -1,6 +1,9 @@
 version: 1.0.{build}
 image: Visual Studio 2019
 
+matrix:
+  fast_finish: true
+
 environment:
   BUILDING_SYNTHIZER: "true"
   synthizer_ci: "true"
