@@ -30,4 +30,4 @@ artifacts:
 - path: artifacts
   name: c_libs$(CI_ARCHITECTURE)
   type: zip
-  
+- path: bindings\python\dist\*
