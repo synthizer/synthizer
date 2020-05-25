@@ -10,7 +10,7 @@ environment:
     - CI_ARCHITECTURE: 64
 
 build_script:
-- cmd: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars6%CI_ARCHITECTURE%.bat"'
+- cmd: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars%CI_ARCHITECTURE%.bat"'
 - ps: .\ci\build_c.ps1
 - cmd: mkdir artifacts
 - cmd: mkdir artifacts\lib
