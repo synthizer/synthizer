@@ -14,8 +14,7 @@ environment:
 
 build_script:
 - cmd: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars%CI_ARCHITECTURE%.bat"'
-- ps: ls ci
-- ps: c:\projects\synthizer\ci\build_c.ps1
+- ps: .\ci\build_c.ps1
 - cmd: mkdir artifacts
 - cmd: mkdir artifacts\lib
 - cmd: mkdir artifacts\include
