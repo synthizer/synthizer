@@ -9,7 +9,6 @@ environment:
   synthizer_ci: "true"
 
   matrix:
-    - CI_ARCHITECTURE: 32
     - CI_ARCHITECTURE: 64
 
 build_script:
