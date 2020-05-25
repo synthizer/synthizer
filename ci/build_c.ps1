@@ -24,8 +24,8 @@ is nonzero.
   if ($LASTEXITCODE) { Throw "$exe indicated failure (exit code $LASTEXITCODE; full command: $Args)." }
 }
 
-$build_types = "Debug", "Release"
-$lib_types = "static", "dynamic"
+$build_types = "Release"
+$lib_types = "static"
 
 foreach ($build_type in $build_types) {
 	foreach ($lib_type in $lib_types) {

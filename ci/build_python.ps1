@@ -30,7 +30,7 @@ cd bindings\python
 
 foreach ($pyversion in $pyversions) {
 	$pycommand = "c:\$pyversion\python.exe"
-	invoke-utility $pycommand pip install cython setuptools wheel
+	invoke-utility $pycommand -m pip install cython setuptools wheel
 	invoke-utility $pycommand setup.py bdist_wheel
 }
 
