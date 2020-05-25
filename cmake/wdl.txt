@@ -1,3 +1,5 @@
+# A few of these are disabled because they need external libraries.
+
 SET(WDL_FILES
 	audiobuffercontainer.cpp
 	blowfish.c
@@ -6,9 +8,9 @@ SET(WDL_FILES
 	fft.c
 	projectcontext.cpp
 	resample.cpp
-	rfb_client.cpp
+#	rfb_client.cpp
 	rng.cpp
-	scsrc.cpp
+#	scsrc.cpp
 	sha.cpp
 	shm_connection.cpp
 	timing.c

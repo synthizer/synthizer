@@ -14,8 +14,11 @@ if 'BUILDING_SYNTHIZER' in os.environ:
     print("Building Synthizer from repository. Adding additional directories.")
     repo_root = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0], "../.."))
     print("Repository root is", repo_root)
-    synthizer_build_dir = os.path.join(repo_root, "build")
-    synthizer_include_dir = os.path.join(repo_root, "include")
+    if "SYNTHIZER_CI" in os.environ:
+        synthizer_build_dir = os.path.join(repo_root, "build_static_release")
+    else:
+        synthizer_build_dir = os.path.join(repo_root, "build")
+    synthizer_include_dir = os.path.    join(repo_root, "include")
     extension_args = {
         'include_dirs': [synthizer_include_dir],
         'library_dirs': [synthizer_build_dir],
