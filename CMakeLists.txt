@@ -9,7 +9,9 @@ add_compile_options(-Xclang -fno-caret-diagnostics
 	-Xclang -Wno-logical-op-parentheses
 )
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+# We always use MultiThreaded, until I can figure out Python setuptools runtime picking options.
+#set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 
 # We must turn on VC++ extended alignment for Windows for plf::colony.
 add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE)
@@ -58,6 +60,8 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 
 	src/streams/file.cpp
 	src/streams/memory.cpp
+
+	$<TARGET_OBJECTS:wdl>
 )
 target_compile_features(synthizer PUBLIC cxx_std_17)
 target_link_libraries(synthizer wdl)

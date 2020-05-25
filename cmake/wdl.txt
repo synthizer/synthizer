@@ -17,7 +17,7 @@ SET(WDL_FILES
 
 list(TRANSFORM WDL_FILES PREPEND third_party/wdl/WDL/)
 
-add_library(wdl STATIC ${WDL_FILES})
+add_library(wdl OBJECT ${WDL_FILES})
 target_compile_definitions(wdl PUBLIC
 	WDL_RESAMPLE_TYPE=float
 )

@@ -3,7 +3,8 @@
 		"--output-on-failure"
 	],
 	"files.associations": {
-		"chrono": "cpp"
+		"chrono": "cpp",
+		"*.pyx": "python",
 	},
 	"[python]": {
 		"editor.insertSpaces": true,
