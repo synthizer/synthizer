@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 	//delta = 0;
 	printf("angle delta %f\n", delta);
 
-	for(unsigned int i = 0; i < 100; i++) {
+	for(unsigned int i = 0; i < 1000; i++) {
 		CHECKED(syz_setD(source, SYZ_PANNED_SOURCE_AZIMUTH, angle));
 		angle += delta;
 		angle -= (int(angle)/360)*360;

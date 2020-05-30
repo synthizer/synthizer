@@ -31,7 +31,7 @@ std::tuple<double, double> computeInterauralTimeDifference(double azimuth, doubl
 	double elev_r = elevation*PI/180;
 
 	/*
-	 * Project the polar vector into the cartesian plane, and keep the y coordinate.
+	 * Convert the polar vector to a cartesian vector, and keep x.
 	 * 
 	 * az_r is the clockwise angle from y.
 	 * cos(az_r) is the y component.
@@ -39,14 +39,18 @@ std::tuple<double, double> computeInterauralTimeDifference(double azimuth, doubl
 	 * 
 	 * This is the standard spherical coordinate equation, but adjusted to account for the above.
 	 * */
-	double y = cos(az_r) * cos(elev_r);
+	double x = sin(az_r) * cos(elev_r);
 	/*
 	 * Get the angle between the y axis and our spherical vector.
 	 * 
 	 * It is convenient for this to be in the range 0, PI/2, which "pretends" the source is in the front right quadrant.
 	 * Since the head is front-back symmetric, this is correct for the back right quadrant, and we work out whether to flip at the end.
+	 * 
+	 * What we have is the angle between the x axis and our spherical vector,
+	 * so to get y we subtract.
 	 * */
-	double angle = acos(abs(y));
+	double angle = PI / 2 - acos(abs(x));
+
 	/* Interaural time delay in seconds, using the Woodworth formula. */
 	double itd_s = (hrir_parameters->head_radius / hrir_parameters->speed_of_sound) * ( angle + sin(angle));
 	double itd = std::min<double>(itd_s * config::SR, config::HRTF_MAX_ITD);
