@@ -16,6 +16,8 @@ extern "C" {
  * int_p(SYZ_MY_PROPERTY, name, Name, min, max)
  * DOUBLE_p(SYZ_MY_PROPERTY, name, Name, min, max)
  * object_p(SYZ_MY_PROPERTY, name, Name, ExpectedClass)
+ * double3_p(SYZ_MY_PROPERTY, name, Name)
+ * double6_p(SYZ_MY_PROPERTY, name, Name);
  * 
  * For int properties, use P_INT_MIN and P_INT_MAX for no range; for double use P_DOUBLE_MIN and P_DOUBLE_MAX. Using these as only one of the endpoints is fine.
  * 
@@ -24,6 +26,9 @@ extern "C" {
  * if all you want to do is use the library.
  * */
 
+#define CONTEXT_PROPERTIES \
+double3_p(SYZ_CONTEXT_LISTENER_POSITION, listener_position, ListenerPosition) \
+double6_p(SYZ_CONTEXT_LISTENER_ORIENTATION, listener_orientation, ListenerOrientation)
 
 #define PANNED_SOURCE_PROPERTIES \
 DOUBLE_P(SYZ_PANNED_SOURCE_AZIMUTH, azimuth, Azimuth, 0.0f, 360.0f) \

@@ -3,12 +3,14 @@
 #include "synthizer/base_object.hpp"
 #include "synthizer/invokable.hpp"
 #include "synthizer/panner_bank.hpp"
+#include "synthizer/property_internals.hpp"
 #include "synthizer/queues/vyukov.hpp"
 #include "synthizer/types.hpp"
 
 #include "sema.h"
 
 #include <atomic>
+#include <array>
 #include <functional>
 #include <map>
 #include <memory>
@@ -115,16 +117,29 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	void setDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, double value);
 	std::shared_ptr<BaseObject> getObjectProperty(std::shared_ptr<BaseObject> &obj, int property);
 	void setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<BaseObject> &object);
+	std::array<double, 3> getDouble3Property(std::shared_ptr<BaseObject> &obj, int property);
+	void setDouble3Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 3> value);
+	std::array<double, 6>  getDouble6Property(std::shared_ptr<BaseObject> &obj, int property);
+	void setDouble6Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 6> value);
 
 	/*
 	 * Ad a weak reference to the specified source.
 	 * */
 	void registerSource(std::shared_ptr<Source> &source);
 
+	/*
+	 * The properties for the listener.
+	 * */
+	std::array<double, 3> getListenerPosition();
+	void setListenerPosition(std::array<double, 3> pos);
+	std::array<double, 6> getListenerOrientation();
+	void setListenerOrientation(std::array<double, 6> orientation);
+
 	/* Helper methods used by various pieces of synthizer to grab global resources. */
 	/* Allocate a panner lane intended to be used by a source. */
 	std::shared_ptr<PannerLane> allocateSourcePannerLane(enum SYZ_PANNER_STRATEGIES strategy);
 
+	PROPERTY_METHODS
 	private:
 
 	/*
@@ -181,6 +196,11 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	/* The key is a raw pointer for easy lookup. */
 	std::unordered_map<void *, std::weak_ptr<Source>> sources;
 	std::shared_ptr<AbstractPannerBank> source_panners = nullptr;
+
+	/* Parameters of the 3D environment: listener orientation/position, library-wide defaults for distance models, etc. */
+	std::array<double, 3> listener_position{ { 0, 0, 0 } };
+	/* Default to facing positive y with positive x as east and positive z as up. */
+	std::array<double, 6> listener_orientation{ { 0, 1, 0, 0, 0, 1 } };
 };
 
 }

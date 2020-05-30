@@ -60,6 +60,34 @@ cdef class DoubleProperty(_PropertyBase):
     def __set__(self, _BaseObject instance, double value):
         _checked(syz_setD(instance.handle, self.property, value))
 
+cdef class Double3Property(_PropertyBase):
+    cdef int property
+
+    def __init__(self, int property):
+        self.property = property
+
+    def __get__(self, _BaseObject instance, owner):
+        cdef double x, y, z
+        _checked(syz_getD3(&x, &y, &z, instance.handle, self.property))
+        return (x, y, z)
+
+    def __set__(self, _BaseObject instance, value):
+        _checked(syz_setD3(instance.handle, self.property, value[0], value[1], value[2]))
+
+cdef class Double6Property(_PropertyBase):
+    cdef int property
+
+    def __init__(self, int property):
+        self.property = property
+
+    def __get__(self, _BaseObject instance, owner):
+        cdef double x1, y1, z1, x2, y2, z2
+        _checked(syz_getD6(&x1, &y1, &z1, &x2, &y2, &z2, instance.handle, self.property))
+        return (x1, y1, z1, x2, y2, z2)
+
+    def __set__(self, _BaseObject instance, value):
+        _checked(syz_setD6(instance.handle, self.property, value[0], value[1], value[2], value[3], value[4], value[5]))
+
 cpdef enum LogLevel:
     ERROR = SYZ_LOG_LEVEL_ERROR
     WARN = SYZ_LOG_LEVEL_WARN
@@ -134,6 +162,9 @@ class Context(_BaseObject):
         cdef syz_Handle handle
         _checked(syz_createContext(&handle))
         super().__init__(handle)
+
+    listener_position = Double3Property(SYZ_CONTEXT_LISTENER_POSITION)
+    listener_orientation = Double6Property(SYZ_CONTEXT_LISTENER_ORIENTATION)
 
 cdef class Generator(_BaseObject):
     """Base class for all generators."""

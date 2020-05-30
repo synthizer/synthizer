@@ -107,6 +107,16 @@ SYZ_CAPI syz_ErrorCode syz_setD(syz_Handle target, int property, double value);
 /* Object properties. */
 SYZ_CAPI syz_ErrorCode syz_getO(syz_Handle *out, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle value);
+/*
+ * double3 and double6 are used for positions and orientations respectively.
+ * Double3 is { x, y, z }
+ * Double6 is { forward, up }
+ * Note that Synthizer's coordinate system is right-handed.
+ * */
+SYZ_CAPI syz_ErrorCode syz_getD3(double *x, double *y, double *z, syz_Handle target, int property);
+SYZ_CAPI syz_ErrorCode syz_setD3(syz_Handle target, int property, double x, double y, double z);
+SYZ_CAPI syz_ErrorCode syz_getD6(double *x1, double *y1, double *z1, double *x2, double *y2, double *z2, syz_Handle target, int property);
+SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, double y1, double z1, double x2, double y2, double z2);
 
 /*
  * Create a context. This represents the audio device itself, and all other Synthizer objects need one.

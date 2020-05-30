@@ -54,7 +54,7 @@ class PannedSource: public Source {
 	double getGain();
 	void setGain(double gain);
 
-	void run();
+	void run() override;
 
 	PROPERTY_METHODS;
 	private:

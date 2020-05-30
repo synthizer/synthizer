@@ -18,6 +18,11 @@ enum SYZ_PANNER_STRATEGIES {
  * In general greater properties are on more-derived objects, and the leading digits try to specify how derived.
  * */
 
+enum SYZ_CONTEXT_PROPERTIES {
+	SYZ_CONTEXT_LISTENER_POSITION = 100,
+	SYZ_CONTEXT_LISTENER_ORIENTATION = 200,
+};
+
 enum SYZ_PANNED_SOURCE_PROPERTIES {
 	SYZ_PANNED_SOURCE_AZIMUTH = 200,
 	SYZ_PANNED_SOURCE_ELEVATION = 201,

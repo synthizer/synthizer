@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <limits>
 #include <memory>
 #include <variant>
@@ -30,7 +31,11 @@ class BaseObject;
 /* We hide this in a namespace because it's only for macro magic and shouldn't be used directly by anything else. */
 namespace property_impl {
 
-using PropertyValue = std::variant<int, double, std::shared_ptr<BaseObject>>;
+using PropertyValue = std::variant<int, double, std::shared_ptr<BaseObject>, std::array<double, 3>, std::array<double, 6>>;
+
+/* array<double, 3. doesn't work in macros because of the comma. */
+using arrayd3 = std::array<double, 3>;
+using arrayd6 = std::array<double, 6>;
 
 const auto int_min = std::numeric_limits<int>::min();
 const auto int_max = std::numeric_limits<int>::max();
@@ -39,8 +44,8 @@ const auto double_max = std::numeric_limits<double>::max();
 }
 
 #define PROPERTY_METHODS \
-bool hasProperty(int property); \
-property_impl::PropertyValue getProperty(int property); \
-void setProperty(int property, const property_impl::PropertyValue &value);
+bool hasProperty(int property) override; \
+property_impl::PropertyValue getProperty(int property) override; \
+void setProperty(int property, const property_impl::PropertyValue &value) override;
 
 }

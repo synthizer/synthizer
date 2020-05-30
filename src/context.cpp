@@ -1,4 +1,6 @@
 #include "synthizer.h"
+#include "synthizer_constants.h"
+#include "synthizer_properties.h"
 
 #include "synthizer/background_thread.hpp"
 #include "synthizer/context.hpp"
@@ -107,8 +109,40 @@ void Context::setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, 
 	propertySetter<std::shared_ptr<BaseObject>>(this, obj, property, value);
 }
 
+std::array<double, 3> Context::getDouble3Property(std::shared_ptr<BaseObject> &obj, int property) {
+	return propertyGetter<std::array<double, 3>>(this, obj, property);
+}
+
+void Context::setDouble3Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 3> value) {
+	propertySetter<std::array<double, 3>>(this, obj, property, value);
+}
+
+std::array<double, 6>  Context::getDouble6Property(std::shared_ptr<BaseObject> &obj, int property) {
+	return propertyGetter<std::array<double, 6>>(this, obj, property);
+}
+
+void Context::setDouble6Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 6> value) {
+	propertySetter<std::array<double, 6>>(this, obj, property, value);
+}
+
 void Context::registerSource(std::shared_ptr<Source> &source) {
 	this->sources[source.get()] = source;
+}
+
+std::array<double, 3> Context::getListenerPosition() {
+	return this->listener_position;
+}
+
+void Context::setListenerPosition(std::array<double, 3> pos) {
+	this->listener_position = pos;
+}
+
+std::array<double, 6> Context::getListenerOrientation() {
+	return this->listener_orientation;
+}
+
+void Context::setListenerOrientation(std::array<double, 6> orientation) {
+	this->listener_orientation = orientation;
 }
 
 std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_STRATEGIES strategy) {
@@ -217,3 +251,8 @@ SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out) {
 	return 0;
 	SYZ_EPILOGUE
 }
+
+#define PROPERTY_CLASS Context
+#define PROPERTY_BASE BaseObject
+#define PROPERTY_LIST CONTEXT_PROPERTIES
+#include "synthizer/property_impl.hpp"

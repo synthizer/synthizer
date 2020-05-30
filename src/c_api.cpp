@@ -8,7 +8,9 @@
 #include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
 
+#include <array>
 #include <string>
+#include <tuple>
 
 namespace synthizer {
 
@@ -142,3 +144,49 @@ SYZ_CAPI syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle valu
 	return 0;
 	SYZ_EPILOGUE
 }
+
+SYZ_CAPI syz_ErrorCode syz_getD3(double *x, double *y, double *z, syz_Handle target, int property) {
+	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto ctx = o->getContext();
+	auto val = ctx->getDouble3Property(o, property);
+	*x = val[0];
+	*y = val[1];
+	*z = val[2];
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_setD3(syz_Handle target, int property, double x, double y, double z) {
+	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto ctx = o->getContext();
+	ctx->setDouble3Property(o, property, {x, y, z});
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_getD6(double *x1, double *y1, double *z1, double *x2, double *y2, double *z2, syz_Handle target, int property) {
+	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto ctx = o->getContext();
+	auto val = ctx->getDouble6Property(o, property);
+	*x1 = val[0];
+	*y1 = val[1];
+	*z1 = val[2];
+	*x2 = val[3];
+	*y2 = val[4];
+	*z2 = val[5];
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle target, int property, double x1, double y1, double z1, double x2, double y2, double z2) {
+	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto ctx = o->getContext();
+	ctx->setDouble6Property(o, property, { x1, y1, z1, x2, y2, z2 });
+	return 0;
+	SYZ_EPILOGUE
+}
+
