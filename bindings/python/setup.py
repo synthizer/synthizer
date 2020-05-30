@@ -34,5 +34,5 @@ extensions = [
 setup(
     name = "synthizer",
     version = "0.1.1",
-    ext_modules = cythonize(extensions),
+    ext_modules = cythonize(extensions, language_level=3),
 )
