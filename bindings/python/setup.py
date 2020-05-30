@@ -16,13 +16,15 @@ if 'BUILDING_SYNTHIZER' in os.environ:
     print("Repository root is", repo_root)
     if "SYNTHIZER_CI" in os.environ:
         synthizer_build_dir = os.path.join(repo_root, "build_static_release")
+        synthizer_lib = "synthizer_static"
     else:
         synthizer_build_dir = os.path.join(repo_root, "build")
+        synthizer_lib = "synthizer"
     synthizer_include_dir = os.path.    join(repo_root, "include")
     extension_args = {
         'include_dirs': [synthizer_include_dir],
         'library_dirs': [synthizer_build_dir],
-        'libraries': ['synthizer_static']
+        'libraries': [synthizer_lib]
     }
 
 extensions = [

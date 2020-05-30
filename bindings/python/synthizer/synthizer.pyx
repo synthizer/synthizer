@@ -60,6 +60,22 @@ cdef class DoubleProperty(_PropertyBase):
     def __set__(self, _BaseObject instance, double value):
         _checked(syz_setD(instance.handle, self.property, value))
 
+cpdef enum LogLevel:
+    ERROR = SYZ_LOG_LEVEL_ERROR
+    WARN = SYZ_LOG_LEVEL_WARN
+    INFO = SYZ_LOG_LEVEL_INFO
+    DEBUG = SYZ_LOG_LEVEL_DEBUG
+
+cpdef enum LoggingBackend:
+    STDERR = 0
+
+cpdef configure_logging_backend(LoggingBackend backend):
+    _checked(syz_configureLoggingBackend(<SYZ_LOGGING_BACKEND>backend, NULL))
+
+cpdef set_log_level(LogLevel level):
+    syz_setLogLevel(<SYZ_LOG_LEVEL>level)
+
+
 cpdef initialize():
     """Initialize Synthizer.  Try synthizer.Initialized for a context manager that will shut things down on exceptions. """
     _checked(syz_initialize())

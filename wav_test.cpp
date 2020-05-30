@@ -33,7 +33,7 @@ auto ret = x; \
 		printf(#x ": Synthizer error code %i message %s\n", ret, syz_getLastErrorMessage());\
 		ecode = 1; \
 		if (ending == 0) goto end; \
-		else return 1; \
+		else goto end2; \
 	} \
 } while(0)
 
@@ -42,13 +42,13 @@ int main(int argc, char *argv[]) {
 	int ecode = 0, ending = 0;
 	double angle, delta;
 
-
 	if (argc != 2) {
 		printf("Usage: wav_test <path>\n");
 		return 1;
 	}
 
 	CHECKED(syz_configureLoggingBackend(SYZ_LOGGING_BACKEND_STDERR, nullptr));
+	syz_setLogLevel(SYZ_LOG_LEVEL_DEBUG);
 	CHECKED(syz_initialize());
 
 	CHECKED(syz_createContext(&context));
@@ -73,6 +73,7 @@ end:
 	CHECKED(syz_handleDecRef(source));
 	CHECKED(syz_handleDecRef(generator));
 	CHECKED(syz_handleDecRef(context));
+end2:
 	CHECKED(syz_shutdown());
 	return ecode;
 }

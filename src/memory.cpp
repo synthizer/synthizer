@@ -63,6 +63,8 @@ void decRefCImpl(std::shared_ptr<CExposable> &obj) {
 	 * The entry stays in the map until one of these is hit, this actually drops the reference.
 	 * */
 	if (should_delete) {
+		obj->cDelete();
+
 		std::unique_lock l(c_handles_mutex);
 		c_handles.erase(obj->getCHandle());
 	}
@@ -77,6 +79,9 @@ std::shared_ptr<CExposable> getExposableFromHandle(syz_Handle handle) {
 
 void clearAllCHandles() {
 	auto g = std::lock_guard(c_handles_mutex);
+	for (auto &i: c_handles) {
+		i.second.value->cDelete();
+	}
 	c_handles.clear();
 }
 

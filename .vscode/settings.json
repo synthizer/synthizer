@@ -1,7 +1,5 @@
 {
-	"cmake.ctestArgs": [
-		"--output-on-failure"
-	],
+	"files.eol": "\n",,
 	"files.associations": {
 		"chrono": "cpp",
 		"*.pyx": "python",

@@ -9,6 +9,14 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_configureLoggingBackend(SYZ_LOGGING_BACKEND backend, void* param)
 
+    cdef enum SYZ_LOG_LEVEL:
+        SYZ_LOG_LEVEL_ERROR
+        SYZ_LOG_LEVEL_WARN
+        SYZ_LOG_LEVEL_INFO
+        SYZ_LOG_LEVEL_DEBUG
+
+    void syz_setLogLevel(SYZ_LOG_LEVEL level)
+
     syz_ErrorCode syz_getLastErrorCode()
 
     char* syz_getLastErrorMessage()

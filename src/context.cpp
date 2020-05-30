@@ -29,6 +29,7 @@ void Context::initContext() {
 	this->source_panners = createPannerBank();
 	this->running.store(1);
 	this->context_thread = std::move(std::thread([&] () {
+		setThreadPurpose("context-thread");
 		this->audioThreadFunc();
 	}));
 }
@@ -37,6 +38,7 @@ Context::~Context() {
 	if(this->running.load()) {
 		this->shutdown();
 	}
+	this->drainDeletionQueues();
 }
 
 std::shared_ptr<Context> Context::getContext() {
@@ -44,20 +46,18 @@ std::shared_ptr<Context> Context::getContext() {
 }
 
 void Context::shutdown() {
+	logDebug("Context shutdown");
 	this->running.store(0);
 	this->context_semaphore.signal();
 	this->context_thread.join();
 
 	this->delete_directly.store(1);
-	/* Drain the queue. */
-	DeletionRecord *rec;
-	while ((rec = this->pending_deletes.dequeue())) {
-		rec->callback(rec->arg);
-		delete rec;
-	}
-	while ((rec = this->free_deletes.dequeue())) {
-		delete rec;
-	}
+	this->drainDeletionQueues();
+}
+
+void Context::cDelete() {
+	logDebug("C deleted context");
+	if (this->running.load()) this->shutdown();
 }
 
 void Context::enqueueInvokable(Invokable *invokable) {
@@ -134,10 +134,9 @@ void Context::generateAudio(unsigned int channels, AudioSample *destination) {
 }
 
 void Context::audioThreadFunc() {
+	logDebug("Thread started");
 	while (this->running.load()) {
 		AudioSample *write_audio = nullptr;
-
-		this->context_semaphore.wait();
 
 		write_audio = this->audio_output->beginWrite();
 		while (write_audio) {
@@ -161,23 +160,48 @@ void Context::audioThreadFunc() {
 			rec->callback(rec->arg);
 			this->free_deletes.enqueue(rec);
 		}
+
+		this->context_semaphore.wait();
 	}
 
 	this->audio_output->shutdown();
+	logDebug("Context thread terminating");
 }
 
 void Context::enqueueDeletionRecord(DeletionCallback cb, void *arg) {
 	DeletionRecord *rec;
-	{
-		std::lock_guard g(this->free_deletes_mutex);
-		rec = this->free_deletes.dequeue();
+
+	try {
+		this->deletes_in_progress.fetch_add(1, std::memory_order_relaxed);
+
+		{
+			std::lock_guard g(this->free_deletes_mutex);
+			rec = this->free_deletes.dequeue();
+		}
+		if (rec == nullptr) {
+			rec = new DeletionRecord();
+		}
+		rec->callback = cb;
+		rec->arg = arg;
+		this->pending_deletes.enqueue(rec);
+		this->deletes_in_progress.fetch_sub(1, std::memory_order_release);
+	} catch(...) {
+		/* Swallow exceptions; we don't want to stop deletes. */
 	}
-	if (rec == nullptr) {
-		rec = new DeletionRecord();
+	this->deletes_in_progress.fetch_sub(1, std::memory_order_release);
+}
+
+void Context::drainDeletionQueues() {
+	while(this->deletes_in_progress.load(std::memory_order_acquire) != 0);
+
+	DeletionRecord *rec;
+	while ((rec = this->pending_deletes.dequeue())) {
+		rec->callback(rec->arg);
+		delete rec;
 	}
-	rec->callback = cb;
-	rec->arg = arg;
-	this->pending_deletes.enqueue(rec);
+	while ((rec = this->free_deletes.dequeue())) {
+		delete rec;
+	}
 }
 
 }

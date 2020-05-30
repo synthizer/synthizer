@@ -23,6 +23,8 @@ Semaphore background_thread_semaphore;
 std::atomic<int> background_thread_running = 0;
 
 void backgroundThreadFunc() {
+	setThreadPurpose("background-thread");
+	logDebug("Background thread started");
 	while(background_thread_running.load(std::memory_order_relaxed)) {
 		auto *possible = background_queue.dequeue();
 		while (possible) {
@@ -46,6 +48,8 @@ void backgroundThreadFunc() {
 		cmd->callback(cmd->arg);
 		cmd = background_queue.dequeue();
 	}
+
+	logDebug("Background thread stopped");
 }
 
 std::thread background_thread;

@@ -67,6 +67,7 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	 * This kills the audio thread.
 	 * */
 	void shutdown();
+	void cDelete() override;
 
 	/*
 	 * Submit an invokable which will be invoked on the context thread.
@@ -165,8 +166,15 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	std::mutex free_deletes_mutex;
 	VyukovQueue<DeletionRecord> free_deletes;
 	std::atomic<int> delete_directly = 0;
+	/*
+	 * Used to signal that something is queueing a delete. This allows
+	 * shutdown to synchronize by spin waiting, so that when it goes to drain the deletion queue, it can know that nothing else will appear in it.
+	 * */
+	std::atomic<int> deletes_in_progress = 0;
 
 	void enqueueDeletionRecord(DeletionCallback cb, void *arg);
+	/* Used by shutdown and the destructor only. Not safe to call elsewhere. */
+	void drainDeletionQueues();
 
 	/* Collections of objects that require execution: sources, etc. all go here eventually. */
 

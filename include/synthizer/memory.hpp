@@ -61,6 +61,13 @@ class CExposable  {
 		return this->c_handle;
 	}
 
+	/*
+	 * Hook to know that the C side deleted something.
+	 * 
+	 * This exists primarily so that the context can shut down in the foreground; it is otherwise possible for it to keep running until after main.
+	 * */
+	virtual void cDelete() {}
+
 	private:
 	syz_Handle c_handle;
 };

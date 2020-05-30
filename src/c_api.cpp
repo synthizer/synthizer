@@ -55,6 +55,7 @@ SYZ_CAPI syz_ErrorCode syz_shutdown() {
 		shutdownOutputDevice();
 		stopBackgroundThread();
 	}
+	logDebug("Library shutdown complete");
 	return 0;
 	SYZ_EPILOGUE
 }

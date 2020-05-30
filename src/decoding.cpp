@@ -28,12 +28,12 @@ std::shared_ptr<AudioDecoder> getDecoderForProtocol(std::string protocol, std::s
 		try {
 			auto tmp = d.func(lookahead_stream);
 			if (tmp == nullptr) {
-				log("Format", d.name, "returned nullptr. Skipping");
+				logDebug("Format %s returned nullptr. Skipping", d.name.c_str());
 				continue;
 			}
 			return tmp;
 		} catch(std::exception &e) {
-			log("Format", d.name, "threw error", e.what());
+			logDebug("Format %s threw error %s", d.name.c_str(), e.what());
 			continue;
 		}
 	}
