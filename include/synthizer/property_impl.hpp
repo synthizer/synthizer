@@ -98,8 +98,8 @@ property_impl::PropertyValue PROPERTY_CLASS::getProperty(int property) {
 #undef DOUBLE_P
 #undef OBJECT_P
 
-#define INT_P(p, name1, name2, min, max) SET_(int, [](auto x) { if(*x < min || *x >= max) throw ERange(); return *x; }, p, name1, name2, min, max);
-#define DOUBLE_P(p, name1, name2, min, max) SET_(double, [](auto x) { if (*x < min || *x >= max) throw ERange(); return *x; }, p, name1, name2, min, max)
+#define INT_P(p, name1, name2, min, max) SET_(int, [](auto x) { if(*x < min || *x > max) throw ERange(); return *x; }, p, name1, name2, min, max);
+#define DOUBLE_P(p, name1, name2, min, max) SET_(double, [](auto x) { if (*x < min || *x > max) throw ERange(); return *x; }, p, name1, name2, min, max)
 #define OBJECT_P(p, name1, name2, cls) SET_(std::shared_ptr<BaseObject>, [] (auto *x) { auto &y = *x; auto z = std::dynamic_pointer_cast<cls>(y); if (z == nullptr) throw EType(); return z; }, p, name1, name2, cls)
 
 void PROPERTY_CLASS::setProperty(int property, const property_impl::PropertyValue &value) {

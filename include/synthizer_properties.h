@@ -30,7 +30,7 @@ DOUBLE_P(SYZ_PANNED_SOURCE_AZIMUTH, azimuth, Azimuth, 0.0f, 360.0f) \
 DOUBLE_P(SYZ_PANNED_SOURCE_ELEVATION, elevation, Elevation, -90.0f, 90.0f)\
 DOUBLE_P(SYZ_PANNED_SOURCE_PANNING_SCALAR, panning_scalar, PanningScalar, 0.0, 1.0) \
 DOUBLE_P(SYZ_PANNED_SOURCE_GAIN, gain, Gain, P_DOUBLE_MIN, P_DOUBLE_MAX) \
-INT_P(SYZ_PANNED_SOURCE_PANNER_STRATEGY, panner_strategy, PannerStrategy, 0, SYZ_PANNER_STRATEGY_COUNT) \
+INT_P(SYZ_PANNED_SOURCE_PANNER_STRATEGY, panner_strategy, PannerStrategy, 0, SYZ_PANNER_STRATEGY_COUNT - 1) \
 
 #ifdef __cplusplus
 }
