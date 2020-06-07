@@ -6,6 +6,7 @@
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/generator.hpp"
+#include "synthizer/math.hpp"
 #include "synthizer/types.hpp"
 #include "synthizer/vector_helpers.hpp"
 
@@ -60,11 +61,15 @@ void PannedSource::setPannerStrategy(int strategy) {
 }
 
 double PannedSource::getGain() {
-	return this->gain;
+	return gainToDb(this->gain);
 }
 
 void PannedSource::setGain(double gain) {
-	this->gain = gain;
+	this->gain = dbToGain(gain);
+}
+
+void PannedSource::setGain3D(double gain) {
+	this->gain_3d = gain;
 }
 
 void PannedSource::run() {
@@ -120,7 +125,7 @@ void PannedSource::run() {
 	this->panner_lane->update();
 	unsigned int stride = this->panner_lane->stride;
 	AudioSample *dest = this->panner_lane->destination;
-	float g = this->gain;
+	float g = this->gain * this->gain_3d;
 	for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 		dest[i * stride] = g * mono_buffer[i];
 	}

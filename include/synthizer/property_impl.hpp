@@ -66,8 +66,8 @@ break;
 #define INT_P(...) HAS_(__VA_ARGS__)
 #define DOUBLE_P(...) HAS_(__VA_ARGS__)
 #define OBJECT_P(...) HAS_(__VA_ARGS__)
-#define double3_p(...) HAS_(__VA_ARGS__)
-#define double6_p(...) HAS_(__VA_ARGS__)
+#define DOUBLE3_P(...) HAS_(__VA_ARGS__)
+#define DOUBLE6_P(...) HAS_(__VA_ARGS__)
 
 bool PROPERTY_CLASS::hasProperty(int property) {
 	switch (property) {
@@ -82,13 +82,13 @@ bool PROPERTY_CLASS::hasProperty(int property) {
 #undef INT_P
 #undef DOUBLE_P
 #undef OBJECT_P
-#undef double3_p
-#undef double6_p
+#undef DOUBLE3_P
+#undef DOUBLE6_P
 
 #define INT_P(...) GET_(int, __VA_ARGS__)
 #define DOUBLE_P(...) GET_(double, __VA_ARGS__)
-#define double3_p(...) GET_(property_impl::arrayd3, __VA_ARGS__)
-#define double6_p(...) GET_(property_impl::arrayd6, __VA_ARGS__)
+#define DOUBLE3_P(...) GET_(property_impl::arrayd3, __VA_ARGS__)
+#define DOUBLE6_P(...) GET_(property_impl::arrayd6, __VA_ARGS__)
 
 /* Getting objects is different; we have to cast to the base class. */
 #define OBJECT_P(p, ...) GET_CONV_(std::shared_ptr<BaseObject>, [] (auto &x) { return std::static_pointer_cast<BaseObject>(x); }, __VA_ARGS__)
@@ -104,14 +104,14 @@ property_impl::PropertyValue PROPERTY_CLASS::getProperty(int property) {
 #undef INT_P
 #undef DOUBLE_P
 #undef OBJECT_P
-#undef double3_p
-#undef double6_p
+#undef DOUBLE3_P
+#undef DOUBLE6_P
 
 #define INT_P(p, name1, name2, min, max) SET_(int, [](auto x) { if(*x < min || *x > max) throw ERange(); return *x; }, p, name1, name2, min, max);
 #define DOUBLE_P(p, name1, name2, min, max) SET_(double, [](auto x) { if (*x < min || *x > max) throw ERange(); return *x; }, p, name1, name2, min, max)
 #define OBJECT_P(p, name1, name2, cls) SET_(std::shared_ptr<BaseObject>, [] (auto *x) { auto &y = *x; auto z = std::dynamic_pointer_cast<cls>(y); if (z == nullptr) throw EType(); return z; }, p, name1, name2, cls)
-#define double3_p(...)  SET_(property_impl::arrayd3, [] (auto &x) { return *x; }, __VA_ARGS__)
-#define double6_p(...)  SET_(property_impl::arrayd6, [] (auto &x) { return *x; }, __VA_ARGS__)
+#define DOUBLE3_P(...)  SET_(property_impl::arrayd3, [] (auto &x) { return *x; }, __VA_ARGS__)
+#define DOUBLE6_P(...)  SET_(property_impl::arrayd6, [] (auto &x) { return *x; }, __VA_ARGS__)
 
 void PROPERTY_CLASS::setProperty(int property, const property_impl::PropertyValue &value) {
 	switch (property) {
@@ -127,6 +127,8 @@ void PROPERTY_CLASS::setProperty(int property, const property_impl::PropertyValu
 #undef INT_P
 #undef DOUBLE_P
 #undef OBJECT_P
+#undef DOUBLE3_P
+#undef DOUBLE6_P
 #undef HAS_
 #undef GET_
 #undef _GET_CONV_

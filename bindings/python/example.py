@@ -20,6 +20,6 @@ synthizer.set_log_level(synthizer.LogLevel.DEBUG)
 synthizer.initialize()
 ctx = synthizer.Context()
 g = synthizer.StreamingGenerator(context=ctx, protocol="file", path=sys.argv[1])
-s = synthizer.PannedSource(ctx)
+s = synthizer.Source3D(ctx)
 s.add_generator(g)
 

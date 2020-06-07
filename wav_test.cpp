@@ -5,6 +5,7 @@
 #include <memory>
 
 #include <cstddef>
+#include <cmath>
 
 #include "synthizer.h"
 #include "synthizer_constants.h"
@@ -52,9 +53,11 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_initialize());
 
 	CHECKED(syz_createContext(&context));
-	CHECKED(syz_createPannedSource(&source, context));
+	CHECKED(syz_createSource3D(&source, context));
 	CHECKED(syz_createStreamingGenerator(&generator, context, "file", argv[1], ""));
 	CHECKED(syz_sourceAddGenerator(source, generator));
+
+	CHECKED(syz_setD6(context, SYZ_CONTEXT_LISTENER_ORIENTATION, 0, 1, 0, 0, 0, 1));
 
 	angle = 0;
 	delta = (360.0/20)*0.02;
@@ -62,7 +65,7 @@ int main(int argc, char *argv[]) {
 	printf("angle delta %f\n", delta);
 
 	for(unsigned int i = 0; i < 1000; i++) {
-		CHECKED(syz_setD(source, SYZ_PANNED_SOURCE_AZIMUTH, angle));
+		CHECKED(syz_setD3(source, SYZ_SOURCE3D_POSITION, std::sin(angle*PI/180), std::cos(angle*PI/180), 0.0));
 		angle += delta;
 		angle -= (int(angle)/360)*360;
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));

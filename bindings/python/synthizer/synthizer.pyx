@@ -34,17 +34,25 @@ cdef class _PropertyBase:
 
 cdef class IntProperty(_PropertyBase):
     cdef int property
+    cdef object conv_in
+    cdef object conv_out
 
-    def __init__(self, int property):
+
+    def __init__(self, int property, conv_in = lambda x: x, conv_out = lambda x: x):
         self.property = property
+        self.conv_in = conv_in
+        self.conv_out = conv_out
 
     def __get__(self, _BaseObject instance, owner):
         cdef int val
         _checked(syz_getI(&val, instance.handle, self.property))
-        return val
+        return self.conv_out(val)
 
     def __set__(self, _BaseObject instance, int value):
-        _checked(syz_setI(instance.handle, self.property, value))
+        _checked(syz_setI(instance.handle, self.property, self.conv_in(value)))
+
+def enum_property(v, e):
+    return IntProperty(v, conv_in = lambda x: int(x), conv_out = lambda x: e(x))
 
 cdef class DoubleProperty(_PropertyBase):
     cdef int property
@@ -129,6 +137,15 @@ def initialized():
     finally:
         shutdown()
 
+cpdef enum PannerStrategy:
+    HRTF = SYZ_PANNER_STRATEGY_HRTF
+
+cpdef enum DistanceModel:
+    NONE = SYZ_DISTANCE_MODEL_NONE
+    LINEAR = SYZ_DISTANCE_MODEL_LINEAR
+    EXPONENTIAL = SYZ_DISTANCE_MODEL_EXPONENTIAL
+    INVERSE = SYZ_DISTANCE_MODEL_INVERSE
+
 cdef class _BaseObject:
     cdef syz_Handle handle
 
@@ -165,6 +182,13 @@ class Context(_BaseObject):
 
     listener_position = Double3Property(SYZ_CONTEXT_LISTENER_POSITION)
     listener_orientation = Double6Property(SYZ_CONTEXT_LISTENER_ORIENTATION)
+    distance_model = enum_property(SYZ_CONTEXT_DISTANCE_MODEL, lambda x: DistanceModel(x))
+    distance_ref = DoubleProperty(SYZ_CONTEXT_DISTANCE_REF)
+    distance_max = DoubleProperty(SYZ_CONTEXT_DISTANCE_MAX)
+    rolloff = DoubleProperty(SYZ_CONTEXT_ROLLOFF)
+    closeness_boost = DoubleProperty(SYZ_CONTEXT_CLOSENESS_BOOST)
+    closeness_boost_distance = DoubleProperty(SYZ_CONTEXT_CLOSENESS_BOOST_DISTANCE)
+
 
 cdef class Generator(_BaseObject):
     """Base class for all generators."""
@@ -202,8 +226,12 @@ cdef class Source(_BaseObject):
         cdef syz_Handle h = generator._get_handle_checked(Generator)
         _checked(syz_sourceRemoveGenerator(self.handle, h))
 
+cdef class PannedSourceCommon(Source):
+    """Properties common to PannedSource and SOurce3D"""
+    panner_strategy = enum_property(SYZ_PANNED_SOURCE_PANNER_STRATEGY, lambda x: PannerStrategy(x))
+    gain = DoubleProperty(SYZ_PANNED_SOURCE_GAIN)
 
-cdef class PannedSource(Source):
+cdef class PannedSource(PannedSourceCommon):
     """A source with azimuth and elevation panning done by hand."""
 
     def __init__(self, context):
@@ -215,6 +243,22 @@ cdef class PannedSource(Source):
     azimuth = DoubleProperty(SYZ_PANNED_SOURCE_AZIMUTH)
     elevation = DoubleProperty(SYZ_PANNED_SOURCE_ELEVATION)
     panning_scalar = DoubleProperty(SYZ_PANNED_SOURCE_PANNING_SCALAR)
-    panner_strategy = IntProperty(SYZ_PANNED_SOURCE_PANNER_STRATEGY)
-    gain = DoubleProperty(SYZ_PANNED_SOURCE_GAIN)
 
+
+cdef class Source3D(PannedSourceCommon):
+    """A source with 3D parameters."""
+
+    def __init__(self, context):
+        cdef syz_Handle ctx = context._get_handle_checked(Context)      
+        cdef syz_Handle out
+        _checked(syz_createSource3D(&out, ctx))
+        super().__init__(out)
+
+    distance_model = enum_property(SYZ_SOURCE3D_DISTANCE_MODEL, lambda x: DistanceModel(x))
+    distance_ref = DoubleProperty(SYZ_SOURCE3D_DISTANCE_REF)
+    distance_max = DoubleProperty(SYZ_SOURCE3D_DISTANCE_MAX)
+    rolloff = DoubleProperty(SYZ_SOURCE3D_ROLLOFF)
+    closeness_boost = DoubleProperty(SYZ_SOURCE3D_CLOSENESS_BOOST)
+    closeness_boost_distance = DoubleProperty(SYZ_SOURCE3D_CLOSENESS_BOOST_DISTANCE)
+    position = Double3Property(SYZ_SOURCE3D_POSITION)
+    orientation = Double6Property(SYZ_SOURCE3D_ORIENTATION)

@@ -43,6 +43,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/panner_bank.cpp
 	src/single_file_libs.c
 	src/source.cpp
+	src/spatialization_math.cpp
 
 	src/data/hrtf.cpp
 
@@ -57,6 +58,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/generators/decoding.cpp
 
 	src/sources/panned_source.cpp
+	src/sources/source3d.cpp
 
 	src/streams/file.cpp
 	src/streams/memory.cpp

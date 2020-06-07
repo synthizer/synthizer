@@ -5,6 +5,7 @@
 #include "synthizer/panner_bank.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/queues/vyukov.hpp"
+#include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
 
 #include "sema.h"
@@ -48,7 +49,7 @@ void deletionCallback(void *p) {
  * 
  * Later, if necessary, we'll extend synthizer to use atomics for some properties.
  * */
-class Context: public BaseObject, public std::enable_shared_from_this<Context> {
+class Context: public BaseObject, public DistanceParamsMixin, public std::enable_shared_from_this<Context> {
 	public:
 
 	Context();

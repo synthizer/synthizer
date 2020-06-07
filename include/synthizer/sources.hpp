@@ -4,6 +4,7 @@
 
 #include "synthizer/base_object.hpp"
 #include "synthizer/property_internals.hpp"
+#include "synthizer/spatialization_math.hpp"
 
 #include <array>
 #include <memory>
@@ -53,6 +54,8 @@ class PannedSource: public Source {
 	void setPannerStrategy(int strategy);
 	double getGain();
 	void setGain(double gain);
+	/* For 	Source3D. */
+	void setGain3D(double gain);
 
 	void run() override;
 
@@ -60,12 +63,29 @@ class PannedSource: public Source {
 	private:
 	enum SYZ_PANNER_STRATEGIES panner_strategy = SYZ_PANNER_STRATEGY_HRTF;
 	std::shared_ptr<PannerLane> panner_lane;
-	double azimuth = 0.0, elevation = 0.0, panning_scalar = 0.5, gain = 1.0;
+	double azimuth = 0.0, elevation = 0.0, panning_scalar = 0.5, gain = 1.0, gain_3d = 1.0;
 	bool needs_panner_set = true;
 	/* If true, the last thing set was scalar and we use that; otherwise use azimuth/elevation. */
 	bool is_scalar_panning = false;
 	/* Set to false to make the audio thread reallocate the lane on strategy changes. */
 	bool valid_lane = false;
+};
+
+class Source3D: public PannedSource, public DistanceParamsMixin  {
+	public:
+	Source3D(std::shared_ptr<Context> context);
+
+	std::array<double, 3> getPosition();
+	void setPosition(std::array<double, 3> position);
+	std::array<double, 6> getOrientation();
+	void setOrientation(std::array<double, 6> orientation);
+
+	void run() override;
+
+	PROPERTY_METHODS;
+	private:
+	std::array<double, 3> position;
+	std::array<double, 6> orientation;
 };
 
 }

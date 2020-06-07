@@ -53,5 +53,6 @@ ERRDEF(EHandleType, "Handle of the wrong type provided");
 ERRDEF(EInvalidProperty, "Not a valid property for this object type");
 ERRDEF(EPropertyType, "Property type mismatch");
 ERRDEF(ERange, "Value out of range");
+ERRDEF(EInvariant, "Invariant would be violated");
 
 }

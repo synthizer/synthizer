@@ -4,13 +4,13 @@
 
 #include "synthizer/background_thread.hpp"
 #include "synthizer/context.hpp"
-
 #include "synthizer/audio_output.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/invokable.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/sources.hpp"
+#include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
 
 #include <functional>
@@ -142,6 +142,9 @@ std::array<double, 6> Context::getListenerOrientation() {
 }
 
 void Context::setListenerOrientation(std::array<double, 6> orientation) {
+	Vec3d at{ orientation[0], orientation[1], orientation[2] };
+	Vec3d up{ orientation[3], orientation[4], orientation[5] };
+	throwIfParallel(at, up);
 	this->listener_orientation = orientation;
 }
 

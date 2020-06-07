@@ -27,15 +27,34 @@ extern "C" {
  * */
 
 #define CONTEXT_PROPERTIES \
-double3_p(SYZ_CONTEXT_LISTENER_POSITION, listener_position, ListenerPosition) \
-double6_p(SYZ_CONTEXT_LISTENER_ORIENTATION, listener_orientation, ListenerOrientation)
+DOUBLE3_P(SYZ_CONTEXT_LISTENER_POSITION, listener_position, ListenerPosition) \
+DOUBLE6_P(SYZ_CONTEXT_LISTENER_ORIENTATION, listener_orientation, ListenerOrientation) \
+INT_P(SYZ_CONTEXT_DISTANCE_MODEL, distance_model, DistanceModel, 0, SYZ_DISTANCE_MODEL_COUNT - 1) \
+DOUBLE_P(SYZ_CONTEXT_DISTANCE_REF, distance_ref, DistanceRef,  0.0, P_DOUBLE_MAX) \
+DOUBLE_P(SYZ_CONTEXT_DISTANCE_MAX, distance_max, DistanceMax, 0.0, P_DOUBLE_MAX) \
+DOUBLE_P(SYZ_CONTEXT_ROLLOFF, rolloff, Rolloff, 0.0, P_DOUBLE_MAX) \
+DOUBLE_P(SYZ_CONTEXT_CLOSENESS_BOOST, closeness_boost, ClosenessBoost, P_DOUBLE_MIN, P_DOUBLE_MAX) \
+DOUBLE_P(SYZ_CONTEXT_CLOSENESS_BOOST_DISTANCE, closeness_boost_distance, ClosenessBoostDistance, 0.0, P_DOUBLE_MAX)
 
-#define PANNED_SOURCE_PROPERTIES \
-DOUBLE_P(SYZ_PANNED_SOURCE_AZIMUTH, azimuth, Azimuth, 0.0f, 360.0f) \
-DOUBLE_P(SYZ_PANNED_SOURCE_ELEVATION, elevation, Elevation, -90.0f, 90.0f)\
-DOUBLE_P(SYZ_PANNED_SOURCE_PANNING_SCALAR, panning_scalar, PanningScalar, 0.0, 1.0) \
+#define PANNED_SOURCE_PROPERTIES_COMMON \
 DOUBLE_P(SYZ_PANNED_SOURCE_GAIN, gain, Gain, P_DOUBLE_MIN, P_DOUBLE_MAX) \
 INT_P(SYZ_PANNED_SOURCE_PANNER_STRATEGY, panner_strategy, PannerStrategy, 0, SYZ_PANNER_STRATEGY_COUNT - 1) \
+
+#define PANNED_SOURCE_PROPERTIES \
+PANNED_SOURCE_PROPERTIES_COMMON \
+DOUBLE_P(SYZ_PANNED_SOURCE_AZIMUTH, azimuth, Azimuth, 0.0f, 360.0f) \
+DOUBLE_P(SYZ_PANNED_SOURCE_ELEVATION, elevation, Elevation, -90.0f, 90.0f)\
+DOUBLE_P(SYZ_PANNED_SOURCE_PANNING_SCALAR, panning_scalar, PanningScalar, 0.0, 1.0)
+
+#define SOURCE3D_PROPERTIES \
+DOUBLE3_P(SYZ_SOURCE3D_POSITION, position, Position) \
+DOUBLE6_P(SYZ_SOURCE3D_ORIENTATION, orientation, Orientation) \
+INT_P(SYZ_SOURCE3D_DISTANCE_MODEL, distance_model, DistanceModel, 0, SYZ_DISTANCE_MODEL_COUNT - 1) \
+DOUBLE_P(SYZ_SOURCE3D_DISTANCE_REF, distance_ref, DistanceRef, 0.0, P_DOUBLE_MAX) \
+DOUBLE_P(SYZ_SOURCE3D_DISTANCE_MAX, distance_max, DistanceMax, 0.0, P_DOUBLE_MAX) \
+DOUBLE_P(SYZ_SOURCE3D_ROLLOFF, rolloff, Rolloff, 0.0, P_DOUBLE_MAX) \
+DOUBLE_P(SYZ_SOURCE3D_CLOSENESS_BOOST, closeness_boost, ClosenessBoost, P_DOUBLE_MIN, P_DOUBLE_MAX) \
+DOUBLE_P(SYZ_SOURCE3D_CLOSENESS_BOOST_DISTANCE, closeness_boost_distance, ClosenessBoostDistance, 0.0, P_DOUBLE_MAX)
 
 #ifdef __cplusplus
 }

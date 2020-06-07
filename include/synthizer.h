@@ -152,9 +152,14 @@ SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle g
 /*
  * Create a panned source, a source with azimuth/elevation as the underlying panning strategy.
  * 
- * For spatialized audio like games, use SpatializedSource, which has x/y/z and other interesting spatialization properties.
+ * For spatialized audio like games, use Source3D, which has x/y/z and other interesting spatialization properties.
  * */
 SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context);
+
+/*
+ * A Source3D has x/y/z, and distance model properties.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context);
 
 #ifdef __cplusplus
 }
