@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdlib>
+
 namespace synthizer {
 
 /* Usage, from inside the synthizer namespace, is config::THING. */
@@ -55,6 +57,16 @@ const int HRTF_MAX_ITD = 64;
 /*
  * The maximum number of lanes a panner can ever have.
  * */
-const unsigned int PANNER_MAX_LANES = 4;
+const int PANNER_MAX_LANES = 4;
+
+/*
+ * When storing buffers, how big should each page be? See buffer.hpp for explanation of how buffers work.
+ * 
+ * Should be a multiple of ALIGNMENT, but power of 2 is best.
+ * 
+ * Note: the primary trade-off here isn't memory fragmentation, it's speed at the boundaries.
+ * */
+const std::size_t BUFFER_CHUNK_SIZE = (1 << 14);
+
 }
 }
