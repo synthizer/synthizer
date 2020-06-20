@@ -1,5 +1,7 @@
 #include "synthizer/buffer.hpp"
 
+#include "synthizer/c_api.hpp"
+#include "synthizer/context.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/error.hpp"
 #include "synthizer/math.hpp"
@@ -81,6 +83,7 @@ BufferData *generateBufferData(unsigned int channels, unsigned int sr, T &&produ
 
 			std::fill(next_chunk + next_chunk_len * channels, next_chunk + chunk_size_samples, 0);
 			chunks.push_back(next_chunk);
+			length += next_chunk_len;
 			/* In case the next allocation fails, avoid a double free. */
 			next_chunk = nullptr;
 		}
@@ -108,4 +111,18 @@ std::shared_ptr<BufferData> bufferDataFromDecoder(const std::shared_ptr<AudioDec
 	return std::shared_ptr<BufferData>(buf);
 }
 
+}
+
+
+using namespace synthizer;
+
+SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options) {
+	SYZ_PROLOGUE
+	auto ctx = fromC<Context>(context);
+	auto dec = getDecoderForProtocol(protocol, path, options);
+	auto data = bufferDataFromDecoder(dec);
+	auto buf = ctx->createObject<Buffer>(data);
+	*out = toC(buf);
+	return 0;
+	SYZ_EPILOGUE
 }

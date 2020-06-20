@@ -56,7 +56,9 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/filters/audio_eq_cookbook.cpp
 	src/filters/simple_filters.cpp
 
+	src/generators/buffer.cpp
 	src/generators/decoding.cpp
+
 
 	src/sources/panned_source.cpp
 	src/sources/source3d.cpp

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "config.hpp"
-#include "memory.hpp"
-#include "types.hpp"
+#include "synthizer/base_object.hpp"
+#include "synthizer/config.hpp"
+#include "synthizer/memory.hpp"
+#include "synthizer/types.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -83,9 +84,11 @@ class BufferData {
 	std::vector<std::int16_t*> chunks;
 };
 
-class Buffer: CExposable {
+class Context;
+
+class Buffer: public BaseObject {
 	public:
-	Buffer(const std::shared_ptr<BufferData> &b): data(b) {
+	Buffer(const std::shared_ptr<Context> &ctx, const std::shared_ptr<BufferData> &b): BaseObject(ctx), data(b) {
 	}
 
 	unsigned int getChannels() const {
@@ -106,9 +109,26 @@ class Buffer: CExposable {
 
 class BufferReader {
 	public:
-	BufferReader(const Buffer &b): buffer(b) {
-		this->channels = this->buffer.getChannels();
+	BufferReader(): buffer(nullptr) {}
+
+	BufferReader(const std::shared_ptr<Buffer> &b) {
+		this->setBuffer(b);
+	}
+
+	void setBuffer(const std::shared_ptr<Buffer> &buffer) {
+		this->buffer = buffer;
+		this->channels = this->buffer->getChannels();
+		this->length = buffer->getLength();
 		assert(this->channels < config::MAX_CHANNELS);
+		this->chunk = {};
+	}
+
+	unsigned int getChannels() const {
+		return this->channels;
+	}
+
+	std::size_t getLength() const {
+		return this->length;
 	}
 
 	std::int16_t readSampleI16(std::size_t pos, unsigned int channel) {
@@ -116,10 +136,10 @@ class BufferReader {
 		/* Fast case. */
 		if (this->chunk.start <= pos && pos < this->chunk.end) {
 			goto do_read;
-		} else if (pos >= this->buffer.getLength()) {
+		} else if (pos >= this->length) {
 			return 0;
 		} else {
-			this->chunk = this->buffer.getChunk(pos);
+			this->chunk = this->buffer->getChunk(pos);
 			goto do_read;
 		}
 		do_read:
@@ -133,11 +153,11 @@ class BufferReader {
 	void readFrameI16(std::size_t pos, std::int16_t *out) {
 		if (this->chunk.start <= pos && pos < this->chunk.end) {
 			goto do_read;
-		} else if (pos > this->buffer.getLength()) {
+		} else if (pos > this->length) {
 			std::fill(out, out + this->channels, 0);
 			return;
 		} else {
-			this->chunk = this->buffer.getChunk(pos);
+			this->chunk = this->buffer->getChunk(pos);
 			goto do_read;
 		}
 	do_read:
@@ -158,19 +178,19 @@ class BufferReader {
 		std::size_t read = 0;
 		std::int16_t *cursor = out;
 
-		if (pos > this->buffer.getLength()) return 0;
+		if (pos > this->length) return 0;
 		/* can't read more than what's remaining in the buffer. */
-		count = std::min(this->buffer.getLength() - pos, count);
+		count = std::min(this->length - pos, count);
 		while (count - read > 0) {
 			std::size_t actual_pos = pos + read;
 			/* The overhead of always getting the chunk is minimal, so let's avoid bug-prone branches and always do it. */
-			this->chunk = this->buffer.getChunk(actual_pos);
+			this->chunk = this->buffer->getChunk(actual_pos);
 			std::size_t chunk_off = actual_pos - this->chunk.start;
 			std::size_t chunk_avail = this->chunk.end - chunk_off;
 			std::size_t will_copy = std::min(chunk_avail, count - read);
 			std::int16_t *ptr = this->chunk.data + chunk_off * this->channels;
 			std::copy(ptr, ptr + will_copy * channels, cursor);
-			cursor += will_copy;
+			cursor += will_copy * this->channels;
 			read += will_copy;
 		}
 
@@ -204,15 +224,17 @@ class BufferReader {
 			if (got < requested) {
 				break;
 			}
+			written += got;
 		}
 
 		return written;
 	}
 
 	private:
-	Buffer buffer;
+	std::shared_ptr<Buffer> buffer = nullptr;
 	/* We hold a copy to avoid going through two pointers and because it's unlikely that compilers can tell this never changes. */
-	unsigned int channels;
+	unsigned int channels = 0;
+	std::size_t length = 0;
 	BufferChunk chunk;
 };
 
