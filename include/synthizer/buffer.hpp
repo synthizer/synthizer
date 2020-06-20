@@ -16,9 +16,9 @@ namespace synthizer {
 /*
  * Buffers hold decoded audio data as 16-bit samples resampled to the Synthizer samplerate.  The following entities are involved:
  * 
- * - A buffer holds the data itself.
- * - A BufferRef holds a reference to a buffer.
- * - A BufferChunkRef holds a non-owning reference to a chunk from a buffer.
+ * - A BufferData holds the data itself.
+ * - A Buffer holds a reference to a BufferData.
+ * - A BufferChunk holds a non-owning reference to a chunk from a buffer.
  * 
  * A BufferReader type is also provided, which provides convenience methods for reading without having to deal with assemblying objects yourself.
  * 
@@ -28,14 +28,14 @@ namespace synthizer {
  * - We store data in noncontiguous chunks in order to assist low memory systems, and also because this makes it harder for someone to just copy audio data out with a debugger,
  *   since doing so would require walking our internal structures. Also, branch prediction should make reading cheap.
  * - We resample first for CPU usage purposes.
- * - A Buffer and BufferRef are separate types because we can expose BufferRefs through the C API, which will allow us to offer a BufferCache in future,
+ * - A Buffer and BufferData are separate types because we can expose Buffers through the C API, which will allow us to offer a BufferCache in future,
  *   rather than making everyone implement this themselves.
  * 
  * Most of this file is inline because otherwise things get expensive very quickly short of compiling with LTO and optimization and it would be nice to be able to use these in debug builds.
  * */
 
 /* Helper type to hold a pointer and a length for buffer chunks. */
-class BufferChunkRef {
+class BufferChunk {
 	public:
 	std::size_t start = 0;
 	std::size_t end = 0;
@@ -43,16 +43,16 @@ class BufferChunkRef {
 };
 
 /*
- * A Buffer holds the actual audio data, and is simply a vector of pointers.
+ * A BufferData holds the actual audio data, and is simply a vector of pointers.
  * */
-class Buffer {
+class BufferData {
 	public:
-	/* The pages are built by a decoder or something else, then fed here. They must be allocated with allocAligned. */
-	Buffer(unsigned int channels, std::size_t length, std::vector<std::int16_t*> &&chunks): channels(channels),
+	/* The chunks are built by a decoder or something else, then fed here. They must be allocated with allocAligned. */
+	BufferData(unsigned int channels, std::size_t length, std::vector<std::int16_t*> &&chunks): channels(channels),
 	length(length), chunks(std::move(chunks)) {
 	}
 
-	~Buffer() {
+	~BufferData() {
 		for (auto c: this->chunks) {
 			freeAligned(c);
 		}
@@ -66,7 +66,7 @@ class Buffer {
 		return this->length;
 	}
 
-	BufferChunkRef getChunk(std::size_t index) const {
+	BufferChunk getChunk(std::size_t index) const {
 		std::size_t actual_index = index / config::BUFFER_CHUNK_SIZE;
 		std::size_t rounded_index = actual_index * config::BUFFER_CHUNK_SIZE;
 		return {
@@ -83,30 +83,30 @@ class Buffer {
 	std::vector<std::int16_t*> chunks;
 };
 
-class BufferRef: CExposable {
+class Buffer: CExposable {
 	public:
-	BufferRef(const std::shared_ptr<Buffer> &b): buffer(b) {
+	Buffer(const std::shared_ptr<BufferData> &b): data(b) {
 	}
 
 	unsigned int getChannels() const {
-		return this->buffer->getChannels();
+		return this->data->getChannels();
 	}
 
 	std::size_t getLength() const {
-		return this->buffer->getLength();
+		return this->data->getLength();
 	}
 
-	BufferChunkRef getChunk(std::size_t index) const {
-		return this->buffer->getChunk(index);
+	BufferChunk getChunk(std::size_t index) const {
+		return this->data->getChunk(index);
 	}
 
 	private:
-	std::shared_ptr<Buffer> buffer;
+	std::shared_ptr<BufferData> data;
 };
 
 class BufferReader {
 	public:
-	BufferReader(const BufferRef &ref): buffer(ref) {
+	BufferReader(const Buffer &b): buffer(b) {
 		this->channels = this->buffer.getChannels();
 		assert(this->channels < config::MAX_CHANNELS);
 	}
@@ -210,13 +210,13 @@ class BufferReader {
 	}
 
 	private:
-	BufferRef buffer;
+	Buffer buffer;
 	/* We hold a copy to avoid going through two pointers and because it's unlikely that compilers can tell this never changes. */
 	unsigned int channels;
-	BufferChunkRef chunk;
+	BufferChunk chunk;
 };
 
 class AudioDecoder;
-std::shared_ptr<Buffer> bufferFromDecoder(const std::shared_ptr<AudioDecoder> &decoder);
+std::shared_ptr<BufferData> bufferDataFromDecoder(const std::shared_ptr<AudioDecoder> &decoder);
 
 }

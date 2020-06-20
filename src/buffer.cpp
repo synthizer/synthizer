@@ -29,7 +29,7 @@ class DitherGenerator {
  * the less condition to indicate that we're done.
  * */
 template<typename T>
-Buffer *generateBuffer(unsigned int channels, unsigned int sr, T &&producer) {
+BufferData *generateBufferData(unsigned int channels, unsigned int sr, T &&producer) {
 	DitherGenerator dither;
 	WDL_Resampler *resampler = nullptr;
 	std::vector<std::int16_t *> chunks;
@@ -85,7 +85,7 @@ Buffer *generateBuffer(unsigned int channels, unsigned int sr, T &&producer) {
 			next_chunk = nullptr;
 		}
 
-		auto ret = new Buffer(channels, length, std::move(chunks));
+		auto ret = new BufferData(channels, length, std::move(chunks));
 		delete[] working_buf;
 		return ret;
 	} catch(...) {
@@ -99,13 +99,13 @@ Buffer *generateBuffer(unsigned int channels, unsigned int sr, T &&producer) {
 	}
 }
 
-std::shared_ptr<Buffer> bufferFromDecoder(const std::shared_ptr<AudioDecoder> &decoder) {
+std::shared_ptr<BufferData> bufferDataFromDecoder(const std::shared_ptr<AudioDecoder> &decoder) {
 	auto channels = decoder->getChannels();
 	auto sr = decoder->getSr();
-	auto buf = generateBuffer(channels, sr, [&](auto frames, AudioSample *dest) {
+	auto buf = generateBufferData(channels, sr, [&](auto frames, AudioSample *dest) {
 		return decoder->writeSamplesInterleaved(frames, dest);
 	});
-	return std::shared_ptr<Buffer>(buf);
+	return std::shared_ptr<BufferData>(buf);
 }
 
 }
