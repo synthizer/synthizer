@@ -56,6 +56,10 @@ DOUBLE_P(SYZ_SOURCE3D_ROLLOFF, rolloff, Rolloff, 0.0, P_DOUBLE_MAX) \
 DOUBLE_P(SYZ_SOURCE3D_CLOSENESS_BOOST, closeness_boost, ClosenessBoost, P_DOUBLE_MIN, P_DOUBLE_MAX) \
 DOUBLE_P(SYZ_SOURCE3D_CLOSENESS_BOOST_DISTANCE, closeness_boost_distance, ClosenessBoostDistance, 0.0, P_DOUBLE_MAX)
 
+#define BUFFER_GENERATOR_PROPERTIES \
+OBJECT_P(SYZ_BUFFER_GENERATOR_BUFFER, buffer, Buffer, Buffer) \
+DOUBLE_P(SYZ_BUFFER_GENERATOR_POSITION, position, Position, 0.0, P_DOUBLE_MAX)
+
 #ifdef __cplusplus
 }
 #endif

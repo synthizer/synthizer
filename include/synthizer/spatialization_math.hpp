@@ -3,6 +3,7 @@
 #include "synthizer_constants.h"
 
 #include <array>
+#include <cmath>
 
 namespace synthizer {
 

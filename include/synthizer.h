@@ -139,6 +139,17 @@ SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out);
 SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options);
 
 /*
+ * A Buffer is decoded audio data.
+ * 
+ * This creates one from the 3 streaming parameters.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options);
+/*
+ * A buffer generator generates audio from a buffer.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context);
+
+/*
  * Add/remove generators from a PannedSource. The PannedSource weak references the generators; they must be kept alive on the external side for the time being.
  * 
  * This will probably change as lifetimes get narrowed down, and as sources are extended with more functionality to manage their generators.

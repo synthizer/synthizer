@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <memory>
+#include <thread>
 
 #include <cstddef>
 #include <cmath>
@@ -10,24 +11,7 @@
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
-#include "synthizer/audio_output.hpp"
-#include "synthizer/byte_stream.hpp"
-#include "synthizer/context.hpp"
-#include "synthizer/decoding.hpp"
-#include "synthizer/downsampler.hpp"
-#include "synthizer/filter_design.hpp"
-#include "synthizer/hrtf.hpp"
-#include "synthizer/iir_filter.hpp"
-#include "synthizer/invokable.hpp"
-#include "synthizer/logging.hpp"
-#include "synthizer/panner_bank.hpp"
-#include "synthizer/math.hpp"
-#include "synthizer/sources.hpp"
-
-#include "synthizer/generators/decoding.hpp"
-
-using namespace synthizer;
-
+#define PI 3.1415926535
 #define CHECKED(x) do { \
 auto ret = x; \
 	if (ret) { \
@@ -39,7 +23,7 @@ auto ret = x; \
 } while(0)
 
 int main(int argc, char *argv[]) {
-	syz_Handle context, generator, source;
+	syz_Handle context, generator, source, buffer;
 	int ecode = 0, ending = 0;
 	double angle, delta;
 
@@ -54,7 +38,9 @@ int main(int argc, char *argv[]) {
 
 	CHECKED(syz_createContext(&context));
 	CHECKED(syz_createSource3D(&source, context));
-	CHECKED(syz_createStreamingGenerator(&generator, context, "file", argv[1], ""));
+	CHECKED(syz_createBufferGenerator(&generator, context));
+	CHECKED(syz_createBufferFromStream(&buffer, context, "file", argv[1], ""));
+	CHECKED(syz_setO(generator, SYZ_BUFFER_GENERATOR_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
 	CHECKED(syz_setD6(context, SYZ_CONTEXT_LISTENER_ORIENTATION, 0, 1, 0, 0, 0, 1));
