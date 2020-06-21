@@ -33,8 +33,7 @@ class BufferGenerator: public Generator {
 	void generatePitchBendHelper(AudioSample *out);
 	void generatePitchBend(AudioSample *out);
 
-	std::shared_ptr<Buffer> buffer = nullptr;
-
+	std::weak_ptr<Buffer> buffer;
 	BufferReader reader;
 	double pitch_bend = 1.0;
 	double position = 0.0;

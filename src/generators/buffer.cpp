@@ -15,12 +15,14 @@
 namespace synthizer {
 
 unsigned int BufferGenerator::getChannels() {
-	if (this->buffer == nullptr) return 0;
+	auto buffer = this->buffer.lock();
+	if (buffer == nullptr) return 0;
 	return this->reader.getChannels();
 }
 
 void BufferGenerator::generateBlock(AudioSample *output) {
-	if (this->buffer == nullptr) {
+	auto buffer = this->buffer.lock();
+	if (buffer == nullptr) {
 		return;
 	} else if (abs(1.0 - this->pitch_bend) > 0.001) {
 		return this->generatePitchBend(output);
@@ -89,12 +91,14 @@ void BufferGenerator::setPitchBend(double newPitchBend) {
 }
 
 std::shared_ptr<Buffer> BufferGenerator::getBuffer() {
-	return this->buffer;
+	return this->buffer.lock();
 }
 
 void BufferGenerator::setBuffer(const std::shared_ptr<Buffer> &b) {
 	this->buffer = b;
-	this->reader.setBuffer(b);
+	if (b != nullptr) {
+		this->reader.setBuffer(b.get());
+	}
 	this->position = 0.0;
 }
 

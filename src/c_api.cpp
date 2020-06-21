@@ -139,7 +139,7 @@ SYZ_CAPI syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle valu
 	SYZ_PROLOGUE
 	auto o = fromC<BaseObject>(target);
 	auto ctx = o->getContextRaw();
-	std::shared_ptr<BaseObject> val;
+	std::shared_ptr<BaseObject> val = nullptr;
 	if (value) {
 		val = fromC<BaseObject>(value);
 	}

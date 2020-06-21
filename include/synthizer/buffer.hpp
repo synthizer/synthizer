@@ -107,15 +107,20 @@ class Buffer: public BaseObject {
 	std::shared_ptr<BufferData> data;
 };
 
+/*
+ * Very, very, very important note: this doesn't hold a shared_ptr.
+ * 
+ * This is because it's used by BufferGenerator, which intentionally needs to hold a weak reference to play nice with the object property subsystem.
+ * */
 class BufferReader {
 	public:
 	BufferReader(): buffer(nullptr) {}
 
-	BufferReader(const std::shared_ptr<Buffer> &b) {
+	BufferReader(Buffer *b) {
 		this->setBuffer(b);
 	}
 
-	void setBuffer(const std::shared_ptr<Buffer> &buffer) {
+	void setBuffer(Buffer *buffer) {
 		this->buffer = buffer;
 		this->channels = this->buffer->getChannels();
 		this->length = buffer->getLength();
@@ -232,7 +237,7 @@ class BufferReader {
 	}
 
 	private:
-	std::shared_ptr<Buffer> buffer = nullptr;
+	Buffer *buffer = nullptr;
 	/* We hold a copy to avoid going through two pointers and because it's unlikely that compilers can tell this never changes. */
 	unsigned int channels = 0;
 	std::size_t length = 0;

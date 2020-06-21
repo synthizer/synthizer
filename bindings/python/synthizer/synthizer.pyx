@@ -1,4 +1,5 @@
 import contextlib
+import threading
 
 from synthizer_properties cimport *
 from synthizer_constants cimport *
@@ -14,6 +15,9 @@ cdef class SynthizerError(Exception):
             self.message = ""
         else:
             self.message = str(tmp, "utf-8")
+
+    def __str__(self):
+        return f"SynthizerError: {self.message} [{self.code}]"
 
 cdef _checked(x):
     if x != 0:
@@ -109,11 +113,7 @@ cdef class ObjectProperty(_PropertyBase):
         _checked(syz_getO(&x, instance.handle, self.property))
         if x == 0:
             return None
-        # Materialize cls without going through __init__
-        cdef _BaseObject obj
-        obj = self.cls.__new__(self.cls)
-        obj.handle = x
-        return obj
+        return _handle_to_object(x)
 
     def __set__(self, _BaseObject instance, _BaseObject value):
         _checked(syz_setO(instance.handle, self.property, value.handle if value else 0))
@@ -168,15 +168,32 @@ cpdef enum DistanceModel:
     EXPONENTIAL = SYZ_DISTANCE_MODEL_EXPONENTIAL
     INVERSE = SYZ_DISTANCE_MODEL_INVERSE
 
+cdef object _objects_by_handle = dict()
+cdef object _objects_by_handle_mutex = threading.Lock()
+
+cdef _register_object(_BaseObject obj):
+    with _objects_by_handle_mutex:
+        _objects_by_handle[obj.handle] = obj
+
+cdef _unregister_object(_BaseObject obj):
+    with _objects_by_handle_mutex:
+        del _objects_by_handle[obj.handle]
+
+cdef _handle_to_object(handle):
+    with _objects_by_handle_mutex:
+        return _objects_by_handle.get(handle, None)
+
 cdef class _BaseObject:
     cdef syz_Handle handle
 
     def __init__(self, int handle):
         self.handle = handle
+        _register_object(self)
 
     def destroy(self):
-        """Destroy this object.  This function is useful to ensure destruction of resources immediately as opposed to waiting for the garbage collector."""
+        """Destroy this object. Must be called in order to not leak Syntizer objects."""
         _checked(syz_handleDecRef(self.handle))
+        _unregister_object(self)
         self.handle = 0
 
     cpdef syz_Handle _get_handle_checked(self, cls):
@@ -184,11 +201,6 @@ cdef class _BaseObject:
         if not isinstance(self, cls):
             raise ValueError("Synthizer object is of an unexpected type")
         return self.handle
-
-    def __dealloc__(self):
-        if self.handle != 0:
-            syz_handleDecRef(self.handle)
-
 
 class Context(_BaseObject):
     """The Synthizer context represents an open audio device and groups all Synthizer objects created with it into one unit.
