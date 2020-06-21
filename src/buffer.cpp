@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <random>
 #include <utility>
 #include <vector>
 
@@ -19,10 +20,15 @@ namespace synthizer {
 
 class DitherGenerator {
 	public:
-	/* Not implemented yet. */
 	AudioSample generate() {
-		return 0.0f;
+		float r1 = this->distribution(this->engine);
+		float r2 = this->distribution(this->engine);
+		return 1.0f -r1 -r2;
 	}
+
+	private:
+	std::mt19937 engine{10};
+	std::uniform_real_distribution<float> distribution{0.0f, 1.0f };
 };
 
 /*
