@@ -1,11 +1,11 @@
 #pragma once
 
+#include "synthizer/spsc_semaphore.hpp"
 #include "synthizer/queues/vyukov.hpp"
-
-#include "sema.h"
 
 #include <exception>
 #include <type_traits>
+#include <utility>
 
 namespace synthizer {
 
@@ -38,8 +38,6 @@ class CallableInvokable: public Invokable {
 
 /*
  * An invokable that has a wait method which will return the result.
- * 
- * TODO: this should use a per-thread semaphore.
  * */
 template<typename C, bool is_void>
 class WaitableInvokable;
@@ -49,7 +47,7 @@ class WaitableInvokable<C, true>: public Invokable {
 	public:
 	using RESULT_TYPE = typename std::invoke_result<C>::type;
 
-	WaitableInvokable(C &&callable): callable(callable) {}
+	WaitableInvokable(C &&callable): callable(std::move(callable)) {}
 
 	void invoke() {
 		try {
@@ -68,7 +66,7 @@ class WaitableInvokable<C, true>: public Invokable {
 
 	private:
 	C callable;
-	Semaphore semaphore;
+	SPSCSemaphore semaphore;
 	std::exception_ptr exception;
 };
 
@@ -77,7 +75,7 @@ class WaitableInvokable<C, false>: public Invokable {
 	public:
 	using RESULT_TYPE = typename std::invoke_result<C>::type;
 
-	WaitableInvokable(C &&callable): callable(callable) {}
+	WaitableInvokable(C &&callable): callable(std::move(callable)) {}
 
 	void invoke() {
 		try {
@@ -96,7 +94,7 @@ class WaitableInvokable<C, false>: public Invokable {
 
 	private:
 	C callable;
-	Semaphore semaphore;
+	SPSCSemaphore semaphore;
 	RESULT_TYPE result;
 	std::exception_ptr exception;
 };

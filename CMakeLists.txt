@@ -43,6 +43,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/memory.cpp
 	src/panner_bank.cpp
 	src/single_file_libs.c
+	src/spsc_semaphore.cpp
 	src/source.cpp
 	src/spatialization_math.cpp
 
@@ -92,5 +93,8 @@ target_link_libraries(wav_test synthizer)
 
 add_executable(filter_print filter_print.cpp)
 target_link_libraries(filter_print synthizer)
+
+add_executable(property_write_bench benchmarks/property_write.cpp)
+target_link_libraries(property_write_bench synthizer)
 
 add_test(NAME delay_line COMMAND delay_line_test)

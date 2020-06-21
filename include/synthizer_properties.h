@@ -47,6 +47,7 @@ DOUBLE_P(SYZ_P_ELEVATION, elevation, Elevation, -90.0f, 90.0f)\
 DOUBLE_P(SYZ_P_PANNING_SCALAR, panning_scalar, PanningScalar, 0.0, 1.0)
 
 #define SOURCE3D_PROPERTIES \
+PANNED_SOURCE_PROPERTIES_COMMON \
 DOUBLE3_P(SYZ_P_POSITION, position, Position) \
 DOUBLE6_P(SYZ_P_ORIENTATION, orientation, Orientation) \
 INT_P(SYZ_P_DISTANCE_MODEL, distance_model, DistanceModel, 0, SYZ_DISTANCE_MODEL_COUNT - 1) \
