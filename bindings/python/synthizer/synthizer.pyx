@@ -180,14 +180,14 @@ class Context(_BaseObject):
         _checked(syz_createContext(&handle))
         super().__init__(handle)
 
-    listener_position = Double3Property(SYZ_CONTEXT_LISTENER_POSITION)
-    listener_orientation = Double6Property(SYZ_CONTEXT_LISTENER_ORIENTATION)
-    distance_model = enum_property(SYZ_CONTEXT_DISTANCE_MODEL, lambda x: DistanceModel(x))
-    distance_ref = DoubleProperty(SYZ_CONTEXT_DISTANCE_REF)
-    distance_max = DoubleProperty(SYZ_CONTEXT_DISTANCE_MAX)
-    rolloff = DoubleProperty(SYZ_CONTEXT_ROLLOFF)
-    closeness_boost = DoubleProperty(SYZ_CONTEXT_CLOSENESS_BOOST)
-    closeness_boost_distance = DoubleProperty(SYZ_CONTEXT_CLOSENESS_BOOST_DISTANCE)
+    position = Double3Property(SYZ_P_POSITION)
+    orientation = Double6Property(SYZ_P_ORIENTATION)
+    distance_model = enum_property(SYZ_P_DISTANCE_MODEL, lambda x: DistanceModel(x))
+    distance_ref = DoubleProperty(SYZ_P_DISTANCE_REF)
+    distance_max = DoubleProperty(SYZ_P_DISTANCE_MAX)
+    rolloff = DoubleProperty(SYZ_P_ROLLOFF)
+    closeness_boost = DoubleProperty(SYZ_P_CLOSENESS_BOOST)
+    closeness_boost_distance = DoubleProperty(SYZ_P_CLOSENESS_BOOST_DISTANCE)
 
 
 cdef class Generator(_BaseObject):
@@ -227,9 +227,9 @@ cdef class Source(_BaseObject):
         _checked(syz_sourceRemoveGenerator(self.handle, h))
 
 cdef class PannedSourceCommon(Source):
-    """Properties common to PannedSource and SOurce3D"""
-    panner_strategy = enum_property(SYZ_PANNED_SOURCE_PANNER_STRATEGY, lambda x: PannerStrategy(x))
-    gain = DoubleProperty(SYZ_PANNED_SOURCE_GAIN)
+    """Properties common to PannedSource and Source3D"""
+    panner_strategy = enum_property(SYZ_P_PANNER_STRATEGY, lambda x: PannerStrategy(x))
+    gain = DoubleProperty(SYZ_P_GAIN)
 
 cdef class PannedSource(PannedSourceCommon):
     """A source with azimuth and elevation panning done by hand."""
@@ -240,9 +240,9 @@ cdef class PannedSource(PannedSourceCommon):
         _checked(syz_createPannedSource(&out, ctx))
         super().__init__(out)
 
-    azimuth = DoubleProperty(SYZ_PANNED_SOURCE_AZIMUTH)
-    elevation = DoubleProperty(SYZ_PANNED_SOURCE_ELEVATION)
-    panning_scalar = DoubleProperty(SYZ_PANNED_SOURCE_PANNING_SCALAR)
+    azimuth = DoubleProperty(SYZ_P_AZIMUTH)
+    elevation = DoubleProperty(SYZ_P_ELEVATION)
+    panning_scalar = DoubleProperty(SYZ_P_PANNING_SCALAR)
 
 
 cdef class Source3D(PannedSourceCommon):
@@ -254,11 +254,11 @@ cdef class Source3D(PannedSourceCommon):
         _checked(syz_createSource3D(&out, ctx))
         super().__init__(out)
 
-    distance_model = enum_property(SYZ_SOURCE3D_DISTANCE_MODEL, lambda x: DistanceModel(x))
-    distance_ref = DoubleProperty(SYZ_SOURCE3D_DISTANCE_REF)
-    distance_max = DoubleProperty(SYZ_SOURCE3D_DISTANCE_MAX)
-    rolloff = DoubleProperty(SYZ_SOURCE3D_ROLLOFF)
-    closeness_boost = DoubleProperty(SYZ_SOURCE3D_CLOSENESS_BOOST)
-    closeness_boost_distance = DoubleProperty(SYZ_SOURCE3D_CLOSENESS_BOOST_DISTANCE)
-    position = Double3Property(SYZ_SOURCE3D_POSITION)
-    orientation = Double6Property(SYZ_SOURCE3D_ORIENTATION)
+    distance_model = enum_property(SYZ_P_DISTANCE_MODEL, lambda x: DistanceModel(x))
+    distance_ref = DoubleProperty(SYZ_P_DISTANCE_REF)
+    distance_max = DoubleProperty(SYZ_P_DISTANCE_MAX)
+    rolloff = DoubleProperty(SYZ_P_ROLLOFF)
+    closeness_boost = DoubleProperty(SYZ_P_CLOSENESS_BOOST)
+    closeness_boost_distance = DoubleProperty(SYZ_P_CLOSENESS_BOOST_DISTANCE)
+    position = Double3Property(SYZ_P_POSITION)
+    orientation = Double6Property(SYZ_P_ORIENTATION)

@@ -129,23 +129,23 @@ void Context::registerSource(std::shared_ptr<Source> &source) {
 	this->sources[source.get()] = source;
 }
 
-std::array<double, 3> Context::getListenerPosition() {
-	return this->listener_position;
+std::array<double, 3> Context::getPosition() {
+	return this->position;
 }
 
-void Context::setListenerPosition(std::array<double, 3> pos) {
-	this->listener_position = pos;
+void Context::setPosition(std::array<double, 3> pos) {
+	this->position = pos;
 }
 
-std::array<double, 6> Context::getListenerOrientation() {
-	return this->listener_orientation;
+std::array<double, 6> Context::getOrientation() {
+	return this->orientation;
 }
 
-void Context::setListenerOrientation(std::array<double, 6> orientation) {
+void Context::setOrientation(std::array<double, 6> orientation) {
 	Vec3d at{ orientation[0], orientation[1], orientation[2] };
 	Vec3d up{ orientation[3], orientation[4], orientation[5] };
 	throwIfParallel(at, up);
-	this->listener_orientation = orientation;
+	this->orientation = orientation;
 }
 
 std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_STRATEGIES strategy) {

@@ -53,6 +53,10 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_createStreamingGenerator(syz_Handle* out, syz_Handle context, char* protocol, char* path, char* options)
 
+    syz_ErrorCode syz_createBufferFromStream(syz_Handle* out, syz_Handle context, char* protocol, char* path, char* options)
+
+    syz_ErrorCode syz_createBufferGenerator(syz_Handle* out, syz_Handle context)
+
     syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle generator)
 
     syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle generator)

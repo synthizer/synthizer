@@ -34,8 +34,8 @@ void Source3D::setOrientation(std::array<double, 6> orientation) {
 
 void Source3D::run() {
 	auto ctx = this->getContext();
-	auto listener_pos = ctx->getListenerPosition();
-	auto listener_orient = ctx->getListenerOrientation();
+	auto listener_pos = ctx->getPosition();
+	auto listener_orient = ctx->getOrientation();
 	Vec3d listener_at = { listener_orient[0], listener_orient[1], listener_orient[2] };
 	Vec3d listener_up = { listener_orient[3], listener_orient[4], listener_orient[5] };
 

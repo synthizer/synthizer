@@ -40,10 +40,10 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_createSource3D(&source, context));
 	CHECKED(syz_createBufferGenerator(&generator, context));
 	CHECKED(syz_createBufferFromStream(&buffer, context, "file", argv[1], ""));
-	CHECKED(syz_setO(generator, SYZ_BUFFER_GENERATOR_BUFFER, buffer));
+	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
-	CHECKED(syz_setD6(context, SYZ_CONTEXT_LISTENER_ORIENTATION, 0, 1, 0, 0, 0, 1));
+	CHECKED(syz_setD6(context, SYZ_P_ORIENTATION, 0, 1, 0, 0, 0, 1));
 
 	angle = 0;
 	delta = (360.0/20)*0.02;
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 	printf("angle delta %f\n", delta);
 
 	for(unsigned int i = 0; i < 1000; i++) {
-		CHECKED(syz_setD3(source, SYZ_SOURCE3D_POSITION, std::sin(angle*PI/180), std::cos(angle*PI/180), 0.0));
+		CHECKED(syz_setD3(source, SYZ_P_POSITION, std::sin(angle*PI/180), std::cos(angle*PI/180), 0.0));
 		angle += delta;
 		angle -= (int(angle)/360)*360;
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));

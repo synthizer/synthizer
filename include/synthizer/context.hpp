@@ -131,10 +131,10 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	/*
 	 * The properties for the listener.
 	 * */
-	std::array<double, 3> getListenerPosition();
-	void setListenerPosition(std::array<double, 3> pos);
-	std::array<double, 6> getListenerOrientation();
-	void setListenerOrientation(std::array<double, 6> orientation);
+	std::array<double, 3> getPosition();
+	void setPosition(std::array<double, 3> pos);
+	std::array<double, 6> getOrientation();
+	void setOrientation(std::array<double, 6> orientation);
 
 	/* Helper methods used by various pieces of synthizer to grab global resources. */
 	/* Allocate a panner lane intended to be used by a source. */
@@ -199,9 +199,9 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	std::shared_ptr<AbstractPannerBank> source_panners = nullptr;
 
 	/* Parameters of the 3D environment: listener orientation/position, library-wide defaults for distance models, etc. */
-	std::array<double, 3> listener_position{ { 0, 0, 0 } };
+	std::array<double, 3> position{ { 0, 0, 0 } };
 	/* Default to facing positive y with positive x as east and positive z as up. */
-	std::array<double, 6> listener_orientation{ { 0, 1, 0, 0, 0, 1 } };
+	std::array<double, 6> orientation{ { 0, 1, 0, 0, 0, 1 } };
 };
 
 }
