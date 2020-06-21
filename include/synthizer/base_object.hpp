@@ -40,6 +40,11 @@ class BaseObject: public CExposable {
 		return this->context;
 	}
 
+	/* From the C API implementations, you usually want this one. */
+	virtual Context *getContextRaw() {
+		return this->context.get();
+	}
+
 	protected:
 	std::shared_ptr<Context> context;
 };

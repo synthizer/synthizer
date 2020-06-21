@@ -24,7 +24,8 @@ if 'BUILDING_SYNTHIZER' in os.environ:
     extension_args = {
         'include_dirs': [synthizer_include_dir],
         'library_dirs': [synthizer_build_dir],
-        'libraries': [synthizer_lib]
+        'libraries': [synthizer_lib],
+        'extra_compile_args': [ "/O2" ],
     }
 
 extensions = [

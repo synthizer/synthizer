@@ -63,6 +63,10 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	~Context();
 
 	std::shared_ptr<Context> getContext() override;
+	Context *getContextRaw() override {
+		return this;
+	}
+
 
 	/*
 	 * Shut the context down.
