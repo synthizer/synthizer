@@ -46,6 +46,7 @@ const auto double_max = std::numeric_limits<double>::max();
 #define PROPERTY_METHODS \
 bool hasProperty(int property) override; \
 property_impl::PropertyValue getProperty(int property) override; \
+void validateProperty(int property, const property_impl::PropertyValue &value) override; \
 void setProperty(int property, const property_impl::PropertyValue &value) override;
 
 }

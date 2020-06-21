@@ -53,11 +53,19 @@ break;
 
 #define GET_(t, ...) GET_CONV_(t, [](auto x) { return x; }, __VA_ARGS__)
 
-#define SET_(type, checker, p, name1, name2, ...) \
+#define VALIDATE_(type, checker, p, ...) \
+	case (p): { \
+		auto ptr = std::get_if<type>(&value); \
+		if (ptr == nullptr) throw EPropertyType(); \
+		checker(ptr); \
+		break; \
+	}
+
+#define SET_(type, conv, p, name1, name2, ...) \
 case (p): { \
 	auto ptr = std::get_if<type>(&value); \
 	if (ptr == nullptr) throw EPropertyType(); \
-	this->set##name2(checker(ptr)); \
+	this->set##name2(conv(ptr)); \
 } \
 break;
 
@@ -107,9 +115,29 @@ property_impl::PropertyValue PROPERTY_CLASS::getProperty(int property) {
 #undef DOUBLE3_P
 #undef DOUBLE6_P
 
-#define INT_P(p, name1, name2, min, max) SET_(int, [](auto x) { if(*x < min || *x > max) throw ERange(); return *x; }, p, name1, name2, min, max);
-#define DOUBLE_P(p, name1, name2, min, max) SET_(double, [](auto x) { if (*x < min || *x > max) throw ERange(); return *x; }, p, name1, name2, min, max)
-#define OBJECT_P(p, name1, name2, cls) SET_(std::shared_ptr<BaseObject>, [] (auto *x) -> std::shared_ptr<cls> { if (*x == nullptr) return nullptr; auto &y = *x; auto z = std::dynamic_pointer_cast<cls>(y); if (z == nullptr) throw EHandleType(); return z; }, p, name1, name2, cls)
+#define INT_P(p, name1, name2, min, max) VALIDATE_(int, [](auto x) { if(*x < min || *x > max) throw ERange(); }, p, name1, name2, min, max);
+#define DOUBLE_P(p, name1, name2, min, max) VALIDATE_(double, [](auto x) { if (*x < min || *x > max) throw ERange(); }, p, name1, name2, min, max)
+#define OBJECT_P(p, name1, name2, cls) VALIDATE_(std::shared_ptr<BaseObject>, [] (auto *x) { if (*x == nullptr) return; auto &y = *x; auto z = std::dynamic_pointer_cast<cls>(y); if (z == nullptr) throw EHandleType(); }, p, name1, name2, cls)
+#define DOUBLE3_P(...)  VALIDATE_(property_impl::arrayd3, [] (auto &x) {}, __VA_ARGS__)
+#define DOUBLE6_P(...)  VALIDATE_(property_impl::arrayd6, [] (auto &x) {}, __VA_ARGS__)
+
+void PROPERTY_CLASS::validateProperty(int property, const property_impl::PropertyValue &value) {
+	switch (property) {
+	PROPERTY_LIST
+	default:
+		PROPERTY_BASE::validateProperty(property, value);
+	}
+}
+
+#undef INT_P
+#undef DOUBLE_P
+#undef OBJECT_P
+#undef DOUBLE3_P
+#undef DOUBLE6_P
+
+#define INT_P(p, name1, name2, min, max) SET_(int, [](auto x) { return *x; }, p, name1, name2, min, max);
+#define DOUBLE_P(p, name1, name2, min, max) SET_(double, [](auto x) { return *x; }, p, name1, name2, min, max)
+#define OBJECT_P(p, name1, name2, cls) SET_(std::shared_ptr<BaseObject>, [] (auto *x) -> std::shared_ptr<cls> { return *x ? std::static_pointer_cast<cls>(*x) : nullptr ; }, p, name1, name2, cls)
 #define DOUBLE3_P(...)  SET_(property_impl::arrayd3, [] (auto &x) { return *x; }, __VA_ARGS__)
 #define DOUBLE6_P(...)  SET_(property_impl::arrayd6, [] (auto &x) { return *x; }, __VA_ARGS__)
 

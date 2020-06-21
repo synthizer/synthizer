@@ -26,11 +26,15 @@ class BaseObject: public CExposable {
 		return false;
 	}
 
+
 	virtual property_impl::PropertyValue getProperty(int property) {
 		throw EInvalidProperty();
 	}
 
-	/* And getting and setting them immediately throws. */
+	virtual void validateProperty(int property, const property_impl::PropertyValue &value) {
+		throw EInvalidProperty();
+	}
+
 	virtual void setProperty(int property, const property_impl::PropertyValue &value) {
 		throw EInvalidProperty();
 	}

@@ -78,6 +78,7 @@ static T propertyGetter(Context *ctx, std::shared_ptr<BaseObject> &obj, int prop
 
 template<typename T>
 static void propertySetter(Context *ctx, const std::shared_ptr<BaseObject> &obj, int property, T &value) {
+	obj->validateProperty(property, value);
 	auto inv = WaitableInvokable([&] () {
 		obj->setProperty(property, value);
 	});
