@@ -84,8 +84,8 @@ class Source3D: public PannedSource, public DistanceParamsMixin  {
 
 	PROPERTY_METHODS;
 	private:
-	std::array<double, 3> position;
-	std::array<double, 6> orientation;
+	std::array<double, 3> position{ 0.0f, 0.0f, 0.0f };
+	std::array<double, 6> orientation{ 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f };
 };
 
 }

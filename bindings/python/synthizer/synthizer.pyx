@@ -96,6 +96,28 @@ cdef class Double6Property(_PropertyBase):
     def __set__(self, _BaseObject instance, value):
         _checked(syz_setD6(instance.handle, self.property, value[0], value[1], value[2], value[3], value[4], value[5]))
 
+cdef class ObjectProperty(_PropertyBase):
+    cdef int property
+    cdef object cls
+
+    def __init__(self, int property, cls):
+        self.property = property
+        self.cls = cls
+
+    def __get__(self, _BaseObject instance, owner):
+        cdef syz_Handle x
+        _checked(syz_getO(&x, instance.handle, self.property))
+        if x == 0:
+            return None
+        # Materialize cls without going through __init__
+        cdef _BaseObject obj
+        obj = self.cls.__new__(self.cls)
+        obj.handle = x
+        return obj
+
+    def __set__(self, _BaseObject instance, _BaseObject value):
+        _checked(syz_setO(instance.handle, self.property, value.handle if value else 0))
+
 cpdef enum LogLevel:
     ERROR = SYZ_LOG_LEVEL_ERROR
     WARN = SYZ_LOG_LEVEL_WARN
@@ -152,7 +174,7 @@ cdef class _BaseObject:
     def __init__(self, int handle):
         self.handle = handle
 
-    cdef destroy(self):
+    def destroy(self):
         """Destroy this object.  This function is useful to ensure destruction of resources immediately as opposed to waiting for the garbage collector."""
         _checked(syz_handleDecRef(self.handle))
         self.handle = 0
@@ -262,3 +284,28 @@ cdef class Source3D(PannedSourceCommon):
     closeness_boost_distance = DoubleProperty(SYZ_P_CLOSENESS_BOOST_DISTANCE)
     position = Double3Property(SYZ_P_POSITION)
     orientation = Double6Property(SYZ_P_ORIENTATION)
+
+cdef class Buffer(_BaseObject):
+    """Use Buffer.from_stream(protocol, path, options) to initialize."""
+
+    def __init__(self, _handle = None):
+        if _handle is None:
+            raise RuntimeError("Use one of the staticmethods to initialize Buffers in order to specify where the data comes from.")
+        super().__init__(_handle)
+
+    @staticmethod
+    def from_stream(context, protocol, path, options=""):
+        """Create a buffer from a stream."""
+        cdef syz_Handle handle
+        _checked(syz_createBufferFromStream(&handle, context._get_handle_checked(Context), _to_bytes(protocol), _to_bytes(path), _to_bytes(options)))
+        return Buffer(_handle=handle)
+
+cdef class BufferGenerator(Generator):
+    def __init__(self, context):
+        cdef syz_Handle handle
+        _checked(syz_createBufferGenerator(&handle, context._get_handle_checked(Context)))
+        super().__init__(handle)
+
+    buffer = ObjectProperty(SYZ_P_BUFFER, Buffer)
+    position = DoubleProperty(SYZ_P_POSITION)
+    looping = IntProperty(SYZ_P_LOOPING, conv_in = int, conv_out = bool)

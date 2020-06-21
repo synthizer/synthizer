@@ -19,9 +19,9 @@ namespace synthizer {
  * 
  * - A BufferData holds the data itself.
  * - A Buffer holds a reference to a BufferData.
- * - A BufferChunk holds a non-owning reference to a chunk from a buffer.
+ * - A BufferChunk holds a non-owning reference to a range of data inside a buffer.
  * 
- * A BufferReader type is also provided, which provides convenience methods for reading without having to deal with assemblying objects yourself.
+ * A BufferReader type is also provided, which provides convenience methods for reading without having to deal with assembling objects yourself.
  * 
  * Design justifications/explanations:
  * 
@@ -186,7 +186,8 @@ class BufferReader {
 			/* The overhead of always getting the chunk is minimal, so let's avoid bug-prone branches and always do it. */
 			this->chunk = this->buffer->getChunk(actual_pos);
 			std::size_t chunk_off = actual_pos - this->chunk.start;
-			std::size_t chunk_avail = this->chunk.end - chunk_off;
+			std::size_t chunk_avail = (this->chunk.end - this->chunk.start) - chunk_off;
+			assert (chunk_off + chunk_avail <= this->chunk.end - chunk.start);
 			std::size_t will_copy = std::min(chunk_avail, count - read);
 			std::int16_t *ptr = this->chunk.data + chunk_off * this->channels;
 			std::copy(ptr, ptr + will_copy * channels, cursor);

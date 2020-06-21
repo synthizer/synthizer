@@ -37,6 +37,8 @@ enum SYZ_PROPERTIES {
 	SYZ_P_POSITION,
 	SYZ_P_ORIENTATION,
 	SYZ_P_ROLLOFF,
+
+	SYZ_P_LOOPING,
 };
 
 #ifdef __cplusplus

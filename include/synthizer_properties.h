@@ -58,7 +58,9 @@ DOUBLE_P(SYZ_P_CLOSENESS_BOOST_DISTANCE, closeness_boost_distance, ClosenessBoos
 
 #define BUFFER_GENERATOR_PROPERTIES \
 OBJECT_P(SYZ_P_BUFFER, buffer, Buffer, Buffer) \
-DOUBLE_P(SYZ_P_POSITION, position, Position, 0.0, P_DOUBLE_MAX)
+DOUBLE_P(SYZ_P_POSITION, position, Position, 0.0, P_DOUBLE_MAX) \
+INT_P(SYZ_P_LOOPING, looping, Looping, 0, 1)
+
 
 #ifdef __cplusplus
 }

@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
 	delta = (360.0/20)*0.02;
 	//delta = 0;
 	printf("angle delta %f\n", delta);
+	CHECKED(syz_setD(generator, SYZ_P_POSITION, 1.0));
 
 	for(unsigned int i = 0; i < 1000; i++) {
 		CHECKED(syz_setD3(source, SYZ_P_POSITION, std::sin(angle*PI/180), std::cos(angle*PI/180), 0.0));

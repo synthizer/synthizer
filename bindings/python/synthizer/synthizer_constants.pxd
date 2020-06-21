@@ -27,3 +27,4 @@ cdef extern from "synthizer_constants.h":
         SYZ_P_POSITION
         SYZ_P_ORIENTATION
         SYZ_P_ROLLOFF
+        SYZ_P_LOOPING
