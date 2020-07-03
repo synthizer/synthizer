@@ -4,6 +4,7 @@
 #include "synthizer/invokable.hpp"
 #include "synthizer/panner_bank.hpp"
 #include "synthizer/property_internals.hpp"
+#include "synthizer/property_ring.hpp"
 #include "synthizer/queues/vyukov.hpp"
 #include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
@@ -146,6 +147,10 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 
 	PROPERTY_METHODS
 	private:
+	/*
+	 * Flush all pending roperty writes.
+	 * */
+	void flushPropertyWrites();
 
 	/*
 	 * Generate a block of audio output for the specified number of channels.
@@ -195,6 +200,10 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	void enqueueDeletionRecord(DeletionCallback cb, void *arg);
 	/* Used by shutdown and the destructor only. Not safe to call elsewhere. */
 	void drainDeletionQueues();
+
+	PropertyRing<1024> property_ring;
+	template<typename T>
+	void propertySetter(const std::shared_ptr<BaseObject> &obj, int property, T &value);
 
 	/* Collections of objects that require execution: sources, etc. all go here eventually. */
 

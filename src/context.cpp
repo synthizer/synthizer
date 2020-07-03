@@ -9,6 +9,7 @@
 #include "synthizer/config.hpp"
 #include "synthizer/invokable.hpp"
 #include "synthizer/logging.hpp"
+#include "synthizer/property_ring.hpp"
 #include "synthizer/sources.hpp"
 #include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
@@ -77,12 +78,19 @@ static T propertyGetter(Context *ctx, std::shared_ptr<BaseObject> &obj, int prop
 }
 
 template<typename T>
-static void propertySetter(Context *ctx, const std::shared_ptr<BaseObject> &obj, int property, T &value) {
+void Context::propertySetter(const std::shared_ptr<BaseObject> &obj, int property, T &value) {
 	obj->validateProperty(property, value);
+	if (this->property_ring.enqueue(obj, property, value)) {
+		return;
+	}
+
 	auto inv = WaitableInvokable([&] () {
+		/*
+		 * The context will flush, then we do the set here. Next time, the queue's empty.
+		 * */
 		obj->setProperty(property, value);
 	});
-	ctx->enqueueInvokable(&inv);
+	this->enqueueInvokable(&inv);
 	inv.wait();
 }
 
@@ -91,7 +99,7 @@ int Context::getIntProperty(std::shared_ptr<BaseObject> &obj, int property) {
 }
 
 void Context::setIntProperty(std::shared_ptr<BaseObject> &obj, int property, int value) {
-	propertySetter<int>(this, obj, property, value);
+	this->propertySetter<int>(obj, property, value);
 }
 
 double Context::getDoubleProperty(std::shared_ptr<BaseObject> &obj, int property) {
@@ -99,7 +107,7 @@ double Context::getDoubleProperty(std::shared_ptr<BaseObject> &obj, int property
 }
 
 void Context::setDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, double value) {
-	propertySetter<double>(this, obj, property, value);
+	this->propertySetter<double>(obj, property, value);
 }
 
 std::shared_ptr<BaseObject> Context::getObjectProperty(std::shared_ptr<BaseObject> &obj, int property) {
@@ -107,7 +115,7 @@ std::shared_ptr<BaseObject> Context::getObjectProperty(std::shared_ptr<BaseObjec
 }
 
 void Context::setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<BaseObject> &value) {
-	propertySetter<std::shared_ptr<BaseObject>>(this, obj, property, value);
+	this->propertySetter<std::shared_ptr<BaseObject>>(obj, property, value);
 }
 
 std::array<double, 3> Context::getDouble3Property(std::shared_ptr<BaseObject> &obj, int property) {
@@ -115,7 +123,7 @@ std::array<double, 3> Context::getDouble3Property(std::shared_ptr<BaseObject> &o
 }
 
 void Context::setDouble3Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 3> value) {
-	propertySetter<std::array<double, 3>>(this, obj, property, value);
+	this->propertySetter<std::array<double, 3>>(obj, property, value);
 }
 
 std::array<double, 6>  Context::getDouble6Property(std::shared_ptr<BaseObject> &obj, int property) {
@@ -123,7 +131,7 @@ std::array<double, 6>  Context::getDouble6Property(std::shared_ptr<BaseObject> &
 }
 
 void Context::setDouble6Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 6> value) {
-	propertySetter<std::array<double, 6>>(this, obj, property, value);
+	this->propertySetter<std::array<double, 6>>(obj, property, value);
 }
 
 void Context::registerSource(std::shared_ptr<Source> &source) {
@@ -171,10 +179,24 @@ void Context::generateAudio(unsigned int channels, AudioSample *destination) {
 	this->source_panners->run(channels, destination);
 }
 
+void Context::flushPropertyWrites() {
+	while (1) {
+		try {
+			if (this->property_ring.applyNext() == false) {
+				break;
+			}
+		} catch(std::exception &e) {
+			logError("Got exception applying property write: %s", e.what());
+		}
+	}
+}
+
 void Context::audioThreadFunc() {
 	logDebug("Thread started");
 	while (this->running.load()) {
 		AudioSample *write_audio = nullptr;
+
+		this->flushPropertyWrites();
 
 		write_audio = this->audio_output->beginWrite();
 		while (write_audio) {
@@ -185,6 +207,7 @@ void Context::audioThreadFunc() {
 
 		Invokable *inv = this->pending_invokables.dequeue();
 		while (inv) {
+			this->flushPropertyWrites();
 			inv->invoke();
 			inv = this->pending_invokables.dequeue();
 		}
