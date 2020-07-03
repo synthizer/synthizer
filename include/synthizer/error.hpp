@@ -48,6 +48,7 @@ class type: public base { \
 /* Some module agnostic errors. */
 ERRDEF(EUninitialized, "The library is not initialized.");
 
+ERRDEF(ELimitExceeded, "Internal limit exceeded");
 ERRDEF(EInvalidHandle, "C handle is invalid");
 ERRDEF(EHandleType, "Handle of the wrong type provided");
 ERRDEF(EInvalidProperty, "Not a valid property for this object type");

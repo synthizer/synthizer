@@ -192,7 +192,7 @@ cdef class _BaseObject:
 
     def destroy(self):
         """Destroy this object. Must be called in order to not leak Syntizer objects."""
-        _checked(syz_handleDecRef(self.handle))
+        _checked(syz_handleFree(self.handle))
         _unregister_object(self)
         self.handle = 0
 

@@ -74,18 +74,10 @@ SYZ_CAPI const char *syz_getLastErrorMessage() {
 /*
  * Memory management.
  * */
-SYZ_CAPI syz_ErrorCode syz_handleIncRef(syz_Handle handle) {
-	SYZ_PROLOGUE
-	auto tmp = fromC<CExposable>(handle);
-	incRefC(tmp);
-	return 0;
-	SYZ_EPILOGUE
-}
-
-SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle) {
+SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle) {
 	SYZ_PROLOGUE
 	auto h = fromC<CExposable>(handle);
-	decRefC(h);
+	freeC(h);
 	return 0;
 	SYZ_EPILOGUE
 }
@@ -192,4 +184,3 @@ SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle target, int property, double x1, dou
 	return 0;
 	SYZ_EPILOGUE
 }
-

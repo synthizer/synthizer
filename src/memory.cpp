@@ -1,4 +1,7 @@
 #include "synthizer.h"
+
+#include "synthizer/concurrent_slab.hpp"
+#include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
 
 #include <atomic>
@@ -7,82 +10,109 @@
 #include <mutex>
 #include <shared_mutex>
 #include <unordered_map>
+#include <utility>
 
 namespace synthizer {
 
-syz_Handle allocateCHandle() {
-	static std::atomic<syz_Handle> highest_handle = 1;
-	return highest_handle.fetch_add(1, std::memory_order_relaxed);
-}
-
 CExposable::CExposable() {
-	this->c_handle = allocateCHandle();
+	this->c_handle.store(0);
 }
 
-struct HandleEntry {
-	std::atomic<unsigned int> refcount;
-	std::shared_ptr<CExposable> value;
+struct HandleCell {
+	std::shared_ptr<CExposable> value = nullptr;
+	unsigned int multiple = 0;
 };
 
-static std::shared_mutex c_handles_mutex;
-static std::unordered_map<syz_Handle, HandleEntry> c_handles;
-
-void incRefCImpl(std::shared_ptr<CExposable> &obj) {
-	{
-		std::shared_lock l(c_handles_mutex);
-		auto elem = c_handles.find(obj->getCHandle());
-		if (elem != c_handles.end()) {
-			elem->second.refcount.fetch_add(1, std::memory_order_relaxed);
-			return;
-		}
-	}
-
-	/* Otherwise we need the exclusive lock, and will create the entry. */
-	{
-		std::unique_lock l(c_handles_mutex);
-		auto &rec = c_handles[obj->getCHandle()];
-		rec.value = obj;
-		rec.refcount.store(1, std::memory_order_relaxed);
+void handleCellDeinit(std::size_t index, HandleCell &cell) {
+	try {
+		cell.value = nullptr;
+	} catch(...) {
+		/*
+		 * Swallow the error. Assumes that Synthizer never throws.
+		 * NOTE: once we have object type codes or something, format this log message better so we know which destructor.
+		 * */
+		logError("C-facing object destructor threw and the exception was swalloed.");
 	}
 }
 
-void decRefCImpl(std::shared_ptr<CExposable> &obj) {
-	bool should_delete = false;
+static concurrent_slab::ConcurrentSlab<HandleCell, decltype(handleCellDeinit) *, 65535> handle_slab(handleCellDeinit);
 
-	{
-		std::shared_lock l(c_handles_mutex);
-		auto elem = c_handles.find(obj->getCHandle());
-		assert(elem != c_handles.end());
-		auto old = elem->second.refcount.fetch_sub(1, std::memory_order_relaxed);
-		assert(old != 0); // If 0, we tried to decref more than incref.
-		should_delete = (old <= 1);
+/*
+ * Here's how this works.
+ * 
+ * Objects start off with no handle, indicating that they've never been exposed to the C API.
+ * 
+ * On the first egress, we allocate a handle to the object if we can, otherwise we fail with an error. Since the slab is 65535 elements, you'd have to have 65535 objects concurrently to outdo it and, if this is a problem, we'll bump the slab to 100000 or so.
+ * 
+ * The handle is the index of the allocated slab, or some multiple thereof, so we get it as cell.multiple * capacity.
+ * Multiples start at 1, though this isn't immediately evident from the code, so this expression is never zero.
+ * 
+ * On free, the object immediately gets a flag that indicates that we're not allowed to expose it to the C API anymore, then the cell gets deallocated. We can detect that an object shouldn't be exposed by checking this flag,
+ * or because the cell is deallocated.
+ * 
+ * The user-facing impact of this is that objects which are deleted by the user but still held onto internally are not exposable again. Most of the time we use std::weak_ptr,
+ * so the object just gets deleted; cases where something might keep an object alive past what C can see will be documented in the manual, as well as a more user-friendly version of this comment. It would be nice to be able to
+ * just do what WebAudio does where objects exist as long as they're needed, but to get that you kind of need GC integration and have to exclude
+ * anything at all being able to read objects, including debugging code without special knowledge of the runtime (i.e.e in WebAudio, you debug it via Chrome, which looks into the world from outside).
+ * */
+
+syz_Handle getCHandleImpl(std::shared_ptr<CExposable> &&obj) {
+	auto proposed = obj->getCHandle();
+	if (proposed == 0) {
+		/* Have to allocate a cell. */
+		try {
+			CExposable *ptr = obj.get();
+			std::size_t index;
+			syz_Handle handle;
+			handle_slab.allocateCell([&] (std::size_t i, HandleCell &cell) {
+				index = i;
+				cell.multiple++;
+				cell.value = std::move(obj);
+				handle = cell.multiple * decltype(handle_slab)::CAPACITY + index;
+			});
+			if (ptr->setCHandle(handle) == false) {
+				/* The slow path; another thread exposed it before we could and we didn't win the race, so return the cell to the slab. */
+				handle_slab.deallocateCell(index);
+			}
+			return handle;
+		} catch(concurrent_slab::NoCellError &) {
+			throw ELimitExceeded();
+		}
+	} else if (obj->isPermanentlyDead()) {
+		return 0;
+	} else {
+		return proposed;
 	}
+}
 
-	/*
-	 * We do deletion in a second pass; this requires the unique lock.
-	 * The entry stays in the map until one of these is hit, this actually drops the reference.
-	 * */
-	if (should_delete) {
+void freeCImpl(std::shared_ptr<CExposable> &obj) {
+	if (obj->becomePermanentlyDead()) {
+		auto handle = obj->getCHandle();
+		assert(handle != 0);
+		std::size_t cell = handle % decltype(handle_slab)::CAPACITY;
+		handle_slab.deallocateCell(cell);
 		obj->cDelete();
-
-		std::unique_lock l(c_handles_mutex);
-		c_handles.erase(obj->getCHandle());
 	}
 }
 
 std::shared_ptr<CExposable> getExposableFromHandle(syz_Handle handle) {
-	std::shared_lock l(c_handles_mutex);
-	auto it = c_handles.find(handle);
-	if (it == c_handles.end()) throw EInvalidHandle();
-	return it->second.value;
+	std::size_t index = handle % decltype(handle_slab)::CAPACITY;
+	unsigned int multiple = handle / decltype(handle_slab)::CAPACITY;
+	std::shared_ptr<CExposable> ret;
+	try {
+		ret = handle_slab.read(index, [&](std::size_t i, HandleCell &cell) {
+			return cell.multiple == multiple ? cell.value : nullptr;
+		});
+	} catch(concurrent_slab::CellNotAllocatedError &) {
+	}
+	if (ret == nullptr) {
+		throw EInvalidHandle();
+	}
+	return ret;
 }
 
 void clearAllCHandles() {
-	auto g = std::lock_guard(c_handles_mutex);
-	for (auto &i: c_handles) {
-		i.second.value->cDelete();
-	}
-	c_handles.clear();
+	handle_slab.deallocateAllCells();
 }
 
 }

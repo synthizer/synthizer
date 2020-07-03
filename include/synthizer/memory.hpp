@@ -4,10 +4,12 @@
 
 #include "synthizer/error.hpp"
 
+#include <atomic>
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
 #include <new>
+#include <utility>
 
 #ifdef _WIN32
 #include <malloc.h>
@@ -57,8 +59,25 @@ class CExposable  {
 	CExposable();
 	virtual ~CExposable() {}
 
+	/* May be zero. You shouldn't use this directly. */
 	syz_Handle getCHandle() {
-		return this->c_handle;
+		return this->c_handle.load(std::memory_order_relaxed);
+	}
+
+	/* Returns false if the handle is already set. */
+	bool  setCHandle(syz_Handle handle) {
+		syz_Handle zero = 0;
+		return this->c_handle.compare_exchange_strong(zero, handle, std::memory_order_relaxed);
+	}
+
+	bool isPermanentlyDead() {
+		return this->permanently_dead.load(std::memory_order_relaxed) == 1;
+	}
+
+	/* Returns true if the object was alive previously. Used to ensure only one caller to cDelete. */
+	bool becomePermanentlyDead() {
+		unsigned char zero = 0;
+		return this->permanently_dead.compare_exchange_strong(zero, 1, std::memory_order_relaxed);
 	}
 
 	/*
@@ -69,37 +88,28 @@ class CExposable  {
 	virtual void cDelete() {}
 
 	private:
-	syz_Handle c_handle;
+	std::atomic<syz_Handle> c_handle;
+	std::atomic<unsigned char> permanently_dead = 0;
 };
 
-/*
- * Given an object, increment the C-side reference count.
- * */
-void incRefCImpl(std::shared_ptr<CExposable> &obj);
+void freeCImpl(std::shared_ptr<CExposable> &obj);
 
 template<typename T>
-void incRefC(std::shared_ptr<T> &obj) {
+void freeC(std::shared_ptr<T> &obj) {
 	std::shared_ptr<CExposable> b = std::static_pointer_cast<CExposable>(obj);
-	return incRefCImpl(b);
+	freeCImpl(obj);
 }
 
-void decRefCImpl(std::shared_ptr<CExposable> &obj);
-
-template<typename T>
-void decRefC(std::shared_ptr<T> &obj) {
-	std::shared_ptr<CExposable> b = std::static_pointer_cast<CExposable>(obj);
-	decRefCImpl(obj);
-}
+syz_Handle getCHandleImpl(std::shared_ptr<CExposable> &&obj);
 
 /*
  * Safely convert an object into a C handle which can be passed to the external world.
  * 
- * Expectes std::shared_ptr, Does the first refcount. Unfortunately we need this to be a forwarding reference so the type can't constrain it further.
+ * Returns 0 if the object can't be exposed, since this is 99% used to pass handles out.
  * */
 template<typename T>
-syz_Handle toC(T &&obj) {
-	incRefC(obj);
-	return obj->getCHandle();
+syz_Handle toC(T&& obj) {
+	return getCHandleImpl(std::move(std::static_pointer_cast<CExposable>(obj)));
 }
 
 /* Throws EInvalidHandle. */

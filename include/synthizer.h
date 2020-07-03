@@ -72,13 +72,7 @@ SYZ_CAPI syz_ErrorCode syz_getLastErrorCode();
  * */
 SYZ_CAPI const char *syz_getLastErrorMessage();
 
-/*
- * Handle reference counting functions.  Note that:
- * - Handles from a create function always have a refcount of 1.
- * - Handles to a callback only live as long as the callback unless you had a reference previously.
- * */
-SYZ_CAPI syz_ErrorCode syz_handleIncRef(syz_Handle handle);
-SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle);
+SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle);
 
 /*
  * Library initialization and shutdown.

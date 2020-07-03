@@ -21,9 +21,7 @@ cdef extern from "synthizer.h":
 
     char* syz_getLastErrorMessage()
 
-    syz_ErrorCode syz_handleIncRef(syz_Handle handle)
-
-    syz_ErrorCode syz_handleDecRef(syz_Handle handle)
+    syz_ErrorCode syz_handleFree(syz_Handle handle)
 
     syz_ErrorCode syz_initialize()
 
