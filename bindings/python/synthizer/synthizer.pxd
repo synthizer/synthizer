@@ -1,6 +1,6 @@
 cdef extern from "synthizer.h":
 
-    ctypedef unsigned int syz_Handle
+    ctypedef unsigned long long syz_Handle
 
     ctypedef int syz_ErrorCode
 
