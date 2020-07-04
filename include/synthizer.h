@@ -25,7 +25,7 @@ extern "C" {
 /*
  * A handle to any Synthizer object. Always nonzero.
  * */
-typedef unsigned int syz_Handle;
+typedef unsigned long long syz_Handle;
 
 /*
  * An error. code. Specific error constants TBD. 0 means success.
