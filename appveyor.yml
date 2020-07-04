@@ -13,22 +13,28 @@ environment:
 
 build_script:
 - cmd: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars%CI_ARCHITECTURE%.bat"'
+- ps: .\ci\build_c.ps1
+- ps: .\ci\build_python.ps1
+- cmd: mkdir artifacts
+- cmd: mkdir artifacts\lib
+- cmd: mkdir artifacts\include
+- cmd: copy build_dynamic_debug\synthizerd* artifacts\lib
+- cmd: copy build_static_debug\synthizerd_static* artifacts\lib
+- cmd: copy build_dynamic_release\synthizer* artifacts\lib
+- cmd: copy build_static_release\synthizer_static* artifacts\lib
+- cmd: copy include\synthizer.h artifacts\include
+- cmd: copy include\synthizer_constants.h artifacts\include
+- cmd: copy include\synthizer_properties.h artifacts\include
 - ps: './ci/release.ps1'
-#- ps: .\ci\build_c.ps1
-#- ps: .\ci\build_python.ps1
-#- cmd: mkdir artifacts
-#- cmd: mkdir artifacts\lib
-#- cmd: mkdir artifacts\include
-#- cmd: copy build_dynamic_debug\synthizerd* artifacts\lib
-#- cmd: copy build_static_debug\synthizerd_static* artifacts\lib
-#- cmd: copy build_dynamic_release\synthizer* artifacts\lib
-#- cmd: copy build_static_release\synthizer_static* artifacts\lib
-#- cmd: copy include\synthizer.h artifacts\include
-#- cmd: copy include\synthizer_constants.h artifacts\include
-#- cmd: copy include\synthizer_properties.h artifacts\include
 
-#artifacts:
-#- path: artifacts
-#  name: c_libs$(CI_ARCHITECTURE)
-  #type: zip
-#- path: bindings\python\dist\*
+artifacts:
+- path: artifacts
+  name: c_libs$(CI_ARCHITECTURE)
+  type: zip
+- path: bindings\python\dist\*
+
+deploy:
+  - provider: GitHub
+    on:
+      branch: master
+      APPVEYOR_REPO_TAG: true
