@@ -23,9 +23,8 @@ is nonzero.
   try { & $exe $argsForExe } catch { Throw } # catch is triggered ONLY if $exe can't be found, never for errors reported by $exe itself
   if ($LASTEXITCODE) { Throw "$exe indicated failure (exit code $LASTEXITCODE; full command: $Args)." }
 }
-dir Env:
 
-if ($Env:APPVEYOR_BRANCH -ne "master" -or $Env:APPVEYOR_REPO_TAG -ne "true") {
+if ($Env:APPVEYOR_REPO_BRANCH -ne "master" -or $Env:APPVEYOR_REPO_TAG -ne "true") {
 	write-output "Not releasing"
 	exit 0
 }
