@@ -1,0 +1,10 @@
+[book]
+authors = ["Austin Hicks"]
+language = "en"
+multilingual = false
+src = "src"
+title = "The Synthizer Manual"
+
+[output.html]
+
+[output.linkcheck]

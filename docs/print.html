@@ -1,0 +1,665 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>The Synthizer Manual</title>
+        
+        <meta name="robots" content="noindex" />
+        
+        
+
+
+        <!-- Custom HTML head -->
+        
+
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        
+        <link rel="stylesheet" href="fonts/fonts.css">
+        
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorials</li><li class="chapter-item expanded "><a href="tutorials/python.html"><strong aria-hidden="true">2.</strong> A Basic Python Tutorial</a></li><li class="chapter-item expanded affix "><li class="part-title">Concepts</li><li class="chapter-item expanded "><a href="concepts/introduction.html"><strong aria-hidden="true">3.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="concepts/signal_graph.html"><strong aria-hidden="true">4.</strong> The Signal Graph, Library Parameters, and limitations</a></li><li class="chapter-item expanded "><a href="concepts/conventions.html"><strong aria-hidden="true">5.</strong> C API Conventions</a></li><li class="chapter-item expanded "><a href="concepts/initialization.html"><strong aria-hidden="true">6.</strong> Logging, Initialization, and Shutdown</a></li><li class="chapter-item expanded "><a href="concepts/object_model.html"><strong aria-hidden="true">7.</strong> Objects, Handles, and Properties</a></li><li class="chapter-item expanded "><a href="concepts/streams.html"><strong aria-hidden="true">8.</strong> Streams</a></li><li class="chapter-item expanded "><a href="concepts/3d_panning.html"><strong aria-hidden="true">9.</strong> 3D Panning </a></li><li class="chapter-item expanded "><a href="concepts/channel_mixing.html"><strong aria-hidden="true">10.</strong> Channel Upmixing and Downmixing </a></li><li class="chapter-item expanded affix "><li class="part-title">The Object Reference</li><li class="chapter-item expanded "><a href="object_reference/context.html"><strong aria-hidden="true">11.</strong> Context</a></li><li class="chapter-item expanded "><a href="object_reference/buffer.html"><strong aria-hidden="true">12.</strong> Buffer</a></li><li class="chapter-item expanded "><a href="object_reference/source.html"><strong aria-hidden="true">13.</strong> Source (abstract)</a></li><li class="chapter-item expanded "><a href="object_reference/spatialized_source.html"><strong aria-hidden="true">14.</strong> SpatializedSource (abstract)</a></li><li class="chapter-item expanded "><a href="object_reference/panned_source.html"><strong aria-hidden="true">15.</strong> PannedSource</a></li><li class="chapter-item expanded "><a href="object_reference/source_3d.html"><strong aria-hidden="true">16.</strong> Source3D</a></li><li class="chapter-item expanded "><a href="object_reference/generator.html"><strong aria-hidden="true">17.</strong> Generator (abstract)</a></li><li class="chapter-item expanded "><a href="object_reference/streaming_generator.html"><strong aria-hidden="true">18.</strong> StreamingGenerator</a></li><li class="chapter-item expanded "><a href="object_reference/buffer_generator.html"><strong aria-hidden="true">19.</strong> BufferGenerator</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">The Synthizer Manual</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#introduction" id="introduction">Introduction</a></h1>
+<h1><a class="header" href="#a-basic-python-tutorial" id="a-basic-python-tutorial">A Basic Python Tutorial</a></h1>
+<h2><a class="header" href="#installation" id="installation">Installation</a></h2>
+<p>We support Python 3.  Python wheels for Windows X64 are published to Pypi, so to install:</p>
+<pre><code>pip install synthizer
+</code></pre>
+<p>Note that this won't currently work on 32-bit Python; this will be fixed.</p>
+<h2><a class="header" href="#some-basics" id="some-basics">Some Basics</a></h2>
+<p>Synthizer requires initialization and deinitialization. The best way to initialize Synthizer is to use the context manager:</p>
+<pre><code>with synthizer.initialized():
+    # Code...
+</code></pre>
+<p>The context manager will handle deinitialization on exceptions.  Though <code>synthizer.initialize()</code> and <code>synthizer.shutdown()</code> are exposed, use is discouraged as the context manager ensures clean shutdown in (almost) all cases.</p>
+<p>Once the library is deinitialized, calls into Synthizer error.</p>
+<h2><a class="header" href="#destroying-objects" id="destroying-objects">Destroying Objects</a></h2>
+<p>Unlike the rest of Python, Synthizer objects represent concrete audio architecture, which need to have a defined lifetime in order to control when they are and aren't being heard,
+and also to ensure that it can be well understood when things are and aren't using system resources.  To that end, Synthizer objects don't interact with Python garbage collection. When you're done with an object, call <code>myobj.destroy()</code>.</p>
+<p>At the moment, failing to do so will permanently leak the object.  Work in future may lift this restriction, but it's still necessary to be explicit: if you aren't, things may be audioble longer than you intend.</p>
+<h2><a class="header" href="#the-context" id="the-context">The Context</a></h2>
+<p>Most objects in Synthizer require a context, which represents a listener in 3D space, an audio output device, and other miscellaneous infrastructure.
+Objects are passed a context on construction, and two objects from different contexts never interact.</p>
+<p>To get a context:</p>
+<pre><code>ctx = synthizer.Context()
+</code></pre>
+<p>Currently, selecting audio output devices isn't supported, and audio will go to the system default.</p>
+<h2><a class="header" href="#buffers-streams-and-generators" id="buffers-streams-and-generators">Buffers, Streams, and Generators</a></h2>
+<p>As elaborated in the concepts section, the Synthizer audio graph is as follows:</p>
+<ul>
+<li>A source is fed by one or more generators and pans audio.</li>
+<li>All the sources feed the context's output.</li>
+</ul>
+<p>Generators are an abstract concept, which represents somewhere audio comes from. Specific kinds of generators implement the abstract interface in a concrete fashion,
+notably <code>BufferGenerator</code> (takes a buffer) and <code>StreamingGenerator</code> (takes streaming parameters).</p>
+<p>Synthizer always gets audio from a stream.  Streams are specified as pre-parsed URL-like components:</p>
+<ul>
+<li>A protocol, <code>file</code> for example, which specifies where the audio comes from.</li>
+<li>A path, which specifies where the audio is (i.e. path on disk, etc).</li>
+<li>Options, of the form <code>key=value&amp;key=value&amp;...</code>.  At the moment, unused by anything, so just use <code>&quot;&quot;</code>.</li>
+</ul>
+<p>To play back a stream, you have two choices: you can use a <code>StreamingGenerator</code>, which takes these parameters directly and will decode in realtime, or you can use a <code>BufferGenerator</code>, which takes a pre-decoded buffer.</p>
+<p>Buffers are in-memory decoded assets, essentially arrays of 16-bit samples resampled to Synthizer's samplerate. Note that they aren't actually contiguous arrays and are also immutable.</p>
+<p>To get a streaming generator:</p>
+<pre><code>generator = synthizer.StreamingGenerator(ctx, &quot;file&quot;, &quot;test.wav&quot;)
+</code></pre>
+<p>To get a buffer from a stream:</p>
+<pre><code>buffer = synthizer.Buffer.from_stream(&quot;file&quot;, &quot;test.wav&quot;)
+</code></pre>
+<p>Note the following:</p>
+<ul>
+<li>Buffers aren't associated with a context and can be used anywhere,.</li>
+<li>Buffers can be used simultaneously by multiple generators (or whatever else). You are encouraged to cache them and reuse them indefinitely.</li>
+<li>When Synthizer needs to overload a constructor, it does so as staticmethods on the class. We don't have
+multiple constructors here yet, but will in future.</li>
+</ul>
+<h2><a class="header" href="#sources" id="sources">Sources</a></h2>
+<p>Sources represent audio output.  They get one or more generators, combine them all, and output.  Currently we have the following kinds of sources:</p>
+<ul>
+<li>A PannedSource is manually controlled using azimuth and elevation or, alternatively, a panning scalar.</li>
+<li>Source3D is a 3D environmental source with the usual things you'd expect: distance model, position, etc.</li>
+</ul>
+<h2><a class="header" href="#properties" id="properties">Properties</a></h2>
+<p>Synthizer offers the following kinds of properties:</p>
+<ul>
+<li>int, represented as either a Python integer type or an enum. An example of the latter case is <code>source.distance_model</code>, which is a <code>synthizer.DistanceModel</code>. Synthizer exposes enums as Python 3.4-style enums via Cython.</li>
+<li>Double, which is self-explanatory.</li>
+<li>Double3, which is a tuple of 3 doubles. Usually used as a position.</li>
+<li>Double6, a tuple of 6 doubles. Usually used as an orientation (given a dedicated section below).</li>
+<li>Object, i.e. <code>buffer_generator.buffer = b</code>.</li>
+</ul>
+<p>Property writing is very fast.  Property reading is incredibly slow and won't be improved.  Code like the following is a terrible idea:</p>
+<pre><code>myobj.property += 5
+</code></pre>
+<p>The above hides a number of C API details elaborated on elsewhere in this document.  In addition to being slow, future changes to the library may cause it to not do what you expect.  In general, try to derive Synthizer properties from values you already have.  As a concrete example of what Synthizer reserves the right to break, code like the following may stop working in future:</p>
+<pre><code>myobj.property = 0
+myobj.property += 5
+myobj.property += 5
+# May fail in future
+assert myobj.property == 10
+</code></pre>
+<p>Most object properties are internally referenced in a weak fashion. That is to say that destroying (<code>.destroy()</code>)the object the property is set to will clear the property. In the occasional instance that this isn't the case,
+destroying the object externally will destroy your references to it, but Synthizer will keep using the value until another is set. If that happens, the property returns None.  As of this writing, no strong object properties exist.</p>
+<p>Synthizer translates <code>SYZ_P_MY_PROPERTY</code> to <code>obj.my_property</code>. The translations of the tables in the object reference are nearly mechanical.</p>
+<h2><a class="header" href="#an-aside-orientation-formulas" id="an-aside-orientation-formulas">An aside: orientation formulas</a></h2>
+<p>Before going much further, most people seem to eventually ask about trigonometry with respect to using a 3D audio library for 2D games. The high level overview
+for those who already know trigonometry is that Synthizer's coordinate system is right-handed and orientations consist of 2 orthogonal unit vectors <code>(atx, aty, atz, upx, upy, upz)</code> stored
+as a packed property so that they can both be set atomically.  But the longer version for those who don't know trigonometry is:</p>
+<p>Degrees to radians is:</p>
+<pre><code>import math
+
+def deg2rad(angle):
+    return (angle / 180.0) * math.pi
+</code></pre>
+<p>People who don't know trig usually ask for orientations that are clockwise of north. To do that:</p>
+<pre><code>import math
+
+def make_orientation(degrees):
+    rad = deg2rad(angle)
+    return (math.sin(rad), math.cos(rad), 0, 0, 0, 1)
+</code></pre>
+<p>Setting <code>context.orientation</code> to the result of the above will set things up so that you can treat positive x as east, positive y as north, and positive z as up. The default orientation faces the listener north.</p>
+<h2><a class="header" href="#putting-it-together" id="putting-it-together">Putting it Together</a></h2>
+<p>To play a source in 3D space, do the following:</p>
+<ul>
+<li>Create a context.</li>
+<li>Create a source.</li>
+<li>Create a buffer.</li>
+<li>Create a generator.</li>
+<li><code>generator.buffer = buffer</code></li>
+<li><code>source.add_generator(generator)</code></li>
+<li>Then manipulate position, etc. on the source.</li>
+</ul>
+<h2><a class="header" href="#a-worked-example" id="a-worked-example">A Worked Example</a></h2>
+<p>The following is a 3D media player, the audio library equivalent of hello world. It supports the following commands:</p>
+<ul>
+<li><code>pause</code>, <code>play</code>: pause/play the source. Note that these are currently implemented via generator add/remove, but a better way is coming.</li>
+<li><code>seek &lt;seconds&gt;</code>: self-explanatory.</li>
+<li><code>pos &lt;x&gt; &lt;y&gt; &lt;z&gt;</code>: move the source. X is right, y is forward, z is up.</li>
+<li><code>quit</code>: self-explanatory.</li>
+</ul>
+<p>Note that the default distance model parameters cause the source to become completely silent at around 50 units out. Movements close to the head won't change the volume much. Also, HRTF improvements are coming.</p>
+<p>This example also doesn't demonstrate destruction, as that's handled by library deinitialization and process shutdown. A proper program needs <code>source.destroy()</code> etc for dynamic sources, as explained above.</p>
+<p>The code:</p>
+<pre><code>&quot;&quot;&quot;A simple media player, demonstrating the Synthizer basics.&quot;&quot;&quot;
+
+import synthizer
+import time
+import sys
+
+if len(sys.argv) != 2:
+    print(&quot;Usage: example.py &lt;file&gt;&quot;)
+    sys.exit(1)
+
+# Log to debug. At the moment this writes directly to stdout, but will in future integrate with Python's logging modules.
+# It's best to call this before any initialization.
+synthizer.configure_logging_backend(synthizer.LoggingBackend.STDERR)
+synthizer.set_log_level(synthizer.LogLevel.DEBUG)
+
+with synthizer.initialized():
+    # Get our context, which almost everything requires.
+    # This starts the audio threads.
+    ctx = synthizer.Context()
+
+    # A BufferGenerator plays back a buffer:
+    generator = synthizer.BufferGenerator(context=ctx)
+    # A buffer holds audio data. We read from the specified file:
+    buffer = synthizer.Buffer.from_stream(ctx, protocol=&quot;file&quot;, path=sys.argv[1])
+    # Tell the generator to use the buffer.
+    generator.buffer = buffer
+    # A Source3D is a 3D source, as you'd expect.
+    source = synthizer.Source3D(ctx)
+    # It'll play the BufferGenerator.
+    source.add_generator(generator)
+    playing = True
+
+    # A simple command parser.
+    while True:
+        cmd = input(&quot;Command: &quot;)
+        cmd = cmd.split()
+        if len(cmd) == 0:
+            continue
+        if cmd[0] == &quot;pause&quot;:
+                # We don't have proper pausing yet, but can simulate it
+                if playing:
+                    source.remove_generator(generator)
+                    playing = False
+        elif cmd[0] == &quot;play&quot;:
+            if not playing:
+                source.add_generator(generator)
+                playing = True
+        elif cmd[0] == &quot;pos&quot;:
+            if len(cmd) &lt; 4:
+                print(&quot;Syntax: pos x y z&quot;)
+                continue
+            try:
+                x, y, z = [float(i) for i in cmd[1:]]
+            except:
+                print(&quot;Unable to parse coordinates&quot;)
+                continue
+            source.position = (x, y, z)
+        elif cmd[0] == &quot;seek&quot;:
+            if len(cmd) != 2:
+                print(&quot;Syntax: pos &lt;seconds&gt;&quot;)
+            try:
+                pos = float(cmd[1])
+            except:
+                print(&quot;Unable to parse position&quot;)
+            generator.position = pos
+        elif cmd[0] == &quot;quit&quot;:
+            break
+        else:
+            print(&quot;Unrecognized command&quot;)
+</code></pre>
+<h1><a class="header" href="#introduction-1" id="introduction-1">Introduction</a></h1>
+<p>This section of the manual introduces Synthizer concepts and should be read in order. Pages here will either explain something, or quote relevant sections of the C headers with explanation.</p>
+<h1><a class="header" href="#the-signal-graph-library-parameters-and-limitations" id="the-signal-graph-library-parameters-and-limitations">The Signal Graph, Library Parameters, and Limitations</a></h1>
+<p>Synthizer's signal graph is/will be as follows (not all of this exists yet):</p>
+<ul>
+<li>1 or more generators feed a source, optionally through a number of effects.</li>
+<li>1 or more sources feed:
+<ul>
+<li>A context, which is directly passed to audio output.</li>
+<li>Optionally, any number of user-specified effects.</li>
+<li>Optionally, any number of reverb zones.</li>
+</ul>
+</li>
+</ul>
+<p>Synthizer always processes audio at a sample rate of 44100, and with a block size of 256. All parameter updates take effect
+at the block boundaries, or around every 5 MS.  These parameters cannot be reconfigured without recompiling the library.  Synthizer will get the best latency it can for the system it's running on.  This can also not be controlled or influenced by the programmer.</p>
+<p>No audio input or output can be over 16 channels.  This limit may be raised in future.</p>
+<p>Object handles are not reused, but there is a limit of 65535 concurrent outstanding object handles. This is due to an internal lockfree
+slab which allows for relatively fast handle translation without syscalls.  If this limit proves problematic, it will be raised, but for all practical intents memory or CPU will be exhausted first.</p>
+<h1><a class="header" href="#c-api-conventions" id="c-api-conventions">C API Conventions</a></h1>
+<h1><a class="header" href="#logging-initialization-and-shutdown" id="logging-initialization-and-shutdown">Logging, Initialization, and Shutdown</a></h1>
+<p>The following excerpts from <code>synthizer.h</code> specify the loggin and initialization API. Explanation follows:</p>
+<pre><code>typedef ... syz_Handle;
+
+enum SYZ_LOGGING_BACKEND {
+	SYZ_LOGGING_BACKEND_STDERR = 0,
+};
+
+SYZ_CAPI syz_ErrorCode syz_configureLoggingBackend(enum SYZ_LOGGING_BACKEND backend, void *param);
+
+
+enum SYZ_LOG_LEVEL {
+	SYZ_LOG_LEVEL_ERROR = 0,
+	SYZ_LOG_LEVEL_WARN = 10,
+	SYZ_LOG_LEVEL_INFO = 20,
+	SYZ_LOG_LEVEL_DEBUG = 30,
+};
+
+SYZ_CAPI void syz_setLogLevel(enum SYZ_LOG_LEVEL level);
+
+SYZ_CAPI syz_ErrorCode syz_initialize();
+SYZ_CAPI syz_ErrorCode syz_shutdown();
+</code></pre>
+<p>Synthizer supports logging backends, which should be configured before calling <code>syz_initialize()</code> and never thereafter.  The <code>param</code> is backend specific, and unused for <code>stderr</code> (the only supported option). Log levels work exactly how one would expect and can be changed at any time.</p>
+<p><code>syz_initialize() and </code>syz_shutdown()<code>initialize and shut the library down respectively.  Calls to these nest; every</code>syz_initialize<code>should be matched with a</code>syz_shutdown`.  This is supported so that multiple dependencies to a program can initialize Synthizer without conflict, but centralizing initialization and only doing it once is <em>strongly</em> encouraged.</p>
+<h1><a class="header" href="#objects-handles-and-properties" id="objects-handles-and-properties">Objects, Handles, and Properties</a></h1>
+<p>Synthizer represents references to objects with a <code>syz_Handle</code> type.  The following excerpts from <code>synthizer.h</code> are available on every object type:</p>
+<pre><code>SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle);
+
+SYZ_CAPI syz_ErrorCode syz_getI(int *out, syz_Handle target, int property);
+SYZ_CAPI syz_ErrorCode syz_setI(syz_Handle target, int property, int value);
+SYZ_CAPI syz_ErrorCode syz_getD(double *out, syz_Handle target, int property);
+SYZ_CAPI syz_ErrorCode syz_setD(syz_Handle target, int property, double value);
+SYZ_CAPI syz_ErrorCode syz_getO(syz_Handle *out, syz_Handle target, int property);
+SYZ_CAPI syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle value);
+SYZ_CAPI syz_ErrorCode syz_getD3(double *x, double *y, double *z, syz_Handle target, int property);
+SYZ_CAPI syz_ErrorCode syz_setD3(syz_Handle target, int property, double x, double y, double z);
+SYZ_CAPI syz_ErrorCode syz_getD6(double *x1, double *y1, double *z1, double *x2, double *y2, double *z2, syz_Handle target, int property);
+SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, double y1, double z1, double x2, double y2, double z2);
+</code></pre>
+<p>Synthizer objects are like classes: they have properties, methods, and (optionally) bases. They're created through &quot;constructors&quot;, for example <code>syz_createContext</code>, and destroyed through <code>syz_handleFree</code>.</p>
+<p>Property names are defined in <code>synthizer_constants.h</code> of the form <code>SYZ_P_FOO</code>.  Since some objects have common properties and in order to preserve flexibility, the property enum is shared between all objects.</p>
+<p>Properties are set through <code>syz_setX</code> and read through <code>syz_getX</code>.  <code>syz_setX</code> is fast.  <code>syz_getX</code> is slow and should only be used for debugging.  Programs are strongly discouraged from reading properties for any other purpose. See below for more explanation of <code>syz_getX</code>.</p>
+<p>Synthizer supports 5 property types: int, double, double3, double6, and object.</p>
+<p>Double3 is typically used for position and double6 for orientation.  Synthizer's coordinate system is right-handed, configured so that positive y is forward, positive x east, and positive z up.  Listener orientation is controlled through the context.</p>
+<p>Object properties hold handles to other objects.  This reference may be strong or weak.  Synthizer currently only uses weak references.
+If the reference is weak <code>syz_handleFree</code> will set the property internally to NULL.  If the reference is strong <code>syz_handleFree</code> will hide the object from the external world, but will keep the object alive.
+Synthizer may use strong properties for cases such as <code>BufferGenerator</code>, where it is advantageous for the library to be able to control the lifetime.</p>
+<p>Property writes are always ordered with respect to other property writes on the same thread, and in general work how you would expect.  Reads are different because Synthizer made the trade-off of low latency and fast writes for fast and consistent reads, and internally uses a number of lockfree ringbuffers to move writes between threads.  Synthizer reserves the right to make property reads eventually consistent.  Synthizer reserves the right to make property reads unordered with respect to their writes even in cases of only one thread doing both reads and writes.
+<code>syz_setX(obj, property, value)</code> followed by a read to the same property may or may not return the value just written.  Synthizer plans to offer some limited forms of atomicity and database-like transactions in future, which may freeze and/or rewind time with respect to external reads. Note that implicit property reads done by Synthizer itself as part of i.e. source creation are ordered with respect to writes in the expected manner.</p>
+<p>If you got lost in the above paragraph: <code>syz_setX</code> does what you intuitively expect, <code>syz_getX</code> might or might not do what you expect.</p>
+<p>The actual links between properties and objects are specified in this manual, and also in <code>synthizer_properties.h</code> as a collection of x-macros. The names and contents of the x-macros are unstable, but will be stabilized before 1.0 in order to open up interesting use cases to C developers who might want reflection-like capabilities, i.e. generating UIs.</p>
+<h1><a class="header" href="#streams" id="streams">Streams</a></h1>
+<p>Streams are sources of audio.  They are specified with 3 string parameters:</p>
+<ul>
+<li>protocol: The protocol. At the moment Synthizer only supports <code>&quot;file&quot;</code>.</li>
+<li>path: The path. Interpreted ina  protocol-specific manner. For files, the on-disk path relative to the running execuable.</li>
+<li>options: A string encoded as <code>&quot;key=value&amp;key=value&amp;...&quot;</code>. Protocol-specific options.</li>
+</ul>
+<p>Whenever a Synthizer API function wants to read audio data, it will request these three parameters to indicate where the data comes from.  In future, it will be possible to register your own streams.</p>
+<p>The similarity to a URL is intentional.  We don't yet support parsing in that format, but may opt to do so in future.  Nonetheless it is simple for a host program to do that parsing before passing these parameters to Synthizer, and in particular <code>file://</code> URLs match the <code>file</code> protocol exactly.</p>
+<h1><a class="header" href="#3d-panning" id="3d-panning">3D Panning</a></h1>
+<p>This page explains the steps involved in 3D panning. Note that only the panner strategy applies to <code>PannedSource</code>.</p>
+<h2><a class="header" href="#1-convert-the-sources-position-from-world-coordinates-to-azimuth-elevation-and-distance" id="1-convert-the-sources-position-from-world-coordinates-to-azimuth-elevation-and-distance">1. Convert the source's position from world coordinates to Azimuth, Elevation, and distance</a></h2>
+<p>This is done by converting the position, at, and up vectors to a transformation matrix.  The result is a position in listener coordinates. Then application of the pythagorean theorem and basic trigonometry gets to spherical coordinates.</p>
+<h2><a class="header" href="#2-compute-the-gain-from-the-distance-model" id="2-compute-the-gain-from-the-distance-model">2. Compute the Gain from the Distance Model</a></h2>
+<p>Let <code>d</code> be the distance to the source, <code>d_ref</code> the reference distance, <code>d_max</code> the max distance, <code>r</code> the roll-off factor. Then the gain of the source is computed as a linear scalar using one of the following formulas:</p>
+<table><thead><tr><th>Model</th><th>Formula</th></tr></thead><tbody>
+<tr><td>SYZ_DISTANCE_MODEL_NONE</td><td><code>1.0</code></td></tr>
+<tr><td>SYZ_DISTANCE_MODEL_LINEAR</td><td>1 - r * (clamp(d, d_ref, d_max) - d_ref) / (d_max - d_ref);</td></tr>
+<tr><td>SYZ_DISTANCE_MODEL_EXPONENTIAL when <code>d_ref == 0.0</code></td><td>0.0</td></tr>
+<tr><td>SYZ_DISTANCE_MODEL_EXPONENTIAL when <code>d_ref &gt; 0.0</code></td><td><code>(max(d_ref, d) / d_ref) ** -r</code></td></tr>
+<tr><td>SYZ_DISTANCE_MODEL_INVERSE when <code>d_ref = 0.0</code></td><td><code>0.0</code></td></tr>
+<tr><td>SYZ_DISTANCE_MODEL_INVERSE when <code>d_ref &gt; 0.0</code></td><td><code>d_ref / (d_ref + r * max(d, d_ref) - d_ref)</code></td></tr>
+</tbody></table>
+<p>Qualitatively, <code>d_ref</code> is the &quot;size&quot; of the source, <code>d_max</code> is where the source is silent, <code>r</code> is how fast the source becomes quieter.  Mapping these to real world scenarios is difficult, and in general the best approach is to experiment for your use case.</p>
+<h2><a class="header" href="#3-apply-the-closeness-boost-and-clamp" id="3-apply-the-closeness-boost-and-clamp">3. Apply the closeness boost and clamp</a></h2>
+<p>The closeness boost, specified through <code>SYZ_P_CLOSENESS_BOOST</code> and <code>SYZ_P_CLOSENESS_BOOST_DISTANCE</code> is used to emphasize sources that have crossed a threshold of interest, i.e. because the player is now close enough to interact.
+<code>SYZ_P_CLOSENESS_BOOST</code> specifies a gain in DB (negative DB is allowed) which is added to the source's gain when the source is closer than <code>SYZ_P_CLOSENESS_BOOST_DISTANCE</code>.</p>
+<p>After the closeness boost is applied, gain is clamped to the range 0.0 to 1.0.</p>
+<h2><a class="header" href="#4-apply-the-panning-strategy" id="4-apply-the-panning-strategy">4. Apply the Panning Strategy</a></h2>
+<p>The panning strategy specifies how sources are to be panned.  SYnthizer supports the following panning strategies:</p>
+<table><thead><tr><th>Strategy</th><th>Channels</th><th>Description</th></tr></thead><tbody>
+<tr><td>SYZ_PANNER_STRATEGY_HRTF</td><td>2</td><td>An HRTF implementation, intended for use via headphones.</td></tr>
+</tbody></table>
+<h1><a class="header" href="#channel-upmixing-and-downmixing" id="channel-upmixing-and-downmixing">Channel Upmixing and Downmixing</a></h1>
+<p>Synthizer's current channel mixing algorithm is as follows:</p>
+<ul>
+<li>Mono to anything duplicates in all channels.</li>
+<li>Anything to mono sums all channels and divides.</li>
+<li>Otherwise, missing channels are zero-initialized and extra channels are dropped.</li>
+</ul>
+<p>Though this algorithm will be extended in future, note that Synthizer is for games and VR applications, and that it is usually impossible to determine channel layout from media files with 100% reliability.
+When better support is added, this page wil be extended explaining how it works, but expect to need to perform media type conversions or to add stream options if working with more than 2 channels per asset.</p>
+<h1><a class="header" href="#context" id="context">Context</a></h1>
+<h2><a class="header" href="#constructors" id="constructors">Constructors</a></h2>
+<h3><a class="header" href="#syz_createcontext" id="syz_createcontext"><code>syz_createContext</code></a></h3>
+<pre><code>SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out);
+</code></pre>
+<p>Creates a context configured to play through the default output device.</p>
+<h2><a class="header" href="#properties-1" id="properties-1">Properties</a></h2>
+<table><thead><tr><th>Enum</th><th>Type</th><th>Default</th><th>Range</th><th>Description</th></tr></thead><tbody>
+<tr><td>SYZ_P_POSITION</td><td>double3</td><td>(0, 0, 0)</td><td>any</td><td>The position of the listener.</td></tr>
+<tr><td>SYZ_P_ORIENTATION</td><td>double6</td><td>(0, 1, 0, 0, 0, 1)</td><td>Two packed unit vectors</td><td>The orientation of the listener as <code>(atx, aty, atz, upx, upy, upz)</code>.</td></tr>
+<tr><td>SYZ_P_DISTANCE_MODEL</td><td>int</td><td>SYZ_DISTANCE_MODEL_LINEAR</td><td>any SYZ_DISTANCE_MODEL</td><td>The default distance model for new sources.</td></tr>
+<tr><td>SYZ_P_DISTANCE_REF</td><td>double</td><td>1.0</td><td>value &gt;= 0.0</td><td>The default reference distance for new sources.</td></tr>
+<tr><td>SYZ_P_DISTANCE_MAX</td><td>double</td><td>50.0</td><td>value &gt;= 0.0</td><td>The default max distance for new sources.</td></tr>
+<tr><td>SYZ_P_ROLLOFF</td><td>double</td><td>1.0</td><td>value &gt;= 0.0</td><td>The default rolloff for new sources.</td></tr>
+<tr><td>SYZ_P_CLOSENESS_BOOST</td><td>double</td><td>0.0</td><td>any finite double</td><td>The default closeness boost for new sources in DB.</td></tr>
+<tr><td>SYZ_P_CLOSENESS_BOOST_DISTANCE</td><td>double</td><td>0.0</td><td>value &gt;= 0.0</td><td>The default closeness boost distance for new sources</td></tr>
+</tbody></table>
+<h2><a class="header" href="#remarks" id="remarks">Remarks</a></h2>
+<p>The context is the main entrypoint to Synthizer, responsible for the following:</p>
+<ul>
+<li>Control and manipulation of the audio device.</li>
+<li>Driving the audio threads.</li>
+<li>Owning all objects that play together.</li>
+<li>Representing the listener in 3D space.</li>
+</ul>
+<p>All objects which are associated with a context take a context as part of all their constructors.  Two objects which are both associated with different contexts should never interact.
+For efficiency, whether two objects are from different contexts is unvalidated, and the behavior of mixing them is undefined.</p>
+<p>All objects associated with a context become useless once the context is destroyed.  Calls to them will still work, but they can't be reassociated with a different context and no audioble output will result.</p>
+<p>Most programs create one context and destroy it at shutdown.</p>
+<p>For the time being, all contexts output stereo audio, and it is not possible to specify the output device. These restrictions will be lifted in future.</p>
+<p>For information on the meaning of the distance model properties, see <a href="object_reference/../concepts/3d_panning.html">3D Panning</a>.</p>
+<h1><a class="header" href="#buffer" id="buffer">Buffer</a></h1>
+<h2><a class="header" href="#constructors-1" id="constructors-1">Constructors</a></h2>
+<h3><a class="header" href="#syz_createbufferfromstream" id="syz_createbufferfromstream"><code>syz_createBufferFromStream</code></a></h3>
+<pre><code>SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options);
+</code></pre>
+<p>Currently, the only way to make a buffer is from a stream, in the self-explanatory manner. See <a href="object_reference/../concepts/streams.html">Streams</a> for information on streams.</p>
+<p>This call will decode the stream in the calling thread, returning errors as necessary. Synthizer will eventually offer a BufferCache which supports background decoding and caching, but for the moment the responsibility of background decoding is placed on the calling program.</p>
+<h2><a class="header" href="#properties-2" id="properties-2">Properties</a></h2>
+<p>None currently. Some in the near future.</p>
+<h2><a class="header" href="#remarks-1" id="remarks-1">Remarks</a></h2>
+<p>Buffers hold audio data, as a collection of contiguous chunks.  Data is resampled to the Synthizer samplerate and converted to 16-bit PCM using triangular dither.</p>
+<p>Buffers are one of the few Synthizer objects that don't require a context.  They may be used freely with any object requiring a buffer, from any thread.  In order to facilitate this, buffers are immutable after creation.</p>
+<p>The approximate memory usage of a buffer in bytes is <code>2 * channels * duration_in_seconds * 44100</code>.  Loading large assets into buffers is not recommended. For things such as music tracks, use <a href="object_reference/./streaming_generator.html">StreamingGenerator</a>s.  Note that on 32-bit architectures, some operating systems only allow a 2 gigabyte address space.  Synthizer avoids allocating buffers as contiguous arrays in part to allow efficient use of 32-bit address spaces, but this only goes so far.  If on a 32-bit architecture, expect to run out of memory from Synthizer's perspective well before decoding 2 Gigabytes of buffers simultaneously due to the inability to find consecutive free pages.</p>
+<h1><a class="header" href="#source-abstract" id="source-abstract">Source (abstract)</a></h1>
+<h2><a class="header" href="#constructors-2" id="constructors-2">Constructors</a></h2>
+<p>None.</p>
+<h2><a class="header" href="#properties-3" id="properties-3">Properties</a></h2>
+<p>None currently. Probably <code>SYZ_P_GAIN</code> moved down from <code>SpatializedSource</code> in the near future.</p>
+<h2><a class="header" href="#functions" id="functions">Functions</a></h2>
+<h3><a class="header" href="#syz_sourceaddgenerator-syz_sourceremovegenerator" id="syz_sourceaddgenerator-syz_sourceremovegenerator"><code>syz_sourceAddGenerator</code>, <code>syz_sourceRemoveGenerator</code></a></h3>
+<pre><code>SYZ_CAPI syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle generator);
+SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle generator);
+</code></pre>
+<p>Add/remove a generator from a source. Each generator may be added once and duplicate add calls will have no effect. Each generator should only be used with one source at a time.</p>
+<h2><a class="header" href="#remarks-2" id="remarks-2">Remarks</a></h2>
+<p>Sources represent audio output.  They combine all generators connected to them, apply any effects if necessary, and feed the context.</p>
+<h1><a class="header" href="#spatializedsource-abstract" id="spatializedsource-abstract">SpatializedSource (abstract)</a></h1>
+<h2><a class="header" href="#constructors-3" id="constructors-3">Constructors</a></h2>
+<p>None</p>
+<h2><a class="header" href="#properties-4" id="properties-4">Properties</a></h2>
+<table><thead><tr><th>Enum</th><th>Type</th><th>Default</th><th>Range</th><th>Description</th></tr></thead><tbody>
+<tr><td>SYZ_P_GAIN</td><td>double</td><td>any finite double</td><td>An additional gain factor applied to this source in DB</td><td></td></tr>
+<tr><td>SYZ_P_PANNER_STRATEGY</td><td>SYZ_PANNER_STRATEGY_HRTF</td><td>any SYZ_PANNER_STRATEGY</td><td>The panner strategy for this source.</td><td></td></tr>
+</tbody></table>
+<h2><a class="header" href="#remarks-3" id="remarks-3">Remarks</a></h2>
+<p>SpatializedSource is an abstract class which gives all panned sources their distance model and gain.</p>
+<h1><a class="header" href="#pannedsource" id="pannedsource">PannedSource</a></h1>
+<p>Inherits from <a href="object_reference/./spatialized_source.html">SpatializedSource</a>.</p>
+<h2><a class="header" href="#constructors-4" id="constructors-4">Constructors</a></h2>
+<h3><a class="header" href="#syz_createpannedsource" id="syz_createpannedsource"><code>syz_createPannedSource</code></a></h3>
+<pre><code>SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context);
+</code></pre>
+<p>Creates a panned source.</p>
+<h3><a class="header" href="#properties-5" id="properties-5">Properties</a></h3>
+<table><thead><tr><th>Enum</th><th>Type</th><th>Default</th><th>Range</th><th>Description</th></tr></thead><tbody>
+<tr><td>SYZ_P_AZIMUTH</td><td>double</td><td>0.0</td><td>0.0 to 360.0</td><td>The azimuth of the panner. See remarks.</td></tr>
+<tr><td>SYZ_P_ELEVATION</td><td>double</td><td>0.0</td><td>-90.0 to 90.0</td><td>See remarks</td></tr>
+<tr><td>SYZ_P_PANNING_SCALAR</td><td>0.0</td><td>-1.0 to 1.0</td><td>see remarks</td><td></td></tr>
+</tbody></table>
+<h1><a class="header" href="#remarks-4" id="remarks-4">Remarks</a></h1>
+<p>The PannedSource gives direct control over a panner, which is either controlled via azimuth/elevation in degrees or a panning scalar.</p>
+<p>If using azimuth/elevation, 0.0 azimuth is forward and positive angles are clockwise.  Elevation ranges from -90 (down) to 90 (up).</p>
+<p>Some applications want to control panners through a panning scalar instead, i.e. for UI purposes. If using panning scalars, -1.0 is full left and 1.0 is full right.</p>
+<p>Applications should use either a panning scalar or azimuth/elevation, never both on the same source.  Using both simultaneously is undefined behavior.</p>
+<p>For information on panning, see <a href="object_reference/../concepts/3d_panning.html">3D Panning</a>.</p>
+<h1><a class="header" href="#source3d" id="source3d">Source3D</a></h1>
+<p>Inherits from <a href="object_reference/./spatialized_source.html">SpatializedSource</a>.</p>
+<h2><a class="header" href="#constructors-5" id="constructors-5">Constructors</a></h2>
+<h3><a class="header" href="#syz_createsource3d" id="syz_createsource3d"><code>syz_createSource3D</code></a></h3>
+<pre><code>SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context);
+</code></pre>
+<p>Creates a source3d positioned at the origin and with no associated generators.</p>
+<h2><a class="header" href="#properties-6" id="properties-6">Properties</a></h2>
+<table><thead><tr><th>Enum</th><th>Type</th><th>Default</th><th>Range</th><th>Description</th></tr></thead><tbody>
+<tr><td>SYZ_P_POSITION</td><td>double3</td><td>(0, 0, 0)</td><td>any</td><td>The position of the sourec.</td></tr>
+<tr><td>SYZ_P_ORIENTATION</td><td>double6</td><td>(0, 1, 0, 0, 0, 1)</td><td>Two packed unit vectors</td><td>The orientation of the source as <code>(atx, aty, atz, upx, upy, upz)</code>. Currently unused.</td></tr>
+<tr><td>SYZ_P_DISTANCE_MODEL</td><td>int</td><td>from Context</td><td>any SYZ_DISTANCE_MODEL</td><td>The distance model for this source.</td></tr>
+<tr><td>SYZ_P_DISTANCE_REF</td><td>double</td><td>From Context</td><td>value &gt;= 0.0</td><td>The reference distance.</td></tr>
+<tr><td>SYZ_P_DISTANCE_MAX</td><td>double</td><td>From Context</td><td>value &gt;= 0.0</td><td>The max distance for this source.</td></tr>
+<tr><td>SYZ_P_ROLLOFF</td><td>double</td><td>From Context</td><td>value &gt;= 0.0</td><td>The rolloff for this source.</td></tr>
+<tr><td>SYZ_P_CLOSENESS_BOOST</td><td>double</td><td>From Context</td><td>any finite double</td><td>The closeness boost for this source in DB.</td></tr>
+<tr><td>SYZ_P_CLOSENESS_BOOST_DISTANCE</td><td>double</td><td>From Context</td><td>value &gt;= 0.0</td><td>The closeness boost distance for this source.</td></tr>
+</tbody></table>
+<h2><a class="header" href="#remarks-5" id="remarks-5">Remarks</a></h2>
+<p>A Source3D represents an entity in 3D space.  For explanations of the above properties, see <a href="object_reference/../concepts/3d_panning.html">3D Panning</a>.</p>
+<p>When created, Source3D reads all of its defaults from the Context's corresponding properties.  Changes to the Context versions don't affect already created sources.  A typical use case is to configure the Context to the defaults of the game, and then create sources.</p>
+<h1><a class="header" href="#generator-abstract" id="generator-abstract">Generator (abstract)</a></h1>
+<p>This section will exist in the near future; internal refactoring is necessary.</p>
+<h1><a class="header" href="#streaminggenerator" id="streaminggenerator">StreamingGenerator</a></h1>
+<p>Inherits from <a href="object_reference/./generator.html">Generator</a>.</p>
+<h2><a class="header" href="#constructors-6" id="constructors-6">Constructors</a></h2>
+<h3><a class="header" href="#syz_createstreaminggenerator" id="syz_createstreaminggenerator"><code>syz_createStreamingGenerator</code></a></h3>
+<pre><code>SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options);
+</code></pre>
+<p>Creates a StreamingGenerator from the standard <a href="object_reference/../concepts/streams.html">stream parameters</a>.</p>
+<h2><a class="header" href="#properties-7" id="properties-7">Properties</a></h2>
+<p>None currently. Some in future.</p>
+<h2><a class="header" href="#remarks-6" id="remarks-6">Remarks</a></h2>
+<p>StreamingGenerator plays streams, decoding and reading on demand.  Note  that this is a heavyweight object with a long start-up time.  The typical use case is for music playback.</p>
+<p>Due to the expense of streaming from disk and other I/O sources, having more than a few StreamingGenerators going will cause a decrease in audio quality on many systems, typically manifesting as drop--outs and crackling.</p>
+<h1><a class="header" href="#buffergenerator" id="buffergenerator">BufferGenerator</a></h1>
+<p>Inherits from <a href="object_reference/./generator.html">Generator</a>.</p>
+<h2><a class="header" href="#constructors-7" id="constructors-7">Constructors</a></h2>
+<h3><a class="header" href="#syz_createbuffergenerator" id="syz_createbuffergenerator"><code>syz_createBufferGenerator</code></a></h3>
+<pre><code>SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context);
+</code></pre>
+<p>Creates a BufferGenerator. The buffer is set to NULL and the resulting generator will play silence until one is associated.</p>
+<h2><a class="header" href="#properties-8" id="properties-8">Properties</a></h2>
+<table><thead><tr><th>Enum</th><th>Type</th><th>Default Value</th><th>Range</th><th>Description</th></tr></thead><tbody>
+<tr><td>SYZ_P_POSITION</td><td>Object</td><td>0</td><td>Any Buffer handle</td><td>The buffer to play</td></tr>
+<tr><td>SYZ_P_POSITION</td><td>double</td><td>0.0</td><td>value &gt;= 0.0</td><td>The position in the buffer.</td></tr>
+<tr><td>SYZ_P_LOOPING</td><td>int</td><td>0</td><td>0 or 1</td><td>Whether playback loops at the end of the buffer.</td></tr>
+</tbody></table>
+<h2><a class="header" href="#remarks-7" id="remarks-7">Remarks</a></h2>
+<p>BufferGenerators play <a href="object_reference/./buffer.html">Buffer</a>s.</p>
+<p><code>SYZ_P_POSITION</code> is reset if <code>SYZ_P_BUFFER</code> is modified.</p>
+<p><code>SYZ_P_POSITION</code> can be set past the end of the buffer.  If <code>SYZ_P_LOOPING = 0</code>, the generator will play silence.  Otherwise, the position will immediately loop to the beginning.</p>
+<p>More than one BufferGenerator can use the same underlying Buffer.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+        
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+        
+        
+
+    </body>
+</html>

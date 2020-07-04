@@ -7,5 +7,10 @@
 	"[python]": {
 		"editor.insertSpaces": true,
 		"editor.tabSize": 4
+	},
+	"[markdown]": {
+		"editor.wordWrap": "on",
+		"editor.quickSuggestions": false,
+		"editor.insertSpaces": true,
 	}
 }
