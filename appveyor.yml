@@ -13,7 +13,7 @@ environment:
 
 build_script:
 - cmd: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars%CI_ARCHITECTURE%.bat"'
-- ps: 'dir Env:'
+- ps: './ci/release.ps1'
 #- ps: .\ci\build_c.ps1
 #- ps: .\ci\build_python.ps1
 #- cmd: mkdir artifacts
