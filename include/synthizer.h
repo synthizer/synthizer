@@ -138,6 +138,7 @@ SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle 
  * This creates one from the 3 streaming parameters.
  * */
 SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options);
+
 /*
  * A buffer generator generates audio from a buffer.
  * */

@@ -66,7 +66,7 @@ class AbstractPannerBank {
 	public:
 	/* Will output the same channels as the final device in the end. Today, outputs 2 channels until context infrastructure fully exists. */
 	virtual void run(unsigned int channels, AudioSample *destination) = 0;
-	virtual std::shared_ptr<PannerLane> allocateLane(enum SYZ_PANNER_STRATEGIES strategy) = 0;
+	virtual std::shared_ptr<PannerLane> allocateLane(enum SYZ_PANNER_STRATEGY strategy) = 0;
 };
 
 std::shared_ptr<AbstractPannerBank> createPannerBank();

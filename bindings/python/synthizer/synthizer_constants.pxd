@@ -1,6 +1,6 @@
 cdef extern from "synthizer_constants.h":
 
-    cdef enum SYZ_PANNER_STRATEGIES:
+    cdef enum SYZ_PANNER_STRATEGY:
         SYZ_PANNER_STRATEGY_HRTF
         SYZ_PANNER_STRATEGY_STEREO
         SYZ_PANNER_STRATEGY_COUNT

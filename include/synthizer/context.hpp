@@ -143,7 +143,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 
 	/* Helper methods used by various pieces of synthizer to grab global resources. */
 	/* Allocate a panner lane intended to be used by a source. */
-	std::shared_ptr<PannerLane> allocateSourcePannerLane(enum SYZ_PANNER_STRATEGIES strategy);
+	std::shared_ptr<PannerLane> allocateSourcePannerLane(enum SYZ_PANNER_STRATEGY strategy);
 
 	PROPERTY_METHODS
 	private:

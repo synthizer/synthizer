@@ -157,7 +157,7 @@ void Context::setOrientation(std::array<double, 6> orientation) {
 	this->orientation = orientation;
 }
 
-std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_STRATEGIES strategy) {
+std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_STRATEGY strategy) {
 	return this->source_panners->allocateLane(strategy);
 }
 

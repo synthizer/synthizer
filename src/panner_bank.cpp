@@ -155,7 +155,7 @@ class PannerBank: public AbstractPannerBank {
 		hrtf.run(channels, destination);
 	}
 
-	std::shared_ptr<PannerLane> allocateLane(enum SYZ_PANNER_STRATEGIES strategy) {
+	std::shared_ptr<PannerLane> allocateLane(enum SYZ_PANNER_STRATEGY strategy) {
 		assert(strategy == SYZ_PANNER_STRATEGY_HRTF);
 		return this->hrtf.allocateLane();
 	}

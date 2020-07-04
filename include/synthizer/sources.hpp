@@ -61,7 +61,7 @@ class PannedSource: public Source {
 
 	PROPERTY_METHODS;
 	private:
-	enum SYZ_PANNER_STRATEGIES panner_strategy = SYZ_PANNER_STRATEGY_HRTF;
+	enum SYZ_PANNER_STRATEGY panner_strategy = SYZ_PANNER_STRATEGY_HRTF;
 	std::shared_ptr<PannerLane> panner_lane;
 	double azimuth = 0.0, elevation = 0.0, panning_scalar = 0.5, gain = 1.0, gain_3d = 1.0;
 	bool needs_panner_set = true;

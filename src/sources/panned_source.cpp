@@ -57,7 +57,7 @@ int PannedSource::getPannerStrategy() {
 
 void PannedSource::setPannerStrategy(int strategy) {
 	this->valid_lane = false;
-	this->panner_strategy = (enum SYZ_PANNER_STRATEGIES) strategy;
+	this->panner_strategy = (enum SYZ_PANNER_STRATEGY) strategy;
 }
 
 double PannedSource::getGain() {
