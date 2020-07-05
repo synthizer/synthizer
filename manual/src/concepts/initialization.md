@@ -11,7 +11,6 @@ enum SYZ_LOGGING_BACKEND {
 
 SYZ_CAPI syz_ErrorCode syz_configureLoggingBackend(enum SYZ_LOGGING_BACKEND backend, void *param);
 
-
 enum SYZ_LOG_LEVEL {
 	SYZ_LOG_LEVEL_ERROR = 0,
 	SYZ_LOG_LEVEL_WARN = 10,
