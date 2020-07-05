@@ -88,8 +88,8 @@ target_link_libraries(delay_line_test synthizer)
 add_executable(convolve_bench convolve_bench.cpp)
 target_link_libraries(convolve_bench synthizer)
 
-add_executable(wav_test wav_test.cpp)
-target_link_libraries(wav_test synthizer)
+add_executable(file_test file_test.cpp)
+target_link_libraries(file_test synthizer)
 
 add_executable(filter_print filter_print.cpp)
 target_link_libraries(filter_print synthizer)
