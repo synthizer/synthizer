@@ -90,7 +90,7 @@ class ConcurrentSlab {
 	 * Returns the reference count after the operation.
 	 * */
 	std::uint16_t incRef(std::size_t index);
-	std::uint16_t decRef(std::size_t index, bool allowFinalizer = true);
+	std::uint16_t decRef(std::size_t index);
 
 	/*
 	 * The slab representation is arrays for packing.
@@ -130,19 +130,24 @@ ConcurrentSlab<T, FINALIZER, capacity>::~ConcurrentSlab() {
 template<typename T, typename FINALIZER, std::size_t capacity>
 std::uint16_t ConcurrentSlab<T, FINALIZER, capacity>::incRef(std::size_t index) {
 	assert(index < capacity);
-	auto old = this->refcounts[index].fetch_add(1, std::memory_order_acquire);
-	/* Fires if we wrap, in debug builds. */
-	assert(old < (old + 1));
-	return old + 1;
+	while (true) {
+		auto old = this->refcounts[index].load(std::memory_order_relaxed);
+		/* Fires if we wrap, in debug builds. */
+		assert(old < (old + 1));
+		if (old == 0) throw CellNotAllocatedError();
+		if (this->refcounts[index].compare_exchange_strong(old, old + 1, std::memory_order_acquire)) {
+			return old + 1;
+		}
+	}
 }
 
 template<typename T, typename FINALIZER, std::size_t capacity>
-std::uint16_t ConcurrentSlab<T, FINALIZER, capacity>::decRef(std::size_t index, bool allowFinalizer) {
+std::uint16_t ConcurrentSlab<T, FINALIZER, capacity>::decRef(std::size_t index) {
 	assert(index < capacity);
 	auto old = this->refcounts[index].fetch_sub(1, std::memory_order_release);
 	/* Fires if we wrap. */
 	assert(old > (old - 1));
-	if (old == 1 && allowFinalizer) {
+	if (old == 1) {
 		this->finalizer(index, this->cells[index]);
 		this->pushFreelist(index);
 	}
@@ -181,13 +186,15 @@ template<typename T, typename FINALIZER, std::size_t capacity>
 template<typename CALLABLE, typename... ARGS>
 auto ConcurrentSlab<T, FINALIZER, capacity>::allocateCell(CALLABLE &&callable, ARGS&&... args) -> typename std::invoke_result<CALLABLE, std::size_t, T&, ARGS&&...>::type {
 	auto index = this->popFreelist();
-	try {
-		auto ref = 	this->incRef(index);
-		return callable(index, this->cells[index], args...);
-	} catch(...) {
-		this->decRef(index, false);
-		throw;
-	}
+	/*
+	 * This is a horrible hack to deal with incomplete type void, because C++ is annoying and doesn't let you have void variables even though this would be very useful.
+	 * We can't store the value of the closure, but need to increment only after it's ran.
+	 * Note that copy constructors can throw as well, and there is one involved here.
+	 * */
+	AtScopeExit x([&]() {
+		this->refcounts[index].store(1, std::memory_order_release);
+	});
+	return callable(index, this->cells[index], args...);
 }
 
 template<typename T, typename FINALIZER, std::size_t capacity>
