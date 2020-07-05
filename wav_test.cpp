@@ -22,7 +22,7 @@ auto ret = x; \
 	} \
 } while(0)
 
-int main(int argc, char *argv[]) {
+	int main(int argc, char *argv[]) {
 	syz_Handle context, generator, source, buffer;
 	int ecode = 0, ending = 0;
 	double angle, delta;

@@ -26,6 +26,7 @@ std::shared_ptr<AudioDecoder> getDecoderForProtocol(std::string protocol, std::s
 	auto lookahead_stream = getLookaheadByteStream(stream);
 	for(auto d: decoders) {
 		try {
+			lookahead_stream->reset();
 			auto tmp = d.func(lookahead_stream);
 			if (tmp == nullptr) {
 				logDebug("Format %s returned nullptr. Skipping", d.name.c_str());

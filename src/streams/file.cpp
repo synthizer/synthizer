@@ -13,17 +13,22 @@ class FileByteStream: public ByteStream {
 	public:
 	FileByteStream(std::fstream &&f);
 
-	std::string getName();
-	std::size_t read(std::size_t count, char *destination);
-	bool supportsSeek();
-	std::size_t getPosition();
-	void seek(std::size_t position);
+	std::string getName() override;
+	std::size_t read(std::size_t count, char *destination) override;
+	bool supportsSeek() override;
+	std::size_t getPosition() override;
+	void seek(std::size_t position) override;
+	std::size_t getLength() override;
 
 	private:
 	std::fstream stream;
+	std::size_t length = 0;
 };
 
 FileByteStream::FileByteStream(std::fstream &&s): stream(std::move(s)) {
+	this->stream.seekg(0, std::ios_base::end);
+	this->length = this->stream.tellg();
+	this->stream.seekg(0, std::ios_base::beg);
 }
 
 std::string FileByteStream::getName() {
@@ -61,6 +66,10 @@ void FileByteStream::seek(std::size_t position) {
 	this->stream.seekg(position);
 	if (this->stream.good() != true)
 		throw EByteStream("Unable to seek.");
+}
+
+std::size_t FileByteStream::getLength() {
+	return this->length;
 }
 
 std::shared_ptr<ByteStream> fileStream(const std::string &path, const std::vector<std::tuple<std::string, std::string>> &options) {

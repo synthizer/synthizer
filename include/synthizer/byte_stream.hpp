@@ -53,6 +53,11 @@ class ByteStream {
 	virtual void seek(std::size_t position) {
 		throw EByteStreamUnsupportedOperation("Streams of type " + this->getName() + " don't support seek");
 	}
+	/* If seek is reported, return the length. */
+	virtual std::size_t getLength() {
+		return 0;
+	}
+
 	/* If specified, we know the approximate underlying encoded format and will try that first when attempting to find a decoder. */
 	virtual AudioFormat getFormatHint() { return AudioFormat::Unknown; }
 };
