@@ -66,7 +66,7 @@ AudioOutputDevice::AudioOutputDevice() {
 	config = ma_device_config_init(ma_device_type_playback);
 	config.playback.format = ma_format_f32;
 	config.playback.channels = 2;
-	config.bufferSizeInFrames = config::BLOCK_SIZE;
+	config.periodSizeInFrames = config::BLOCK_SIZE;
 	/* Default periods. */
 	config.periods = 0;
 	/* Use default sample rate. */

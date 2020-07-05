@@ -14,7 +14,7 @@ typedef struct
 
 void profiling_state_init(profiling_state* pProfiling)
 {
-    drflac_zero_memory(pProfiling, sizeof(*pProfiling));
+    DRFLAC_ZERO_MEMORY(pProfiling, sizeof(*pProfiling));
 }
 
 profiling_state profiling_state_sum(const profiling_state* pA, const profiling_state* pB)
@@ -166,7 +166,7 @@ drflac_result seek_test_file(const char* pFilePath)
     }
 
     /* Now we'll try seeking to random locations. */
-    dr_seed((int)time(NULL));
+    dr_seed(1234);
 
     iteration = 0;
     while (result == DRFLAC_SUCCESS && iteration < totalIterationCount) {

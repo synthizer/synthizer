@@ -1,21 +1,70 @@
-![miniaudio](http://dred.io/img/miniaudio_wide.png)
+<h1 align="center">
+    <a href="https://miniaud.io"><img src="https://miniaud.io/img/miniaudio_wide.png" alt="miniaudio" width="1280"></a>
+    <br>
+</h1>
 
-miniaudio (formerly mini_al) is a single file library for audio playback and capture. It's written
-in C89 (compilable as C++) and released into the public domain.
+<h4 align="center">A single file library for audio playback and capture.</h4>
 
+<p align="center">
+    <a href="https://discord.gg/9vpqbjU"><img src="https://img.shields.io/discord/712952679415939085?label=discord&logo=discord" alt="discord"></a>
+    <a href="https://twitter.com/mackron"><img src="https://img.shields.io/twitter/follow/mackron?style=flat&label=twitter&color=1da1f2&logo=twitter" alt="twitter"></a>
+</p>
+
+<p align="center">
+    <a href="#features">Features</a> -
+    <a href="#supported-platforms">Supported Platforms</a> -
+    <a href="#backends">Backends</a> -
+    <a href="#building">Building</a> -
+    <a href="#examples">Examples</a> -
+    <a href="#documentation">Documentation</a> -
+    <a href="#unofficial-bindings">Unofficial Bindings</a>
+</p>
 
 Features
 ========
-- A simple build system.
-  - It should Just Work out of the box, without the need to download and install any dependencies.
-- A simple API.
-- Supports playback, capture and full-duplex.
-- Data conversion.
-  - Sample format conversion, with optional dithering.
-  - Sample rate conversion.
-  - Channel mapping and channel conversion (stereo to 5.1, etc.)
-- MP3, Vorbis, FLAC and WAV decoding.
-  - This depends on external single file libraries which can be found in the "extras" folder.
+- Your choice of either public domain or [MIT No Attribution](https://github.com/aws/mit-0).
+- Entirely contained within a single file for easy integration into your source tree.
+- No external dependencies except for the C standard library and backend libraries.
+- Written in C and compilable as C++, enabling miniaudio to work on almost all compilers.
+- Supports all major desktop and mobile platforms, with multiple backends for maximum compatibility.
+- Supports playback, capture, full-duplex and loopback (WASAPI only).
+- Device enumeration for connecting to specific devices, not just defaults.
+- Connect to multiple devices at once.
+- Shared and exclusive mode on supported backends.
+- Backend-specific configuration options.
+- Device capability querying.
+- Automatic data conversion between your application and the internal device.
+- Sample format conversion with optional dithering.
+- Channel conversion and channel mapping.
+- Resampling with support for multiple algorithms.
+  - Simple linear resampling with anti-aliasing.
+  - Optional Speex resampling (must opt-in).
+- Filters.
+  - Biquad
+  - Low-pass (first, second and high order)
+  - High-pass (first, second and high order)
+  - Second order band-pass
+  - Second order notch
+  - Second order peaking
+  - Second order low shelf
+  - Second order high shelf
+- Waveform generation.
+  - Sine
+  - Square
+  - Triangle
+  - Sawtooth
+- Noise generation.
+  - White
+  - Pink
+  - Brownian
+- Decoding
+  - WAV
+  - FLAC
+  - MP3
+  - Vorbis via stb_vorbis (not built in - must be included separately).
+- Encoding
+  - WAV
+- Lock free ring buffer (single producer, single consumer).
 
 
 Supported Platforms
@@ -48,27 +97,32 @@ Backends
 
 
 Building
-======
+========
 Do the following in one source file:
 ```c
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
 ```
 Then just compile. There's no need to install any dependencies. On Windows and macOS there's no need to link
-to anything. On Linux and BSD, just link to -lpthread, -lm and -ldl.
+to anything. On Linux just link to -lpthread, -lm and -ldl. On BSD just link to -lpthread and -lm. On iOS you
+need to compile as Objective-C.
+
+If you prefer separate .h and .c files, you can find a split version of miniaudio in the extras/miniaudio_split
+folder. From here you can use miniaudio as a traditional .c and .h library - just add miniaudio.c to your source
+tree like any other source file and include miniaudio.h like a normal header. If you prefer compiling as a
+single translation unit (AKA unity builds), you can just #include the .c file in your main source file:
+```c
+#include "miniaudio.c"
+```
+Note that the split version is auto-generated using a tool and is based on the main file in the root directory.
+If you want to contribute, please make the change in the main file.
 
 
-Simple Playback Example
-=======================
+Examples
+========
+This example shows how to decode and play a sound.
 
 ```c
-#define DR_FLAC_IMPLEMENTATION
-#include "../extras/dr_flac.h"  /* Enables FLAC decoding. */
-#define DR_MP3_IMPLEMENTATION
-#include "../extras/dr_mp3.h"   /* Enables MP3 decoding. */
-#define DR_WAV_IMPLEMENTATION
-#include "../extras/dr_wav.h"   /* Enables WAV decoding. */
-
 #define MINIAUDIO_IMPLEMENTATION
 #include "../miniaudio.h"
 
@@ -133,87 +187,31 @@ int main(int argc, char** argv)
 }
 ```
 
+More examples can be found in the [examples](examples) folder.
 
-MP3/Vorbis/FLAC/WAV Decoding
-============================
-miniaudio includes a decoding API which supports the following backends:
-- FLAC via [dr_flac](https://github.com/mackron/dr_libs/blob/master/dr_flac.h)
-- MP3 via [dr_mp3](https://github.com/mackron/dr_libs/blob/master/dr_mp3.h)
-- WAV via [dr_wav](https://github.com/mackron/dr_libs/blob/master/dr_wav.h)
-- Vorbis via [stb_vorbis](https://github.com/nothings/stb/blob/master/stb_vorbis.c)
 
-Copies of these libraries can be found in the "extras" folder.
+Documentation
+=============
+Documentation can be found at the top of [miniaudio.h](https://raw.githubusercontent.com/dr-soft/miniaudio/master/miniaudio.h)
+which is always the most up-to-date and authoritive source of information on how to use miniaudio.
 
-To enable support for a decoding backend, all you need to do is #include the header section of the
-relevant backend library before the implementation of miniaudio, like so:
+
+Vorbis Decoding
+===============
+Vorbis decoding is enabled via stb_vorbis. To use it, you need to include the header section of stb_vorbis
+before the implementation of miniaudio. You can enable Vorbis by doing the following:
 
 ```c
-#include "dr_flac.h"    // Enables FLAC decoding.
-#include "dr_mp3.h"     // Enables MP3 decoding.
-#include "dr_wav.h"     // Enables WAV decoding.
+#define STB_VORBIS_HEADER_ONLY
+#include "extras/stb_vorbis.c"    /* Enables Vorbis decoding. */
 
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
+
+/* stb_vorbis implementation must come after the implementation of miniaudio. */
+#undef STB_VORBIS_HEADER_ONLY
+#include "extras/stb_vorbis.c"
 ```
-
-A decoder can be initialized from a file with `ma_decoder_init_file()`, a block of memory with
-`ma_decoder_init_memory()`, or from data delivered via callbacks with `ma_decoder_init()`. Here
-is an example for loading a decoder from a file:
-
-```c
-ma_decoder decoder;
-ma_result result = ma_decoder_init_file("MySong.mp3", NULL, &decoder);
-if (result != MA_SUCCESS) {
-    return false;   // An error occurred.
-}
-
-...
-
-ma_decoder_uninit(&decoder);
-```
-
-When initializing a decoder, you can optionally pass in a pointer to a `ma_decoder_config` object
-(the `NULL` argument in the example above) which allows you to configure the output format, channel
-count, sample rate and channel map:
-
-```c
-ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 2, 48000);
-```
-
-When passing in NULL for this parameter, the output format will be the same as that defined by the
-decoding backend.
-
-Data is read from the decoder as PCM frames:
-
-```c
-ma_uint64 framesRead = ma_decoder_read_pcm_frames(pDecoder, pFrames, framesToRead);
-```
-
-You can also seek to a specific frame like so:
-
-```c
-ma_result result = ma_decoder_seek_to_pcm_frame(pDecoder, targetFrame);
-if (result != MA_SUCCESS) {
-    return false;   // An error occurred.
-}
-```
-
-When loading a decoder, miniaudio uses a trial and error technique to find the appropriate decoding
-backend. This can be unnecessarily inefficient if the type is already known. In this case you can
-use the `_wav`, `_mp3`, etc. varients of the aforementioned initialization APIs:
-
-```
-ma_decoder_init_wav()
-ma_decoder_init_mp3()
-ma_decoder_init_memory_wav()
-ma_decoder_init_memory_mp3()
-ma_decoder_init_file_wav()
-ma_decoder_init_file_mp3()
-etc.
-```
-
-The `ma_decoder_init_file()` API will try using the file extension to determine which decoding
-backend to prefer.
 
 
 Unofficial Bindings

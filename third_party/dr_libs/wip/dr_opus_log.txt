@@ -264,9 +264,55 @@ Test Vector Encapsulation Format
   the "context" probabilities and "fs" and to return "k".
 - This _seems_ to work. Or at least, the results are consistent with my first attempt. Committing.
 - Added dropus_Q13() for doing the stereo weight lookup (RFC 7616 - Table 7).
-- Section 4.2.7.1 mentions that theweights are linearly interpolated with the weights from the previous frame. What
+- Section 4.2.7.1 mentions that the weights are linearly interpolated with the weights from the previous frame. What
   factor do I use for the interpolation?
 - Finished initial work on RFC 7616 - Section 4.2.7.1. Still don't know how the interpolation part works. I'm hoping
   this is explained later in the spec.
 - COMMIT
 - Completed initial implementation of RFC 7616 - Section 4.2.7.2.
+
+2020/03/29 6:33 AM
+==================
+- After a whole year, time to take another look at this. Only problem is, I've forgotten everything! Let's do a
+  quick pass on the high level stuff to get it consistent with dr_flac. Two mistakes I made with dr_flac: Not having
+  a low-level API that works on the FLAC frame level; and returning booleans instead of result codes. The first one
+  is already being handled, but lets update the high level APIs to use result codes.
+- High level APIs now updated to return result codes.
+- People are going to want to log errors: added dropus_result_description() to retrieve a human readable description
+  of a result code for logging and error reporting purposes.
+- I've had reports of people having compilation errors with inlining before. Need to bring over the INLINE macro from
+  dr_flac to ensure we don't get more reports about that.
+- I've had people request the ability to customize whether or not public APIs are marked as static or extern in other
+  libraries, so adding the DROPUS_API decoration. It's better to do this sooner than later, because this happened with
+  miniaudio recently which was a ~40K line library at the time, and it was nightmare to update!
+- There will be a requirement to allocate memory for high level APIs. Support for allocation macros and allocation
+  callbacks need to be added now so we can avoid breaking APIs later.
+- There have been requests in the past to support loading files from a wchar_t encoded path. Adding support by pulling
+  in custom fopen() and wfopen() implementations from dr_flac.
+- Have not yet compiled on VC6 so lets do a pass on that to make it easier for us later.
+- VC6 is now compiling clean. Time to check GCC and Clang in strict C89 mode.
+- Getting compiler errors about some Linux specific code for handling byte swaps. Removed and replaced with a cross-
+  platform solution.
+- From what I can see it looks like our boilerplate is now up to date with dr_flac, dr_wav and dr_mp3. Time to get onto
+  some actual Opus decoding.
+- Looks like a typo in dropus_range_decoder_update() for handling the `fl[k] > 0` case. Changed this, but now getting
+  a division by zero. Debugging...
+  - And fixed. The last paragraph in RFC 6716 - Section 4.1.2 is the part I was missing:
+        After the updates, implemented by ec_dec_update() (entdec.c), the
+        decoder normalizes the range using the procedure in the next section,
+        and returns the index k.
+- Reading through dropus_stream_decode_packet() to refresh my memory and some stuff needs cleaning up. Important from
+  now on to distinguish between PCM frames and Opus frames. All variables referring to one of the other needs to be
+  prefixed with "pcm" or "opus", depending on it's use. Example: opusFrameCount / pcmFrameCount.
+- Added infrastructure for handling CELT and Hybrid frames when the time comes. For now still focused on getting SILK
+  frames working.
+- Reviewing SILK decoding logic to refresh my memory and looks like I've misinterpreted the encoding for per-frame
+  LBRR flags. When there's more than one SILK frame, the first LBRR flag is just used to determine whether or not
+  the per-frame LBRR flags is present. I was _always_ reading the LBRR flags regardless of the value of the primary
+  LBRR flag.
+
+2020/03/30 7:30 AM
+==================
+- The decoding of SILK frames needs to be put in their own function in order to handle LBRR and regular SILK frames.
+  Looking at the spec, there's some complicated branching logic for determine what needs to be decoded. I've put in
+  a rough draft as a start, but needs some work. Will continue on this later.

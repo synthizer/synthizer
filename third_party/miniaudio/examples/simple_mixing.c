@@ -2,14 +2,6 @@
 Usage:   simple_mixing [input file 0] [input file 1] ... [input file n]
 Example: simple_mixing file1.wav file2.flac
 */
-
-#define DR_FLAC_IMPLEMENTATION
-#include "../extras/dr_flac.h"  /* Enables FLAC decoding. */
-#define DR_MP3_IMPLEMENTATION
-#include "../extras/dr_mp3.h"   /* Enables MP3 decoding. */
-#define DR_WAV_IMPLEMENTATION
-#include "../extras/dr_wav.h"   /* Enables WAV decoding. */
-
 #define MINIAUDIO_IMPLEMENTATION
 #include "../miniaudio.h"
 
@@ -85,7 +77,7 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
     float* pOutputF32 = (float*)pOutput;
     ma_uint32 iDecoder;
 
-    ma_assert(pDevice->playback.format == SAMPLE_FORMAT);   /* <-- Important for this example. */
+    MA_ASSERT(pDevice->playback.format == SAMPLE_FORMAT);   /* <-- Important for this example. */
 
     for (iDecoder = 0; iDecoder < g_decoderCount; ++iDecoder) {
         if (!g_pDecodersAtEnd[iDecoder]) {
@@ -166,7 +158,7 @@ int main(int argc, char** argv)
     needs to be done before starting the device. We need a context to initialize the event, which we can get from the device. Alternatively you can initialize
     a context separately, but we don't need to do that for this example.
     */
-    ma_event_init(device.pContext, &g_stopEvent);
+    ma_event_init(&g_stopEvent);
 
     /* Now we start playback and wait for the audio thread to tell us to stop. */
     if (ma_device_start(&device) != MA_SUCCESS) {
