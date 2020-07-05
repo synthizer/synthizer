@@ -9,7 +9,7 @@ None
 Enum | Type | Default | Range | Description
 --- | --- | --- | --- | ---
 SYZ_P_GAIN | double | any finite double | An additional gain factor applied to this source in DB
-SYZ_P_PANNER_STRATEGY | SYZ_PANNER_STRATEGY_HRTF | any SYZ_PANNER_STRATEGY | The panner strategy for this source.
+SYZ_P_PANNER_STRATEGY | int | SYZ_PANNER_STRATEGY_HRTF | any SYZ_PANNER_STRATEGY | The panner strategy for this source.
 
 ## Remarks
 
