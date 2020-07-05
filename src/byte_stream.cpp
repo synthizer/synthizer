@@ -37,7 +37,7 @@ static std::vector<std::tuple<std::string, std::string>> parseOptions(const std:
 	std::istringstream opts_stream{options};
 	std::vector<std::tuple<std::string, std::string>> parsed;
 	std::string current_opt;
-	while (std::getline(opts_stream, current_opt, ' ')) {
+	while (std::getline(opts_stream, current_opt, '&')) {
 		std::istringstream inner{current_opt};
 		std::string k;
 		std::getline(inner, k, '=');
