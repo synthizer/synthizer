@@ -33,4 +33,4 @@ write-output "Releasing"
 
 $pycommand = "c:\python38-x64\python.exe"
 invoke-utility $pycommand -m pip install twine
-invoke-utility $pycommand -m twine upload -u camlorn -p "$PYPI_PASSWORD" bindings/python/dist/*
+invoke-utility $pycommand -m twine upload -u camlorn bindings/python/dist/*

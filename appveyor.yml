@@ -7,7 +7,7 @@ matrix:
 environment:
   BUILDING_SYNTHIZER: "true"
   synthizer_ci: "true"
-  PYPI_PASSWORD:
+  TWINE_PASSWORD:
     secure: d2vKp79d1l2GRgzol+HVMG3GOsl0Rnq5qkZhKkLslR4=
 
   matrix:
