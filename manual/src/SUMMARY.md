@@ -1,6 +1,7 @@
 # Summary
 
 - [Introduction](./introduction.md)
+- [Release Notes](./release_notes.md)
 
 # Tutorials
 
