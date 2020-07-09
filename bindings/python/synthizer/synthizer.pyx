@@ -1,3 +1,4 @@
+#cython: auto_pickle=False
 import contextlib
 import threading
 
@@ -202,7 +203,7 @@ cdef class _BaseObject:
             raise ValueError("Synthizer object is of an unexpected type")
         return self.handle
 
-class Context(_BaseObject):
+cdef class Context(_BaseObject):
     """The Synthizer context represents an open audio device and groups all Synthizer objects created with it into one unit.
 
     To use Synthizer, the first step is to create a Context, which all other library types expect in their constructors.  When the context is destroyed, all audio playback stops and calls to
