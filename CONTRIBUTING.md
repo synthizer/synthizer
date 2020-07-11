@@ -5,15 +5,13 @@ discussing new features before starting work on them, in case they need to wait,
 
 ## Licensing
 
-This project is under the [unlicense](./LICENSE).  When opening a new PR there's some checkboxes at the bottom of the template:
+This project is under the [unlicense](./LICENSE).  Please include the folllowing at the bottom of your PR comment:
 
 ```
-- [ ] I have read CONTRIBUTING.md
-- [ ] I am the only contributor to this PR, and own coppyright on my code.
-- [ ] I license my contribution under the unlicense.
+I have read CONTRIBUTING.md, am the sole contributor to this pull request, and license my contributions under the Unlicense.
 ```
 
-Replace the space between the brackets with an `x` if you agree.  If there's multiple contributors to your PR, let me know in the PR.
+If there's multiple contributors to your PR, let me know in the PR.
 I'll need them to all have GitHub accounts, and to leave a comment to the effect of them agreeing that their contribution is under the unlicense as well.
 
 We might make this more formal later, but the unlicense is liberal enough to even allow relicensing, so for the time being there's no CLA.
