@@ -14,6 +14,9 @@
 #include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
 
+#include "concurrentqueue.h"
+#include "sema.h"
+
 #include <functional>
 #include <memory>
 #include <utility>
@@ -205,21 +208,19 @@ void Context::audioThreadFunc() {
 			write_audio = this->audio_output->beginWrite();
 		}
 
-		Invokable *inv = this->pending_invokables.dequeue();
-		while (inv) {
+		Invokable *inv;
+		while (pending_invokables.try_dequeue(inv)) {
 			this->flushPropertyWrites();
 			inv->invoke();
-			inv = this->pending_invokables.dequeue();
 		}
 
 		/*
 		 * This needs to be moved to a dedicated thread. eventually, but this will do for now.
 		 * Unfortunately doing better is going to require migrating off shared_ptr, though it's not clear yet as to what it will be replaced with.
 		 * */
-		DeletionRecord *rec;
-		while ((rec = this->pending_deletes.dequeue())) {
-			rec->callback(rec->arg);
-			this->free_deletes.enqueue(rec);
+		DeletionRecord rec;
+		while (pending_deletes.try_dequeue(rec)) {
+			rec.callback(rec.arg);
 		}
 
 		this->context_semaphore.wait();
@@ -230,38 +231,22 @@ void Context::audioThreadFunc() {
 }
 
 void Context::enqueueDeletionRecord(DeletionCallback cb, void *arg) {
-	DeletionRecord *rec;
+	DeletionRecord rec;
 
-	try {
-		this->deletes_in_progress.fetch_add(1, std::memory_order_relaxed);
 
-		{
-			std::lock_guard g(this->free_deletes_mutex);
-			rec = this->free_deletes.dequeue();
-		}
-		if (rec == nullptr) {
-			rec = new DeletionRecord();
-		}
-		rec->callback = cb;
-		rec->arg = arg;
-		this->pending_deletes.enqueue(rec);
-		this->deletes_in_progress.fetch_sub(1, std::memory_order_release);
-	} catch(...) {
-		/* Swallow exceptions; we don't want to stop deletes. */
-	}
+	this->deletes_in_progress.fetch_add(1, std::memory_order_relaxed);
+	rec.callback = cb;
+	rec.arg = arg;
+	this->pending_deletes.enqueue(rec);
 	this->deletes_in_progress.fetch_sub(1, std::memory_order_release);
 }
 
 void Context::drainDeletionQueues() {
 	while(this->deletes_in_progress.load(std::memory_order_acquire) != 0);
 
-	DeletionRecord *rec;
-	while ((rec = this->pending_deletes.dequeue())) {
-		rec->callback(rec->arg);
-		delete rec;
-	}
-	while ((rec = this->free_deletes.dequeue())) {
-		delete rec;
+	DeletionRecord rec;
+	while (this->pending_deletes.try_dequeue(rec)) {
+		rec.callback(rec.arg);
 	}
 }
 

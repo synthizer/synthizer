@@ -26,6 +26,7 @@ include_directories(
 	third_party/cpp11-on-multicore/common
 	third_party/wdl
 	third_party/plf_colony
+	third_party/concurrentqueue
 )
 
 set(SYNTHIZER_LIB_TYPE STATIC CACHE STRING "The build type for Synthizer. Either STATIC or SHARED")

@@ -1,12 +1,11 @@
 #pragma once
 
+#include "synthizer/memory.hpp"
+
+#include "concurrentqueue.h"
+
 #include <atomic>
 #include <cstddef>
-
-#include "sema.h"
-
-#include "synthizer/memory.hpp"
-#include "synthizer/queues/vyukov.hpp"
 
 namespace synthizer {
 
@@ -55,17 +54,13 @@ class BoundedBlockQueue {
 	void setWritesWillBlock(bool blocking);
 
 private:
-	struct Block: public VyukovHeader<Block> {
-		T *data;
-	};
-
-	VyukovQueue<Block> ready_queue, free_queue;
+	moodycamel::ConcurrentQueue<T *> ready_queue, free_queue;
 	std::atomic<std::size_t> queue_size = 1, queue_allocated = 0;
 	std::size_t block_size;
 	/* Signals reads being completed. */
 	Semaphore read_sema;
-	Block *read_block = nullptr;
-	Block *write_block = nullptr;
+	T *read_block = nullptr;
+	T *write_block = nullptr;
 	std::atomic<int> writes_will_block = 1;
 
 	void allocateBlocksIfNeeded();
@@ -79,14 +74,9 @@ BoundedBlockQueue<T>::BoundedBlockQueue(std::size_t block_size, std::size_t queu
 
 template<typename T>
 BoundedBlockQueue<T>::~BoundedBlockQueue() {
-	BoundedBlockQueue<T>::Block *blk;
-	while((blk = this->ready_queue.dequeue())) {
-		freeAligned(blk->data);
-		delete blk;
-	}
-	while ((blk = this->free_queue.dequeue())) {
-		freeAligned(blk->data);
-		delete blk;
+	T *blk;
+	while(this->ready_queue.try_dequeue(blk) || this->free_queue.try_dequeue(blk)) {
+		freeAligned(blk);
 	}
 }
 
@@ -94,9 +84,7 @@ template<typename T>
 void BoundedBlockQueue<T>::allocateBlocksIfNeeded() {
 	auto needed = this->queue_size.load(std::memory_order_relaxed) - this->queue_allocated.load(std::memory_order_relaxed);
 	while (needed) {
-		auto block_data = allocAligned<T>(this->block_size);
-		auto block = new BoundedBlockQueue<T>::Block();
-		block->data = block_data;
+		auto block = allocAligned<T>(this->block_size);
 		this->free_queue.enqueue(block);
 		needed --;
 		this->queue_allocated.fetch_add(1);
@@ -113,14 +101,11 @@ T* BoundedBlockQueue<T>::beginWrite() {
 	this->allocateBlocksIfNeeded();
 	if (will_block) this->read_sema.wait();
 
-	BoundedBlockQueue<T>::Block *b = nullptr;
-	do {
-		b = this->free_queue.dequeue();
-		if (b) break;
-	} while(will_block && b == nullptr);
+	T *b = nullptr;
+	while (this->free_queue.try_dequeue(b) == false && will_block);
 
 	this->write_block = b;
-	return b ? b->data : nullptr;
+	return b;
 }
 
 template<typename T>
@@ -133,12 +118,10 @@ void BoundedBlockQueue<T>::endWrite() {
 template<typename T>
 T* BoundedBlockQueue<T>::beginReadImmediate() {
 	assert(this->read_block == nullptr);
-	auto blk = this->ready_queue.dequeue();
-	if (blk == nullptr) {
-		return nullptr;
-	}
+	T *blk = nullptr;
+	this->ready_queue.try_dequeue(blk);
 	this->read_block = blk;
-	return blk->data;
+	return blk;
 }
 
 template<typename T>

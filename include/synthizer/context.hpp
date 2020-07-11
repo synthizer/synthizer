@@ -5,10 +5,10 @@
 #include "synthizer/panner_bank.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/property_ring.hpp"
-#include "synthizer/queues/vyukov.hpp"
 #include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
 
+#include "concurrentqueue.h"
 #include "sema.h"
 
 #include <atomic>
@@ -164,7 +164,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	 * */
 	void audioThreadFunc();
 
-	VyukovQueue<Invokable> pending_invokables;
+	moodycamel::ConcurrentQueue<Invokable *> pending_invokables;
 	std::thread context_thread;
 	/*
 	 * Wake the context thread, either because a command was submitted or a block of audio was removed.
@@ -180,16 +180,14 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	 * This means that all shared_ptr decremented in the previous iteration, and all weak_ptr were invalidated.
 	 * */
 	typedef void (*DeletionCallback)(void *);
-	class DeletionRecord: public VyukovHeader<DeletionRecord> {
+	class DeletionRecord {
 		public:
 		uint64_t iteration;
 		DeletionCallback callback;
 		void *arg;
 	};
-	VyukovQueue<DeletionRecord> pending_deletes;
-	/* These are reused to prevent needless allocation. */
-	std::mutex free_deletes_mutex;
-	VyukovQueue<DeletionRecord> free_deletes;
+	moodycamel::ConcurrentQueue<DeletionRecord> pending_deletes;
+
 	std::atomic<int> delete_directly = 0;
 	/*
 	 * Used to signal that something is queueing a delete. This allows

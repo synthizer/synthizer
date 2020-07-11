@@ -1,7 +1,6 @@
 #pragma once
 
 #include "synthizer/spsc_semaphore.hpp"
-#include "synthizer/queues/vyukov.hpp"
 
 #include <exception>
 #include <type_traits>
@@ -10,11 +9,11 @@
 namespace synthizer {
 
 /*
- * An Invokable is just a base class for anything providing an invoke method and a VyukovHeader so that it can go onto a queue somewhere.
+ * An Invokable is just a base class for anything providing an invoke method.
  * 
  * These are like futures, but intentionally stripped down and intentionally tieing the lifetime of the thing to be invoked to the future, that is disregarding an Invokable before its invocation will result in crashes.
  * */
-class Invokable: public VyukovHeader<Invokable> {
+class Invokable {
 	public:
 	virtual ~Invokable() {}
 	virtual void invoke() = 0;
