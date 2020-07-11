@@ -14,7 +14,19 @@ This call will decode the stream in the calling thread, returning errors as nece
 
 ## Properties
 
-None currently. Some in the near future.
+None.
+
+## Functions
+
+### Getters
+
+```
+SYZ_CAPI syz_ErrorCode syz_bufferGetChannels(unsigned int *out, syz_Handle buffer);
+SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSamples(unsigned int *out, syz_Handle buffer);
+SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSeconds(double *out, syz_Handle buffer);
+```
+
+The self-explanatory getters. These aren't properties because they can't be written and they shouldn't participate in the property infrastructure.
 
 ## Remarks
 

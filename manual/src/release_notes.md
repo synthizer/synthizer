@@ -4,6 +4,7 @@
 
 - Introduce DirectSource, for music and other non-panned assets.
 - All sources now have gain, as part of refactoring for DirectSource.
+- Introduce `syz_bufferGetChannels`, `syz_bufferGetLengthInSamples`, and `syz_bufferGetLengthInSeconds`, and obvious Python equivalents.
 - Source add/remove generators needed to happen in the audio thread in order to not break. For now this is using `Context.call`, but in future
   it'll probably use a ConcurrentQueue to enqueue updates and avoid the overhead, or perhaps an abstracted PropertyRing.
 - Move to [moodycamel::ConcurrentQueue](https://github.com/cameron314/concurrentqueue). This removes mutexes in a lot of places

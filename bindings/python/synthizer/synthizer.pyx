@@ -322,6 +322,21 @@ cdef class Buffer(_BaseObject):
         _checked(syz_createBufferFromStream(&handle, context._get_handle_checked(Context), _to_bytes(protocol), _to_bytes(path), _to_bytes(options)))
         return Buffer(_handle=handle)
 
+    cpdef get_channels(self):
+        cdef unsigned int ret
+        _checked(syz_bufferGetChannels(&ret, self.handle))
+        return ret
+
+    cpdef get_length_in_samples(self):
+        cdef unsigned int ret
+        _checked(syz_bufferGetLengthInSamples(&ret, self.handle))
+        return ret
+
+    cpdef get_length_in_seconds(self):
+        cdef double ret
+        _checked(syz_bufferGetLengthInSeconds(&ret, self.handle))
+        return ret
+
 cdef class BufferGenerator(Generator):
     def __init__(self, context):
         cdef syz_Handle handle
