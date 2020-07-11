@@ -3,8 +3,10 @@
 #include "synthizer_constants.h"
 
 #include "synthizer/base_object.hpp"
+#include "synthizer/config.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/spatialization_math.hpp"
+#include "synthizer/types.hpp"
 
 #include <array>
 #include <memory>
@@ -31,8 +33,25 @@ class Source: public BaseObject {
 	virtual void removeGenerator(std::shared_ptr<Generator> &gen);
 	bool hasGenerator(std::shared_ptr<Generator> &generator);
 
+	double getGain();
+	void setGain(double gain);
+
 	protected:
+	/*
+	 * An internal buffer, which accumulates all generators.
+	 * */
+	alignas(config::ALIGNMENT) std::array<AudioSample, config::BLOCK_SIZE * config::ALIGNMENT> block;
+
+	/*
+	 * Fill the internal block, downmixing and/or upmixing generators
+	 * to the specified channel count.
+	 * */
+	void fillBlock(unsigned int channels);
+
+	PROPERTY_METHODS;
+	private:
 	std::vector<std::weak_ptr<Generator>> generators;
+	double gain = 1.0;
 };
 
 /*
@@ -53,8 +72,7 @@ class PannedSource: public Source {
 	void setPanningScalar(double scalar);
 	int getPannerStrategy();
 	void setPannerStrategy(int strategy);
-	double getGain();
-	void setGain(double gain);
+
 	/* For 	Source3D. */
 	void setGain3D(double gain);
 

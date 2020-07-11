@@ -63,26 +63,11 @@ void PannedSource::setPannerStrategy(int strategy) {
 	this->panner_strategy = (enum SYZ_PANNER_STRATEGY) strategy;
 }
 
-double PannedSource::getGain() {
-	return gainToDb(this->gain);
-}
-
-void PannedSource::setGain(double gain) {
-	this->gain = dbToGain(gain);
-}
-
 void PannedSource::setGain3D(double gain) {
 	this->gain_3d = gain;
 }
 
 void PannedSource::run() {
-	alignas(config::ALIGNMENT) static thread_local std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> multichannel_buffer_array;
-	alignas(config::ALIGNMENT) static thread_local std::array<AudioSample, config::BLOCK_SIZE> mono_buffer_array;
-	AudioSample *mono_buffer = &mono_buffer_array[0];
-	AudioSample *multichannel_buffer = &multichannel_buffer_array[0];
-
-	std::fill(mono_buffer, mono_buffer + config::BLOCK_SIZE, 0.0f);
-
 	if (this->valid_lane == false) {
 		this->panner_lane = this->context->allocateSourcePannerLane(this->panner_strategy);
 		this->needs_panner_set = true;
@@ -98,39 +83,15 @@ void PannedSource::run() {
 		this->needs_panner_set = false;
 	}
 
-	/* iterate and remove as we go to avoid locking weak_ptr twice. */
-	weak_vector::iterate_removing(this->generators, [&] (auto &g) {
-		unsigned int nch = g->getChannels();
-
-		if (nch == 0) {
-			return;
-		}
-
-		if (nch == 1) {
-			/* Fast path: straight to mono_buffer. */
-			g->generateBlock(mono_buffer);
-		} else {
-			/* Write to multichannel_buffer, then fold the first n channels normalized by 1/n. */
-			std::fill(multichannel_buffer, multichannel_buffer + config::BLOCK_SIZE * nch, 0.0f);
-			g->generateBlock(multichannel_buffer);
-
-			float normfactor = 1.0f / nch;
-			for (unsigned int c = 0; c < nch; c++) {
-				for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-					float s = multichannel_buffer[nch * i + c];
-					mono_buffer[i] += s * normfactor;
-				}
-			}
-		}
-	});
+	this->fillBlock(1);
 
 	/* And output. */
 	this->panner_lane->update();
 	unsigned int stride = this->panner_lane->stride;
 	AudioSample *dest = this->panner_lane->destination;
-	float g = this->gain * this->gain_3d;
+	float g = this->gain_3d;
 	for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-		dest[i * stride] = g * mono_buffer[i];
+		dest[i * stride] = g * block[i];
 	}
 }
 
@@ -139,7 +100,7 @@ void PannedSource::run() {
 /* Do properties. */
 #define PROPERTY_CLASS PannedSource
 #define PROPERTY_LIST PANNED_SOURCE_PROPERTIES
-#define PROPERTY_BASE BaseObject
+#define PROPERTY_BASE Source
 #include "synthizer/property_impl.hpp"
 
 using namespace synthizer;
