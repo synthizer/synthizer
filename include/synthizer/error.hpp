@@ -30,7 +30,7 @@ class Error: public std::exception  {
 
 	template<typename T>
 	T* as() {
-		auto out = std::dynamic_)cast<T>(this);
+		auto out = std::dynamic_cast<T>(this);
 		return out;
 	}
 
