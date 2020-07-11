@@ -261,10 +261,19 @@ cdef class Source(_BaseObject):
         cdef syz_Handle h = generator._get_handle_checked(Generator)
         _checked(syz_sourceRemoveGenerator(self.handle, h))
 
+    gain = DoubleProperty(SYZ_P_GAIN)
+
+cdef class DirectSource(Source) :
+    def __init__(self, context):
+        cdef syz_Handle ctx = context._get_handle_checked(Context)      
+        cdef syz_Handle out
+        _checked(syz_createDirectSource(&out, ctx))
+        super().__init__(out)
+
 cdef class PannedSourceCommon(Source):
     """Properties common to PannedSource and Source3D"""
     panner_strategy = enum_property(SYZ_P_PANNER_STRATEGY, lambda x: PannerStrategy(x))
-    gain = DoubleProperty(SYZ_P_GAIN)
+
 
 cdef class PannedSource(PannedSourceCommon):
     """A source with azimuth and elevation panning done by hand."""

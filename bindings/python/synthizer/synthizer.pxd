@@ -59,6 +59,8 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle generator)
 
+    syz_ErrorCode syz_createDirectSource(syz_Handle* out, syz_Handle context)
+
     syz_ErrorCode syz_createPannedSource(syz_Handle* out, syz_Handle context)
 
     syz_ErrorCode syz_createSource3D(syz_Handle* out, syz_Handle context)

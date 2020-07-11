@@ -23,6 +23,6 @@ ctx = synthizer.Context()
 g = synthizer.BufferGenerator(context=ctx)
 b = synthizer.Buffer.from_stream(ctx, protocol="file", path=sys.argv[1])
 g.buffer = b
-s = synthizer.Source3D(ctx)
+s = synthizer.DirectSource(ctx)
 s.add_generator(g)
 
