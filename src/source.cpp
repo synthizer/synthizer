@@ -112,7 +112,9 @@ SYZ_CAPI syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle gene
 	SYZ_PROLOGUE
 	auto src = fromC<Source>(source);
 	auto gen = fromC<Generator>(generator);
-	src->addGenerator(gen);
+	src->getContextRaw()->call([&] () {
+		src->addGenerator(gen);
+	});
 	return 0;
 	SYZ_EPILOGUE
 }
@@ -121,7 +123,9 @@ SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle g
 	SYZ_PROLOGUE
 	auto src = fromC<Source>(source);
 	auto gen = fromC<Generator>(generator);
-	src->removeGenerator(gen);
+	src->getContextRaw()->call([&] () {
+		src->removeGenerator(gen);
+	});
 	return 0;
 	SYZ_EPILOGUE
 }
