@@ -43,6 +43,7 @@ class Source: public BaseObject {
 class PannedSource: public Source {
 	public:
 	PannedSource(std::shared_ptr<Context> context);
+	void initInAudioThread() override;
 
 	double getAzimuth();
 	void setAzimuth(double azimuth);
@@ -74,6 +75,7 @@ class PannedSource: public Source {
 class Source3D: public PannedSource, public DistanceParamsMixin  {
 	public:
 	Source3D(std::shared_ptr<Context> context);
+	void initInAudioThread() override;
 
 	std::array<double, 3> getPosition();
 	void setPosition(std::array<double, 3> position);

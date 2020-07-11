@@ -18,6 +18,9 @@
 namespace synthizer {
 
 PannedSource::PannedSource(const std::shared_ptr<Context> context): Source(context) {
+}
+
+void PannedSource::initInAudioThread() {
 	this->panner_lane = context->allocateSourcePannerLane(this->panner_strategy);
 }
 

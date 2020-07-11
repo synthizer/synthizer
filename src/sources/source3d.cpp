@@ -10,6 +10,9 @@
 namespace synthizer {
 
 Source3D::Source3D(std::shared_ptr<Context> context): PannedSource(context) {
+}
+
+void Source3D::initInAudioThread() {
 	this->setDistanceParams(context->getDistanceParams());
 }
 

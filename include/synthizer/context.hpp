@@ -97,16 +97,16 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 
 	template<typename T, typename... ARGS>
 	std::shared_ptr<T> createObject(ARGS&& ...args) {
-		auto ret = this->call([&] () {
-			auto tmp = this->shared_from_this();
-			std::weak_ptr<Context> ctx_weak = tmp;
-			auto obj = new T(tmp, args...);
-			std::shared_ptr<T> v(obj, [ctx_weak] (T *ptr) {
-				auto ctx_strong = ctx_weak.lock();
-				if (ctx_strong && ctx_strong->delete_directly.load(std::memory_order_relaxed) == 1) ctx_strong->enqueueDeletionRecord(&deletionCallback<T>, (void *)ptr);
-				else delete ptr;
-			});
-			return v;
+		auto obj = new T(this->shared_from_this(), args...);
+		std::shared_ptr<T> ret(obj, [] (T *ptr) {
+			auto ctx = ptr->getContextRaw();
+			if (ctx->delete_directly.load(std::memory_order_relaxed) == 1) ctx->enqueueDeletionRecord(&deletionCallback<T>, (void *)ptr);
+			else delete ptr;
+		});
+
+		/* Do the second phase of initialization. */
+		this->call([&] () {
+			obj->initInAudioThread();
 		});
 		return ret;
 	}
