@@ -109,7 +109,11 @@ syz_Handle getCHandleImpl(std::shared_ptr<CExposable> &&obj);
  * */
 template<typename T>
 syz_Handle toC(T&& obj) {
-	return getCHandleImpl(std::move(std::static_pointer_cast<CExposable>(obj)));
+	if (obj) {
+		return getCHandleImpl(std::move(std::static_pointer_cast<CExposable>(obj)));
+	} else {
+		return 0;
+	}
 }
 
 /* Throws EInvalidHandle. */
