@@ -39,7 +39,7 @@ using arrayd6 = std::array<double, 6>;
 
 const auto int_min = std::numeric_limits<int>::min();
 const auto int_max = std::numeric_limits<int>::max();
-const auto double_min = std::numeric_limits<double>::min();
+const auto double_min = std::numeric_limits<double>::lowest();
 const auto double_max = std::numeric_limits<double>::max();
 }
 
