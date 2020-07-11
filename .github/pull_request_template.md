@@ -2,5 +2,5 @@ Describe the feature and/or bug fix:
 
 This is for issue: Issue number here.
 
-Follow the directions in CONTRIBUTING.md:
+Follow the licensing directions in CONTRIBUTING.md:
 
