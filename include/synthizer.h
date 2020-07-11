@@ -145,7 +145,7 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, syz_Handle co
 SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context);
 
 /*
- * Add/remove generators from a PannedSource. The PannedSource weak references the generators; they must be kept alive on the external side for the time being.
+ * Add/remove generators from a Source. The Source weak references the generators; they must be kept alive on the external side for the time being.
  * 
  * This will probably change as lifetimes get narrowed down, and as sources are extended with more functionality to manage their generators.
  * 
@@ -154,6 +154,12 @@ SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle con
  * */
 SYZ_CAPI syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle generator);
 SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle generator);
+
+/*
+ * Create a DirectSource, which routes audio directly to speakers.
+ * This is for music, for example.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createDirectSource(syz_Handle *out, syz_Handle context);
 
 /*
  * Create a panned source, a source with azimuth/elevation as the underlying panning strategy.

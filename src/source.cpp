@@ -86,7 +86,7 @@ void Source::fillBlock(unsigned int channels) {
 				auto final_ch = std::min(nch, channels);
 				for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 					for (unsigned int j = 0; j < final_ch; j++) {
-						block[i * config::BLOCK_SIZE * final_ch + j] = premix[i * config::BLOCK_SIZE * nch + j];
+						block[i * config::BLOCK_SIZE * final_ch + j] += premix[i * config::BLOCK_SIZE * nch + j];
 					}
 				}
 			}

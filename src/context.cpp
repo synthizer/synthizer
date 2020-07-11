@@ -137,8 +137,10 @@ void Context::setDouble6Property(std::shared_ptr<BaseObject> &obj, int property,
 	this->propertySetter<std::array<double, 6>>(obj, property, value);
 }
 
-void Context::registerSource(std::shared_ptr<Source> &source) {
-	this->sources[source.get()] = source;
+void Context::registerSource(const std::shared_ptr<Source> &source) {
+	this->call([&] () {
+		this->sources[source.get()] = source;
+	});
 }
 
 std::array<double, 3> Context::getPosition() {
@@ -166,6 +168,7 @@ std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_ST
 
 void Context::generateAudio(unsigned int channels, AudioSample *destination) {
 	std::fill(destination, destination + channels * config::BLOCK_SIZE, 0.0f);
+	std::fill(this->getDirectBuffer(), this->getDirectBuffer() + config::BLOCK_SIZE * channels, 0.0f);
 
 	auto i = this->sources.begin();
 	while (i != this->sources.end()) {
@@ -180,6 +183,11 @@ void Context::generateAudio(unsigned int channels, AudioSample *destination) {
 	}
 
 	this->source_panners->run(channels, destination);
+
+	/* Write the direct buffer. */
+	for (unsigned int i = 0; i < config::BLOCK_SIZE * channels; i++) {
+		destination[i] += this->direct_buffer[i];
+	}
 }
 
 void Context::flushPropertyWrites() {

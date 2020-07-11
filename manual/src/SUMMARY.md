@@ -24,6 +24,7 @@
 - [Context](./object_reference/context.md)
 - [Buffer](./object_reference/buffer.md)
 - [Source (abstract)](./object_reference/source.md)
+- [DirectSource](./object_reference/direct_source.md)
 - [SpatializedSource (abstract)](./object_reference/spatialized_source.md)
 - [PannedSource](./object_reference/panned_source.md)
 - [Source3D](./object_reference/source_3d.md)

@@ -62,6 +62,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/generators/decoding.cpp
 
 
+	src/sources/direct_source.cpp
 	src/sources/panned_source.cpp
 	src/sources/source3d.cpp
 

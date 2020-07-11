@@ -1,6 +1,7 @@
 #pragma once
 
 #include "synthizer/base_object.hpp"
+#include "synthizer/config.hpp"
 #include "synthizer/invokable.hpp"
 #include "synthizer/panner_bank.hpp"
 #include "synthizer/property_internals.hpp"
@@ -130,8 +131,10 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 
 	/*
 	 * Ad a weak reference to the specified source.
+	 * 
+	 * Handles calling into the audio thread.
 	 * */
-	void registerSource(std::shared_ptr<Source> &source);
+	void registerSource(const std::shared_ptr<Source> &source);
 
 	/*
 	 * The properties for the listener.
@@ -142,13 +145,21 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	void setOrientation(std::array<double, 6> orientation);
 
 	/* Helper methods used by various pieces of synthizer to grab global resources. */
+	/* Get the direct buffer, which is where things write when they want to bypass panning. This includes effects and direct sources, etc.
+	 * Inline because it's super inexpensive.
+	 * */
+	AudioSample *getDirectBuffer() {
+		return &this->direct_buffer[0];
+	}
+
+
 	/* Allocate a panner lane intended to be used by a source. */
 	std::shared_ptr<PannerLane> allocateSourcePannerLane(enum SYZ_PANNER_STRATEGY strategy);
 
-	PROPERTY_METHODS
+	PROPERTY_METHODS;
 	private:
 	/*
-	 * Flush all pending roperty writes.
+	 * Flush all pending property writes.
 	 * */
 	void flushPropertyWrites();
 
@@ -204,6 +215,9 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	void propertySetter(const std::shared_ptr<BaseObject> &obj, int property, T &value);
 
 	/* Collections of objects that require execution: sources, etc. all go here eventually. */
+
+	/* direct_buffer is a buffer to which we write when we want to output, bypassing panner banks. */
+	alignas(config::ALIGNMENT) std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> direct_buffer;
 
 	/* The key is a raw pointer for easy lookup. */
 	std::unordered_map<void *, std::weak_ptr<Source>> sources;

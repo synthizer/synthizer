@@ -54,6 +54,13 @@ class Source: public BaseObject {
 	double gain = 1.0;
 };
 
+class DirectSource: public Source {
+	public:
+	DirectSource(std::shared_ptr<Context> ctx): Source(ctx) {}
+
+	void run() override;
+};
+
 /*
  * A PannedSource is controlled through azimuth/elevation or panning scalar plus a gain factor.
  * 
