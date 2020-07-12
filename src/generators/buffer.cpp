@@ -22,7 +22,7 @@ unsigned int BufferGenerator::getChannels() {
 
 void BufferGenerator::generateBlock(AudioSample *output) {
 	auto buffer = this->buffer.lock();
-	if (buffer == nullptr) {
+	if (buffer == nullptr || buffer->getLength() == 0) {
 		return;
 	} else if (abs(1.0 - this->pitch_bend) > 0.001) {
 		return this->generatePitchBend(output);
@@ -73,15 +73,17 @@ void BufferGenerator::generateNoPitchBend(AudioSample *output) {
 	AudioSample *cursor = output;
 	unsigned int remaining = config::BLOCK_SIZE;
 	while (remaining) {
-			auto got = this->reader.readFrames(pos, remaining, &workspace[0]);
-			for (unsigned int i = 0; i < got * this->getChannels(); i++) {
-				cursor[i]  += workspace[i];
-			}
-			remaining -= got;
-			cursor += got * this->reader.getChannels();
-			pos += got;
-			if (remaining > 0 && this->looping == false) break;
-			if (this->looping == true) pos = 0;
+		auto got = this->reader.readFrames(pos, remaining, &workspace[0]);
+		for (unsigned int i = 0; i < got * this->getChannels(); i++) {
+			cursor[i]  += workspace[i];
+		}
+		remaining -= got;
+		cursor += got * this->reader.getChannels();
+		pos += got;
+		if (remaining > 0) {
+			if (this->looping == false) break;
+			else pos = 0;
+		}
 	}
 	this->position = pos;
 }
