@@ -78,6 +78,7 @@ std::tuple<double, double> linearInterpolate(double val, double start, double en
 	assert(val - start > -0.01);
 	assert(end - val > -0.01);
 
+	if (start == end) return { 0.5, 0.5 };
 	/* Clamp to eliminate floating point error. */
 	val = std::min(std::max(val, start), end);
 
@@ -160,6 +161,19 @@ void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned
 			break;
 		}
 	}
+
+	/*
+	 * If this is -90, then elev_lower might be null.
+	 * If this is 90, then elev_upper might be null.
+	 * Fix them up so that neither is.
+	 */
+	assert(elev_lower || elev_upper);
+	elev_lower = elev_lower ? elev_lower : elev_upper;
+	elev_upper = elev_upper ? elev_upper : elev_lower;
+	/*
+	 * Elevation could be below elev_lower or above elev_upper, if the entire sphere isn't covered.
+	 * */
+	elevation= clamp(elevation, elev_lower->angle, elev_upper->angle);
 
 	computeHrtfImpulseSingleChannel(azimuth, elevation, elev_lower, elev_upper, left, left_stride);
 	computeHrtfImpulseSingleChannel(360 - azimuth, elevation, elev_lower, elev_upper, right, right_stride);

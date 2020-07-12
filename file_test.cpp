@@ -22,7 +22,7 @@ auto ret = x; \
 	} \
 } while(0)
 
-	int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	syz_Handle context, generator, source, buffer;
 	int ecode = 0, ending = 0;
 	double angle, delta;
@@ -37,11 +37,13 @@ auto ret = x; \
 	CHECKED(syz_initialize());
 
 	CHECKED(syz_createContext(&context));
-	CHECKED(syz_createDirectSource(&source, context));
+	CHECKED(syz_createSource3D(&source, context));
 	CHECKED(syz_createBufferGenerator(&generator, context));
 	CHECKED(syz_createBufferFromStream(&buffer, context, "file", argv[1], ""));
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
+
+	CHECKED(syz_setD3(source, SYZ_P_POSITION, 0, 0, -1));
 
 	std::this_thread::sleep_for(std::chrono::seconds(20));
 
