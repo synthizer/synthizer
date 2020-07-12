@@ -72,6 +72,7 @@ static std::shared_ptr<PannerLane> allocateLaneHelper(plf::colony<PannerBlock<T>
 	}
 	found->reference_count++;
 	unsigned int lane = found->allocated_lanes.getFirstUnsetBit();
+	found->allocated_lanes.set(lane, true);
 	assert(lane < decltype(found->allocated_lanes)::SIZE);
 	ret->lane = lane;
 	ret->block = found;

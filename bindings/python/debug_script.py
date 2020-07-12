@@ -20,9 +20,24 @@ synthizer.set_log_level(synthizer.LogLevel.DEBUG)
 
 synthizer.initialize()
 ctx = synthizer.Context()
-g = synthizer.BufferGenerator(context=ctx)
-b = synthizer.Buffer.from_stream(ctx, protocol="file", path=sys.argv[1])
-g.buffer = b
-s = synthizer.DirectSource(ctx)
-s.add_generator(g)
+b = synthizer.Buffer.from_stream(ctx, "file", sys.argv[1], "")
 
+def sgpair():
+    g = synthizer.BufferGenerator(context=ctx)
+    g.buffer = b    
+    s = synthizer.Source3D(ctx)
+    s.add_generator(g)
+    return s, g
+
+
+
+pairs = []
+for i in range(-8, 9, 1):
+    s, g = sgpair()
+    s.position=i, 0, 0
+    s.gain=-9
+    pairs.append((s, g))
+    time.sleep(1)
+
+
+time.sleep(10)

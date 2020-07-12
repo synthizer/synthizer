@@ -43,8 +43,11 @@ class Bitset {
 	unsigned int getFirstUnsetBit() {
 		for(unsigned int i = 0; i < SIZE_IN_BYTES; i++) {
 			unsigned char d = data[i];
+			if (d == 0) {
+				return i * 8;
+			}
 			if (d == 255) continue; // no fre bit.
-			return __builtin_ctz(~d);
+			return i * 8 + __builtin_ctz(~(unsigned int)d);
 		}
 		return SIZE;
 	}
