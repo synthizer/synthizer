@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.4.0 (WIP)
+## 0.4.0
 
 - Introduce DirectSource, for music and other non-panned assets.
 - All sources now have gain, as part of refactoring for DirectSource.
