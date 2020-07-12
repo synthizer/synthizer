@@ -1,5 +1,11 @@
 # Release Notes
 
+## 0.4.1
+
+- Fixes to allocating multiple panner lanes from a PannerBank.
+  - Manifested as the inability to play multiple sources.
+- Fix HRTF computation for angles outside the built-in HRTF dataset, but which are still in range for elevation.
+
 ## 0.4.0
 
 - Introduce DirectSource, for music and other non-panned assets.
