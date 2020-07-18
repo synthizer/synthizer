@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.5.0 (WIP)
+## 0.5.0
 
 - Roll out a deferred freeing strategy, which uses C++ custom allocators to
   move freeing pointers to a background thread that wakes up on a period. This doesn't move all freeing, but gets a vast
