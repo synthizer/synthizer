@@ -4,12 +4,18 @@
 
 #include "synthizer/error.hpp"
 
+#include "plf_colony.h"
+
 #include <atomic>
 #include <algorithm>
+#include <cstddef>
 #include <cstdlib>
 #include <memory>
 #include <new>
+#include <type_traits>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #ifdef _WIN32
 #include <malloc.h>
@@ -19,10 +25,33 @@
 
 namespace synthizer {
 
+void initializeMemorySubsystem();
+void shutdownMemorySubsystem();
+
+/*
+ * Defer a free to a background thread which wakes up periodically.
+ * This function doesn't allocate, but under high memory pressure it can opt to free in the calling thread.
+ * If it doesn't free on the calling thread, then it doesn't enter the kernel.
+ * 
+ * The callback is so that we can choose whether to go through any of a variety of mechanisms,
+ * at the moment freeAligned and delete[].
+ * 
+ * This is used by all synthizer freeing where possible in order to ensure that memory which must be released on the audio thread
+ * is kept to a minimum.
+ * */
+typedef void freeCallback(void *value);
+void deferredFree(freeCallback *cb, void *value);
+
 #ifdef _WIN32
 template<typename T>
 T* allocAligned(std::size_t elements, std::size_t alignment = config::ALIGNMENT) {
-	void *d = _aligned_malloc(elements * sizeof(T), std::max(alignment, alignof(T)));
+	void *d;
+	if constexpr (std::is_same<T, void>::value) {
+		d = _aligned_malloc(elements, alignment);
+	} else {
+		d = _aligned_malloc(elements * sizeof(T), std::max(alignment, alignof(T)));
+	}
+
 	if (d == nullptr)
 		throw std::bad_alloc();
 
@@ -31,14 +60,20 @@ T* allocAligned(std::size_t elements, std::size_t alignment = config::ALIGNMENT)
 
 template<typename T>
 void freeAligned(T* ptr) {
-	_aligned_free((void*)ptr);
+	deferredFree(_aligned_free, (void *)ptr);
 }
 
 #else
 
 template<typename T>
 T* allocAligned(std::size_t elements, std::size_t alignment = config::ALIGNMENT) {
-	void *d = std::aligned_alloc(std::max(alignment, alignof(T)), elements * sizeof(T));
+	void *d;
+
+	if constexpr (std::is_same(T, void>::value) {
+		d = std::aligned_alloc(alignment, elements);
+	} else {
+		d = std::aligned_alloc(std::max(alignment, alignof(T)), elements * sizeof(T));
+	}
 	if (d == nullptr)
 		throw std::bad_alloc();
 	return (T*) d;
@@ -46,9 +81,78 @@ T* allocAligned(std::size_t elements, std::size_t alignment = config::ALIGNMENT)
 
 template<typename T>
 void freeAligned(T* ptr) {
-	std::free((void*)ptr);
+	deferredFree(std::free, (void *)ptr);
 }
 #endif
+
+template<typename T>
+class DeferredAllocator {
+	public:
+	typedef T value_type;
+
+	DeferredAllocator() {}
+
+	template<typename U>
+	DeferredAllocator(const DeferredAllocator<U> &other) {}
+	template<typename U>
+	DeferredAllocator(U &&other) {}
+
+	value_type *allocate(std::size_t n) {
+		void *ret;
+		if (alignof(value_type) <= alignof(std::max_align_t)) {
+			ret = std::malloc(sizeof(value_type) * n);
+		} else {
+			ret = allocAligned<void *>(n, alignof(value_type));
+		}
+		if (ret == nullptr) {
+			throw std::bad_alloc();
+		}
+		return (value_type *)ret;
+	}
+
+	void deallocate(T *p, std::size_t n) {
+		if (alignof(value_type) <= alignof(std::max_align_t)) {
+			deferredFree(free, (void *)p);
+		} else {
+			freeAligned<void>((void *)p);
+		}
+	}
+};
+
+template<typename T>
+bool operator==(const DeferredAllocator<T> &a, const DeferredAllocator<T> &b) {
+	return true;
+}
+
+/*
+ * Typedefs for std and plf types that are deferred.
+ * This saves us from std::vector<std::shared_ptr<...> DeferredAllocator<std::shared_ptr<...>>> fun.
+ * weird casing is to match std and colony.
+ * */
+template<typename T>
+using deferred_vector = std::vector<T, DeferredAllocator<T>>;
+
+template<typename K, typename V, typename HASH = std::hash<K>, typename KE = std::equal_to<K>>
+using deferred_unordered_map = std::unordered_map<K, V, HASH, KE, DeferredAllocator<std::pair<const K, V>>>;
+
+template<typename T, typename SKIPFIELD_T = unsigned short>
+using deferred_colony = plf::colony<T, DeferredAllocator<T>, SKIPFIELD_T>;
+
+/*
+ * makes shared_ptrs with the shared_ptr constructor, but injects a DeferredAllocator.
+ * */
+template<typename T, typename... ARGS>
+std::shared_ptr<T> sharedPtrDeferred(ARGS&&... args) {
+	return std::shared_ptr<T>(std::forward<ARGS>(args)..., DeferredAllocator<T>());
+}
+
+/*
+ * Like std::allocate_shared but doesn't make us specify the allocator typ[es.
+ * */
+template<typename T, typename... ARGS>
+std::shared_ptr<T> allocateSharedDeferred(ARGS&&... args) {
+	return std::allocate_shared<T, DeferredAllocator<T>, ARGS...>(DeferredAllocator<T>(), std::forward<ARGS>(args)...);
+}
 
 /*
  * Infrastructure for marshalling C objects to/from Synthizer.

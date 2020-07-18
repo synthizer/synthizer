@@ -3,6 +3,7 @@
 #include "synthizer/bitset.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/hrtf.hpp"
+#include "synthizer/memory.hpp"
 
 #include "plf_colony.h"
 
@@ -58,7 +59,7 @@ void ConcretePannerLane<T>::setPanningScalar(double scalar) {
 }
 
 template<typename T>
-static std::shared_ptr<PannerLane> allocateLaneHelper(plf::colony<PannerBlock<T>> &colony) {
+static std::shared_ptr<PannerLane> allocateLaneHelper(deferred_colony<PannerBlock<T>> &colony) {
 	std::shared_ptr<ConcretePannerLane<T>> ret = std::make_shared<ConcretePannerLane<T>>();
 	PannerBlock<T> *found = nullptr;
 	for(auto &i: colony) {
@@ -82,7 +83,7 @@ static std::shared_ptr<PannerLane> allocateLaneHelper(plf::colony<PannerBlock<T>
 }
 
 template<typename T>
-static void dropPanners(plf::colony<PannerBlock<T>> &colony) {
+static void dropPanners(deferred_colony<PannerBlock<T>> &colony) {
 	auto i = colony.begin();
 	while (i != colony.end()) {
 		if(i->reference_count == 0) {
@@ -146,7 +147,7 @@ class StrategyBank {
 	}
 
 	private:
-	plf::colony<PannerBlock<T>> panners;
+	deferred_colony<PannerBlock<T>> panners;
 	alignas(config::ALIGNMENT) std::array<AudioSample, config::BLOCK_SIZE*config::MAX_CHANNELS*config::PANNER_MAX_LANES> working_buffer;
 };
 

@@ -4,6 +4,7 @@
 
 #include "synthizer/base_object.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/memory.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
@@ -50,7 +51,7 @@ class Source: public BaseObject {
 
 	PROPERTY_METHODS;
 	private:
-	std::vector<std::weak_ptr<Generator>> generators;
+	deferred_vector<std::weak_ptr<Generator>> generators;
 	double gain = 1.0;
 };
 

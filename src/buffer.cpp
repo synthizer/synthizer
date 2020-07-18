@@ -38,10 +38,10 @@ class DitherGenerator {
  * the less condition to indicate that we're done.
  * */
 template<typename T>
-BufferData *generateBufferData(unsigned int channels, unsigned int sr, T &&producer) {
+std::shared_ptr<BufferData> generateBufferData(unsigned int channels, unsigned int sr, T &&producer) {
 	DitherGenerator dither;
 	WDL_Resampler *resampler = nullptr;
-	std::vector<std::int16_t *> chunks;
+	deferred_vector<std::int16_t *> chunks;
 	AudioSample *working_buf = nullptr;
 	std::int16_t *next_chunk = nullptr;
 
@@ -95,9 +95,8 @@ BufferData *generateBufferData(unsigned int channels, unsigned int sr, T &&produ
 			next_chunk = nullptr;
 		}
 
-		auto ret = new BufferData(channels, length, std::move(chunks));
 		delete[] working_buf;
-		return ret;
+		return allocateSharedDeferred<BufferData>(channels, length, std::move(chunks));
 	} catch(...) {
 		for (auto x: chunks) {
 			freeAligned(x);
@@ -112,10 +111,9 @@ BufferData *generateBufferData(unsigned int channels, unsigned int sr, T &&produ
 std::shared_ptr<BufferData> bufferDataFromDecoder(const std::shared_ptr<AudioDecoder> &decoder) {
 	auto channels = decoder->getChannels();
 	auto sr = decoder->getSr();
-	auto buf = generateBufferData(channels, sr, [&](auto frames, AudioSample *dest) {
+	return generateBufferData(channels, sr, [&](auto frames, AudioSample *dest) {
 		return decoder->writeSamplesInterleaved(frames, dest);
 	});
-	return std::shared_ptr<BufferData>(buf);
 }
 
 }
@@ -127,7 +125,7 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, const char *p
 	SYZ_PROLOGUE
 	auto dec = getDecoderForProtocol(protocol, path, options);
 	auto data = bufferDataFromDecoder(dec);
-	auto buf = std::make_shared<Buffer>(data);
+	auto buf = allocateSharedDeferred<Buffer>(data);
 	*out = toC(buf);
 	return 0;
 	SYZ_EPILOGUE

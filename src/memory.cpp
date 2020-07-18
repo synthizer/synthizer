@@ -4,11 +4,15 @@
 #include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
 
+#include "concurrentqueue.h"
+
 #include <atomic>
 #include <cassert>
+#include <chrono>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
+#include <thread>
 #include <unordered_map>
 #include <utility>
 
@@ -113,6 +117,62 @@ std::shared_ptr<CExposable> getExposableFromHandle(syz_Handle handle) {
 
 void clearAllCHandles() {
 	handle_slab.deallocateAllCells();
+}
+
+/*
+ * Infrastructure for deferred frees.
+ * */
+
+struct DeferredFreeEntry {
+	freeCallback *cb;
+	void *value;
+};
+
+/*
+ * The queue. 1000 items and 64 of each type of producer.
+ * */
+static moodycamel::ConcurrentQueue<DeferredFreeEntry> deferred_free_queue{1000, 64, 64};
+static std::thread deferred_free_thread;
+static std::atomic<int> deferred_free_thread_running = 1;
+thread_local static bool is_deferred_free_thread = false;
+
+static void deferredFreeWorker() {
+	decltype(deferred_free_queue)::consumer_token_t token{deferred_free_queue};
+
+	is_deferred_free_thread = true;
+	while (deferred_free_thread_running.load(std::memory_order_relaxed)) {
+		DeferredFreeEntry ent;
+		while (deferred_free_queue.try_dequeue(token, ent)) {
+			try {
+				ent.cb(ent.value);
+			} catch(...) {
+				logDebug("Exception on memory freeing thread. This should never happen");
+			}
+		}
+		/* Sleep for a bit so that we don't overload the system when we're not freeing. */
+		std::this_thread::sleep_for(std::chrono::milliseconds(30));
+	}
+}
+
+void deferredFree(freeCallback *cb, void *value) {
+	thread_local decltype(deferred_free_queue)::producer_token_t token{deferred_free_queue};
+
+	if (value == nullptr) {
+		return;
+	}
+
+	if (is_deferred_free_thread || deferred_free_queue.try_enqueue(token, { cb, value }) == false) {
+		cb(value);
+	}
+}
+
+void initializeMemorySubsystem() {
+	deferred_free_thread = std::move(std::thread{deferredFreeWorker});
+}
+
+void shutdownMemorySubsystem() {
+	deferred_free_thread_running.store(0);
+	deferred_free_thread.join();
 }
 
 }

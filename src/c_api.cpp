@@ -43,6 +43,7 @@ static std::atomic<unsigned int> initialization_count = 0;
 SYZ_CAPI syz_ErrorCode syz_initialize() {
 	SYZ_PROLOGUE
 	if (	initialization_count.fetch_add(1) == 0) {
+		initializeMemorySubsystem();
 		startBackgroundThread();
 		initializeAudioOutputDevice();
 	}
@@ -56,6 +57,7 @@ SYZ_CAPI syz_ErrorCode syz_shutdown() {
 		clearAllCHandles();
 		shutdownOutputDevice();
 		stopBackgroundThread();
+		shutdownMemorySubsystem();
 	}
 	logDebug("Library shutdown complete");
 	return 0;

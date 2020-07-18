@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -13,8 +14,8 @@ namespace synthizer {
 /* Operations on weak_ptr vectors. */
 namespace weak_vector {
 
-template<typename T>
-bool contains(const std::vector<std::weak_ptr<T>> &v, const std::shared_ptr<T> &x) {
+template<typename T, typename ALLOC>
+bool contains(const std::vector<std::weak_ptr<T>, ALLOC> &v, const std::shared_ptr<T> &x) {
 	for (auto &i: v) {
 		if (i.lock() == x) return true;
 	}
@@ -23,8 +24,8 @@ bool contains(const std::vector<std::weak_ptr<T>> &v, const std::shared_ptr<T> &
 }
 
 /* Call the callable on all elements of the vector which are still there, and remove any weak_ptr that's not. */
-template<typename T, typename CALLABLE>
-void iterate_removing(std::vector<std::weak_ptr<T>> &v, CALLABLE &&c) {
+template<typename T, typename CALLABLE, typename ALLOC>
+void iterate_removing(std::vector<std::weak_ptr<T>, ALLOC> &v, CALLABLE &&c) {
 	unsigned int i = 0;
 	unsigned int size = v.size();
 

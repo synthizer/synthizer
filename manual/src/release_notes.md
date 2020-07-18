@@ -2,6 +2,12 @@
 
 ## 0.5.0 (WIP)
 
+- Roll out a deferred freeing strategy, which uses C++ custom allocators to
+  move freeing pointers to a background thread that wakes up on a period. This doesn't move all freeing, but gets a vast
+  majority of it. The impact is that it will take a little while for any large memory allocations to actually free,
+  but that freeing will (mostly) not happen on any thread but the freeing thread, including
+  threads from users of the public API.  This is the first step to eventually decreasing
+  latency below 20MS or so, though the upshot of that work won't be seen for a while.
 - Decouple Buffer from context. The manual already claimed that we did, but the library itself didn't. Calls to create buffers
   no longer needa context passed in.
 - Gains are now scalars instead of DB. This is because it is valuable to be able to know which combinations of gains sum to 1 in order to prevent clipping.

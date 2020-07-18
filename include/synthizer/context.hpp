@@ -100,7 +100,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	template<typename T, typename... ARGS>
 	std::shared_ptr<T> createObject(ARGS&& ...args) {
 		auto obj = new T(this->shared_from_this(), args...);
-		std::shared_ptr<T> ret(obj, [] (T *ptr) {
+		auto ret = sharedPtrDeferred<T>(obj, [] (T *ptr) {
 			auto ctx = ptr->getContextRaw();
 			if (ctx->delete_directly.load(std::memory_order_relaxed) == 1) ctx->enqueueDeletionRecord(&deletionCallback<T>, (void *)ptr);
 			else delete ptr;
@@ -221,7 +221,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	alignas(config::ALIGNMENT) std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> direct_buffer;
 
 	/* The key is a raw pointer for easy lookup. */
-	std::unordered_map<void *, std::weak_ptr<Source>> sources;
+	deferred_unordered_map<void *, std::weak_ptr<Source>> sources;
 	std::shared_ptr<AbstractPannerBank> source_panners = nullptr;
 
 	/* Parameters of the 3D environment: listener orientation/position, library-wide defaults for distance models, etc. */

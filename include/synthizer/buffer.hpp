@@ -49,7 +49,7 @@ class BufferChunk {
 class BufferData {
 	public:
 	/* The chunks are built by a decoder or something else, then fed here. They must be allocated with allocAligned. */
-	BufferData(unsigned int channels, std::size_t length, std::vector<std::int16_t*> &&chunks): channels(channels),
+	BufferData(unsigned int channels, std::size_t length, deferred_vector<std::int16_t*> &&chunks): channels(channels),
 	length(length), chunks(std::move(chunks)) {
 	}
 
@@ -81,7 +81,7 @@ class BufferData {
 	private:
 	unsigned int channels;
 	std::size_t length;
-	std::vector<std::int16_t*> chunks;
+	deferred_vector<std::int16_t*> chunks;
 };
 
 class Context;
