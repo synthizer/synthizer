@@ -167,7 +167,7 @@ The following is a 3D media player, the audio library equivalent of hello world.
 - `seek <seconds>`: self-explanatory.
 - `pos <x> <y> <z>`: move the source. X is right, y is forward, z is up.
 - `loop`: Toggle looping of the generator.
-- `gain <value>`: Control the gain of the generator.
+- `gain <value>`: Control the gain of the generator, in DB.
 - `quit`: self-explanatory.
 
 Note that the default distance model parameters cause the source to become completely silent at around 50 units out. Movements close to the head won't change the volume much. Also, HRTF improvements are coming.
@@ -265,7 +265,10 @@ with synthizer.initialized():
             except ValueError:
                 print("Unable to parse value.")
                 continue
-            source.gain = value
+            # Convert to scalar gain from db.
+            gain = 10**(value/20)
+            source.gain = gain
         else:
             print("Unrecognized command")
+
 ```

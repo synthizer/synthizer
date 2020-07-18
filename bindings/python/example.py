@@ -86,6 +86,8 @@ with synthizer.initialized():
             except ValueError:
                 print("Unable to parse value.")
                 continue
-            source.gain = value
+            # Convert to scalar gain from db.
+            gain = 10**(value/20)
+            source.gain = gain
         else:
             print("Unrecognized command")

@@ -45,7 +45,7 @@ double Source::getGain() {
 }
 
 void Source::setGain(double gain) {
-	this->gain = dbToGain(gain);
+	this->gain = gain;
 }
 
 void Source::fillBlock(unsigned int channels) {

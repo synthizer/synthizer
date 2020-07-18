@@ -8,7 +8,7 @@ None.
 
 Enum | Type | Default | Range | Description
 --- | --- | --- | --- | ---
-SYZ_P_GAIN | double | any finite double | An additional gain factor applied to this source in DB
+SYZ_P_GAIN | double | Any double > 0 | An additional gain factor applied to this source.
 
 ## Functions
 
