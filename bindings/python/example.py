@@ -1,14 +1,15 @@
 """A simple media player, demonstrating the Synthizer basics."""
 
-import synthizer
-import time
 import sys
 
+import synthizer
+
 if len(sys.argv) != 2:
-    print("Usage: example.py <file>")
+    print(f"Usage: {sys.argv[0]} <file>")
     sys.exit(1)
 
-# Log to debug. At the moment this writes directly to stdout, but will in future integrate with Python's logging modules.
+# Log to debug. At the moment this writes directly to stdout, but will in
+#  future integrate with Python's logging modules.
 # It's best to call this before any initialization.
 synthizer.configure_logging_backend(synthizer.LoggingBackend.STDERR)
 synthizer.set_log_level(synthizer.LogLevel.DEBUG)
@@ -19,9 +20,9 @@ with synthizer.initialized():
     ctx = synthizer.Context()
 
     # A BufferGenerator plays back a buffer:
-    generator = synthizer.BufferGenerator(context=ctx)
+    generator = synthizer.BufferGenerator(ctx)
     # A buffer holds audio data. We read from the specified file:
-    buffer = synthizer.Buffer.from_stream(ctx, protocol="file", path=sys.argv[1])
+    buffer = synthizer.Buffer.from_stream(ctx, "file", sys.argv[1])
     # Tell the generator to use the buffer.
     generator.buffer = buffer
     # A Source3D is a 3D source, as you'd expect.
@@ -29,6 +30,8 @@ with synthizer.initialized():
     # It'll play the BufferGenerator.
     source.add_generator(generator)
     playing = True
+    # Keep track of looping, since property reads are expensive:
+    looping = False
 
     # A simple command parser.
     while True:
@@ -37,10 +40,10 @@ with synthizer.initialized():
         if len(cmd) == 0:
             continue
         if cmd[0] == "pause":
-                # We don't have proper pausing yet, but can simulate it
-                if playing:
-                    source.remove_generator(generator)
-                    playing = False
+            # We don't have proper pausing yet, but can simulate it
+            if playing:
+                source.remove_generator(generator)
+                playing = False
         elif cmd[0] == "play":
             if not playing:
                 source.add_generator(generator)
@@ -51,19 +54,38 @@ with synthizer.initialized():
                 continue
             try:
                 x, y, z = [float(i) for i in cmd[1:]]
-            except:
+            except ValueError:
                 print("Unable to parse coordinates")
                 continue
             source.position = (x, y, z)
         elif cmd[0] == "seek":
             if len(cmd) != 2:
                 print("Syntax: pos <seconds>")
+                continue
             try:
                 pos = float(cmd[1])
-            except:
+            except ValueError:
                 print("Unable to parse position")
-            generator.position = pos
+                continue
+            try:
+                generator.position = pos
+            except synthizer.SynthizerError as e:
+                print(e)
         elif cmd[0] == "quit":
             break
+        elif cmd[0] == "loop":
+            looping = not looping
+            generator.looping = looping
+            print("Looping" if looping else "Not looping")
+        elif cmd[0] == "gain":
+            if len(cmd) != 2:
+                print("Syntax: gain <value>")
+                continue
+            try:
+                value = float(cmd[1])
+            except ValueError:
+                print("Unable to parse value.")
+                continue
+            source.gain = value
         else:
             print("Unrecognized command")

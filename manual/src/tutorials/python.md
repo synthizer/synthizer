@@ -1,10 +1,10 @@
 # A Basic Python Tutorial
 
-## Installation 
+## Installation
 
 We support Python 3.  Python wheels for Windows X64 are published to Pypi, so to install:
 
-```
+```bash
 pip install synthizer
 ```
 
@@ -14,7 +14,7 @@ Note that this won't currently work on 32-bit Python; this will be fixed.
 
 Synthizer requires initialization and deinitialization. The best way to initialize Synthizer is to use the context manager:
 
-```
+```python
 with synthizer.initialized():
     # Code...
 ```
@@ -37,7 +37,7 @@ Objects are passed a context on construction, and two objects from different con
 
 To get a context:
 
-```
+```python
 ctx = synthizer.Context()
 ```
 
@@ -65,13 +65,13 @@ Buffers are in-memory decoded assets, essentially arrays of 16-bit samples resam
 
 To get a streaming generator:
 
-```
+```python
 generator = synthizer.StreamingGenerator(ctx, "file", "test.wav")
 ```
 
 To get a buffer from a stream:
 
-```
+```python
 buffer = synthizer.Buffer.from_stream("file", "test.wav")
 ```
 
@@ -101,13 +101,13 @@ Synthizer offers the following kinds of properties:
 
 Property writing is very fast.  Property reading is incredibly slow and won't be improved.  Code like the following is a terrible idea:
 
-```
+```python
 myobj.property += 5
 ```
 
 The above hides a number of C API details elaborated on elsewhere in this document.  In addition to being slow, future changes to the library may cause it to not do what you expect.  In general, try to derive Synthizer properties from values you already have.  As a concrete example of what Synthizer reserves the right to break, code like the following may stop working in future:
 
-```
+```python
 myobj.property = 0
 myobj.property += 5
 myobj.property += 5
@@ -128,7 +128,7 @@ as a packed property so that they can both be set atomically.  But the longer ve
 
 Degrees to radians is:
 
-```
+```python
 import math
 
 def deg2rad(angle):
@@ -137,7 +137,7 @@ def deg2rad(angle):
 
 People who don't know trig usually ask for orientations that are clockwise of north. To do that:
 
-```
+```python
 import math
 
 def make_orientation(degrees):
@@ -166,6 +166,8 @@ The following is a 3D media player, the audio library equivalent of hello world.
 - `pause`, `play`: pause/play the source. Note that these are currently implemented via generator add/remove, but a better way is coming.
 - `seek <seconds>`: self-explanatory.
 - `pos <x> <y> <z>`: move the source. X is right, y is forward, z is up.
+- `loop`: Toggle looping of the generator.
+- `gain <value>`: Control the gain of the generator.
 - `quit`: self-explanatory.
 
 Note that the default distance model parameters cause the source to become completely silent at around 50 units out. Movements close to the head won't change the volume much. Also, HRTF improvements are coming.
@@ -174,18 +176,19 @@ This example also doesn't demonstrate destruction, as that's handled by library 
 
 The code:
 
-```
+```python
 """A simple media player, demonstrating the Synthizer basics."""
 
-import synthizer
-import time
 import sys
 
+import synthizer
+
 if len(sys.argv) != 2:
-    print("Usage: example.py <file>")
+    print(f"Usage: {sys.argv[0]} <file>")
     sys.exit(1)
 
-# Log to debug. At the moment this writes directly to stdout, but will in future integrate with Python's logging modules.
+# Log to debug. At the moment this writes directly to stdout, but will in
+#  future integrate with Python's logging modules.
 # It's best to call this before any initialization.
 synthizer.configure_logging_backend(synthizer.LoggingBackend.STDERR)
 synthizer.set_log_level(synthizer.LogLevel.DEBUG)
@@ -196,9 +199,9 @@ with synthizer.initialized():
     ctx = synthizer.Context()
 
     # A BufferGenerator plays back a buffer:
-    generator = synthizer.BufferGenerator(context=ctx)
+    generator = synthizer.BufferGenerator(ctx)
     # A buffer holds audio data. We read from the specified file:
-    buffer = synthizer.Buffer.from_stream(ctx, protocol="file", path=sys.argv[1])
+    buffer = synthizer.Buffer.from_stream(ctx, "file", sys.argv[1])
     # Tell the generator to use the buffer.
     generator.buffer = buffer
     # A Source3D is a 3D source, as you'd expect.
@@ -206,6 +209,8 @@ with synthizer.initialized():
     # It'll play the BufferGenerator.
     source.add_generator(generator)
     playing = True
+    # Keep track of looping, since property reads are expensive:
+    looping = False
 
     # A simple command parser.
     while True:
@@ -214,10 +219,10 @@ with synthizer.initialized():
         if len(cmd) == 0:
             continue
         if cmd[0] == "pause":
-                # We don't have proper pausing yet, but can simulate it
-                if playing:
-                    source.remove_generator(generator)
-                    playing = False
+            # We don't have proper pausing yet, but can simulate it
+            if playing:
+                source.remove_generator(generator)
+                playing = False
         elif cmd[0] == "play":
             if not playing:
                 source.add_generator(generator)
@@ -228,20 +233,39 @@ with synthizer.initialized():
                 continue
             try:
                 x, y, z = [float(i) for i in cmd[1:]]
-            except:
+            except ValueError:
                 print("Unable to parse coordinates")
                 continue
             source.position = (x, y, z)
         elif cmd[0] == "seek":
             if len(cmd) != 2:
                 print("Syntax: pos <seconds>")
+                continue
             try:
                 pos = float(cmd[1])
-            except:
+            except ValueError:
                 print("Unable to parse position")
-            generator.position = pos
+                continue
+            try:
+                generator.position = pos
+            except synthizer.SynthizerError as e:
+                print(e)
         elif cmd[0] == "quit":
             break
+        elif cmd[0] == "loop":
+            looping = not looping
+            generator.looping = looping
+            print("Looping" if looping else "Not looping")
+        elif cmd[0] == "gain":
+            if len(cmd) != 2:
+                print("Syntax: gain <value>")
+                continue
+            try:
+                value = float(cmd[1])
+            except ValueError:
+                print("Unable to parse value.")
+                continue
+            source.gain = value
         else:
             print("Unrecognized command")
 ```
