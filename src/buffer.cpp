@@ -74,7 +74,7 @@ BufferData *generateBufferData(unsigned int channels, unsigned int sr, T &&produ
 				auto needed = resampler->ResamplePrepare(config::BUFFER_CHUNK_SIZE, channels, &dst);
 				auto got = producer(needed, dst);
 				last = got < needed;
-				next_chunk_len = resampler->ResampleOut(working_buf, config::BUFFER_CHUNK_SIZE, got, channels);
+				next_chunk_len = resampler->ResampleOut(working_buf, got, config::BUFFER_CHUNK_SIZE, channels);
 				assert(last == true || next_chunk_len == config::BUFFER_CHUNK_SIZE);
 				length += next_chunk_len;
 			} else {

@@ -17,7 +17,6 @@ struct DecoderDef {
 static std::array<DecoderDef, 4> decoders{
 	DecoderDef{"dr_wav", decodeWav},
 	{"dr_flac", decodeFlac},
-	{"stb_vorbis", decodeOgg},
 	{"dr_mp3", decodeMp3},
 };
 
@@ -29,16 +28,18 @@ std::shared_ptr<AudioDecoder> getDecoderForProtocol(std::string protocol, std::s
 			lookahead_stream->reset();
 			auto tmp = d.func(lookahead_stream);
 			if (tmp == nullptr) {
-				logDebug("Format %s returned nullptr. Skipping", d.name.c_str());
+				logDebug("Path %s: handler %s returned nullptr. Skipping", path.c_str(), d.name.c_str());
 				continue;
 			}
+			logDebug("Handling path %s with handler %s", path.c_str(), d.name.c_str());
 			return tmp;
 		} catch(std::exception &e) {
-			logDebug("Format %s threw error %s", d.name.c_str(), e.what());
+			logDebug("Path %s: Format %s threw error %s", path.c_str(), d.name.c_str(), e.what());
 			continue;
 		}
 	}
 
+	logDebug("Path %s: unable to decode", path.c_str());
 	throw UnsupportedFormatError(protocol, path, options);
 }
 

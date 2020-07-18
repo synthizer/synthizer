@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.5.0 (WIP)
+
+- Fix creating buffers of files which require resampling.
+
 ## 0.4.1
 
 - Fixes to allocating multiple panner lanes from a PannerBank.
