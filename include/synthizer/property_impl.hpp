@@ -9,6 +9,7 @@
 
 #include "synthizer/base_object.hpp"
 #include "synthizer/error.hpp"
+#include "synthizer/memory.hpp"
 #include "synthizer/property_internals.hpp"
 
 #include <memory>
@@ -99,7 +100,7 @@ bool PROPERTY_CLASS::hasProperty(int property) {
 #define DOUBLE6_P(...) GET_(property_impl::arrayd6, __VA_ARGS__)
 
 /* Getting objects is different; we have to cast to the base class. */
-#define OBJECT_P(p, ...) GET_CONV_(std::shared_ptr<BaseObject>, [] (auto &x) { return std::static_pointer_cast<BaseObject>(x); }, p, __VA_ARGS__)
+#define OBJECT_P(p, ...) GET_CONV_(std::shared_ptr<CExposable>, [] (auto &x) { return std::static_pointer_cast<CExposable>(x); }, p, __VA_ARGS__)
 
 property_impl::PropertyValue PROPERTY_CLASS::getProperty(int property) {
 	switch (property) {
@@ -117,7 +118,7 @@ property_impl::PropertyValue PROPERTY_CLASS::getProperty(int property) {
 
 #define INT_P(p, name1, name2, min, max) VALIDATE_(int, [](auto x) { if(*x < min || *x > max) throw ERange(); }, p, name1, name2, min, max);
 #define DOUBLE_P(p, name1, name2, min, max) VALIDATE_(double, [](auto x) { if (*x < min || *x > max) throw ERange(); }, p, name1, name2, min, max)
-#define OBJECT_P(p, name1, name2, cls) VALIDATE_(std::shared_ptr<BaseObject>, [] (auto *x) { if (*x == nullptr) return; auto &y = *x; auto z = std::dynamic_pointer_cast<cls>(y); if (z == nullptr) throw EHandleType(); }, p, name1, name2, cls)
+#define OBJECT_P(p, name1, name2, cls) VALIDATE_(std::shared_ptr<CExposable>, [] (auto *x) { if (*x == nullptr) return; auto &y = *x; auto z = std::dynamic_pointer_cast<cls>(y); if (z == nullptr) throw EHandleType(); }, p, name1, name2, cls)
 #define DOUBLE3_P(...)  VALIDATE_(property_impl::arrayd3, [] (auto &x) {}, __VA_ARGS__)
 #define DOUBLE6_P(...)  VALIDATE_(property_impl::arrayd6, [] (auto &x) {}, __VA_ARGS__)
 
@@ -137,7 +138,7 @@ void PROPERTY_CLASS::validateProperty(int property, const property_impl::Propert
 
 #define INT_P(p, name1, name2, min, max) SET_(int, [](auto x) { return *x; }, p, name1, name2, min, max);
 #define DOUBLE_P(p, name1, name2, min, max) SET_(double, [](auto x) { return *x; }, p, name1, name2, min, max)
-#define OBJECT_P(p, name1, name2, cls) SET_(std::shared_ptr<BaseObject>, [] (auto *x) -> std::shared_ptr<cls> { return *x ? std::static_pointer_cast<cls>(*x) : nullptr ; }, p, name1, name2, cls)
+#define OBJECT_P(p, name1, name2, cls) SET_(std::shared_ptr<CExposable>, [] (auto *x) -> std::shared_ptr<cls> { return *x ? std::static_pointer_cast<cls>(*x) : nullptr ; }, p, name1, name2, cls)
 #define DOUBLE3_P(...)  SET_(property_impl::arrayd3, [] (auto &x) { return *x; }, __VA_ARGS__)
 #define DOUBLE6_P(...)  SET_(property_impl::arrayd6, [] (auto &x) { return *x; }, __VA_ARGS__)
 

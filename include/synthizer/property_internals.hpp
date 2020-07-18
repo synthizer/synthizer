@@ -26,12 +26,12 @@ namespace synthizer {
  * the effect is to override a number of methods from the base (ultimately BaseObject) to provide a getProperty and setProperty that use variants which back onto getXXX and setXXX functions.
  * */
 
-class BaseObject;
+class CExposable;
 
 /* We hide this in a namespace because it's only for macro magic and shouldn't be used directly by anything else. */
 namespace property_impl {
 
-using PropertyValue = std::variant<int, double, std::shared_ptr<BaseObject>, std::array<double, 3>, std::array<double, 6>>;
+using PropertyValue = std::variant<int, double, std::shared_ptr<CExposable>, std::array<double, 3>, std::array<double, 6>>;
 
 /* array<double, 3. doesn't work in macros because of the comma. */
 using arrayd3 = std::array<double, 3>;

@@ -2,6 +2,8 @@
 
 ## 0.5.0 (WIP)
 
+- Decouple Buffer from context. The manual already claimed that we did, but the library itself didn't. Calls to create buffers
+  no longer needa context passed in.
 - Gains are now scalars instead of DB. This is because it is valuable to be able to know which combinations of gains sum to 1 in order to prevent clipping.
   - For reference, you can get a scalar gain from DB as `10**(db / 20)` if you need it.
 - Fix creating buffers of files which require resampling.

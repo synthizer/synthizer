@@ -201,7 +201,7 @@ with synthizer.initialized():
     # A BufferGenerator plays back a buffer:
     generator = synthizer.BufferGenerator(ctx)
     # A buffer holds audio data. We read from the specified file:
-    buffer = synthizer.Buffer.from_stream(ctx, "file", sys.argv[1])
+    buffer = synthizer.Buffer.from_stream("file", sys.argv[1])
     # Tell the generator to use the buffer.
     generator.buffer = buffer
     # A Source3D is a 3D source, as you'd expect.

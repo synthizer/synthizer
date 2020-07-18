@@ -316,10 +316,10 @@ cdef class Buffer(_BaseObject):
         super().__init__(_handle)
 
     @staticmethod
-    def from_stream(context, protocol, path, options=""):
+    def from_stream(protocol, path, options=""):
         """Create a buffer from a stream."""
         cdef syz_Handle handle
-        _checked(syz_createBufferFromStream(&handle, context._get_handle_checked(Context), _to_bytes(protocol), _to_bytes(path), _to_bytes(options)))
+        _checked(syz_createBufferFromStream(&handle, _to_bytes(protocol), _to_bytes(path), _to_bytes(options)))
         return Buffer(_handle=handle)
 
     cpdef get_channels(self):

@@ -24,6 +24,7 @@
 namespace synthizer {
 
 class AudioOutput;
+class CExposable;
 class Source;
 
 /*
@@ -122,8 +123,8 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	void setIntProperty(std::shared_ptr<BaseObject> &obj, int property, int value);
 	double getDoubleProperty(std::shared_ptr<BaseObject> &obj, int property);
 	void setDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, double value);
-	std::shared_ptr<BaseObject> getObjectProperty(std::shared_ptr<BaseObject> &obj, int property);
-	void setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<BaseObject> &object);
+	std::shared_ptr<CExposable> getObjectProperty(std::shared_ptr<BaseObject> &obj, int property);
+	void setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<CExposable> &object);
 	std::array<double, 3> getDouble3Property(std::shared_ptr<BaseObject> &obj, int property);
 	void setDouble3Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 3> value);
 	std::array<double, 6>  getDouble6Property(std::shared_ptr<BaseObject> &obj, int property);

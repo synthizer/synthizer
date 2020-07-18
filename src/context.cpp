@@ -113,12 +113,12 @@ void Context::setDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, 
 	this->propertySetter<double>(obj, property, value);
 }
 
-std::shared_ptr<BaseObject> Context::getObjectProperty(std::shared_ptr<BaseObject> &obj, int property) {
-	return propertyGetter<std::shared_ptr<BaseObject>>(this, obj, property);
+std::shared_ptr<CExposable> Context::getObjectProperty(std::shared_ptr<BaseObject> &obj, int property) {
+	return propertyGetter<std::shared_ptr<CExposable>>(this, obj, property);
 }
 
-void Context::setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<BaseObject> &value) {
-	this->propertySetter<std::shared_ptr<BaseObject>>(obj, property, value);
+void Context::setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<CExposable> &value) {
+	this->propertySetter<std::shared_ptr<CExposable>>(obj, property, value);
 }
 
 std::array<double, 3> Context::getDouble3Property(std::shared_ptr<BaseObject> &obj, int property) {

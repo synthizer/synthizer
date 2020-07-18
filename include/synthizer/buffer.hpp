@@ -86,9 +86,9 @@ class BufferData {
 
 class Context;
 
-class Buffer: public BaseObject {
+class Buffer: public CExposable {
 	public:
-	Buffer(const std::shared_ptr<Context> &ctx, const std::shared_ptr<BufferData> &b): BaseObject(ctx), data(b) {
+	Buffer(const std::shared_ptr<BufferData> &b): data(b) {
 	}
 
 	unsigned int getChannels() const {

@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <memory>
 #include <random>
 #include <utility>
 #include <vector>
@@ -122,12 +123,11 @@ std::shared_ptr<BufferData> bufferDataFromDecoder(const std::shared_ptr<AudioDec
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options) {
+SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, const char *protocol, const char *path, const char *options) {
 	SYZ_PROLOGUE
-	auto ctx = fromC<Context>(context);
 	auto dec = getDecoderForProtocol(protocol, path, options);
 	auto data = bufferDataFromDecoder(dec);
-	auto buf = ctx->createObject<Buffer>(data);
+	auto buf = std::make_shared<Buffer>(data);
 	*out = toC(buf);
 	return 0;
 	SYZ_EPILOGUE

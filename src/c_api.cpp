@@ -131,9 +131,9 @@ SYZ_CAPI syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle valu
 	SYZ_PROLOGUE
 	auto o = fromC<BaseObject>(target);
 	auto ctx = o->getContextRaw();
-	std::shared_ptr<BaseObject> val = nullptr;
+	std::shared_ptr<CExposable> val = nullptr;
 	if (value) {
-		val = fromC<BaseObject>(value);
+		val = fromC<CExposable>(value);
 	}
 	ctx->setObjectProperty(o, property, val);
 	return 0;

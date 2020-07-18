@@ -5,7 +5,7 @@
 ### `syz_createBufferFromStream`
 
 ```
-SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options);
+SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, const char *protocol, const char *path, const char *options);
 ```
 
 Currently, the only way to make a buffer is from a stream, in the self-explanatory manner. See [Streams](../concepts/streams.md) for information on streams.
