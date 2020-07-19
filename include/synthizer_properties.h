@@ -48,7 +48,7 @@ INT_P(SYZ_P_PANNER_STRATEGY, panner_strategy, PannerStrategy, 0, SYZ_PANNER_STRA
 PANNED_SOURCE_PROPERTIES_COMMON \
 DOUBLE_P(SYZ_P_AZIMUTH, azimuth, Azimuth, 0.0f, 360.0f) \
 DOUBLE_P(SYZ_P_ELEVATION, elevation, Elevation, -90.0f, 90.0f)\
-DOUBLE_P(SYZ_P_PANNING_SCALAR, panning_scalar, PanningScalar, 0.0, 1.0)
+DOUBLE_P(SYZ_P_PANNING_SCALAR, panning_scalar, PanningScalar, -1.0, 1.0)
 
 #define SOURCE3D_PROPERTIES \
 PANNED_SOURCE_PROPERTIES_COMMON \

@@ -3,12 +3,15 @@
 #include "synthizer/bitset.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/hrtf.hpp"
+#include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/stereo_panner.hpp"
 
 #include "plf_colony.h"
 
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <memory>
 #include <tuple>
 
@@ -154,16 +157,25 @@ class StrategyBank {
 class PannerBank: public AbstractPannerBank {
 	public:
 	void run(unsigned int channels, AudioSample *destination) {
-		hrtf.run(channels, destination);
+		this->hrtf.run(channels, destination);
+		this->stereo.run(channels, destination);
 	}
 
 	std::shared_ptr<PannerLane> allocateLane(enum SYZ_PANNER_STRATEGY strategy) {
-		assert(strategy == SYZ_PANNER_STRATEGY_HRTF);
-		return this->hrtf.allocateLane();
+		switch (strategy) {
+		case SYZ_PANNER_STRATEGY_HRTF:
+			return this->hrtf.allocateLane();
+		case SYZ_PANNER_STRATEGY_STEREO:
+			return this->stereo.allocateLane();
+		default:
+			/* Unreachable save for Synthizer bugs. Fail loudly. */
+			std::abort();
+		}
 	}
 
 	private:
 	StrategyBank<HrtfPanner> hrtf;
+	StrategyBank<StereoPanner> stereo;
 };
 
 std::shared_ptr<AbstractPannerBank> createPannerBank() {

@@ -35,4 +35,4 @@ The panning strategy specifies how sources are to be panned.  SYnthizer supports
 Strategy | Channels | Description
 --- | --- | ---
 SYZ_PANNER_STRATEGY_HRTF | 2 | An HRTF implementation, intended for use via headphones.
-
+SYZ_PANNER_STRATEGY_STEREO | 2 | A simple stereo panning strategy assuming speakers are at -90 and 90.

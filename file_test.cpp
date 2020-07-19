@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
 
 	CHECKED(syz_createContext(&context));
 	CHECKED(syz_createSource3D(&source, context));
+	CHECKED(syz_setI(source, SYZ_P_PANNER_STRATEGY, SYZ_PANNER_STRATEGY_STEREO));
 	CHECKED(syz_createBufferGenerator(&generator, context));
 	CHECKED(syz_createBufferFromStream(&buffer, "file", argv[1], ""));
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));

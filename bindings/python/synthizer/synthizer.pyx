@@ -162,6 +162,7 @@ def initialized():
 
 cpdef enum PannerStrategy:
     HRTF = SYZ_PANNER_STRATEGY_HRTF
+    STEREO = SYZ_PANNER_STRATEGY_STEREO
 
 cpdef enum DistanceModel:
     NONE = SYZ_DISTANCE_MODEL_NONE

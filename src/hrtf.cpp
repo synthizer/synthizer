@@ -331,7 +331,11 @@ void HrtfPanner::setPanningAngles(unsigned int lane, double azimuth, double elev
 
 void HrtfPanner::setPanningScalar(unsigned int lane, double scalar) {
 	assert(scalar >= -1.0 && scalar <= 1.0);
-	this->setPanningAngles(lane, -90+180*scalar, 0.0);
+	if (scalar >= 0.0) {
+		this->setPanningAngles(lane, 90 * scalar, 0.0);
+	} else {
+		this->setPanningAngles(lane, 360.0 + 90.0 * scalar, 0.0);
+	}
 }
 
 }

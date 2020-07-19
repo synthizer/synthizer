@@ -47,6 +47,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/spsc_semaphore.cpp
 	src/source.cpp
 	src/spatialization_math.cpp
+	src/stereo_panner.cpp
 
 	src/data/hrtf.cpp
 
