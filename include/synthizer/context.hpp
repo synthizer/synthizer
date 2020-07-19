@@ -30,10 +30,20 @@ class Source;
 /*
  * Infrastructure for deletion.
  * */
+template<std::size_t ALIGN>
+void contextDeferredFreeCallback(void *p) {
+	if (ALIGN <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+		::operator delete(p);
+	} else {
+		::operator delete(p, (std::align_val_t)ALIGN);
+	}
+}
+
 template<typename T>
 void deletionCallback(void *p) {
 	T *y = (T*) p;
-	delete y;
+	y->~T();
+	deferredFree(contextDeferredFreeCallback<alignof(T)>, (void *)y);
 }
 
 /*
@@ -102,7 +112,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 		auto obj = new T(this->shared_from_this(), args...);
 		auto ret = sharedPtrDeferred<T>(obj, [] (T *ptr) {
 			auto ctx = ptr->getContextRaw();
-			if (ctx->delete_directly.load(std::memory_order_relaxed) == 1) ctx->enqueueDeletionRecord(&deletionCallback<T>, (void *)ptr);
+			if (ctx->delete_directly.load(std::memory_order_relaxed) == 0) ctx->enqueueDeletionRecord(&deletionCallback<T>, (void *)ptr);
 			else delete ptr;
 		});
 

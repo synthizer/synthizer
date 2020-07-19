@@ -138,7 +138,7 @@ thread_local static bool is_deferred_free_thread = false;
 
 static void deferredFreeWorker() {
 	decltype(deferred_free_queue)::consumer_token_t token{deferred_free_queue};
-
+	std::size_t processed = 0;
 	is_deferred_free_thread = true;
 	while (deferred_free_thread_running.load(std::memory_order_relaxed)) {
 		DeferredFreeEntry ent;
@@ -148,10 +148,13 @@ static void deferredFreeWorker() {
 			} catch(...) {
 				logDebug("Exception on memory freeing thread. This should never happen");
 			}
+			processed++;
 		}
 		/* Sleep for a bit so that we don't overload the system when we're not freeing. */
 		std::this_thread::sleep_for(std::chrono::milliseconds(30));
 	}
+
+	logDebug("Deferred free processed %zu frees in a background thread", processed);
 }
 
 void deferredFree(freeCallback *cb, void *value) {
