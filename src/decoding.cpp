@@ -5,6 +5,7 @@
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/logging.hpp"
+#include "synthizer/make_static_array.hpp"
 
 namespace synthizer {
 
@@ -14,11 +15,11 @@ struct DecoderDef {
 	DecoderFunc func;
 };
 
-static std::array<DecoderDef, 4> decoders{
+static auto decoders = makeStaticArray(
 	DecoderDef{"dr_wav", decodeWav},
-	{"dr_flac", decodeFlac},
-	{"dr_mp3", decodeMp3},
-};
+	DecoderDef{"dr_flac", decodeFlac},
+	DecoderDef{"dr_mp3", decodeMp3}
+);
 
 std::shared_ptr<AudioDecoder> getDecoderForProtocol(std::string protocol, std::string path, std::string options) {
 	auto stream = getStreamForProtocol(protocol, path, options);
