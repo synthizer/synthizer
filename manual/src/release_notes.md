@@ -2,9 +2,15 @@
 
 ## 0.6.0 (WIP)
 
+### Features
+
 - Introduce a stereo panning strategy. Note that this will become the default panning strategy 
   in the future, because it's the only one that's safe on all speaker arrangements.
   If you want HRTF, request it by setting `SYZ_P_PANNER_STRATEGY` on the context and/or sources.
+
+### Bugs Fixed
+
+- Throw an exception instead of silently crashing on invalid audio files.
 
 ## 0.5.0
 
