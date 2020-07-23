@@ -37,14 +37,11 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_initialize());
 
 	CHECKED(syz_createContext(&context));
-	CHECKED(syz_createSource3D(&source, context));
-	CHECKED(syz_setI(source, SYZ_P_PANNER_STRATEGY, SYZ_PANNER_STRATEGY_STEREO));
+	CHECKED(syz_createDirectSource(&source, context));
 	CHECKED(syz_createBufferGenerator(&generator, context));
 	CHECKED(syz_createBufferFromStream(&buffer, "file", argv[1], ""));
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
-
-	CHECKED(syz_setD3(source, SYZ_P_POSITION, 0, 0, -1));
 
 	std::this_thread::sleep_for(std::chrono::seconds(20));
 

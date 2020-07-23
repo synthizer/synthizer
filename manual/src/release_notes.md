@@ -11,6 +11,7 @@
 ### Bugs Fixed
 
 - Throw an exception instead of silently crashing on invalid audio files.
+- Fix the fundamentally broken DirectSource mixing logic. This probably still needs some improvement but is no longer fundamentally broken.
 
 ## 0.5.0
 

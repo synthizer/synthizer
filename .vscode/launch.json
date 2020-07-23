@@ -9,7 +9,7 @@
 			"type": "cppvsdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build/file_test.exe",
-			"args": ["build/cmakecache.txt"],
+			"args": ["build/ball.mp3"],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",
 			"environment": [],

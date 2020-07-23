@@ -81,12 +81,22 @@ void Source::fillBlock(unsigned int channels) {
 						block[i] += s * normfactor;
 					}
 				}
+			} else if(nch == 1) {
+				/* Broadcast to all channels. */
+				for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
+					for(unsigned int j = 0; j < channels; j++)  {
+						block[channels * i + j] += premix[i];
+					}
+				}
 			} else {
-				/* Truncate anything above the requested count. */
+				/*
+				 * Take the lesser of the 2 channels. If this is input, then the extra output channels are untouched.
+				 * If it's output, then the input channels are truncated.
+				 * */
 				auto final_ch = std::min(nch, channels);
 				for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 					for (unsigned int j = 0; j < final_ch; j++) {
-						block[i * config::BLOCK_SIZE * final_ch + j] += premix[i * config::BLOCK_SIZE * nch + j];
+						block[i * channels + j] += premix[i * nch + j];
 					}
 				}
 			}
