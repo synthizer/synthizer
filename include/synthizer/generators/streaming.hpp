@@ -17,15 +17,10 @@ namespace synthizer {
 class AudioDecoder;
 class Context;
 
-/*
- * A decoding generator generates audio from a specific decoder, which can be changed at runtime.
- * 
- * This works over decoders, not streams, because that lets us enforce that whatever audio the user wanted to decode was properly decodable before it gets as far as the audio thread.
- * */
-class DecodingGenerator: public Generator {
+class StreamingGenerator: public Generator {
 	public:
-	DecodingGenerator(const std::shared_ptr<Context> &ctx, const std::shared_ptr<AudioDecoder> &decoder);
-	~DecodingGenerator();
+	StreamingGenerator(const std::shared_ptr<Context> &ctx, const std::shared_ptr<AudioDecoder> &decoder);
+	~StreamingGenerator();
 
 	unsigned int getChannels();
 	void generateBlock(AudioSample *output);

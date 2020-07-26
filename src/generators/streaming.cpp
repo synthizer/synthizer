@@ -1,6 +1,6 @@
 #include "synthizer.h"
 
-#include "synthizer/generators/decoding.hpp"
+#include "synthizer/generators/streaming.hpp"
 
 #include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
@@ -15,7 +15,7 @@
 
 namespace synthizer {
 
-DecodingGenerator::DecodingGenerator(const std::shared_ptr<Context> &ctx, const std::shared_ptr<AudioDecoder> &decoder): Generator(ctx), decoder(decoder),
+StreamingGenerator::StreamingGenerator(const std::shared_ptr<Context> &ctx, const std::shared_ptr<AudioDecoder> &decoder): Generator(ctx), decoder(decoder),
 	/* 100 MS latency. */
 	background_thread(decoder->getChannels(), nextMultipleOf(0.1 * config::SR, config::BLOCK_SIZE)) {
 	this->channels = decoder->getChannels();
@@ -32,16 +32,16 @@ DecodingGenerator::DecodingGenerator(const std::shared_ptr<Context> &ctx, const 
 	});
 }
 
-DecodingGenerator::~DecodingGenerator() {
+StreamingGenerator::~StreamingGenerator() {
 	/* We can't rely on the destructior of background_thread because it runs after ours. */
 	this->background_thread.stop();
 }
 
-unsigned int DecodingGenerator::getChannels() {
+unsigned int StreamingGenerator::getChannels() {
 	return channels;
 }
 
-void DecodingGenerator::generateBlock(AudioSample *output) {
+void StreamingGenerator::generateBlock(AudioSample *output) {
 	thread_local std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> tmp_buf;
 	AudioSample *tmp_buf_ptr = &tmp_buf[0];
 
@@ -51,23 +51,23 @@ void DecodingGenerator::generateBlock(AudioSample *output) {
 	}
 }
 
-void DecodingGenerator::setPitchBend(double newPitchBend) {
+void StreamingGenerator::setPitchBend(double newPitchBend) {
 	this->pitch_bend = newPitchBend;
 }
 
-int DecodingGenerator::getLooping() {
+int StreamingGenerator::getLooping() {
 	return this->looping.load(std::memory_order_relaxed);
 }
 
-void DecodingGenerator::setLooping(int looping) {
+void StreamingGenerator::setLooping(int looping) {
 	this->looping.store(looping ? 1 : 0, std::memory_order_release);
 }
 
-double DecodingGenerator::getPosition() {
+double StreamingGenerator::getPosition() {
 	return this->position.load(std::memory_order_relaxed);
 }
 
-void DecodingGenerator::setPosition(double pos) {
+void StreamingGenerator::setPosition(double pos) {
 	this->next_position.write(pos);
 }
 
@@ -96,7 +96,7 @@ static void fillBufferFromDecoder(AudioDecoder &decoder, unsigned int size, unsi
 	std::fill(cursor, cursor + needed*channels, 0.0f);
 }
 
-void DecodingGenerator::generateBlockInBackground(std::size_t channels, AudioSample *out) {
+void StreamingGenerator::generateBlockInBackground(std::size_t channels, AudioSample *out) {
 	bool looping = this->looping.load(std::memory_order_acquire) == 1;
 
 	double new_position;
@@ -126,13 +126,13 @@ SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle 
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
 	auto decoder = getDecoderForProtocol(protocol, path, options);
-	auto generator = ctx->createObject<DecodingGenerator>(decoder);
+	auto generator = ctx->createObject<StreamingGenerator>(decoder);
 	*out = toC(generator);
 	return 0;
 	SYZ_EPILOGUE
 }
 
-#define PROPERTY_CLASS DecodingGenerator
+#define PROPERTY_CLASS StreamingGenerator
 #define PROPERTY_BASE Generator
 #define PROPERTY_LIST STREAMING_GENERATOR_PROPERTIES
 #include "synthizer/property_impl.hpp"
