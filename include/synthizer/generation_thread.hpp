@@ -31,11 +31,15 @@ class GenerationThread {
 	 * max_latency must be > 0 and a multiple of config::BLOCK_SIZE.
 	 * 
 	 * To actually start the thread, call start with your closure.
+	 * 
+	 * leadin_latency is how much needs to be computed before the first time we start returning data. This is used to allow buffers to fill enough that there won't be drop-outs.
 	 * */
-	GenerationThread(std::size_t channels, std::size_t max_latency): channels(channels),
+	GenerationThread(std::size_t channels, std::size_t max_latency): GenerationThread(channels, max_latency, max_latency) {}
+	GenerationThread(std::size_t channels, std::size_t max_latency, std::size_t leadin_latency): channels(channels), leadin_latency(leadin_latency),
 		ring(max_latency * channels) {
 		assert(max_latency > 0);
 		assert(max_latency % config::BLOCK_SIZE == 0);
+		assert(leadin_latency <= max_latency);
 	}
 
 	~GenerationThread() {
@@ -62,13 +66,15 @@ class GenerationThread {
 
 	private:
 	std::size_t channels;
+	std::size_t leadin_latency = 0;
 	AllocatedAudioRing ring;
-	std::atomic<int> running = 0;
+	std::atomic<int> running = 0, leadin_complete = 0;
 	std::thread thread;
 };
 
 template<typename CALLABLE>
 void GenerationThread::start(CALLABLE &&callable) {
+	this->leadin_complete.store(0);
 	this->running.store(1);
 	this->thread = std::move(std::thread([=] () {
 		this->backgroundThread(callable);
@@ -86,6 +92,10 @@ void GenerationThread::stop() {
 }
 
 std::size_t GenerationThread::read(std::size_t amount, AudioSample *dest) {
+	if (this->leadin_complete.load(std::memory_order_relaxed) == 0) {
+		return 0;
+	}
+
 	auto [size1, ptr1, size2, ptr2] = this->ring.beginRead(amount * this->channels);
 	assert(size1 % this->channels == 0);
 	assert(size2 % this->channels == 0);
@@ -107,12 +117,17 @@ std::size_t GenerationThread::skip(std::size_t amount) {
 
 template<typename CALLABLE>
 void GenerationThread::backgroundThread(CALLABLE &&callable) {
+	std::size_t frames_generated = 0;
 	while (this->running.load(std::memory_order_relaxed)) {
 		auto [size1, ptr1, size2, ptr2] = this->ring.beginWrite(config::BLOCK_SIZE * this->channels);
 		assert(size2 == 0 && ptr2 == nullptr);
 		assert(size1 == config::BLOCK_SIZE * this->channels);
 		callable(this->channels, ptr1);
 		this->ring.endWrite();
+		frames_generated += config::BLOCK_SIZE;
+		if (frames_generated >= this->leadin_latency) {
+			this->leadin_complete.store(1, std::memory_order_relaxed);
+		}
 	}
 }
 
