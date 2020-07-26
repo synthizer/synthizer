@@ -55,8 +55,16 @@ void DecodingGenerator::setPitchBend(double newPitchBend) {
 	this->pitch_bend = newPitchBend;
 }
 
-void DecodingGenerator::setLooping(bool looping) {
+int DecodingGenerator::getLooping() {
+	return this->looping.load(std::memory_order_relaxed);
+}
+
+void DecodingGenerator::setLooping(int looping) {
 	this->looping.store(looping ? 1 : 0, std::memory_order_release);
+}
+
+double DecodingGenerator::getPosition() {
+	return this->position.load(std::memory_order_relaxed);
 }
 
 void DecodingGenerator::setPosition(double pos) {
@@ -123,3 +131,8 @@ SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle 
 	return 0;
 	SYZ_EPILOGUE
 }
+
+#define PROPERTY_CLASS DecodingGenerator
+#define PROPERTY_BASE Generator
+#define PROPERTY_LIST STREAMING_GENERATOR_PROPERTIES
+#include "synthizer/property_impl.hpp"

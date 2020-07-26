@@ -4,6 +4,7 @@
 #include "synthizer/config.hpp"
 #include "synthizer/generation_thread.hpp"
 #include "synthizer/generator.hpp"
+#include "synthizer/property_internals.hpp"
 #include "synthizer/types.hpp"
 
 #include <atomic>
@@ -29,8 +30,11 @@ class DecodingGenerator: public Generator {
 	unsigned int getChannels();
 	void generateBlock(AudioSample *output);
 	void setPitchBend(double newPitchBend);
-	void setLooping(bool looping);
+	int getLooping();
+	void setLooping(int looping);
+	double getPosition();
 	void setPosition(double newPosition);
+	PROPERTY_METHODS;
 
 	private:
 	/* The body of the background thread. */

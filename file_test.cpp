@@ -39,6 +39,8 @@ auto ret = x; \
 	CHECKED(syz_createContext(&context));
 	CHECKED(syz_createDirectSource(&source, context));
 	CHECKED(syz_createStreamingGenerator(&generator, context, "file", argv[1], ""));
+	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
+	CHECKED(syz_setD(generator, SYZ_P_POSITION, 10.0));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
 	std::this_thread::sleep_for(std::chrono::seconds(20));
