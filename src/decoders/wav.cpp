@@ -90,7 +90,7 @@ AudioFormat WavDecoder::getFormat() {
 }
 
 void WavDecoder::seekPcm(std::int64_t pos) {
-	auto actualPos = std::max(this->getLength(), pos);
+	auto actualPos = std::min(this->getLength(), pos);
 	if (drwav_seek_to_pcm_frame(&this->wav, actualPos) == DRWAV_FALSE)
 		throw new Error("Unable to seek.");
 }

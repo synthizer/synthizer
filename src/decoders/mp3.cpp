@@ -99,7 +99,7 @@ AudioFormat Mp3Decoder::getFormat() {
 }
 
 void Mp3Decoder::seekPcm(std::int64_t pos) {
-	auto actualPos = std::max(this->getLength(), pos);
+	auto actualPos = std::min(this->getLength(), pos);
 	if (drmp3_seek_to_pcm_frame(&this->mp3, actualPos) == DRMP3_FALSE)
 		throw new Error("Unable to seek.");
 }

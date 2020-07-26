@@ -8,7 +8,7 @@
 #include <tuple>
 #include <thread>
 
-#include "sema.h"
+#include "autoresetevent.h"
 
 #include "config.hpp"
 #include "memory.hpp"
@@ -18,33 +18,15 @@ namespace synthizer {
 static_assert(std::atomic<std::size_t>::is_always_lock_free, "Unable to use mutex in size_t atomic inside AudioRing due to kernel calls.");
 
 /*
- * This is currently unused logic for a ringbuffer which is intended to hold audio data.
+ * An audio ring is a ringbuffer modelled after the DirectSound API. You tell it how many samples you want,
+ * and it gives you a pair of pointers and lengths. You write to both lengths, then tell it you're done.
  * 
- * Unfortunately, it turned out that miniaudio isn't able to tell us what the maximum size of this buffer should be, so we had to switch to an alternative per-block setup. See bounded_block_queue.hpp.
- * 
- * Keeping this around because it's useful, just not for the problem at hand.
+ * This is SPSC, and used for things like the streaming generator which need to run part of their logic in a background thread.
  * */
 
-/* Number of times you have to advance begin to get to end. */
-inline std::size_t ringDist(std::size_t begin, std::size_t end, std::size_t size) {
-	return (end + size - begin) % size;
-}
-
-/* 
- * An inline AudioSample ringbuffer, which supports waking when space is available.
- * 
- * Note that this is SPSC. SPMC usage is not safe.
- * 
- * On the producer side, this ringbuffer always returns aligned chunks of data: in debug builds allocateForWrite will assert if the space requested isn't a multiple of config::ALIGNMENT.
- * 
- * For convenience, also contains a mechanism for counting the number of times the write side got less than it requested, which can be used for the purposes of increasing/decreasing latency targets.
- * 
- * You want the types at the end of this file, which specify static/dynamic ringbuffers and provide public constructors.
- * */
 template<typename data_provider_t>
 class AudioRingBase {
 	public:
-	const std::size_t MIN_ADVANCE = config::ALIGNMENT / sizeof(AudioSample);
 
 	/*
 	 * This is modelled after DirectSound.
@@ -53,40 +35,32 @@ class AudioRingBase {
 	 * 
 	 * Note that if the user of this function always requests the same size on every call, that size is a factor of the ring size, and the user always fully commits, the second pointer is never non-NULL and the first pointer is the entire block.
 	 * 
-	 * In particular, the latter functionality is used by the audio threads. We support nonb-multiples for file I/O and generators.
+	 * If the writer always requests a multiple of config::ALIGNMENT and the ring's size is a multiple of config::ALIGNMENT,
+	 * the returned pointers are aligned.
 	 * 
-	 * If maxAvailable is true, return at least the size requested, but if more space is available then return all the space.
-	 * 
-	 * If maxAvailablen is true, size is zero, and immediate is true, never block and return what is available. In this case, it is possible to get 0/nullptr for all 4 values if what is available is less than MIN_ADVANCE, and you shouldn't call endWrite if you do.
-	 * */
+	 * If maxAvailable is true, return at least the size requested, but if more space is available then return all the space. If the writer has followed the above
+	 * guidelines w.r.t. alignment, maxAvailable will also return only aligned pointers and won't break the guarantee.
+	 **/
 	std::tuple<std::size_t, AudioSample *, std::size_t, AudioSample *>
-	beginWrite(std::size_t size, bool immediate = false, bool maxAvailable = false) {
-		/* Fail if we're not requesting a multiple of aligned data. */
-		assert(size % MIN_ADVANCE == 0);
-		assert(maxAvailable == true || size != 0);
+	beginWrite(std::size_t requested, bool maxAvailable = false) {
+		assert(maxAvailable == true || requested != 0);
 		/* What if we requested a size that's bigger than the buffer? */
-		assert(size <= this->size());
+		assert(requested <= this->size());
 
 		/*
 		 * Explanation: the write pointer is always "behind" the read pointer, such that if write == read, then there is no data in the buffer.
 		 * */
-		std::size_t available, read_pointer, write_pointer;
-		write_pointer = this->write_pointer.load(std::memory_order_relaxed);
+		std::size_t available;
 		do {
-			read_pointer = this->read_pointer.load(std::memory_order_relaxed);
 			/* Get the number of bytes left, subtract from the size of the ring. */
-			available = this->size() - ringDist(read_pointer, write_pointer, this->size());
-			if (immediate)
-				break;
-			if (available < size)
-				this->read_end_sema.wait();
-		} while ( available < size);
+			available = this->size() - this->samples_in_buffer.load(std::memory_order_relaxed);
+			if (available < requested)
+				this->read_end_event.wait();
+		} while ( available < requested);
 
-		if (available < MIN_ADVANCE)
-			return {0, nullptr, 0, nullptr};
-
+		/* Work out the sizes of the segments. */
 		std::size_t size1 = 0, size2 = 0;
-		std::size_t allocating = maxAvailable ? available : std::min(size, available);
+		std::size_t allocating = maxAvailable ? available : requested;
 		this->pending_write_size = allocating;
 
 		size1 = std::min(this->size() - write_pointer, allocating);
@@ -97,46 +71,38 @@ class AudioRingBase {
 		return { size1, &this->data_provider[0] + write_pointer, size2, &this->data_provider[0] };
 	}
 
+	/*
+	 * It is possible to commit writes in chunks. To do so, specify amount here as a nonzero value.
+	 *  */
 	void endWrite(std::size_t amount) {
 		assert(amount <= this->pending_write_size);
-		std::size_t wp = this->write_pointer.load(std::memory_order_relaxed);
-		wp = (wp + amount) % this->size();
-		this->write_pointer.store(wp, std::memory_order_release);
+		this->write_pointer = (this->write_pointer + amount) % this->size();
 		this->pending_write_size -= amount;
+		this->samples_in_buffer.fetch_add(amount, std::memory_order_release);
 	}
 
+	/* Commit the entire write. */
 	void endWrite() {
 		endWrite(this->pending_write_size);
 	}
 
 	/*
-	 * The read side. Like the write side.
-	 * Doesn't inforce buffer alignment.
+	 * The read side. Like the write side, but never blocks.
+	 * If maxAvailable = false and there isn't enough data in the buffer, returns null pointers and 0 sizes.
+	 * Otherwise returns what's available even if it's less than the amount requested.
 	 * */
 	std::tuple<std::size_t, AudioSample *, std::size_t, AudioSample *>
-	beginRead(std::size_t size, bool immediate = false, bool maxAvailable = false) {
-		assert(maxAvailable == false || size != 0);
+	beginRead(std::size_t requested, bool maxAvailable = false) {
+		assert(maxAvailable == true || requested != 0);
 		/* What if we requested a size that's bigger than the buffer? */
-		assert(size <= this->size());
+		assert(requested <= this->size());
 
-		std::size_t available, read_pointer, write_pointer;
-		read_pointer = this->read_pointer.load(std::memory_order_relaxed);
-		do {
-			write_pointer = this->write_pointer.load(std::memory_order_relaxed);
-			/* Unlike write, it's exactly the number of advances. */
-			available = ringDist(read_pointer, write_pointer, this->size());
-			if (immediate)
-				break;
-			if (available > size)
-				std::this_thread::yield();
-		} while ( available < size);
-
-		if (available == 0)
+		std::size_t available = this->samples_in_buffer.load(std::memory_order_acquire);
+		if (available == 0 || (available < requested && maxAvailable == false))
 			return {0, nullptr, 0, nullptr};
 
-		std::size_t allocating = maxAvailable ? available : std::min(size, available);
+		std::size_t allocating = maxAvailable ? available : requested;
 		this->pending_read_size = allocating;
-
 		std::size_t size1 = std::min(allocating, this->size() - read_pointer);
 		AudioSample *ptr1 = &this->data_provider[0] + read_pointer;
 		if (size1 == allocating)
@@ -149,26 +115,15 @@ class AudioRingBase {
 
 	void endRead(std::size_t amount) {
 		assert(amount <= this->pending_read_size);
-
-		auto rp = this->read_pointer.load(std::memory_order_relaxed);
-		rp = (rp + amount) % this->size();
-		this->read_pointer.store(rp);
+		this->read_pointer = (this->read_pointer + amount) % this->size();
+		
 		this->pending_read_size -= amount;
-		this->read_end_sema.signal();
+		this->samples_in_buffer.fetch_sub(amount, std::memory_order_release);
+		this->read_end_event.signal();
 	}
 
 	void endRead() {
 		endRead(this->pending_read_size);
-	}
-
-	/* Increment the late counter. */
-	void signalLate() {
-		this->late_counter.fetch_add(1, std::memory_order_relaxed);
-	}
-
-	/* Fetch and reset the late counter. */
-	unsigned int getAndResetLate() {
-		return this->late_counter.store(0);
 	}
 
 	std::size_t size() {
@@ -177,12 +132,13 @@ class AudioRingBase {
 
 	protected:
 	AudioRingBase() = default;
-
 	data_provider_t data_provider;
-	std::atomic<std::size_t> write_pointer = 0, read_pointer = 0;
-	std::atomic<unsigned int> late_counter = 0;
+
+	private:
+	std::size_t write_pointer = 0, read_pointer = 0;
+	std::atomic<std::size_t> samples_in_buffer = 0;
 	std::size_t pending_write_size = 0, pending_read_size = 0;
-	Semaphore read_end_sema;
+	AutoResetEvent read_end_event;
 };
 
 template<std::size_t n>
