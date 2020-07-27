@@ -22,9 +22,9 @@ class StreamingGenerator: public Generator {
 	StreamingGenerator(const std::shared_ptr<Context> &ctx, const std::shared_ptr<AudioDecoder> &decoder);
 	~StreamingGenerator();
 
-	unsigned int getChannels();
-	void generateBlock(AudioSample *output);
-	void setPitchBend(double newPitchBend);
+	unsigned int getChannels() override;
+	void generateBlock(AudioSample *output) override;
+	void setPitchBend(double newPitchBend) override;
 	int getLooping();
 	void setLooping(int looping);
 	double getPosition();

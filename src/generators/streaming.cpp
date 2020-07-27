@@ -71,7 +71,13 @@ void StreamingGenerator::setPosition(double pos) {
 	this->next_position.write(pos);
 }
 
-static void fillBufferFromDecoder(AudioDecoder &decoder, unsigned int size, unsigned int channels, float *dest, bool looping) {
+/*
+ * Returns the new position, given the old one.
+ * 
+ * Decoders intentionally don't know how to give us this info, so we have to book keep it ourselves.
+ * */
+static double fillBufferFromDecoder(AudioDecoder &decoder, unsigned int size, unsigned int channels, float *dest, bool looping, double position_in) {
+	auto sr = decoder.getSr();
 	unsigned int needed = size;
 	bool justLooped = false;
 
@@ -80,6 +86,7 @@ static void fillBufferFromDecoder(AudioDecoder &decoder, unsigned int size, unsi
 		unsigned int got = decoder.writeSamplesInterleaved(needed, cursor);
 		cursor += channels*got;
 		needed -= got;
+		position_in += got / (double)sr;
 		/*
 		 * justLooped stops us from seeking to the beginning, getting no data, and then looping forever.
 		 * If we got data, we didn't just loop.
@@ -89,33 +96,38 @@ static void fillBufferFromDecoder(AudioDecoder &decoder, unsigned int size, unsi
 			decoder.seekSeconds(0.0);
 			/* We just looped. Keep this set until we get data. */
 			justLooped = true;
+			position_in = 0.0;
 		} else {
 			break;
 		}
 	}
 	std::fill(cursor, cursor + needed*channels, 0.0f);
+	return position_in;
 }
 
 void StreamingGenerator::generateBlockInBackground(std::size_t channels, AudioSample *out) {
 	bool looping = this->looping.load(std::memory_order_acquire) == 1;
 
-	double new_position;
-	if (this->next_position.read(&new_position)) {
-		this->decoder->seekSeconds(new_position);
-		this->position.store(new_position);
+	double position;
+	if (this->next_position.read(&position)) {
+		this->decoder->seekSeconds(position);
+	} else {
+		position = this->position.load(std::memory_order_relaxed);
 	}
 
 	if (this->resampler == nullptr) {
-		fillBufferFromDecoder(*this->decoder, config::BLOCK_SIZE, this->getChannels(), out, looping);
+		position = fillBufferFromDecoder(*this->decoder, config::BLOCK_SIZE, this->getChannels(), out, looping, position);
 	} else {
 		float *rs_buf;
 		int needed = this->resampler->ResamplePrepare(config::BLOCK_SIZE, this->getChannels(), &rs_buf);
-		fillBufferFromDecoder(*this->decoder, needed, this->getChannels(), rs_buf, looping);
+		position = fillBufferFromDecoder(*this->decoder, needed, this->getChannels(), rs_buf, looping, position);
 		unsigned int resampled = this->resampler->ResampleOut(out, needed, config::BLOCK_SIZE, this->getChannels());
 		if(resampled < config::BLOCK_SIZE) {
 			std::fill(out + resampled * this->getChannels(), out + config::BLOCK_SIZE * this->getChannels(), 0.0f);
 		}
 	}
+
+	this->position.store(position, std::memory_order_relaxed);
 }
 
 }
