@@ -248,6 +248,8 @@ cdef class StreamingGenerator(Generator):
         _checked(syz_createStreamingGenerator(&out, ctx, protocol, path, options))
         super().__init__(out)
 
+    position = DoubleProperty(SYZ_P_POSITION)
+    looping = IntProperty(SYZ_P_LOOPING, conv_in = int, conv_out = bool)
 
 cdef class Source(_BaseObject):
     """Base class for all sources."""

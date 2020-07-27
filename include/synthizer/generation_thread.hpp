@@ -99,9 +99,10 @@ std::size_t GenerationThread::read(std::size_t amount, AudioSample *dest) {
 	auto [size1, ptr1, size2, ptr2] = this->ring.beginRead(amount * this->channels);
 	assert(size1 % this->channels == 0);
 	assert(size2 % this->channels == 0);
-	std::copy(ptr1, ptr1 + size1 * this->channels, dest);
+	assert(size1 + size2 == amount * this->channels);
+	std::copy(ptr1, ptr1 + size1, dest);
 	if (ptr2) {
-		std::copy(ptr2, ptr2 + size2 * this->channels, dest + size1 * this->channels);
+		std::copy(ptr2, ptr2 + size2, dest + size1 * this->channels);
 	}
 	this->ring.endRead();
 	return size1 + size2;
