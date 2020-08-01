@@ -66,6 +66,9 @@ OBJECT_P(SYZ_P_BUFFER, buffer, Buffer, Buffer) \
 DOUBLE_P(SYZ_P_POSITION, position, Position, 0.0, P_DOUBLE_MAX) \
 INT_P(SYZ_P_LOOPING, looping, Looping, 0, 1)
 
+#define STREAMING_GENERATOR_PROPERTIES \
+DOUBLE_P(SYZ_P_POSITION, position, Position, 0.0, P_DOUBLE_MAX) \
+INT_P(SYZ_P_LOOPING, looping, Looping, 0, 1)
 
 #ifdef __cplusplus
 }

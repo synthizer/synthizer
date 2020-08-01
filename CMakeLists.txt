@@ -60,7 +60,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/filters/simple_filters.cpp
 
 	src/generators/buffer.cpp
-	src/generators/decoding.cpp
+	src/generators/streaming.cpp
 
 
 	src/sources/direct_source.cpp

@@ -97,7 +97,7 @@ AudioFormat FlacDecoder::getFormat() {
 }
 
 void FlacDecoder::seekPcm(std::int64_t pos) {
-	auto actualPos = std::max(this->getLength(), pos);
+	auto actualPos = std::min(this->getLength(), pos);
 	if (drflac_seek_to_pcm_frame(this->flac, actualPos) == DRFLAC_FALSE)
 		throw new Error("Unable to seek.");
 }
