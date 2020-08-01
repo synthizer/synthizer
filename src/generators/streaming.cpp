@@ -6,6 +6,7 @@
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/decoding.hpp"
+#include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
 
 #include "WDL/resample.h"
@@ -106,28 +107,32 @@ static double fillBufferFromDecoder(AudioDecoder &decoder, unsigned int size, un
 }
 
 void StreamingGenerator::generateBlockInBackground(std::size_t channels, AudioSample *out) {
-	bool looping = this->looping.load(std::memory_order_acquire) == 1;
+	try {
+		bool looping = this->looping.load(std::memory_order_acquire) == 1;
 
-	double position;
-	if (this->next_position.read(&position)) {
-		this->decoder->seekSeconds(position);
-	} else {
-		position = this->position.load(std::memory_order_relaxed);
-	}
-
-	if (this->resampler == nullptr) {
-		position = fillBufferFromDecoder(*this->decoder, config::BLOCK_SIZE, this->getChannels(), out, looping, position);
-	} else {
-		float *rs_buf;
-		int needed = this->resampler->ResamplePrepare(config::BLOCK_SIZE, this->getChannels(), &rs_buf);
-		position = fillBufferFromDecoder(*this->decoder, needed, this->getChannels(), rs_buf, looping, position);
-		unsigned int resampled = this->resampler->ResampleOut(out, needed, config::BLOCK_SIZE, this->getChannels());
-		if(resampled < config::BLOCK_SIZE) {
-			std::fill(out + resampled * this->getChannels(), out + config::BLOCK_SIZE * this->getChannels(), 0.0f);
+		double position;
+		if (this->next_position.read(&position)) {
+			this->decoder->seekSeconds(position);
+		} else {
+			position = this->position.load(std::memory_order_relaxed);
 		}
-	}
 
-	this->position.store(position, std::memory_order_relaxed);
+		if (this->resampler == nullptr) {
+			position = fillBufferFromDecoder(*this->decoder, config::BLOCK_SIZE, this->getChannels(), out, looping, position);
+		} else {
+			float *rs_buf;
+			int needed = this->resampler->ResamplePrepare(config::BLOCK_SIZE, this->getChannels(), &rs_buf);
+			position = fillBufferFromDecoder(*this->decoder, needed, this->getChannels(), rs_buf, looping, position);
+			unsigned int resampled = this->resampler->ResampleOut(out, needed, config::BLOCK_SIZE, this->getChannels());
+			if(resampled < config::BLOCK_SIZE) {
+				std::fill(out + resampled * this->getChannels(), out + config::BLOCK_SIZE * this->getChannels(), 0.0f);
+			}
+		}
+
+		this->position.store(position, std::memory_order_relaxed);
+	} catch(std::exception &e) {
+		logError("Background thread for streaming generator had error: %s. Trying to recover...", e.what());
+	}
 }
 
 }
