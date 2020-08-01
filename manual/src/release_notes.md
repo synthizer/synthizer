@@ -18,7 +18,8 @@
 
 - Throw an exception instead of silently crashing on invalid audio files.
 - Fix the fundamentally broken DirectSource mixing logic. This probably still needs some improvement but is no longer fundamentally broken.
-
+- Fix Stream seeking when using LookaheadByteStream internally. This fixes/allows for StreamingGenerator to seek,
+  and may also fix  loading of audio files into buffers in some cases.
 ## 0.5.0
 
 - Roll out a deferred freeing strategy, which uses C++ custom allocators to
