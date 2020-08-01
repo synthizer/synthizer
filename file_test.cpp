@@ -43,7 +43,10 @@ auto ret = x; \
 	CHECKED(syz_setD(generator, SYZ_P_POSITION, 10.0));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
-	std::this_thread::sleep_for(std::chrono::seconds(20));
+	while (true) {
+		std::this_thread::sleep_for(std::chrono::seconds(2));
+		CHECKED(syz_setD(generator, SYZ_P_POSITION, 10.0));
+	}
 
 end:
 	ending = 1;

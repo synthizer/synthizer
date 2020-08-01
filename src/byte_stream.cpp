@@ -72,6 +72,7 @@ class ForwardingStream: public T {
 	std::size_t read(std::size_t count, char *destination) { return this->stream->read(count, destination); }
 	bool supportsSeek() { return this->stream->supportsSeek(); }
 	virtual std::size_t getPosition() { return this->stream->getPosition(); }
+	virtual std::size_t getLength() override { return this->stream->getLength(); }
 	virtual void seek(std::size_t position) { return this->stream->seek(position); }
 	AudioFormat getFormatHint() { return this->stream->getFormatHint(); }
 
