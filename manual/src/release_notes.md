@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.6.0 (WIP)
+## 0.6.0
 
 ### Features
 
