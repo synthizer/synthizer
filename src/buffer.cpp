@@ -95,6 +95,10 @@ std::shared_ptr<BufferData> generateBufferData(unsigned int channels, unsigned i
 			next_chunk = nullptr;
 		}
 
+		if (length == 0) {
+			throw Error("Buffers of zero length not supported");
+		}
+
 		delete[] working_buf;
 		return allocateSharedDeferred<BufferData>(channels, length, std::move(chunks));
 	} catch(...) {
