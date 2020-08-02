@@ -100,4 +100,7 @@ target_link_libraries(filter_print synthizer)
 add_executable(property_write_bench benchmarks/property_write.cpp)
 target_link_libraries(property_write_bench synthizer)
 
+add_executable(test_random_float test/random_float.cpp)
+target_link_libraries(test_random_float synthizer)
+
 add_test(NAME delay_line COMMAND delay_line_test)
