@@ -13,7 +13,7 @@ int main() {
 
 	printf("Testing generation of single floats\n");
 	float fmin = std::numeric_limits<float>::infinity(), fmax = -std::numeric_limits<float>::infinity();
-	for (unsigned int i = 0; i < 1000000; i++) {
+	for (unsigned int i = 0; i < 100000000; i++) {
 		float v = gen.generateFloat();
 		fmin = std::min(fmin, v);
 		fmax = std::max(fmax, v);
@@ -23,7 +23,7 @@ int main() {
 	fmin = std::numeric_limits<float>::infinity();
 	fmax = -std::numeric_limits<float>::infinity();
 	printf("Testing float4 generation\n");
-	for (unsigned int i = 0; i < 1000000; i++) {
+	for (unsigned int i = 0; i < 100000000; i++) {
 		float f1, f2, f3, f4;
 		gen.generateFloat4(f1, f2, f3, f4);
 		fmin = std::min(fmin, f1);

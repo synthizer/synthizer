@@ -177,6 +177,8 @@ SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle contex
  * */
 SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context);
 
+SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels);
+
 #ifdef __cplusplus
 }
 #endif
