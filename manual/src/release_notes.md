@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.6.1
+
+This release temporarily disables dr_flac SIMD support until resolution of [this upstream issue](https://github.com/mackron/dr_libs/issues/143).
+
 ## 0.6.0
 
 ### Features
