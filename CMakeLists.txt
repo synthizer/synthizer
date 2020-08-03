@@ -42,6 +42,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/hrtf.cpp
 	src/logging.cpp
 	src/memory.cpp
+	src/noise_generator.cpp
 	src/panner_bank.cpp
 	src/single_file_libs.c
 	src/spsc_semaphore.cpp
@@ -60,6 +61,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/filters/simple_filters.cpp
 
 	src/generators/buffer.cpp
+	src/generators/noise.cpp
 	src/generators/streaming.cpp
 
 
@@ -102,5 +104,8 @@ target_link_libraries(property_write_bench synthizer)
 
 add_executable(test_random_float test/random_float.cpp)
 target_link_libraries(test_random_float synthizer)
+
+add_executable(test_noise test/noise.cpp)
+target_link_libraries(test_noise synthizer)
 
 add_test(NAME delay_line COMMAND delay_line_test)
