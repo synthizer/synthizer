@@ -44,7 +44,7 @@ foreach ($build_type in $build_types) {
 			"-DCMAKE_BUILD_TYPE=$build_type" `
 			"-DCI_SYNTHIZER_NAME=$ci_name" `
 			"-DSYNTHIZER_LIB_TYPE=$($lib_type.toUpper())"
-		invoke-utility ninja -j6
+		invoke-utility ninja
 		cd ..
 	}
 }
