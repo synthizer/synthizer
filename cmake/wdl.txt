@@ -1,20 +1,20 @@
-# A few of these are disabled because they need external libraries.
+# We disable all of these until they're needed for build size and speed.
 
 SET(WDL_FILES
-	audiobuffercontainer.cpp
-	blowfish.c
-	convoengine.cpp
-	des.cpp
-	fft.c
-	projectcontext.cpp
+	#audiobuffercontainer.cpp
+	#blowfish.c
+	#convoengine.cpp
+	#des.cpp
+	#fft.c
+	#projectcontext.cpp
 	resample.cpp
-#	rfb_client.cpp
-	rng.cpp
-#	scsrc.cpp
-	sha.cpp
-	shm_connection.cpp
-	timing.c
-	win32_utf8.c
+	#rfb_client.cpp
+	#rng.cpp
+	#scsrc.cpp
+	#sha.cpp
+	#shm_connection.cpp
+	#timing.c
+	#win32_utf8.c
 )
 
 list(TRANSFORM WDL_FILES PREPEND third_party/wdl/WDL/)
