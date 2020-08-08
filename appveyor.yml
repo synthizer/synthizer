@@ -21,8 +21,6 @@ build_script:
 - cmd: mkdir artifacts
 - cmd: mkdir artifacts\lib
 - cmd: mkdir artifacts\include
-- cmd: copy build_dynamic_debug\synthizerd* artifacts\lib
-- cmd: copy build_static_debug\synthizerd_static* artifacts\lib
 - cmd: copy build_dynamic_release\synthizer* artifacts\lib
 - cmd: copy build_static_release\synthizer_static* artifacts\lib
 - cmd: copy include\synthizer.h artifacts\include
