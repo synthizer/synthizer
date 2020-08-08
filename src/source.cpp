@@ -41,7 +41,7 @@ bool Source::hasGenerator(std::shared_ptr<Generator> &generator) {
 }
 
 double Source::getGain() {
-	return gainToDb(this->gain);
+	return this->gain;
 }
 
 void Source::setGain(double gain) {
