@@ -77,7 +77,6 @@ std::shared_ptr<BufferData> generateBufferData(unsigned int channels, unsigned i
 				last = got < needed;
 				next_chunk_len = resampler->ResampleOut(working_buf, got, config::BUFFER_CHUNK_SIZE, channels);
 				assert(last == true || next_chunk_len == config::BUFFER_CHUNK_SIZE);
-				length += next_chunk_len;
 			} else {
 				next_chunk_len = producer(config::BUFFER_CHUNK_SIZE, working_buf);
 				last = next_chunk_len < config::BUFFER_CHUNK_SIZE;
