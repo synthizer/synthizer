@@ -27,7 +27,7 @@ struct HandleCell {
 	unsigned int multiple = 0;
 };
 
-void handleCellDeinit(std::size_t index, HandleCell &cell) {
+static void handleCellDeinit(std::size_t index, HandleCell &cell) {
 	try {
 		cell.value = nullptr;
 	} catch(...) {

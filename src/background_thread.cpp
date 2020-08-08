@@ -19,10 +19,10 @@ class BackgroundThreadCommand {
 };
 
 static moodycamel::ConcurrentQueue<BackgroundThreadCommand> background_queue;
-Semaphore background_thread_semaphore;
-std::atomic<int> background_thread_running = 0;
+static Semaphore background_thread_semaphore;
+static std::atomic<int> background_thread_running = 0;
 
-void backgroundThreadFunc() {
+static void backgroundThreadFunc() {
 	BackgroundThreadCommand cmd;
 
 	setThreadPurpose("background-thread");
@@ -49,7 +49,7 @@ void backgroundThreadFunc() {
 	logDebug("Background thread stopped");
 }
 
-std::thread background_thread;
+static std::thread background_thread;
 void startBackgroundThread() {
 	background_thread_running.store(1, std::memory_order_relaxed);
 	background_thread = std::move(std::thread(backgroundThreadFunc));

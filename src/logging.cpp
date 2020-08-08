@@ -16,8 +16,8 @@ static std::atomic<int> logging_enabled{0};
 static std::atomic<enum SYZ_LOG_LEVEL> log_level = SYZ_LOG_LEVEL_ERROR;
 
 static std::atomic<int> next_thread_id = 1;
-thread_local int thread_id = 0;
-thread_local std::string thread_purpose;
+thread_local static int thread_id = 0;
+thread_local static std::string thread_purpose;
 
 void setThreadPurpose(std::string purpose) {
 	thread_purpose = std::move(purpose);
@@ -64,8 +64,8 @@ static const char *logLevelAsString() {
 	return "";
 }
 
-const std::size_t MAX_LOG_MESSAGE_LENGTH = 1025;
-thread_local char log_message_buf[MAX_LOG_MESSAGE_LENGTH+1];
+static const std::size_t MAX_LOG_MESSAGE_LENGTH = 1025;
+thread_local static char log_message_buf[MAX_LOG_MESSAGE_LENGTH+1];
 void log(enum SYZ_LOG_LEVEL level, const char *format, ...) {
 	std::va_list args;
 
