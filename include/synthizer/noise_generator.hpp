@@ -3,6 +3,7 @@
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
+#include "synthizer/iir_filter.hpp"
 #include "synthizer/random_generator.hpp"
 #include "synthizer/types.hpp"
 
@@ -14,6 +15,8 @@ namespace synthizer {
 
 class NoiseGenerator {
 	public:
+	NoiseGenerator();
+
 	int getNoiseType();
 	void setNoiseType(int type);
 	float generateSample();
@@ -59,6 +62,12 @@ class NoiseGenerator {
 	void initVM();
 	float generateSampleVM();
 	void generateBlockVM(unsigned int size, AudioSample *block, unsigned int stride);
+
+	/* -6DB filter for brown noise. */
+	IIRFilter<1, 3, 3> brown_filter;
+	void initFilteredBrown();
+	float generateSampleFilteredBrown();
+	void generateBlockFilteredBrown(unsigned int size, AudioSample *block, unsigned int stride);
 };
 
 }

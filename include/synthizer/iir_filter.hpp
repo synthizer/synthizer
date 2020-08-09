@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 
 #include "synthizer/config.hpp"
@@ -94,8 +95,7 @@ class SampleVector {
 template<std::size_t lanes, std::size_t num, std::size_t den>
 class IIRFilter {
 	public:
-	// TODO: make this a power of 2.
-	static const unsigned int HISTORY_SIZE = nextPowerOfTwo(num > den ? num-1 : den-1);
+	static const unsigned int HISTORY_SIZE = nextPowerOfTwo(num > den ? num : den);
 	std::array<SampleVector<double, lanes>, HISTORY_SIZE> history;
 	unsigned int counter = 0; // for the ringbuffer.
 
@@ -153,17 +153,19 @@ class IIRFilter {
 			h.mul(this->denominator[i]);
 			working_recursive.sub(h);
 		}
+		this->counter = (this->counter + 1) % this->history.size();
 		this->history[this->counter] = working_recursive;
 
 		// and now the output, which is convolution.
-		// Remember: first sample of this impulse response is always 1.
-		for(int i = 0; i < this->numerator.size(); i++) {
-			auto h = this->history[(this->counter - i - 1)%this->history.size()];
-			h.mul(this->numerator[i]);
-			working_recursive.add(h);
+		if constexpr(num > 0) {
+			working_recursive.mul(this->numerator[0]);
+			for(int i = 1; i < this->numerator.size(); i++) {
+				auto h = this->history[(this->counter - i )%this->history.size()];
+				h.mul(this->numerator[i]);
+				working_recursive.add(h);
+			}
 		}
 		working_recursive.store(out);
-		this->counter = (this->counter + 1) % this->history.size();
 	}
 };
 

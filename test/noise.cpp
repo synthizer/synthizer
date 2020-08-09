@@ -35,8 +35,10 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_createNoiseGenerator(&generator, context, 2));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
-	CHECKED(syz_setI(generator, SYZ_P_NOISE_TYPE, SYZ_NOISE_TYPE_VM));
-	std::this_thread::sleep_for(std::chrono::seconds(20));
+	for (unsigned int i = 0; i < SYZ_NOISE_TYPE_COUNT; i++) {
+		CHECKED(syz_setI(generator, SYZ_P_NOISE_TYPE, i));
+		std::this_thread::sleep_for(std::chrono::seconds(5));
+	}
 
 end:
 	ending = 1;

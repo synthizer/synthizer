@@ -112,7 +112,7 @@ auto designSincLowpass(double omega)
 
 template<std::size_t num1, std::size_t den1, std::size_t num2, std::size_t den2>
 IIRFilterDef<num1 + num2 - 1, den1 + den2 - 1>
-combineIIRFilters(IIRFilterDef<num1,  den1> &f1, IIRFilterDef<num2, den2> &f2) {
+combineIIRFilters(IIRFilterDef<num1,  den1> f1, IIRFilterDef<num2, den2> f2) {
 	double newGain = f1.gain * f2.gain;
 	std::array<double, num1 + num2 - 1> workingNum;
 	std::array<double, den1 + den2 - 1> workingDen;
@@ -125,7 +125,7 @@ combineIIRFilters(IIRFilterDef<num1,  den1> &f1, IIRFilterDef<num2, den2> &f2) {
 	for(int i = 0; i < num1; i++) {
 		double num1r = f1.num_coefs[i];
 		for(int j = 0; j < num2; j++) {
-			double num2r = f2.num_coefs[i];
+			double num2r = f2.num_coefs[j];
 			workingNum[i + j] += num1r * num2r;
 		}
 	}

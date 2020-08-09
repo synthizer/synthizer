@@ -70,7 +70,7 @@ void printFrequencyResponse(IIRFilterDef<num, den> &def, int start = 0, int stop
 }
 
 int main(int argc, char* argv[]) {
-	auto def = designSincLowpass<31>(0.25);
+	auto def = combineIIRFilters(designOneZero(-1), designOnePole(0.9929146));
 	//auto def = designAudioEqLowpass(0.25);
 //	auto def = designDcBlocker();
 	printCoefs(def);

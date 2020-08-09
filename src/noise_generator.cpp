@@ -1,9 +1,20 @@
+#include "synthizer/config.hpp"
+#include "synthizer/filter_design.hpp"
 #include "synthizer/noise_generator.hpp"
 #include "synthizer/random_generator.hpp"
 
 #include <cassert>
 
 namespace synthizer {
+
+NoiseGenerator::NoiseGenerator() {
+	/*
+	 * Butterworth with cutoff of 500hz at 44100 sr designed with Scipy.
+	 * TODO: implement butterworth sections ourselves and get rid of this.
+	 * */
+	auto def = combineIIRFilters(designOneZero(-1), designOnePole(0.96));
+	this->brown_filter.setParameters(def);
+}
 
 int NoiseGenerator::getNoiseType() {
 	return this->noise_type;
@@ -13,6 +24,8 @@ void NoiseGenerator::setNoiseType(int type) {
 	this->noise_type = type;
 	if (this->noise_type == SYZ_NOISE_TYPE_VM) {
 		this->initVM();
+	} else if (this->noise_type == SYZ_NOISE_TYPE_FILTERED_BROWN) {
+		this->initFilteredBrown();
 	}
 }
 
@@ -22,6 +35,8 @@ float NoiseGenerator::generateSample() {
 		return this->generateSampleUniform();
 	case SYZ_NOISE_TYPE_VM:
 		return this->generateSampleVM();
+	case SYZ_NOISE_TYPE_FILTERED_BROWN:
+		return this->generateSampleFilteredBrown();
 	default:
 		assert(nullptr == "This should be unreachable");
 	}
@@ -34,6 +49,8 @@ void NoiseGenerator::generateBlock(unsigned int size, AudioSample *block, unsign
 		return this->generateBlockUniform(size, block, stride);
 	case SYZ_NOISE_TYPE_VM:
 		return this->generateBlockVM(size, block, stride);
+	case SYZ_NOISE_TYPE_FILTERED_BROWN:
+		return this->generateBlockFilteredBrown(size, block, stride);
 	default:
 		assert(nullptr == "This should be unreachable");
 	}
@@ -79,6 +96,31 @@ float NoiseGenerator::generateSampleVM() {
 void NoiseGenerator::generateBlockVM(unsigned int size, AudioSample *block, unsigned int stride) {
 	for (unsigned int i = 0; i < size; i++) {
 		block[i * stride] += this->generateSampleVM();
+	}
+}
+
+void NoiseGenerator::initFilteredBrown() {
+	this->brown_filter.reset();
+}
+
+float NoiseGenerator::generateSampleFilteredBrown() {
+	float sample = generateSampleUniform();
+	this->brown_filter.tick(&sample, &sample);
+	return sample;
+}
+
+void NoiseGenerator::generateBlockFilteredBrown(unsigned int size, AudioSample *block, unsigned int stride) {
+	unsigned int i =0;
+	/*for (unsigned int j = 0; j < size / 4; i += 4, j++) {
+		float f1, f2, f3, f4;
+		this->random_gen.generateFloat4(f1, f2, f3, f4);
+		this->brown_filter.tick(&f1, block + i * stride);
+		this->brown_filter.tick(&f2, block + (i + 1) * stride);
+		this->brown_filter.tick(&f3, block + (i + 2) * stride);
+		this->brown_filter.tick(&f4, block + (i + 3) * stride);
+	}*/
+	for (; i < size; i++) {
+		block[i * stride] = this->generateSampleFilteredBrown();
 	}
 }
 

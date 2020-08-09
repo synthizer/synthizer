@@ -27,7 +27,7 @@ IIRFilterDef<2, 1> designOneZero(double zero) {
 	std::tie(b0, b1) = coefsForZero(zero);
 	IIRFilterDef<2, 1> ret;
 	ret.num_coefs = {b0, b1};
-	ret.gain = 1;
+	ret.gain = 1.0 / (abs(b0) + abs(b1));
 	ret.den_coefs = {};
 	return ret;
 }
@@ -37,9 +37,15 @@ IIRFilterDef<1, 2> designOnePole(double pole) {
 	// poles are zero in the denominator.
 	std::tie(a0, a1) = coefsForZero(pole);
 	IIRFilterDef<1, 2> ret;
-	ret.num_coefs = {};
+	ret.num_coefs = {1.0};
 	ret.den_coefs = {a1};
-	ret.gain = 1;
+	/*
+	 * Explanation: the gain is maximum at either:
+	 * -1, because a1 > 0, giving 1/(1-a0)
+	 * 1, because a1 < 0, giving 1/(1-abs(a0))
+	 * The former expression can have abs added without changing its value, so we avoid the conditional.
+	 * */
+	ret.gain = 1 - abs(a1);
 	return ret;
 }
 
