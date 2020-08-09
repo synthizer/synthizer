@@ -15,6 +15,7 @@ cdef extern from "synthizer_constants.h":
     cdef enum SYZ_NOISE_TYPE:
         SYZ_NOISE_TYPE_UNIFORM
         SYZ_NOISE_TYPE_VM
+        SYZ_NOISE_TYPE_FILTERED_BROWN
         SYZ_NOISE_TYPE_COUNT
 
     cdef enum SYZ_PROPERTIES:
