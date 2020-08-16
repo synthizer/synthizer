@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.6.4 (WIP)
+## 0.6.4
 
 - Python bindings now release the GIL in from_stream.
 
