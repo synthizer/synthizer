@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.6.4 (WIP)
+
+- Python bindings now release the GIL in from_stream.
+
 ## 0.6.3
 
 - Re-enable dr_flac SIMD.

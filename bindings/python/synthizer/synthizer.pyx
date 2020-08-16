@@ -5,6 +5,12 @@ import threading
 from synthizer_properties cimport *
 from synthizer_constants cimport *
 
+# We want the ability to acquire and release the GIL, which means making sure it's initialized.
+# It's unclear if you need this for with nogil as well as for with gil, but let's just avoid the headache entirely.
+cdef extern from "python.h":
+    int PyEval_InitThreads()
+PyEval_InitThreads()
+
 cdef class SynthizerError(Exception):
     cdef str message
     cdef int code
@@ -310,6 +316,11 @@ cdef class Source3D(PannedSourceCommon):
     position = Double3Property(SYZ_P_POSITION)
     orientation = Double6Property(SYZ_P_ORIENTATION)
 
+# The auto-generated files cna't add nogil, so we need to redecalre and add it ourselves.
+# In future, we can probably fork autopxd2 to do this instead, but for now this is the only nogil function.
+cdef extern from "synthizer.h":
+    syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, const char *protocol, const char *path, const char *options) nogil
+
 cdef class Buffer(_BaseObject):
     """Use Buffer.from_stream(protocol, path, options) to initialize."""
 
@@ -322,7 +333,17 @@ cdef class Buffer(_BaseObject):
     def from_stream(protocol, path, options=""):
         """Create a buffer from a stream."""
         cdef syz_Handle handle
-        _checked(syz_createBufferFromStream(&handle, _to_bytes(protocol), _to_bytes(path), _to_bytes(options)))
+        protocol_b = _to_bytes(protocol)
+        path_b = _to_bytes(path)
+        options_b = _to_bytes(options)
+        cdef char* protocol_c = protocol_b
+        cdef char* path_c = path_b
+        cdef char* options_c = options_b
+        cdef syz_ErrorCode result
+        with nogil:
+            result = syz_createBufferFromStream(&handle, protocol_c, path_c, options_c)
+        if result != 0:
+            raise SynthizerError()
         return Buffer(_handle=handle)
 
     cpdef get_channels(self):
