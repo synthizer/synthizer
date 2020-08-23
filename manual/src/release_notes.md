@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.7.0 (WIP)
+## 0.7.0
 
 - Add a noise generator.
 - Internal fixes to filters.
