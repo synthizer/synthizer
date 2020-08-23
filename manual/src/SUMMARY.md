@@ -31,3 +31,4 @@
 - [Generator (abstract)](./object_reference/generator.md)
 - [StreamingGenerator](./object_reference/streaming_generator.md)
 - [BufferGenerator](./object_reference/buffer_generator.md)
+- [NoiseGenerator](./object_reference/noise_generator.md)
