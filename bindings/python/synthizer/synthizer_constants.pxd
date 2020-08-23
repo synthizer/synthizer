@@ -12,6 +12,12 @@ cdef extern from "synthizer_constants.h":
         SYZ_DISTANCE_MODEL_INVERSE
         SYZ_DISTANCE_MODEL_COUNT
 
+    cdef enum SYZ_NOISE_TYPE:
+        SYZ_NOISE_TYPE_UNIFORM
+        SYZ_NOISE_TYPE_VM
+        SYZ_NOISE_TYPE_FILTERED_BROWN
+        SYZ_NOISE_TYPE_COUNT
+
     cdef enum SYZ_PROPERTIES:
         SYZ_P_AZIMUTH
         SYZ_P_BUFFER
@@ -28,3 +34,4 @@ cdef extern from "synthizer_constants.h":
         SYZ_P_ORIENTATION
         SYZ_P_ROLLOFF
         SYZ_P_LOOPING
+        SYZ_P_NOISE_TYPE

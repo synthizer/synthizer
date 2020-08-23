@@ -70,3 +70,5 @@ cdef extern from "synthizer.h":
     syz_ErrorCode syz_createPannedSource(syz_Handle* out, syz_Handle context)
 
     syz_ErrorCode syz_createSource3D(syz_Handle* out, syz_Handle context)
+
+    syz_ErrorCode syz_createNoiseGenerator(syz_Handle* out, syz_Handle context, unsigned int channels)

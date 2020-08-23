@@ -370,3 +370,16 @@ cdef class BufferGenerator(Generator):
     buffer = ObjectProperty(SYZ_P_BUFFER, Buffer)
     position = DoubleProperty(SYZ_P_POSITION)
     looping = IntProperty(SYZ_P_LOOPING, conv_in = int, conv_out = bool)
+
+cpdef enum NoiseType:
+    UNIFORM = SYZ_NOISE_TYPE_UNIFORM
+    VM = SYZ_NOISE_TYPE_VM
+    FILTERED_BROWN = SYZ_NOISE_TYPE_FILTERED_BROWN
+
+cdef class NoiseGenerator(Generator):
+    def __init__(self, context, channels = 1):
+        cdef syz_Handle handle
+        _checked(syz_createNoiseGenerator(&handle, context._get_handle_checked(Context), channels))
+        super().__init__(handle)
+
+    noise_type = enum_property(SYZ_P_NOISE_TYPE, lambda x: NoiseType(x))
