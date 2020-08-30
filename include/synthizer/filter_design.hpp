@@ -34,11 +34,13 @@ class IIRFilterDef<num, den, typename std::enable_if<(num > 0 && den > 0)>::type
 /*
  * A single-zero filter.
  * Zero is on the x axis.
+ * Normalized so that peak gain is 1.
  * */
 IIRFilterDef<2, 1> designOneZero(double zero);
 
 /*
  * A single-pole filter.
+ * Normalized so that peak gain is 1.
  * */
 IIRFilterDef<1, 2> designOnePole(double pole);
 

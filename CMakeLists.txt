@@ -99,8 +99,8 @@ if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
 	add_executable(file_test file_test.cpp)
 	target_link_libraries(file_test synthizer)
 
-	add_executable(filter_print filter_print.cpp)
-	target_link_libraries(filter_print synthizer)
+	add_executable(test_filter_repl test/filter_repl.cpp)
+	target_link_libraries(test_filter_repl synthizer)
 
 	add_executable(property_write_bench benchmarks/property_write.cpp)
 	target_link_libraries(property_write_bench synthizer)

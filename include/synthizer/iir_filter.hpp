@@ -100,7 +100,7 @@ class IIRFilter {
 	unsigned int counter = 0; // for the ringbuffer.
 
 	// Filter parameters.
-	std::array<SampleVector<float, lanes>, num-1> numerator;
+	std::array<SampleVector<float, lanes>, num> numerator;
 	std::array<SampleVector<double, lanes>, den-1> denominator;
 	SampleVector<float, lanes> gain;
 
@@ -117,6 +117,7 @@ class IIRFilter {
 			this->denominator[i].setScalar(0.0);
 		}
 		this->gain.setScalar(1.0);
+		this->numerator[0].setScalar(1.0f);
 	}
 
 	void reset() {
@@ -129,11 +130,12 @@ class IIRFilter {
 	void setParametersForLane(unsigned int l, const IIRFilterDef<nn, nd> &params) {
 		static_assert(nn <= num && nd <= den, "IIRFilter instance is not big enough to contain this filter.");
 		assert(l < lanes);
-		for(int i = 0; i < num-1; i++) {
-			this->numerator[i].values[l] = i < nn-1 ? params.num_coefs[i] : 0.0;
+		for(int i = 0; i < num; i++) {
+			this->numerator[i].values[l] = i < nn ? params.num_coefs[i] : 0.0;
 		}
 		for(int i = 0; i < den - 1; i++) {
-			this->denominator[i].values[l] = i < nd-1 ? params.den_coefs[i] : 0.0;
+			/* Recall that denominators are minus the first sample. */
+			this->denominator[i].values[l] = i < nd - 1 ? params.den_coefs[i] : 0.0;
 		}
 		this->gain.values[l] = params.gain;
 	}
@@ -157,15 +159,14 @@ class IIRFilter {
 		this->history[this->counter] = working_recursive;
 
 		// and now the output, which is convolution.
-		if constexpr(num > 0) {
-			working_recursive.mul(this->numerator[0]);
-			for(int i = 1; i < this->numerator.size(); i++) {
-				auto h = this->history[(this->counter - i )%this->history.size()];
-				h.mul(this->numerator[i]);
-				working_recursive.add(h);
-			}
+		SampleVector<double, lanes> sum;
+		sum.setScalar(0.0);
+		for(int i = 0; i < this->numerator.size(); i++) {
+			auto h = this->history[(this->counter - i )%this->history.size()];
+			h.mul(this->numerator[i]);
+			sum.add(h);
 		}
-		working_recursive.store(out);
+		sum.store(out);
 	}
 };
 
