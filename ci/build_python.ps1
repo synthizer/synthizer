@@ -24,12 +24,16 @@ is nonzero.
   if ($LASTEXITCODE) { Throw "$exe indicated failure (exit code $LASTEXITCODE; full command: $Args)." }
 }
 
-$pyversions = "python38-x64", "python37-x64", "python36-x64"
+$pyversions = "python38", "python37", "python36"
 
 cd bindings\python
 
 foreach ($pyversion in $pyversions) {
-	$pycommand = "c:\$pyversion\python.exe"
+	$pysuffix = ""
+	if ($Env:CI_ARCHITECTURE -eq "64") {
+		$pysuffix = "-x64"
+	}
+	$pycommand = "c:\$pyversion$pysuffix\python.exe"
 	invoke-utility $pycommand -m pip install cython setuptools wheel
 	invoke-utility $pycommand setup.py bdist_wheel
 }

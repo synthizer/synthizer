@@ -11,6 +11,10 @@ environment:
     secure: d2vKp79d1l2GRgzol+HVMG3GOsl0Rnq5qkZhKkLslR4=
 
   matrix:
+    - cI_ARCHITECTURE: 32
+      CFLAGS: -m32
+      CXXFLAGS: -m32
+      LDFLAGS: -machine:x86
     - CI_ARCHITECTURE: 64
 
 build_script:
