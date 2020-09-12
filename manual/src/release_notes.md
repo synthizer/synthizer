@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.7.1
+
+- Attempt releasing 32-bit Python wheels.
+
 ## 0.7.0
 
 - Add a noise generator.
