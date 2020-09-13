@@ -5,6 +5,7 @@
 #include "dr_flac.h"
 
 #include "synthizer/byte_stream.hpp"
+#include "synthizer/channel_mixing.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/error.hpp"
 #include "synthizer/types.hpp"
@@ -80,7 +81,7 @@ std::int64_t FlacDecoder::writeSamplesInterleaved(std::int64_t num, AudioSample 
 
 	/* Otherwise we have to round trip via the temporary buffer. */
 	std::int64_t got = drflac_read_pcm_frames_f32(this->flac, num, this->tmp_buf);
-	multiplexDecodedChannels(got, this->flac->channels, this->tmp_buf, actualChannels, samples);
+	mixChannels(got, this->tmp_buf, this->flac->channels, samples, actualChannels);
 	return got;
 }
 

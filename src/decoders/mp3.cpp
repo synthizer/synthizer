@@ -5,6 +5,7 @@
 #include "dr_mp3.h"
 
 #include "synthizer/byte_stream.hpp"
+#include "synthizer/channel_mixing.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/error.hpp"
 #include "synthizer/types.hpp"
@@ -82,7 +83,7 @@ std::int64_t Mp3Decoder::writeSamplesInterleaved(std::int64_t num, AudioSample *
 
 	/* Otherwise we have to round trip via the temporary buffer. */
 	std::int64_t got = drmp3_read_pcm_frames_f32(&this->mp3, num, this->tmp_buf);
-	multiplexDecodedChannels(got, this->mp3.channels, this->tmp_buf, actualChannels, samples);
+	mixChannels(got, this->tmp_buf, this->mp3.channels, samples, actualChannels);
 	return got;
 }
 

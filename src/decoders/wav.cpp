@@ -5,6 +5,7 @@
 #include "dr_wav.h"
 
 #include "synthizer/byte_stream.hpp"
+#include "synthizer/channel_mixing.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/error.hpp"
 #include "synthizer/types.hpp"
@@ -73,7 +74,7 @@ std::int64_t WavDecoder::writeSamplesInterleaved(std::int64_t num, AudioSample *
 
 	/* Otherwise we have to round trip via the temporary buffer. */
 	std::int64_t got = drwav_read_pcm_frames_f32(&this->wav, num, this->tmp_buf);
-	multiplexDecodedChannels(got, this->wav.channels, this->tmp_buf, actualChannels, samples);
+	mixChannels(got, this->tmp_buf, this->wav.channels, samples, actualChannels);
 	return got;
 }
 

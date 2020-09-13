@@ -3,6 +3,7 @@
 #include "synthizer/sources.hpp"
 
 #include "synthizer/c_api.hpp"
+#include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/generator.hpp"
@@ -67,39 +68,7 @@ void Source::fillBlock(unsigned int channels) {
 		} else {
 			std::fill(premix, premix + config::BLOCK_SIZE * nch, 0.0f);
 			g->generateBlock(premix);
-
-			/*
-			 * For now, we only support mono and stereo. This will eventually be moved
-			 * to a remixing function.
-			 * */
-			if (channels == 1) {
-				/* Downmix to mono. */
-				float normfactor = 1.0f / nch;
-				for (unsigned int c = 0; c < nch; c++) {
-					for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-						float s = premix[nch * i + c];
-						block[i] += s * normfactor;
-					}
-				}
-			} else if(nch == 1) {
-				/* Broadcast to all channels. */
-				for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-					for(unsigned int j = 0; j < channels; j++)  {
-						block[channels * i + j] += premix[i];
-					}
-				}
-			} else {
-				/*
-				 * Take the lesser of the 2 channels. If this is input, then the extra output channels are untouched.
-				 * If it's output, then the input channels are truncated.
-				 * */
-				auto final_ch = std::min(nch, channels);
-				for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-					for (unsigned int j = 0; j < final_ch; j++) {
-						block[i * channels + j] += premix[i * nch + j];
-					}
-				}
-			}
+			mixChannels(config::BLOCK_SIZE, premix, nch, &this->block[0], channels);
 		}
 	});
 

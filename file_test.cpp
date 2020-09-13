@@ -37,7 +37,7 @@ auto ret = x; \
 	CHECKED(syz_initialize());
 
 	CHECKED(syz_createContext(&context));
-	CHECKED(syz_createDirectSource(&source, context));
+	CHECKED(syz_createSource3D(&source, context));
 	CHECKED(syz_createBufferFromStream(&buffer, "file", argv[1], ""));
 	CHECKED(syz_createBufferGenerator(&generator, context));
 	//CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));

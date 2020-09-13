@@ -36,6 +36,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/buffer.cpp
 	src/byte_stream.cpp
 	src/c_api.cpp
+	src/channel_mixing.cpp
 	src/context.cpp
 	src/decoding.cpp
 	src/error.cpp
