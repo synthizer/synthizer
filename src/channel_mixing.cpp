@@ -44,7 +44,9 @@ void mixChannels(unsigned int length, AudioSample *in, unsigned int inChannelCou
 	assert(inChannelCount != 0);
 	assert(outChannelCount != 0);
 	if (inChannelCount == outChannelCount) {
-		std::copy(in, in + inChannelCount * length, out);
+		for (unsigned int i = 0; i < length * inChannelCount; i++) {
+			out[i] += in[i];
+		}
 		return;
 	}
 	else if (inChannelCount == 1) {

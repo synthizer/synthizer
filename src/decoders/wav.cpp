@@ -74,6 +74,7 @@ std::int64_t WavDecoder::writeSamplesInterleaved(std::int64_t num, AudioSample *
 
 	/* Otherwise we have to round trip via the temporary buffer. */
 	std::int64_t got = drwav_read_pcm_frames_f32(&this->wav, num, this->tmp_buf);
+	std::fill(samples, samples + got * this->wav.channels, 0.0f);
 	mixChannels(got, this->tmp_buf, this->wav.channels, samples, actualChannels);
 	return got;
 }

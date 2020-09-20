@@ -83,6 +83,7 @@ std::int64_t Mp3Decoder::writeSamplesInterleaved(std::int64_t num, AudioSample *
 
 	/* Otherwise we have to round trip via the temporary buffer. */
 	std::int64_t got = drmp3_read_pcm_frames_f32(&this->mp3, num, this->tmp_buf);
+	std::fill(samples, samples + got * this->mp3.channels, 0.0f);
 	mixChannels(got, this->tmp_buf, this->mp3.channels, samples, actualChannels);
 	return got;
 }

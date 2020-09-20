@@ -45,6 +45,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/memory.cpp
 	src/noise_generator.cpp
 	src/panner_bank.cpp
+	src/router.cpp
 	src/single_file_libs.c
 	src/spsc_semaphore.cpp
 	src/source.cpp
