@@ -1,5 +1,11 @@
 # Release Notes
 
+## 0.7.2
+
+- New property on BufferGenerator: `SYZ_P_PITCH_BEND`.
+- We will adopt pre-1.0 semantic versioning going forward in order to be compatible with Rust-style `^` dependencies:
+  `0.major.minor`, with minor incrementing for features and major incrementing for incompatible API updates. This should enable at least some compatibility in version numbers across package managers.
+
 ## 0.7.1
 
 - Attempt releasing 32-bit Python wheels.
