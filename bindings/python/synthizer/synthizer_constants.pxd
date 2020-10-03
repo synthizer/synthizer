@@ -35,3 +35,4 @@ cdef extern from "synthizer_constants.h":
         SYZ_P_ROLLOFF
         SYZ_P_LOOPING
         SYZ_P_NOISE_TYPE
+        SYZ_P_PITCH_BEND

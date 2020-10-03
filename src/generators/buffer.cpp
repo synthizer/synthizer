@@ -49,7 +49,7 @@ void BufferGenerator::readInterpolated(double pos, AudioSample *out) {
 template<bool L>
 void BufferGenerator::generatePitchBendHelper(AudioSample *output) {
 	double pos = this->position;
-	double delta = 1.0 / this->pitch_bend;
+	double delta = this->pitch_bend;
 	for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 		this->readInterpolated<L>(pos, &output[i*this->reader.getChannels()]);
 		pos += delta;
@@ -86,6 +86,10 @@ void BufferGenerator::generateNoPitchBend(AudioSample *output) {
 		}
 	}
 	this->position = pos;
+}
+
+double BufferGenerator::getPitchBend() {
+	return this->pitch_bend;
 }
 
 void BufferGenerator::setPitchBend(double newPitchBend) {

@@ -17,7 +17,9 @@ synthizer.set_log_level(synthizer.LogLevel.DEBUG)
 
 synthizer.initialize()
 ctx = synthizer.Context()
-gen = synthizer.NoiseGenerator(ctx, channels=2)
+gen = synthizer.BufferGenerator(ctx)
+buffer = synthizer.Buffer.from_stream("file", sys.argv[1], "")
+gen.buffer = buffer
 src = synthizer.DirectSource(ctx)
 src.gain=0.2
 src.add_generator(gen)

@@ -15,6 +15,7 @@ class BufferGenerator: public Generator {
 
 	unsigned int getChannels() override;
 	void generateBlock(AudioSample *output) override;
+	double getPitchBend();
 	void setPitchBend(double newPitchBend) override;
 	std::shared_ptr<Buffer> getBuffer();
 	void setBuffer(const std::shared_ptr<Buffer> &buffer);

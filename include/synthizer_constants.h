@@ -47,6 +47,8 @@ enum SYZ_PROPERTIES {
 	SYZ_P_LOOPING,
 
 	SYZ_P_NOISE_TYPE,
+
+	SYZ_P_PITCH_BEND,
 };
 
 #ifdef __cplusplus

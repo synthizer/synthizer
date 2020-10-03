@@ -370,6 +370,8 @@ cdef class BufferGenerator(Generator):
     buffer = ObjectProperty(SYZ_P_BUFFER, Buffer)
     position = DoubleProperty(SYZ_P_POSITION)
     looping = IntProperty(SYZ_P_LOOPING, conv_in = int, conv_out = bool)
+    pitch_bend = DoubleProperty(SYZ_P_PITCH_BEND)
+
 
 cpdef enum NoiseType:
     UNIFORM = SYZ_NOISE_TYPE_UNIFORM
