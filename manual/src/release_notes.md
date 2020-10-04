@@ -1,5 +1,12 @@
 # Release Notes
 
+## 0.7.3
+
+- Fix pitch bend support on BufferGenerator when looping is enabled.
+  For the morbidly curious there is indeed a difference between `std::fmod` and `std::remainder`
+- Maybe fix bugs in stereo panning for the same reason.
+  If you had issues with stereo panning and didn't report them, you should probably try this release.
+
 ## 0.7.2
 
 - New property on BufferGenerator: `SYZ_P_PITCH_BEND`.
