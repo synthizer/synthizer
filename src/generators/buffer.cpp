@@ -37,8 +37,9 @@ void BufferGenerator::readInterpolated(double pos, AudioSample *out) {
 	std::size_t lower = std::floor(pos);
 	std::size_t upper = lower + 1;
 	if (L) upper = upper % this->reader.getLength();
-	float w1 = upper - pos;
-	float w2 = 1.0f - w1;
+	// Important: upper < lower if upper was past the last sample.
+	float w2 = pos - lower;
+	float w1 = 1.0 - w2;
 	this->reader.readFrame(lower, &f1[0]);
 	this->reader.readFrame(upper, &f2[0]);
 	for (unsigned int i = 0; i < this->reader.getChannels(); i++) {
@@ -53,7 +54,7 @@ void BufferGenerator::generatePitchBendHelper(AudioSample *output) {
 	for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 		this->readInterpolated<L>(pos, &output[i*this->reader.getChannels()]);
 		pos += delta;
-		if (L == true) pos = std::remainder(pos, this->reader.getLength());
+		if (L == true) pos = std::fmod(pos, this->reader.getLength());
 		if (L == false && pos > this->reader.getLength()) break;
 	}
 	this->position = std::min<double>(pos, this->reader.getLength());
