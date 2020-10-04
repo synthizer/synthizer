@@ -45,7 +45,7 @@ void StereoPanner::setPanningAngles(unsigned int lane, double azimuth, double el
 	 * Angles are clockwise from forward; we want clockwise from left.
 	 * Then if we wrap, drop the wrapped part.
 	 * */
-	double angle = std::remainder(90.0 + azimuth, 360.0);
+	double angle = std::fmod(90.0 + azimuth, 360.0);
 	double scalar;
 	if (angle <= 180) {
 		scalar = -1.0 + 2.0 * (angle / 180.0);
