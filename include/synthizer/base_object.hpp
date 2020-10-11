@@ -9,6 +9,12 @@
 
 namespace synthizer {
 
+/* Forward declare the routing handles. */
+namespace router {
+	class ReaderHandle;
+	class WriterHandle;
+}
+
 class Context;
 
 /*
@@ -65,9 +71,20 @@ class BaseObject: public CExposable {
 		return this->context.get();
 	}
 
+	/*
+	 * Routing. If either of these returns an actual non-nullptr value, this object supports that half
+	 * of the routing architecture (i.e. readers are effects, writers are sources).
+	 * */
+	virtual router::ReaderHandle *getReaderHandle() {
+		return nullptr;
+	}
+
+	virtual router::WriterHandle *getWriterHandle() {
+		return nullptr;
+	}
+
 	protected:
 	std::shared_ptr<Context> context;
-
 };
 
 }
