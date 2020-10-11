@@ -77,7 +77,7 @@ void Source::fillBlock(unsigned int channels) {
 		this->block[i] *= gainf;
 	}
 
-	this->getWriterHandle()->routeAudio(&this->block[0], channels);
+	this->getOutputHandle()->routeAudio(&this->block[0], channels);
 }
 
 }

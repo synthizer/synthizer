@@ -15,59 +15,58 @@ using namespace router;
 
 /* Like strcmp but for Route. */
 int compareRoutes(const Route &a, const Route &b) {
-	const std::tuple<const WriterHandle *, const ReaderHandle *> k1{a.writer, a.reader};
-	const std::tuple<const WriterHandle *, const ReaderHandle *> k2{b.writer, b.reader};
+	const std::tuple<const OutputHandle *, const InputHandle *> k1{a.output, a.input};
+	const std::tuple<const OutputHandle *, const InputHandle *> k2{b.output, b.input};
 	if (k1 == k2) {
 		return 0;
 	}
 	return k1 < k2 ? -1 : 1;
 }
 
-ReaderHandle::ReaderHandle(Router *router, AudioSample *buffer, unsigned int channels) {
+InputHandle::InputHandle(Router *router, AudioSample *buffer, unsigned int channels) {
 	this->router = router;
 	this->buffer = buffer;
 	this->channels = channels;
 }
 
-ReaderHandle::~ReaderHandle() {
-	if (this->router) router->unregisterReaderHandle(this);
+InputHandle::~InputHandle() {
+	if (this->router) router->unregisterInputHandle(this);
 }
 
-WriterHandle::WriterHandle(Router *router) {
+OutputHandle::OutputHandle(Router *router) {
 	this->router = router;
 }
 
-WriterHandle::~WriterHandle() {
-	if (router) this->router->unregisterWriterHandle(this);
+OutputHandle::~OutputHandle() {
+	if (router) this->router->unregisterOutputHandle(this);
 }
 
-void WriterHandle::routeAudio(AudioSample *buffer, unsigned int channels) {
+void OutputHandle::routeAudio(AudioSample *buffer, unsigned int channels) {
 	alignas(config::ALIGNMENT)  thread_local std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> _working_buf;
 	auto *working_buf = &_working_buf[0];
 	auto start = this->router->findRun(this);
 	if (start == router->routes.end()) {
-		/* No routes for this writer handle. */
 		return;
 	}
-	for (auto i = start; i < router->routes.end() && i->writer == this; i++) {
-		if (i->state == RouteState::Dead) {
+	for (auto route = start; route < router->routes.end() && route->output == this; route++) {
+		if (route->state == RouteState::Dead) {
 			continue;
 		}
 		/* Work out if we have to crossfade, and if so, by what. */
-		float gain_start = i->gain, gain_end = i->gain;
+		float gain_start = route->gain, gain_end = route->gain;
 		unsigned int blocks = 0;
-		if (i->state == RouteState::FadeIn) {
+		if (route->state == RouteState::FadeIn) {
 			gain_start = 0.0f;
-			blocks = i->fade_in_blocks;
-		} else if (i->state == RouteState::FadeOut) {
+			blocks = route->fade_in_blocks;
+		} else if (route->state == RouteState::FadeOut) {
 			gain_end = 0.0f;
-			blocks = i->fade_out_blocks;
-		} else if (i->state == RouteState::GainChanged) {
-			gain_start = i->prev_gain;
+			blocks = route->fade_out_blocks;
+		} else if (route->state == RouteState::GainChanged) {
+			gain_start = route->prev_gain;
 			blocks = 1;
 		}
 
-		bool crossfading = blocks > 0 && i->state != RouteState::Steady;
+		bool crossfading = blocks > 0 && route->state != RouteState::Steady;
 		if (crossfading) {
 			/*
 			 * explanation: there is a line from gain_start to gain_end, over blocks blocks.
@@ -76,7 +75,7 @@ void WriterHandle::routeAudio(AudioSample *buffer, unsigned int channels) {
 			 * gain_start is effectively the y axis, if we shift things so that last_state_changed == 0.
 			 * */
 			float slope = (gain_end - gain_start) / blocks;
-			auto done = this->router->time - i->last_state_changed;
+			auto done = this->router->time - route->last_state_changed;
 			gain_end = slope * (done + 1) + gain_start;
 			gain_start = slope * done + gain_start;
 			for (unsigned int frame = 0; frame < config::BLOCK_SIZE; frame ++) {
@@ -89,11 +88,11 @@ void WriterHandle::routeAudio(AudioSample *buffer, unsigned int channels) {
 			}
 		} else {
 			/* Copy into working_buf, apply gain. */
-			for (unsigned int f = 0; f < config::BLOCK_SIZE * channels; i++) {
-				working_buf[f] = i->gain * buffer[f];
+			for (unsigned int f = 0; f < config::BLOCK_SIZE * channels; f++) {
+				working_buf[f] = route->gain * buffer[f];
 			}
 		}
-		mixChannels(config::BLOCK_SIZE, working_buf, channels, i->reader->buffer, i->reader->channels);
+		mixChannels(config::BLOCK_SIZE, working_buf, channels, route->input->buffer, route->input->channels);
 	}
 }
 
@@ -121,25 +120,25 @@ Router::~Router() {
 		if (i->state == RouteState::Dead) {
 			continue;
 		}
-		if (i->reader) {
-			i->reader->router = nullptr;
+		if (i->input) {
+			i->input->router = nullptr;
 		}
-		if (i->writer) {
-			i->writer->router = nullptr;
+		if (i->output) {
+			i->output->router = nullptr;
 		}
 	}
 }
 
-void Router::configureRoute(WriterHandle *w, ReaderHandle *r, float gain, unsigned int fade_in) {
-	auto configured_iter = this->findRouteForPair(w, r);
+void Router::configureRoute(OutputHandle *output, InputHandle *input, float gain, unsigned int fade_in) {
+	auto configured_iter = this->findRouteForPair(output, input);
 	if (configured_iter != this->routes.end() && configured_iter->canConfigure()) {
 		configured_iter->setGain(gain, this->time);
 		return;
 	}
 	/* Otherwise, we need to set up a new route. */
 	Route nr;
-	nr.writer = w;
-	nr.reader = r;
+	nr.output = output;
+	nr.input = input;
 	nr.fade_in_blocks = fade_in;
 	nr.setState(fade_in == 0 ? RouteState::Steady : RouteState::FadeIn, this->time);
 	/* Figure out where in the vector to insert it. */
@@ -157,16 +156,16 @@ static void deprovisionRoute(I &&iter, unsigned int fade_out, unsigned int time_
 	}
 }
 
-void Router::removeRoute(WriterHandle *w, ReaderHandle *r, unsigned int fade_out) {
-	auto iter = this->findRouteForPair(w, r);
+void Router::removeRoute(OutputHandle *output, InputHandle *input, unsigned int fade_out) {
+	auto iter = this->findRouteForPair(output, input);
 	if (iter != this->routes.end()) {
 		deprovisionRoute(iter, fade_out, this->time);
 	}
 }
 
-void Router::removeAllRoutes(WriterHandle *w, unsigned int fade_out) {
-	auto i = this->findRun(w);
-	while (i != this->routes.end() && i->writer == w) {
+void Router::removeAllRoutes(OutputHandle *output, unsigned int fade_out) {
+	auto i = this->findRun(output);
+	while (i != this->routes.end() && i->output == output) {
 		deprovisionRoute(i, fade_out, this->time);
 		i++;
 	}
@@ -175,7 +174,7 @@ void Router::removeAllRoutes(WriterHandle *w, unsigned int fade_out) {
 void Router::finishBlock() {
 	this->time++;
 	vector_helpers::filter_stable(this->routes, [&](auto &r) {
-		if (r.reader == nullptr || r.writer == nullptr) {
+		if (r.output == nullptr || r.input == nullptr) {
 			return false;
 		}
 		/* Advance the state machine for this route. */
@@ -192,42 +191,42 @@ void Router::finishBlock() {
 	});
 }
 
-void Router::unregisterWriterHandle(WriterHandle *w) {
+void Router::unregisterOutputHandle(OutputHandle *output) {
 	vector_helpers::filter_stable(this->routes, [&](auto &r) {
-		return r.writer != w;
+		return r.output != output;
 	});
 }
 
-void Router::unregisterReaderHandle(ReaderHandle *r) {
-	vector_helpers::filter_stable(this->routes, [&](auto &ro) {
-		return ro.reader != r;
+void Router::unregisterInputHandle(InputHandle *input) {
+	vector_helpers::filter_stable(this->routes, [&](auto &r) {
+		return r.input != input;
 	});
 }
 
-deferred_vector<Route>::iterator Router::findRouteForPair(WriterHandle *w, ReaderHandle *r) {
+deferred_vector<Route>::iterator Router::findRouteForPair(OutputHandle *output, InputHandle *input) {
 	Route key;
-	key.writer = w;
-	key.reader = r;
+	key.output = output;
+	key.input = input;
 	auto iter = std::lower_bound(this->routes.begin(), this->routes.end(), key, [](const Route &a, const Route &b) {
 		return compareRoutes(a, b) < 0;
 	});
 	if (iter == this->routes.end()) {
 		return iter;
 	}
-	if (iter->writer == w && iter->reader == r) {
+	if (iter->output == output && iter->input == input) {
 		return iter;
 	}
 	return this->routes.end();
 }
 
-deferred_vector<Route>::iterator Router::findRun(WriterHandle *w) {
+deferred_vector<Route>::iterator Router::findRun(OutputHandle *output) {
 	Route key;
-	key.writer = w;
-	key.reader = nullptr;
+	key.output = output;
+	key.input = nullptr;
 	auto i = std::lower_bound(this->routes.begin(), this->routes.end(), key, [](const Route &a, const Route &b) {
 		return compareRoutes(a, b) < 0;
 	});
-	if (i == this->routes.end() || i->writer == w) {
+	if (i == this->routes.end() || i->output == output) {
 		return i;
 	}
 	return this->routes.end();

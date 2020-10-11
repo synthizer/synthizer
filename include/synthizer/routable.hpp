@@ -9,34 +9,32 @@
 namespace synthizer {
 
 /*
- * These classes are BaseObject, but for things that want to participate in routing as either a reader or a writer.
- * 
- * Writers are sources. Readers are effects.
+ * These classes are BaseObject, but for things that want to participate in routing as either a input or an output.
  * 
  * At the moment, Synthizer only supports routing one level, so there's no way to be both.
  * */
-class RouteWriter: public BaseObject {
+class RouteOutput: public BaseObject {
 	public:
-	RouteWriter(const std::shared_ptr<Context> &ctx);
+	RouteOutput(const std::shared_ptr<Context> &ctx);
 
-	router::WriterHandle *getWriterHandle() override {
-		return &this->writer_handle;
+	router::OutputHandle *getOutputHandle() override {
+		return &this->output_handle;
 	}
 
 	private:
-	router::WriterHandle writer_handle;
+	router::OutputHandle output_handle;
 };
 
-class RouteReader: public BaseObject {
+class RouteInput: public BaseObject {
 	public:
-	RouteReader(const std::shared_ptr<Context> &ctx, AudioSample *buffer, unsigned int channels);
+	RouteInput(const std::shared_ptr<Context> &ctx, AudioSample *buffer, unsigned int channels);
 
-	router::ReaderHandle *getReaderHandle() override {
-		return &this->reader_handle;
+	router::InputHandle *getInputHandle() override {
+		return &this->input_handle;
 	}
 
 	private:
-	router::ReaderHandle reader_handle;
+	router::InputHandle input_handle;
 };
 
 }

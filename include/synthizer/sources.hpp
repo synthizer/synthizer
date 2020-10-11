@@ -22,9 +22,9 @@ class Context;
 class Generator;
 class PannerLane;
 
-class Source: public RouteWriter {
+class Source: public RouteOutput {
 	public:
-	Source(std::shared_ptr<Context> ctx): RouteWriter(ctx) {}
+	Source(std::shared_ptr<Context> ctx): RouteOutput(ctx) {}
 	virtual ~Source() {}
 
 	/* Should write to appropriate places in the context on its own. */

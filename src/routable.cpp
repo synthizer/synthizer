@@ -8,10 +8,10 @@
 
 namespace synthizer {
 
-RouteWriter::RouteWriter(const std::shared_ptr<Context> &ctx): BaseObject(ctx), writer_handle(ctx->getRouter()) {
+RouteOutput::RouteOutput(const std::shared_ptr<Context> &ctx): BaseObject(ctx), output_handle(ctx->getRouter()) {
 }
 
-RouteReader::RouteReader(const std::shared_ptr<Context> &ctx, AudioSample *buffer, unsigned int channels): BaseObject(ctx), reader_handle(ctx->getRouter(), buffer, channels) {
+RouteInput::RouteInput(const std::shared_ptr<Context> &ctx, AudioSample *buffer, unsigned int channels): BaseObject(ctx), input_handle(ctx->getRouter(), buffer, channels) {
 }
 
 }
