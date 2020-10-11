@@ -76,6 +76,8 @@ void Source::fillBlock(unsigned int channels) {
 	for (unsigned int i = 0; i < config::BLOCK_SIZE * channels; i++) {
 		this->block[i] *= gainf;
 	}
+
+	this->getWriterHandle()->routeAudio(&this->block[0], channels);
 }
 
 }
