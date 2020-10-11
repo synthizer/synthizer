@@ -40,6 +40,7 @@ class ReaderHandle {
 
 	private:
 	friend class Router;
+	friend class WriterHandle;
 	/* NOTE: Routers set the routers in their handles to NULL on shutdown to avoid the overhead of deling with weak_ptr/shared_ptr. */
 	Router *router = nullptr;
 	AudioSample *buffer = nullptr;
@@ -128,21 +129,12 @@ class Router {
 	void unregisterReaderHandle(ReaderHandle *handle);
 	void unregisterWriterHandle(WriterHandle *h);
 
-	/*
-	 * Filter out any route which is dead or which has either the reader or writer specified.
-	 * Since no route ever has a null reader or writer, using nulls as sentinel values here is fine and lets this function
-	 * cover all the cases.
-	 * */
-	void filterRoutes(WriterHandle *w, ReaderHandle *r);
-
  /* Returns routes.end() if not found. */
 	deferred_vector<Route>::iterator findRouteForPair(WriterHandle *writer, ReaderHandle *reader);
 
 	/* Returns iterator to the beginning of the runfor the specified writer. */
 	deferred_vector<Route>::iterator findRun(WriterHandle *writer);
 
-	/* How often, in blocks, to call filterRoutes ourselves to get rid of anything that might be dead. */
-	static const unsigned int FILTER_BLOCK_COUNT = 10;
 	deferred_vector<Route> routes;
 	unsigned int time = 0;
 };

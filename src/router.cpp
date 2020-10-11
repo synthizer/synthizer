@@ -1,5 +1,6 @@
 #include "synthizer/router.hpp"
 
+#include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/types.hpp"
 #include "synthizer/vector_helpers.hpp"
@@ -41,7 +42,59 @@ WriterHandle::~WriterHandle() {
 }
 
 void WriterHandle::routeAudio(AudioSample *buffer, unsigned int channels) {
-	/* TODO. */
+	alignas(config::ALIGNMENT)  thread_local std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> _working_buf;
+	auto *working_buf = &_working_buf[0];
+	auto start = this->router->findRun(this);
+	if (start == router->routes.end()) {
+		/* No routes for this writer handle. */
+		return;
+	}
+	for (auto i = start; i < router->routes.end() && i->writer == this; i++) {
+		if (i->state == RouteState::Dead) {
+			continue;
+		}
+		/* Work out if we have to crossfade, and if so, by what. */
+		float gain_start = i->gain, gain_end = i->gain;
+		unsigned int blocks = 0;
+		if (i->state == RouteState::FadeIn) {
+			gain_start = 0.0f;
+			blocks = i->fade_in_blocks;
+		} else if (i->state == RouteState::FadeOut) {
+			gain_end = 0.0f;
+			blocks = i->fade_out_blocks;
+		} else if (i->state == RouteState::GainChanged) {
+			gain_start = i->prev_gain;
+			blocks = 1;
+		}
+
+		bool crossfading = blocks > 0 && i->state != RouteState::Steady;
+		if (crossfading) {
+			/*
+			 * explanation: there is a line from gain_start to gain_end, over blocks blocks.
+			 * We want to figure out the start and end portions of this line for the block we currently need to do.
+			 * To do so, build the equation of the line, figure out how many blocks we've done, and evaluate there plus 1 block in the future.
+			 * gain_start is effectively the y axis, if we shift things so that last_state_changed == 0.
+			 * */
+			float slope = (gain_end - gain_start) / blocks;
+			auto done = this->router->time - i->last_state_changed;
+			gain_end = slope * (done + 1) + gain_start;
+			gain_start = slope * done + gain_start;
+			for (unsigned int frame = 0; frame < config::BLOCK_SIZE; frame ++) {
+				float w2 = frame / (float) config::BLOCK_SIZE;
+				float w1 = 1.0f - w2;
+				float gain = w1 * gain_start + w2 * gain_end;
+				for (unsigned int channel = 0; channel < channels; channel++) {
+					working_buf[frame * channel + channels] = gain * buffer[frame * channels + channel];
+				}
+			}
+		} else {
+			/* Copy into working_buf, apply gain. */
+			for (unsigned int f = 0; f < config::BLOCK_SIZE * channels; i++) {
+				working_buf[f] = i->gain * buffer[f];
+			}
+		}
+		mixChannels(config::BLOCK_SIZE, working_buf, channels, i->reader->buffer, i->reader->channels);
+	}
 }
 
 bool Route::canConfigure() {
@@ -121,23 +174,33 @@ void Router::removeAllRoutes(WriterHandle *w, unsigned int fade_out) {
 
 void Router::finishBlock() {
 	this->time++;
-	/* Maybe filter out any dead routes. */
-	if (this->time % FILTER_BLOCK_COUNT == 0) {
-		this->filterRoutes(nullptr, nullptr);
-	}
+	vector_helpers::filter_stable(this->routes, [&](auto &r) {
+		if (r.reader == nullptr || r.writer == nullptr) {
+			return false;
+		}
+		/* Advance the state machine for this route. */
+		auto delta = this->time - r.last_state_changed;
+		if (r.state == RouteState::FadeIn && delta >= r.fade_in_blocks) {
+			r.state = RouteState::Steady;
+		} else if (r.state == RouteState::FadeOut && delta > r.fade_out_blocks) {
+			r.state = RouteState::Dead;
+			return false;
+		} else if (r.state == RouteState::GainChanged && delta == 1) {
+			r.state = RouteState::Steady;
+		}
+		return true;
+	});
 }
 
 void Router::unregisterWriterHandle(WriterHandle *w) {
-	this->filterRoutes(w, nullptr);
+	vector_helpers::filter_stable(this->routes, [&](auto &r) {
+		return r.writer != w;
+	});
 }
 
 void Router::unregisterReaderHandle(ReaderHandle *r) {
-	this->filterRoutes(nullptr, r);
-}
-
-void Router::filterRoutes(WriterHandle *w, ReaderHandle *r) {
-	vector_helpers::filter_stable(this->routes, [w, r](const Route &i) {
-		return i.state == RouteState::Dead || i.writer == w || i.reader == r;
+	vector_helpers::filter_stable(this->routes, [&](auto &ro) {
+		return ro.reader != r;
 	});
 }
 
