@@ -107,6 +107,7 @@ class Route {
 
 class Router {
 	public:
+	Router() = default;
 	~Router();
 	Router(const Router&) = delete;
 

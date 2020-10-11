@@ -43,7 +43,6 @@ class BaseObject: public CExposable {
 		return false;
 	}
 
-
 	virtual property_impl::PropertyValue getProperty(int property) {
 		throw EInvalidProperty();
 	}
@@ -68,6 +67,7 @@ class BaseObject: public CExposable {
 
 	protected:
 	std::shared_ptr<Context> context;
+
 };
 
 }

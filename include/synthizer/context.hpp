@@ -6,6 +6,7 @@
 #include "synthizer/panner_bank.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/property_ring.hpp"
+#include "synthizer/router.hpp"
 #include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
 
@@ -167,6 +168,10 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	/* Allocate a panner lane intended to be used by a source. */
 	std::shared_ptr<PannerLane> allocateSourcePannerLane(enum SYZ_PANNER_STRATEGY strategy);
 
+	router::Router *getRouter() {
+		return &this->router;
+	}
+
 	PROPERTY_METHODS;
 	private:
 	/*
@@ -238,6 +243,9 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	std::array<double, 3> position{ { 0, 0, 0 } };
 	/* Default to facing positive y with positive x as east and positive z as up. */
 	std::array<double, 6> orientation{ { 0, 1, 0, 0, 0, 1 } };
+
+	/* Effects support. */
+	router::Router router{};
 };
 
 }
