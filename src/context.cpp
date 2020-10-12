@@ -2,17 +2,19 @@
 #include "synthizer_constants.h"
 #include "synthizer_properties.h"
 
-#include "synthizer/background_thread.hpp"
-#include "synthizer/context.hpp"
 #include "synthizer/audio_output.hpp"
+#include "synthizer/background_thread.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/context.hpp"
+#include "synthizer/effects/global_effect.hpp"
 #include "synthizer/invokable.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/property_ring.hpp"
 #include "synthizer/sources.hpp"
 #include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
+#include "synthizer/vector_helpers.hpp"
 
 #include "concurrentqueue.h"
 #include "sema.h"
@@ -143,6 +145,12 @@ void Context::registerSource(const std::shared_ptr<Source> &source) {
 	});
 }
 
+void Context::registerGlobalEffect(const std::shared_ptr<GlobalEffectBase> &effect) {
+	this->call([&] () {
+		this->global_effects.push_back(effect);
+	});
+}
+
 std::array<double, 3> Context::getPosition() {
 	return this->position;
 }
@@ -183,6 +191,10 @@ void Context::generateAudio(unsigned int channels, AudioSample *destination) {
 	}
 
 	this->source_panners->run(channels, destination);
+
+	weak_vector::iterate_removing(this->global_effects, [&](auto &e) {
+		e->run(2, this->getDirectBuffer());
+	});
 
 	/* Write the direct buffer. */
 	for (unsigned int i = 0; i < config::BLOCK_SIZE * channels; i++) {

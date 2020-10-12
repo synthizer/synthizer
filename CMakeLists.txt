@@ -39,6 +39,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/channel_mixing.cpp
 	src/context.cpp
 	src/decoding.cpp
+	src/effects/echo.cpp
 	src/error.cpp
 	src/hrtf.cpp
 	src/logging.cpp

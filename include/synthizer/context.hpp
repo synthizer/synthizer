@@ -27,6 +27,7 @@ namespace synthizer {
 class AudioOutput;
 class CExposable;
 class Source;
+class GlobalEffectBase;
 
 /*
  * Infrastructure for deletion.
@@ -149,6 +150,13 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	void registerSource(const std::shared_ptr<Source> &source);
 
 	/*
+	 * Add a weak reference to the specified global effect.
+	 * 
+	 * Handles calling into the audio thread.
+	 * */
+	void registerGlobalEffect(const std::shared_ptr<GlobalEffectBase> &effect);
+
+	/*
 	 * The properties for the listener.
 	 * */
 	std::array<double, 3> getPosition();
@@ -157,6 +165,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	void setOrientation(std::array<double, 6> orientation);
 
 	/* Helper methods used by various pieces of synthizer to grab global resources. */
+
 	/* Get the direct buffer, which is where things write when they want to bypass panning. This includes effects and direct sources, etc.
 	 * Inline because it's super inexpensive.
 	 * */
@@ -238,6 +247,9 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	/* The key is a raw pointer for easy lookup. */
 	deferred_unordered_map<void *, std::weak_ptr<Source>> sources;
 	std::shared_ptr<AbstractPannerBank> source_panners = nullptr;
+
+	/* Effects to run. */
+	deferred_vector<std::weak_ptr<GlobalEffectBase>> global_effects;
 
 	/* Parameters of the 3D environment: listener orientation/position, library-wide defaults for distance models, etc. */
 	std::array<double, 3> position{ { 0, 0, 0 } };

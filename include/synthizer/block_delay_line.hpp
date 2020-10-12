@@ -148,6 +148,10 @@ class BlockDelayLine {
 		}
 	}
 
+	void clear() {
+		std::fill(this->data.begin(), this->data.end(), 0.0f);
+	}
+
 	private:
 	template<typename F1, typename F2, bool WRITE_ENABLED>
 	FLATTENED void runLoopPrivSplit(unsigned int max_delay, unsigned first, F1& first_c, unsigned int second, F2 &second_c) {
