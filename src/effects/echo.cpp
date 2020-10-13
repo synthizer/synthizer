@@ -89,6 +89,8 @@ SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context)
 	auto ctx = fromC<Context>(context);
 	auto x = ctx->createObject<GlobalEffect<EchoEffect>>(1);
 	*out = toC(x);
+	std::shared_ptr<GlobalEffectBase> e = x;
+	ctx->registerGlobalEffect(	e);
 	return 0;
 	SYZ_EPILOGUE
 }
