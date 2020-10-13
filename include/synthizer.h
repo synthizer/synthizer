@@ -179,6 +179,14 @@ SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context);
 
 SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels);
 
+SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context);
+
+struct EchoTapConfig {
+	float delay;
+	float gain_l;
+	float gain_r;
+};
+
 #ifdef __cplusplus
 }
 #endif

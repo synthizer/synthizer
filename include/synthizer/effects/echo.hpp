@@ -11,14 +11,14 @@
 
 namespace synthizer {
 
-struct EchoTapConfig {
+struct InternalEchoTapConfig {
 	float gain_l = 0.5, gain_r = 0.5;
 	unsigned int delay = 0;
 };
 
 /* For later. This will probably eventually hold, i.e., crossfading state. */
-struct EchoTap {
- EchoTapConfig config;
+struct InternalEchoTap {
+ InternalEchoTapConfig config;
 };
 
 /*
@@ -32,6 +32,8 @@ class EchoEffect: public BaseEffect {
 	public:
 	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output) override;
 	void resetEffect() override;
+
+	void pushNewConfig(deferred_vector<InternalEchoTapConfig> &&config);
 
 	static const unsigned int MAX_DELAY = nextMultipleOf(config::SR * 5, config::BLOCK_SIZE);
 	private:
@@ -54,8 +56,8 @@ class EchoEffect: public BaseEffect {
 	 * 
 	 * This will probably be replaced with a box (see boxes.hpp) once we have a suitable one. That's on the to-do list.
 	 * */
-	moodycamel::ConcurrentQueue<deferred_vector<EchoTapConfig>> pending_configs;
-	deferred_vector<EchoTap> taps;
+	moodycamel::ConcurrentQueue<deferred_vector<InternalEchoTapConfig>> pending_configs;
+	deferred_vector<InternalEchoTap> taps;
 	/* What we need to pass to runRead Loop. */
 	unsigned int max_delay_tap = 0;
 };

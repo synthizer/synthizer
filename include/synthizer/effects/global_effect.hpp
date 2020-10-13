@@ -24,17 +24,22 @@ class GlobalEffectBase {
  * */
 template<typename BASE>
 class GlobalEffect: public BASE, public RouteInput, public GlobalEffectBase {
+	public:
 	/*
 	 * This constructor expects the fixed arguments for us,
 	 * then forwards the parameter pack to BASE. This lets us pass arguments through without having to tie effect implementations
 	 * to the object infrastructure (i.e. we can reuse them internally if we want).
 	 * */
+	#pragma clang diagnostic push
+	/* We need to suppress this because RouteInput needs the address of the buffer, which isn't initialized until the derive class finishes. */
+	#pragma clang diagnostic ignored "-Wuninitialized"
 	template<typename... ARGS>
-	GlobalEffect(std::shared_ptr<Context> &ctx, unsigned int channels, ARGS&& ...args):
+	GlobalEffect(const std::shared_ptr<Context> &ctx, unsigned int channels, ARGS&& ...args):
 		BASE(std::forward(args)...),
-		RouteInput(ctx, channels, &this->input_buffer[0]),
+		RouteInput(ctx, &this->input_buffer[0], channels),
 		channels(channels)
 		 {}
+	#pragma clang diagnostic pop
 
 	void run(unsigned int channels, AudioSample *destination) {
 		this->runEffect(this->time_in_blocks, this->channels, &this->input_buffer[0], channels, destination);
