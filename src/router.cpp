@@ -1,7 +1,13 @@
 #include "synthizer/router.hpp"
 
+#include "synthizer.h"
+
+#include "synthizer/base_object.hpp"
+#include "synthizer/c_api.hpp"
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/context.hpp"
+#include "synthizer/error.hpp"
 #include "synthizer/types.hpp"
 #include "synthizer/vector_helpers.hpp"
 
@@ -232,4 +238,64 @@ deferred_vector<Route>::iterator Router::findRun(OutputHandle *output) {
 	return this->routes.end();
 }
 
+}
+
+
+using namespace synthizer;
+
+SYZ_CAPI syz_ErrorCode syz_routingEstablishRoute(syz_Handle output, syz_Handle input, struct RouteConfig *config) {
+	SYZ_PROLOGUE
+	auto obj_output = fromC<BaseObject>(output);
+	auto obj_input = fromC<BaseObject>(input);
+	if (obj_output->getContextRaw() != obj_input->getContextRaw()) {
+		throw EInvariant("Objects are not from the same context");
+	}
+	auto output_handle = obj_output->getOutputHandle();
+	if (output_handle == nullptr) {
+		throw EInvariant("Output doesn't support routing to inputs");
+	}
+	auto input_handle = obj_input->getInputHandle();
+	if (input_handle == nullptr) {
+		throw EInvariant("Input doesn't support connecting to outputs");
+	}
+	float gain = config->gain;
+	unsigned int fade_in  = config->fade_in * config::SR;
+	if (fade_in == 0 && config->fade_in != 0.0f) {
+		// because the user asked for crossfade, but less than a block.
+		fade_in = 1;
+	}
+	auto ctx = obj_input->getContextRaw();
+	ctx->call([&]() {
+		auto r = ctx->getRouter();
+		r->configureRoute(output_handle, input_handle, gain, fade_in);
+	});
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle input, syz_Handle output, float fade_out) {
+	SYZ_PROLOGUE
+	auto obj_output = fromC<BaseObject>(output);
+	auto obj_input = fromC<BaseObject>(input);
+	if (obj_output->getContextRaw() != obj_input->getContextRaw()) {
+		throw EInvariant("Objects are not from the same context");
+	}
+	auto output_handle = obj_output->getOutputHandle();
+	if (output_handle == nullptr) {
+		throw EInvariant("Output doesn't support routing to inputs");
+	}
+	auto input_handle = obj_input->getInputHandle();
+	if (input_handle == nullptr) {
+		throw EInvariant("Input doesn't support connecting to outputs");
+	}
+	unsigned int fade_out_blocks = fade_out * config::SR;
+	if (fade_out != 0.0f && fade_out_blocks == 0) {
+		fade_out_blocks = 1;
+	}
+	auto ctx = obj_input->getContextRaw();
+	ctx->call([&]() {
+		ctx->getRouter()->removeRoute(output_handle, input_handle, fade_out_blocks);
+	});
+	return 0;
+	SYZ_EPILOGUE
 }
