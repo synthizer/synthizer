@@ -193,8 +193,9 @@ void Context::generateAudio(unsigned int channels, AudioSample *destination) {
 	this->source_panners->run(channels, destination);
 
 	weak_vector::iterate_removing(this->global_effects, [&](auto &e) {
-		e->run(2, this->getDirectBuffer());
+		e->run(channels, this->getDirectBuffer());
 	});
+	this->getRouter()->finishBlock();
 
 	/* Write the direct buffer. */
 	for (unsigned int i = 0; i < config::BLOCK_SIZE * channels; i++) {

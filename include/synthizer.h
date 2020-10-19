@@ -183,6 +183,7 @@ struct RouteConfig {
 	float gain;
 	float fade_in;
 };
+
 SYZ_CAPI syz_ErrorCode syz_routingEstablishRoute(syz_Handle output, syz_Handle input, struct RouteConfig *config);
 SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle input, syz_Handle output, float fade_out);
 
@@ -193,6 +194,8 @@ struct EchoTapConfig {
 	float gain_l;
 	float gain_r;
 };
+
+SYZ_CAPI syz_ErrorCode syz_echoSetTaps(syz_Handle handle, unsigned int n_taps, struct EchoTapConfig *taps);
 
 #ifdef __cplusplus
 }

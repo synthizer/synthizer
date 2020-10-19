@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <algorithm>
+#include <array>
 #include <memory>
 #include <thread>
 
@@ -22,8 +23,18 @@ auto ret = x; \
 	} \
 } while(0)
 
-	int main(int argc, char *argv[]) {
-	syz_Handle context, generator, source, buffer;
+struct RouteConfig route_config = {
+	.gain = 1.0,
+	.fade_in = 0.01,
+};
+
+std::array<EchoTapConfig, 2> taps = {{
+		{ 0.1, 0.5, 0.0},
+		{ 0.2, 0.0, 0.5 },
+}};
+
+int main(int argc, char *argv[]) {
+	syz_Handle context, generator, source, buffer, effect;
 	int ecode = 0, ending = 0;
 	double angle, delta;
 
@@ -45,6 +56,9 @@ auto ret = x; \
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
+	CHECKED(syz_createGlobalEcho(&effect, context));;
+	CHECKED(syz_routingEstablishRoute(source, effect, &route_config));
+	CHECKED(syz_echoSetTaps(effect, taps.size(), &taps[0]));
 
 	std::this_thread::sleep_for(std::chrono::seconds(20));
 

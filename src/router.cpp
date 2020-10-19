@@ -89,7 +89,7 @@ void OutputHandle::routeAudio(AudioSample *buffer, unsigned int channels) {
 				float w1 = 1.0f - w2;
 				float gain = w1 * gain_start + w2 * gain_end;
 				for (unsigned int channel = 0; channel < channels; channel++) {
-					working_buf[frame * channel + channels] = gain * buffer[frame * channels + channel];
+					working_buf[frame * channels + channel] = gain * buffer[frame * channels + channel];
 				}
 			}
 		} else {
@@ -193,6 +193,10 @@ void Router::finishBlock() {
 		} else if (r.state == RouteState::GainChanged && delta == 1) {
 			r.state = RouteState::Steady;
 		}
+		/* Zero the input buffer for this route, if any. */
+		if (r.input && r.input->buffer) {
+			std::fill(r.input->buffer, r.input->buffer + config::BLOCK_SIZE * r.input->channels, 0.0f);
+		}
 		return true;
 	});
 }
@@ -259,7 +263,7 @@ SYZ_CAPI syz_ErrorCode syz_routingEstablishRoute(syz_Handle output, syz_Handle i
 		throw EInvariant("Input doesn't support connecting to outputs");
 	}
 	float gain = config->gain;
-	unsigned int fade_in  = config->fade_in * config::SR;
+	unsigned int fade_in  = config->fade_in * config::SR / config::BLOCK_SIZE;
 	if (fade_in == 0 && config->fade_in != 0.0f) {
 		// because the user asked for crossfade, but less than a block.
 		fade_in = 1;

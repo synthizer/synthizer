@@ -75,27 +75,16 @@ void filter_stable(std::vector<T, ALLOC> &vec, CALLABLE &&callable) {
 	unsigned int i = 0;
 	unsigned int vsize = vec.size();
 	unsigned int copyback  = 0;
-	/* Advance i to the first filtered-out element. This is the fast path, for when vectors don't need filtering. */
-	while (i < vsize && callable(vec[i])) {
-		i++;
-	}
-	/* Any unfiltered element needs to be moved at least 1 back in the vector now. */
-	copyback = 1;	
-	/* We're on the first element to be filtered. We skip ahead to the next one. */
-	i++;
-	/* And subtract from vsize, outside the loop. */
-	vsize--;
 	while (i < vsize) {
 		if (callable(vec[i])) {
 			/* Copy backward by copyback. The last iteration moved previous elements out of the way. */
 			vec[i-copyback] = vec[i];
 		} else {
 			copyback++;
-			vsize--;
 		}
 		i++;
 	}
-	vec.resize(vsize);
+	vec.resize(vsize - copyback);
 }
 
 }

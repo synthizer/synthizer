@@ -12,21 +12,23 @@ namespace synthizer {
 template<bool FADE_IN, bool ADD>
 void EchoEffect::runEffectInternal(AudioSample *output) {
 	this->line.runReadLoop(this->max_delay_tap, [&](unsigned int i, auto &reader) {
+		float acc_l = 0.0f;
+		float acc_r = 0.0f;
 		for (auto &t: this->taps) {
-			float l = reader.read(0, t.config.delay);
-			float r = reader.read(1, t.config.delay);
-			if (FADE_IN) {
-				float g = i / (float)config::BLOCK_SIZE;
-				l *= g;
-				r *= g;
-			}
-			if (ADD) {
-				output[i * 2] += l;
-				output[i * 2 + 1] += r;
-			} else {
-				output[i * 2] = l;
-				output[i * 2 + 1] = r;
-			}
+			acc_l += reader.read(0, t.config.delay) * t.config.gain_l;
+			acc_r += reader.read(1, t.config.delay) * t.config.gain_r;
+		}
+		if (FADE_IN) {
+			float g = i / (float)config::BLOCK_SIZE;
+			acc_l *= g;
+			acc_r *= g;
+		}
+		if (ADD) {
+			output[i * 2] += acc_l;
+			output[i * 2 + 1] += acc_r;
+		} else {
+			output[i * 2] = acc_l;
+			output[i * 2 + 1] = acc_r;
 		}
 	});
 }
@@ -35,6 +37,7 @@ void EchoEffect::runEffect(unsigned int time_in_blocks, unsigned int input_chann
 	thread_local std::array<AudioSample, config::BLOCK_SIZE * 2> working_buf;
 
 	auto *buffer = this->line.getNextBlock();
+	std::fill(buffer, buffer + config::BLOCK_SIZE * 2, 0.0f);
 	/* Mix data to stereo. */
 	mixChannels(config::BLOCK_SIZE, input, input_channels, buffer, 2);
 
