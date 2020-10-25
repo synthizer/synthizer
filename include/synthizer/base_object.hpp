@@ -9,6 +9,12 @@
 
 namespace synthizer {
 
+/* Forward declare the routing handles. */
+namespace router {
+	class InputHandle;
+	class OutputHandle;
+}
+
 class Context;
 
 /*
@@ -43,7 +49,6 @@ class BaseObject: public CExposable {
 		return false;
 	}
 
-
 	virtual property_impl::PropertyValue getProperty(int property) {
 		throw EInvalidProperty();
 	}
@@ -64,6 +69,18 @@ class BaseObject: public CExposable {
 	/* From the C API implementations, you usually want this one. */
 	virtual Context *getContextRaw() {
 		return this->context.get();
+	}
+
+	/*
+	 * Routing. If either of these returns an actual non-nullptr value, this object supports that half
+	 * of the routing architecture (i.e. readers are effects, writers are sources).
+	 * */
+	virtual router::InputHandle *getInputHandle() {
+		return nullptr;
+	}
+
+	virtual router::OutputHandle *getOutputHandle() {
+		return nullptr;
 	}
 
 	protected:

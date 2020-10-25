@@ -179,6 +179,24 @@ SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context);
 
 SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels);
 
+struct syz_RouteConfig {
+	float gain;
+	float fade_time;
+};
+
+SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct syz_RouteConfig *config);
+SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle output, syz_Handle input, float fade_out);
+
+SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context);
+
+struct syz_EchoTapConfig {
+	float delay;
+	float gain_l;
+	float gain_r;
+};
+
+SYZ_CAPI syz_ErrorCode syz_echoSetTaps(syz_Handle handle, unsigned int n_taps, struct syz_EchoTapConfig *taps);
+
 #ifdef __cplusplus
 }
 #endif

@@ -44,19 +44,4 @@ std::shared_ptr<AudioDecoder> getDecoderForProtocol(std::string protocol, std::s
 	throw UnsupportedFormatError(protocol, path, options);
 }
 
-void multiplexDecodedChannels(std::int64_t frame_count, int input_channels, AudioSample *input, int output_channels, AudioSample *output) {
-	/* Stride is how far between the channels in the output. */
-	auto stride = output_channels;
-	/* size is the frame size. */
-	auto size = std::min(input_channels, output_channels);
-	for(int i = 0; i < frame_count; i++) {
-		for(int j = 0; j < size; j++) {
-			if(j < input_channels)
-				output[i*stride+j] = input[input_channels*i+j];
-			else
-				output[i*stride+j] = 0;
-		}
-	}
-}
-
 }

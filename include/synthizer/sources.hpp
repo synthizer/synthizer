@@ -6,6 +6,7 @@
 #include "synthizer/config.hpp"
 #include "synthizer/memory.hpp"
 #include "synthizer/property_internals.hpp"
+#include "synthizer/routable.hpp"
 #include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
 
@@ -21,9 +22,9 @@ class Context;
 class Generator;
 class PannerLane;
 
-class Source: public BaseObject {
+class Source: public RouteOutput {
 	public:
-	Source(std::shared_ptr<Context> ctx): BaseObject(ctx) {}
+	Source(std::shared_ptr<Context> ctx): RouteOutput(ctx) {}
 	virtual ~Source() {}
 
 	/* Should write to appropriate places in the context on its own. */
@@ -46,6 +47,8 @@ class Source: public BaseObject {
 	/*
 	 * Fill the internal block, downmixing and/or upmixing generators
 	 * to the specified channel count.
+	 * 
+	 * Also pumps the router, which will feed effects. We do this here so that all source types just work for free.
 	 * */
 	void fillBlock(unsigned int channels);
 

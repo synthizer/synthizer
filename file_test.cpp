@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <algorithm>
+#include <array>
 #include <memory>
 #include <thread>
 
@@ -22,8 +23,18 @@ auto ret = x; \
 	} \
 } while(0)
 
-	int main(int argc, char *argv[]) {
-	syz_Handle context, generator, source, buffer;
+struct syz_RouteConfig route_config = {
+	.gain = 1.0,
+	.fade_time = 0.01,
+};
+
+std::array<syz_EchoTapConfig, 2> taps = {{
+		{ 0.1, 1.0, 0.0},
+		{ 0.2, 0.0, 1.0 },
+}};
+
+int main(int argc, char *argv[]) {
+	syz_Handle context, generator, source, buffer, effect;
 	int ecode = 0, ending = 0;
 	double angle, delta;
 
@@ -37,7 +48,7 @@ auto ret = x; \
 	CHECKED(syz_initialize());
 
 	CHECKED(syz_createContext(&context));
-	CHECKED(syz_createDirectSource(&source, context));
+	CHECKED(syz_createSource3D(&source, context));
 	CHECKED(syz_createBufferFromStream(&buffer, "file", argv[1], ""));
 	CHECKED(syz_createBufferGenerator(&generator, context));
 	//CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
@@ -45,8 +56,15 @@ auto ret = x; \
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
-
-	std::this_thread::sleep_for(std::chrono::seconds(20));
+	CHECKED(syz_createGlobalEcho(&effect, context));;
+	CHECKED(syz_echoSetTaps(effect, taps.size(), &taps[0]));
+	while (true) {
+		CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
+		std::this_thread::sleep_for(std::chrono::seconds(3));
+		CHECKED(syz_routingRemoveRoute(context, source, effect, 0.01));
+		std::this_thread::sleep_for(std::chrono::seconds(3));
+	}
+	
 
 end:
 	ending = 1;

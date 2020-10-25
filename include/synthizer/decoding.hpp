@@ -68,11 +68,6 @@ class AudioDecoder {
 };
 
 /*
- * Helper function to do standard channel multiplexing/truncation.
- * */
-void multiplexDecodedChannels(std::int64_t frame_count, int input_channels, AudioSample *input, int output_channels, AudioSample *output);
-
-/*
  * Given protocol/path/options, get an audio decoder.
  * 
  * This will be disk-backed.  We find the format required either by (1) a hint from the ByteStream, if any, or (2) trying all the decoders we support.

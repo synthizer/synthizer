@@ -8,7 +8,7 @@
 			"name": "(Windows) Launch",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/filter_print.exe",
+			"program": "${workspaceFolder}/build/file_test.exe",
 			"args": ["build/test2.flac"],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",
