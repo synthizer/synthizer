@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.7.4 (WIP)
+## 0.7.4
 
 - Document our [versioning and stability guarantees](./concepts/stability.md).
 - Introduce [effect routing support](./concepts/effects.md).
