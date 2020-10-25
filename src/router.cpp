@@ -202,7 +202,9 @@ deferred_vector<Route>::iterator Router::findRun(OutputHandle *output) {
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_routingEstablishRoute(syz_Handle output, syz_Handle input, struct RouteConfig *config) {
+SYZ_CAPI syz_ErrorCode syz_routingEstablishRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct RouteConfig *config) {
+	(void)context;
+
 	SYZ_PROLOGUE
 	auto obj_output = fromC<BaseObject>(output);
 	auto obj_input = fromC<BaseObject>(input);
@@ -232,7 +234,9 @@ SYZ_CAPI syz_ErrorCode syz_routingEstablishRoute(syz_Handle output, syz_Handle i
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle output, syz_Handle input, float fade_out) {
+SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle output, syz_Handle input, float fade_out) {
+	(void)context;
+
 	SYZ_PROLOGUE
 	auto obj_output = fromC<BaseObject>(output);
 	auto obj_input = fromC<BaseObject>(input);

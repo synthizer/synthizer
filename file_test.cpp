@@ -59,9 +59,9 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_createGlobalEcho(&effect, context));;
 	CHECKED(syz_echoSetTaps(effect, taps.size(), &taps[0]));
 	while (true) {
-		CHECKED(syz_routingEstablishRoute(source, effect, &route_config));
+		CHECKED(syz_routingEstablishRoute(context, source, effect, &route_config));
 		std::this_thread::sleep_for(std::chrono::seconds(3));
-		CHECKED(syz_routingRemoveRoute(source, effect, 0.01));
+		CHECKED(syz_routingRemoveRoute(context, source, effect, 0.01));
 		std::this_thread::sleep_for(std::chrono::seconds(3));
 	}
 	
