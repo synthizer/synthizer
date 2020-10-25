@@ -72,3 +72,20 @@ cdef extern from "synthizer.h":
     syz_ErrorCode syz_createSource3D(syz_Handle* out, syz_Handle context)
 
     syz_ErrorCode syz_createNoiseGenerator(syz_Handle* out, syz_Handle context, unsigned int channels)
+
+    cdef struct RouteConfig:
+        float gain
+        float fade_time
+
+    syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, RouteConfig* config)
+
+    syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle output, syz_Handle input, float fade_out)
+
+    syz_ErrorCode syz_createGlobalEcho(syz_Handle* out, syz_Handle context)
+
+    cdef struct EchoTapConfig:
+        float delay
+        float gain_l
+        float gain_r
+
+    syz_ErrorCode syz_echoSetTaps(syz_Handle handle, unsigned int n_taps, EchoTapConfig* taps)

@@ -231,6 +231,14 @@ cdef class Context(_BaseObject):
     closeness_boost = DoubleProperty(SYZ_P_CLOSENESS_BOOST)
     closeness_boost_distance = DoubleProperty(SYZ_P_CLOSENESS_BOOST_DISTANCE)
 
+    cpdef config_route(self, output, input, gain = 1.0, fade_time = 0.01):
+        cdef RouteConfig config
+        config.gain = gain
+        config.fade_time = fade_time
+        _checked(syz_routingConfigRoute(self.handle, output.handle, input.handle, &config))
+
+    cpdef remove_route(self, output, input, fade_time=0.01):
+        _checked(syz_routingRemoveRoute(self.handle, output.handle, input.handle, fade_time))
 
 cdef class Generator(_BaseObject):
     """Base class for all generators."""
