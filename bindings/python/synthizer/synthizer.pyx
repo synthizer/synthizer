@@ -5,6 +5,9 @@ import threading
 from synthizer_properties cimport *
 from synthizer_constants cimport *
 
+from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
+
+
 # We want the ability to acquire and release the GIL, which means making sure it's initialized.
 # It's unclear if you need this for with nogil as well as for with gil, but let's just avoid the headache entirely.
 cdef extern from "python.h":
@@ -231,13 +234,13 @@ cdef class Context(_BaseObject):
     closeness_boost = DoubleProperty(SYZ_P_CLOSENESS_BOOST)
     closeness_boost_distance = DoubleProperty(SYZ_P_CLOSENESS_BOOST_DISTANCE)
 
-    cpdef config_route(self, output, input, gain = 1.0, fade_time = 0.01):
+    cpdef config_route(self, _BaseObject output, _BaseObject input, gain = 1.0, fade_time = 0.01):
         cdef syz_RouteConfig config
         config.gain = gain
         config.fade_time = fade_time
         _checked(syz_routingConfigRoute(self.handle, output.handle, input.handle, &config))
 
-    cpdef remove_route(self, output, input, fade_time=0.01):
+    cpdef remove_route(self, _BaseObject output, _BaseObject input, fade_time=0.01):
         _checked(syz_routingRemoveRoute(self.handle, output.handle, input.handle, fade_time))
 
 cdef class Generator(_BaseObject):
@@ -393,3 +396,41 @@ cdef class NoiseGenerator(Generator):
         super().__init__(handle)
 
     noise_type = enum_property(SYZ_P_NOISE_TYPE, lambda x: NoiseType(x))
+
+cdef class EchoTapConfig:
+    """An echo tap. Passed to GlobalEcho.set_taps."""
+    cdef public float delay
+    cdef public float gain_l
+    cdef public float gain_r
+
+    def __init__(self, delay, gain_l, gain_r):
+        self.delay = delay
+        self.gain_l = gain_l
+        self.gain_r = gain_r
+
+cdef class GlobalEcho(_BaseObject):
+    def __init__(self, context):
+        cdef syz_Handle handle
+        _checked(syz_createGlobalEcho(&handle, context._get_handle_checked(Context)))
+        super().__init__(handle)
+
+    cpdef set_taps(self, taps):
+        """Takes a list of taps of the form [EchoTap, ...] and sets the taps of the echo."""
+        cdef syz_EchoTapConfig *cfgs = NULL
+        cdef Py_ssize_t n_taps = len(taps)
+        cdef EchoTapConfig tap
+        try:
+            if n_taps == 0:
+                _checked(syz_echoSetTaps(self.handle, 0, NULL))
+                return
+            cfgs = <syz_EchoTapConfig *>PyMem_Malloc(n_taps * sizeof(syz_EchoTapConfig))
+            if not cfgs:
+                raise MemoryError()
+            for i in range(n_taps):
+                t = taps[i]
+                cfgs[i].delay = t.delay
+                cfgs[i].gain_l = t.gain_l
+                cfgs[i].gain_r = t.gain_r
+            _checked(syz_echoSetTaps(self.handle, n_taps, cfgs))
+        finally:
+            PyMem_Free(cfgs)
