@@ -17,13 +17,13 @@ Creates the global variant of the echo effect.
 ### `syz_echoSetTaps`
 
 ```
-struct EchoTapConfig {
+struct syz_EchoTapConfig {
 	float delay;
 	float gain_l;
 	float gain_r;
 };
 
-SYZ_CAPI syz_ErrorCode syz_echoSetTaps(syz_Handle handle, unsigned int n_taps, struct EchoTapConfig *taps);
+SYZ_CAPI syz_ErrorCode syz_echoSetTaps(syz_Handle handle, unsigned int n_taps, struct syz_EchoTapConfig *taps);
 ```
 
 Configure the taps for this Echo.  Currently, delay must be no greater than 5 seconds.  To clear the taps, set the echo

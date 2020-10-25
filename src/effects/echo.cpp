@@ -42,7 +42,7 @@ void EchoEffect::runEffect(unsigned int time_in_blocks, unsigned int input_chann
 	mixChannels(config::BLOCK_SIZE, input, input_channels, buffer, 2);
 
 	/* maybe apply the new config. */
-	deferred_vector<InternalEchoTapConfig> new_config;
+	deferred_vector<EchoTapConfig> new_config;
 	bool will_crossfade = this->pending_configs.try_dequeue(new_config);
 	/* Drain any stale values. When this is moved to a proper box, this will be handled for us. */
 	while (this->pending_configs.try_dequeue(new_config));
@@ -50,7 +50,7 @@ void EchoEffect::runEffect(unsigned int time_in_blocks, unsigned int input_chann
 		this->taps.clear();
 		this->max_delay_tap = 0;
 		for (auto &c: new_config) {
-			InternalEchoTap tap;
+			EchoTap tap;
 			tap.config = c;
 			this->taps.push_back(tap);
 			this->max_delay_tap = this->max_delay_tap > c.delay ? this->max_delay_tap : c.delay;
@@ -77,7 +77,7 @@ void EchoEffect::resetEffect() {
 	this->line.clear();
 }
 
-void EchoEffect::pushNewConfig(deferred_vector<InternalEchoTapConfig> &&config) {
+void EchoEffect::pushNewConfig(deferred_vector<EchoTapConfig> &&config) {
 	if (this->pending_configs.enqueue(std::move(config)) == false) {
 		throw std::bad_alloc();
 	}
@@ -98,9 +98,9 @@ SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context)
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_echoSetTaps(syz_Handle handle, unsigned int n_taps, struct EchoTapConfig *taps) {
+SYZ_CAPI syz_ErrorCode syz_echoSetTaps(syz_Handle handle, unsigned int n_taps, struct syz_EchoTapConfig *taps) {
 	SYZ_PROLOGUE
-	deferred_vector<InternalEchoTapConfig> cfg;
+	deferred_vector<EchoTapConfig> cfg;
 	auto echo = fromC<EchoEffect>(handle);
  cfg.reserve(n_taps);
 	for (unsigned int i = 0; i < n_taps; i++) {
@@ -108,7 +108,7 @@ SYZ_CAPI syz_ErrorCode syz_echoSetTaps(syz_Handle handle, unsigned int n_taps, s
 		if (delay_in_samples > EchoEffect::MAX_DELAY) {
 			throw ERange("Delay is too long");
 		}
-		InternalEchoTapConfig c;
+		EchoTapConfig c;
 		c.delay = delay_in_samples;
 		c.gain_l = taps[i].gain_l;
 		c.gain_r = taps[i].gain_r;

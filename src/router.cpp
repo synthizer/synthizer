@@ -202,7 +202,7 @@ deferred_vector<Route>::iterator Router::findRun(OutputHandle *output) {
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct RouteConfig *config) {
+SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct syz_RouteConfig *config) {
 	(void)context;
 
 	SYZ_PROLOGUE

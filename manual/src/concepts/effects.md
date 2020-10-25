@@ -8,12 +8,12 @@ Synthizer will support two kinds of effects: global effects and generator-specif
 users of the Synthizer API can route any number of sources to any number of global effects, for example [echo](../object_reference/echo.md).  This is done through the following C API:
 
 ```
-struct RouteConfig {
+struct syz_RouteConfig {
 	float gain;
 	float fade_time;
 };
 
-SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct RouteConfig *config);
+SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct syz_RouteConfig *config);
 SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle output, syz_Handle input, float fade_out);
 ```
 

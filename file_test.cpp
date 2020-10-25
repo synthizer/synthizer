@@ -23,12 +23,12 @@ auto ret = x; \
 	} \
 } while(0)
 
-struct RouteConfig route_config = {
+struct syz_RouteConfig route_config = {
 	.gain = 1.0,
 	.fade_time = 0.01,
 };
 
-std::array<EchoTapConfig, 2> taps = {{
+std::array<syz_EchoTapConfig, 2> taps = {{
 		{ 0.1, 1.0, 0.0},
 		{ 0.2, 0.0, 1.0 },
 }};

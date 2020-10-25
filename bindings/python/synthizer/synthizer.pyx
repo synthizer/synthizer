@@ -232,7 +232,7 @@ cdef class Context(_BaseObject):
     closeness_boost_distance = DoubleProperty(SYZ_P_CLOSENESS_BOOST_DISTANCE)
 
     cpdef config_route(self, output, input, gain = 1.0, fade_time = 0.01):
-        cdef RouteConfig config
+        cdef syz_RouteConfig config
         config.gain = gain
         config.fade_time = fade_time
         _checked(syz_routingConfigRoute(self.handle, output.handle, input.handle, &config))
