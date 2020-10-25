@@ -10,6 +10,7 @@
 # Concepts
 
 - [Introduction](./concepts/introduction.md)
+- [Stability Guarantees](./concepts/stability.md)
 - [The Signal Graph, Library Parameters, and limitations](./concepts/signal_graph.md)
 - [C API Conventions](./concepts/conventions.md)
 - [Logging, Initialization, and Shutdown](./concepts/initialization.md)

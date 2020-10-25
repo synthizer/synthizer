@@ -2,6 +2,7 @@
 
 ## 0.7.4 (WIP)
 
+- Document our [versioning and stability guarantees](./concepts/stability.md).
 - Introduce [effect routing support](./concepts/effects.md).
 - Introduce an [Echo](./object_reference/echo.md) effect.
 
