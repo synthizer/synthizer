@@ -202,7 +202,7 @@ deferred_vector<Route>::iterator Router::findRun(OutputHandle *output) {
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_routingEstablishRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct RouteConfig *config) {
+SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct RouteConfig *config) {
 	(void)context;
 
 	SYZ_PROLOGUE
@@ -220,15 +220,15 @@ SYZ_CAPI syz_ErrorCode syz_routingEstablishRoute(syz_Handle context, syz_Handle 
 		throw EInvariant("Input doesn't support connecting to outputs");
 	}
 	float gain = config->gain;
-	unsigned int fade_in  = config->fade_in * config::SR / config::BLOCK_SIZE;
-	if (fade_in == 0 && config->fade_in != 0.0f) {
+	unsigned int fade_time  = config->fade_time * config::SR / config::BLOCK_SIZE;
+	if (fade_time == 0 && config->fade_time != 0.0f) {
 		// because the user asked for crossfade, but less than a block.
-		fade_in = 1;
+		fade_time = 1;
 	}
 	auto ctx = obj_input->getContextRaw();
 	ctx->call([&]() {
 		auto r = ctx->getRouter();
-		r->configureRoute(output_handle, input_handle, gain, fade_in);
+		r->configureRoute(output_handle, input_handle, gain, fade_time);
 	});
 	return 0;
 	SYZ_EPILOGUE

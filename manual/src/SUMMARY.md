@@ -17,7 +17,7 @@
 - [Streams](./concepts/streams.md)
 - [ 3D Panning ](./concepts/3d_panning.md)
 - [Channel Upmixing and Downmixing ](./concepts/channel_mixing.md)
-
+- [Effects and Effect Routing](./concepts/effects.md)
 
 # The Object Reference
 
@@ -32,3 +32,4 @@
 - [StreamingGenerator](./object_reference/streaming_generator.md)
 - [BufferGenerator](./object_reference/buffer_generator.md)
 - [NoiseGenerator](./object_reference/noise_generator.md)
+- [Echo](./object_reference/echo.md)

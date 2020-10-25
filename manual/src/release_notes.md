@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.7.4 (WIP)
+
+- Introduce [effect routing support](./concepts/effects.md).
+- Introduce an [Echo](./object_reference/echo.md) effect.
+
 ## 0.7.3
 
 - Fix pitch bend support on BufferGenerator when looping is enabled.

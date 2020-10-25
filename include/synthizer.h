@@ -181,10 +181,10 @@ SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle cont
 
 struct RouteConfig {
 	float gain;
-	float fade_in;
+	float fade_time;
 };
 
-SYZ_CAPI syz_ErrorCode syz_routingEstablishRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct RouteConfig *config);
+SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct RouteConfig *config);
 SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle output, syz_Handle input, float fade_out);
 
 SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context);
