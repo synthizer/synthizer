@@ -1,6 +1,7 @@
 #pragma once
 
 #include "synthizer/config.hpp"
+#include "synthizer/faders.hpp"
 #include "synthizer/memory.hpp"
 #include "synthizer/types.hpp"
 
@@ -67,42 +68,15 @@ class OutputHandle {
 	Router *router = nullptr;
 };
 
-enum class RouteState {
-	/* The route was created and has requested a fade-in. */
-	FadeIn,
-	/* The route is fading out, and will die. */
-	FadeOut,
-	/* The route has reached a steady state. */
- Steady,
- /* The gain has been changed, but the router isn't fading in or out. */
- GainChanged,
- /* The route has died. Remove it on the next mainloop iteration. */
- Dead,
-};
-
 /*
  * Internal type for an audio route.
  * */
 class Route {
 	public:
-	/* Whether configuration changes should take effect. Goes to false if this route is in the process of dying. */
-	bool canConfigure();
-	void setGain(float gain, unsigned int time_block);
-	void setState(RouteState state, unsigned int block_time);
-
 	InputHandle *input = nullptr;
 	OutputHandle *output = nullptr;
-	RouteState state = RouteState::Dead;
-	/* A router-local per-block timestamp of this route's last state transition time. */
-	unsigned int last_state_changed = 0;
-	/* When fading in, how many blocks should we fade in over? Because Synthizer is small, we keep this simple and use whole blocks only, for now. */
-	unsigned int fade_in_blocks = 1;
-	/* Same as fade_in_blocks but for fade-out. */
-	unsigned int fade_out_blocks = 1;
-	/* When we're in the steady state, what should our gain be? */
-	float gain = 1.0f;
-	/* When the gain just changed, what was the previous value? */
-	float prev_gain = 1.0f;
+	/* Preconfigure the fader to be at 0.0. */
+	LinearFader fader{ 0, 0.0f, 0, 0.0f};
 };
 
 class Router {
@@ -112,10 +86,13 @@ class Router {
 	Router(const Router&) = delete;
 
 	/*
-	 * Establish or update a route with specified gain and fade-in.
+	 * Establish or update a route with specified gain and fade.
 	 * View this as a declarative interface. if w->r doesn't exist, it gets added, with the specified fadein time, otherwise the gain is updated.
+	 * 
+	 * Internal detail: removing a route is equivalent to setting the gain to 0. This is an optimization, which may be removed and
+	 * is consequently not exposed in the public API this way.
 	 * */
-	void configureRoute(OutputHandle *output, InputHandle *input, float gain = 1.0, unsigned int fade_in = 1);
+	void configureRoute(OutputHandle *output, InputHandle *input, float gain = 1.0, unsigned int fade_blocks_in = 1);
 	/* Remove a route. If it doesn't exist, do nothing. */
 	void removeRoute(OutputHandle *output, InputHandle *input, unsigned int fade_out = 1);
 	/* Remove all routes for a specified WriteHandle. */

@@ -29,8 +29,8 @@ struct RouteConfig route_config = {
 };
 
 std::array<EchoTapConfig, 2> taps = {{
-		{ 0.1, 0.5, 0.0},
-		{ 0.2, 0.0, 0.5 },
+		{ 0.1, 1.0, 0.0},
+		{ 0.2, 0.0, 1.0 },
 }};
 
 int main(int argc, char *argv[]) {
@@ -57,10 +57,14 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
 	CHECKED(syz_createGlobalEcho(&effect, context));;
-	CHECKED(syz_routingEstablishRoute(source, effect, &route_config));
 	CHECKED(syz_echoSetTaps(effect, taps.size(), &taps[0]));
-
-	std::this_thread::sleep_for(std::chrono::seconds(20));
+	while (true) {
+		CHECKED(syz_routingEstablishRoute(source, effect, &route_config));
+		std::this_thread::sleep_for(std::chrono::seconds(3));
+		CHECKED(syz_routingRemoveRoute(source, effect, 0.01));
+		std::this_thread::sleep_for(std::chrono::seconds(3));
+	}
+	
 
 end:
 	ending = 1;

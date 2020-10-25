@@ -5,6 +5,7 @@
 #include "synthizer/routable.hpp"
 #include "synthizer/types.hpp"
 
+#include <algorithm>
 #include <array>
 #include <memory>
 #include <utility>
@@ -43,6 +44,11 @@ class GlobalEffect: public BASE, public RouteInput, public GlobalEffectBase {
 
 	void run(unsigned int channels, AudioSample *destination) {
 		this->runEffect(this->time_in_blocks, this->channels, &this->input_buffer[0], channels, destination);
+		/*
+		 * Reset this for the next time. This needs to live here since routers dont' know about effects if
+		 * there's no routing to them.
+		 * */
+		std::fill(&this->input_buffer[0], &this->input_buffer[this->channels * config::BLOCK_SIZE], 0.0f);
 		this->time_in_blocks++;
 	}
 
