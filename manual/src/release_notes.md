@@ -1,7 +1,9 @@
 # Release Notes
 
 ## 0.7.5 (WIP)
+
 - Start building Python 3.9 wheels.
+- Sources now fade gain changes to prevent clicks, especially when feeding effects.
 
 ## 0.7.4
 

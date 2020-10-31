@@ -4,6 +4,7 @@
 
 #include "synthizer/base_object.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/faders.hpp"
 #include "synthizer/memory.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/routable.hpp"
@@ -56,6 +57,7 @@ class Source: public RouteOutput {
 	private:
 	deferred_vector<std::weak_ptr<Generator>> generators;
 	double gain = 1.0;
+	LinearFader gain_fader{1.0f};
 };
 
 class DirectSource: public Source {

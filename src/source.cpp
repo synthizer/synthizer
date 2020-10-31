@@ -46,7 +46,10 @@ double Source::getGain() {
 }
 
 void Source::setGain(double gain) {
+	float old_gain = this->gain;
 	this->gain = gain;
+	auto time = context->getBlockTime();
+	this->gain_fader = LinearFader{time, old_gain, time + 1, (float)gain};
 }
 
 void Source::fillBlock(unsigned int channels) {
@@ -72,9 +75,23 @@ void Source::fillBlock(unsigned int channels) {
 		}
 	});
 
-	float gainf = this->gain;
-	for (unsigned int i = 0; i < config::BLOCK_SIZE * channels; i++) {
-		this->block[i] *= gainf;
+	auto time = this->context->getBlockTime();
+	if (this->gain_fader.isFading(time)) {
+		float gain_start = this->gain_fader.getValue(time);
+		float gain_end = this->gain_fader.getValue(time+1);
+		for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
+			float w2 = i / (float)config::BLOCK_SIZE;
+			float w1 = 1.0f - w2;
+			float g = gain_start*w1 + gain_end*w2;
+			for (unsigned int ch = 0; ch < channels; ch++) {
+				this->block[i * channels + ch] *= g;
+			}
+		}
+	} else {
+		float gainf = this->gain;
+		for (unsigned int i = 0; i < config::BLOCK_SIZE * channels; i++) {
+			this->block[i] *= gainf;
+		}
 	}
 
 	this->getOutputHandle()->routeAudio(&this->block[0], channels);

@@ -26,6 +26,11 @@ class LinearFader {
 		this->slope = (end_value - start_value) / (end_time - start_time);
 	}
 
+	/*
+	 * Convenience constructor for a fader fixed at a specific value.
+	 * */
+	LinearFader(float value): LinearFader(0, value, 0, value) {}
+
 	float getValue(unsigned int block_time) {
 		assert(block_time >= this->start_time);
 		return block_time >= end_time ? this->end_value : this->start_value + slope * (block_time - start_time);
