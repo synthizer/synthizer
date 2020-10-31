@@ -88,8 +88,8 @@ if(DEFINED CI_SYNTHIZER_NAME)
 set_target_properties(synthizer PROPERTIES OUTPUT_NAME ${CI_SYNTHIZER_NAME})
 endif()
 
-add_custom_target(hrtf
-python "${CMAKE_SOURCE_DIR}/hrtf_processor/main.py")
+add_custom_target(data
+python "${CMAKE_SOURCE_DIR}/data_processor/main.py")
 
 # The following won't work on Windows unless compiled against a static build of Synthizer because we don't want to expose the C++ internals from the DLL.
 # Since these are just test programs and not actual utilities, disable them on all platforms if the build isn't static.

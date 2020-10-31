@@ -20,7 +20,7 @@ namespace synthizer {
  * 
  * - Low-level functions, which compute HRIRs and interaural time delay.
  * - A higher level piece, the HrtfPannerBlock, which does HRTF on 4 sources at once.
- * - A yet higher level piece, the HrtfPannerBank, which will eventually implement the as yet undefined panner bank interface.
+ * - A yet higher level piece, the HrtfPannerBank, which implements the panner bank interface.
  * 
  * NOTE: because of established conventions for HRIR data that we didn't set, angles here are in degrees in order to match our data sources.
  * Specifically azimuth is clockwise of forward and elevation ranges from -90 to 90.
@@ -87,13 +87,13 @@ class HrtfPanner: public AbstractPanner {
 	/*
 	 * The hrirs and an index which determines which we are using.
 	 * 
-	 * The way this works is that current_hrir is easily flipped with xor. current_hrir ^ 1 is the previous, (current_hrir ^ 1)*CHANNELS*2*hrtf_data::RESPONSE_LENGTH is the index of the previous.
+	 * The way this works is that current_hrir is easily flipped with xor. current_hrir ^ 1 is the previous, (current_hrir ^ 1)*CHANNELS*2*data::hrtf::RESPONSE_LENGTH is the index of the previous.
 	 * 
 	 * These are stored like: [l1, l2, l3, l4, r1, r2, r3, r4]
 	 * We do the convolution with a specialized kernel that can deal with this.
 	 * */
-	static_assert(hrtf_data::IMPULSE_LENGTH % (config::ALIGNMENT / sizeof(AudioSample)) == 0, "Hrtf dataset length must be a multiple of  alignment/sizeof(AudioSample) for SIMD purposes");
-	alignas(config::ALIGNMENT) std::array<AudioSample, hrtf_data::IMPULSE_LENGTH*CHANNELS*2*2> hrirs = { 0.0f };
+	static_assert(data::hrtf::IMPULSE_LENGTH % (config::ALIGNMENT / sizeof(AudioSample)) == 0, "Hrtf dataset length must be a multiple of  alignment/sizeof(AudioSample) for SIMD purposes");
+	alignas(config::ALIGNMENT) std::array<AudioSample, data::hrtf::IMPULSE_LENGTH*CHANNELS*2*2> hrirs = { 0.0f };
 	unsigned int current_hrir = 0;
 	std::array<std::tuple<double, double>, CHANNELS> prev_itds{};
 	std::array<double, CHANNELS> azimuths = { { 0.0 } };

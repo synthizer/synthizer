@@ -87,12 +87,12 @@ std::tuple<double, double> linearInterpolate(double val, double start, double en
 	return { 1-w1, w1 };
 }
 
-void computeHrtfImpulseSingleChannel(double azimuth, double elevation, const hrtf_data::ElevationDef *elev_lower, const hrtf_data::ElevationDef *elev_upper, float *out, unsigned int out_stride) {
+void computeHrtfImpulseSingleChannel(double azimuth, double elevation, const data::hrtf::ElevationDef *elev_lower, const data::hrtf::ElevationDef *elev_upper, float *out, unsigned int out_stride) {
 	std::array<double, 4> weights = { 0.0 };
 	std::array<const float *, 4> impulses = { nullptr };
 	unsigned int weight_count = 0;
 
-	std::array<const hrtf_data::ElevationDef *, 2> elevs = { elev_lower, elev_upper };
+	std::array<const data::hrtf::ElevationDef *, 2> elevs = { elev_lower, elev_upper };
 	std::array<double, 2> elev_weights{1.0, 1.0};
 
 	if (elev_upper != nullptr) {
@@ -120,8 +120,8 @@ void computeHrtfImpulseSingleChannel(double azimuth, double elevation, const hrt
 		unsigned int i1 = i % e->azimuth_count;
 		unsigned int i2 = (i1 + 1) % e->azimuth_count;
 
-		impulses[weight_count] = &hrtf_data::IMPULSES[e->azimuth_start + i1][0];
-		impulses[weight_count + 1] = &hrtf_data::IMPULSES[e->azimuth_start + i2 ][0];
+		impulses[weight_count] = &data::hrtf::IMPULSES[e->azimuth_start + i1][0];
+		impulses[weight_count + 1] = &data::hrtf::IMPULSES[e->azimuth_start + i2 ][0];
 
 		if (i1 == i2) {
 			/* Only one impulse. */
@@ -135,25 +135,25 @@ void computeHrtfImpulseSingleChannel(double azimuth, double elevation, const hrt
 		}
 	}
 
-	for(unsigned int i = 0; i < hrtf_data::IMPULSE_LENGTH; i++) {
+	for(unsigned int i = 0; i < data::hrtf::IMPULSE_LENGTH; i++) {
 		out[i*out_stride] = impulses[0][i]*weights[0];
 	}
 
 	for(unsigned int c = 1; c < weight_count; c++) {
 		float *cursor = out;
-		for (unsigned int i = 0; i < hrtf_data::IMPULSE_LENGTH; i++, cursor += out_stride) {
+		for (unsigned int i = 0; i < data::hrtf::IMPULSE_LENGTH; i++, cursor += out_stride) {
 			*cursor += impulses[c][i] * weights[c];
 		}
 	}
 }
 
 void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned int left_stride, float *right, unsigned int right_stride) {
-	const hrtf_data::ElevationDef *elev_lower = nullptr, *elev_upper = nullptr;
+	const data::hrtf::ElevationDef *elev_lower = nullptr, *elev_upper = nullptr;
 
 	assert(azimuth >= 0.0 && azimuth <= 360.0);
 	assert(elevation >= -90.0 && elevation <= 90.0);
 
-	for (auto &e: hrtf_data::ELEVATIONS) {
+	for (auto &e: data::hrtf::ELEVATIONS) {
 		if (e.angle <= elevation) {
 			elev_lower = &e;
 		} else {
@@ -208,7 +208,7 @@ template<typename R>
 void HrtfPanner::stepConvolution(R &&reader, const float *hrir, AudioSample4 *dest_l, AudioSample4 *dest_r) {
 	AudioSample4 accumulator_left = { 0.0f };
 	AudioSample4 accumulator_right = { 0.0f };
-	for(unsigned int j = 0; j < hrtf_data::IMPULSE_LENGTH; j++) {
+	for(unsigned int j = 0; j < data::hrtf::IMPULSE_LENGTH; j++) {
 		auto tmp = reader.read4(0, j);
 		auto hrir_left = ((AudioSample4*)hrir)[j * 2];
 		auto hrir_right = ((AudioSample4*)hrir)[j * 2 + 1];
@@ -222,7 +222,7 @@ void HrtfPanner::stepConvolution(R &&reader, const float *hrir, AudioSample4 *de
 
 void HrtfPanner::run(AudioSample *output) {
 	AudioSample *prev_hrir = nullptr;
-	AudioSample *current_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * hrtf_data::IMPULSE_LENGTH ];
+	AudioSample *current_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * data::hrtf::IMPULSE_LENGTH ];
 
 	bool crossfade = false;
 	for(unsigned int i = 0; i < CHANNELS; i++) {
@@ -233,7 +233,7 @@ void HrtfPanner::run(AudioSample *output) {
 	if (crossfade) {
 		prev_hrir = current_hrir;
 		this->current_hrir ^= 1;
-		current_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * hrtf_data::IMPULSE_LENGTH ];
+		current_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * data::hrtf::IMPULSE_LENGTH ];
 	}
 
 	std::array<std::tuple<double, double>, CHANNELS> itds = this->prev_itds;
@@ -250,7 +250,7 @@ void HrtfPanner::run(AudioSample *output) {
 	assert(crossfade_samples + normal_samples == config::BLOCK_SIZE);
 
 	AudioSample *itd_block = this->itd_line.getNextBlock();
-	input_line.runReadLoopSplit(hrtf_data::IMPULSE_LENGTH - 1,
+	input_line.runReadLoopSplit(data::hrtf::IMPULSE_LENGTH - 1,
 	crossfade_samples, [&](unsigned int i, auto &reader) {
 		AudioSample4 l_old, l_new, r_old, r_new;
 		this->stepConvolution(reader, prev_hrir, &l_old, &r_old);
