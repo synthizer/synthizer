@@ -1,5 +1,8 @@
 # Release Notes
 
+## 0.7.5 (WIP)
+- Start building Python 3.9 wheels.
+
 ## 0.7.4
 
 - Document our [versioning and stability guarantees](./concepts/stability.md).
