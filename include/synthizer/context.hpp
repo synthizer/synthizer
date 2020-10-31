@@ -126,6 +126,16 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	}
 
 	/*
+	 * get the current time since context creation in blocks.
+	 * 
+	 * This is used for crossfading and other applications.
+	 * */
+	unsigned int getBlockTime() {
+		return this->block_time;
+	}
+
+
+	/*
 	 * Helpers for the C API. to get/set properties in the context's thread.
 	 * These create and manage the invokables and can be called directly.
 	 * 
@@ -238,6 +248,8 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	PropertyRing<1024> property_ring;
 	template<typename T>
 	void propertySetter(const std::shared_ptr<BaseObject> &obj, int property, T &value);
+
+	unsigned int block_time = 0;
 
 	/* Collections of objects that require execution: sources, etc. all go here eventually. */
 

@@ -201,6 +201,8 @@ void Context::generateAudio(unsigned int channels, AudioSample *destination) {
 	for (unsigned int i = 0; i < config::BLOCK_SIZE * channels; i++) {
 		destination[i] += this->direct_buffer[i];
 	}
+
+	this->block_time++;
 }
 
 void Context::flushPropertyWrites() {
