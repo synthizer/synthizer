@@ -1,3 +1,4 @@
 numpy==1.18.1
 scipy==1.4.1
 jinja2==2.11.2
+pyprimes==0.1

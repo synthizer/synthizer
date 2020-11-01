@@ -54,6 +54,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/spatialization_math.cpp
 	src/stereo_panner.cpp
 
+	src/data/arrays.cpp
 	src/data/hrtf.cpp
 
 	src/decoders/flac.cpp
