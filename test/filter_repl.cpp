@@ -105,7 +105,7 @@ void printFrequencyResult(FrequencyResponseResult res) {
 }
 
 int main(int argc, char* argv[]) {
-	auto def = combineIIRFilters(designOneZero(-1), designOnePole(0.9929146));
+	auto def = designAudioEqHighShelf(3000.0 / config::SR, -3.0);
 	printCoefs(def);
 	printf("\n");
 	while(true) {

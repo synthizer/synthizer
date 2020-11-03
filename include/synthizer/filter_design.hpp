@@ -69,8 +69,8 @@ BiquadFilterDef designAudioEqBandpass(double omega, double bw);
 BiquadFilterDef designAudioEqNotch(double omega, double bw);
 BiquadFilterDef designAudioEqAllpass(double omega, double q = 0.7071135624381276);
 BiquadFilterDef designAudioEqPeaking(double omega, double bw, double dbgain);
-BiquadFilterDef designAudioEqLowshelf(double omega, double s = 1);
-BiquadFilterDef designAudioEqHighshelf(double omega, double s = 1);
+BiquadFilterDef designAudioEqLowShelf(double omega, double db_gain, double s = 1.0);
+BiquadFilterDef designAudioEqHighShelf(double omega, double db_gain, double s = 1.0);
 
 /*
  * A windowed sinc. Used primarily for upsampling/downsampling.

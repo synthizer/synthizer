@@ -34,7 +34,6 @@ const double q = 1/q_r
 const double q = 1/q_r
 
 #define IVARS_S \
-IVARS_A;\
 IVARS_W0;\
 Q_S;\
 IVARS
@@ -130,20 +129,26 @@ BiquadFilterDef designAudioEqPeaking(double omega, double bw, double dbgain) {
 	RET;
 }
 
-BiquadFilterDef designAudioEqLowshelf(double omega, double s) {
-	const double dbgain = 0;
-	IVARS_S;
-	const double b0 = a * ( (a + 1) - (a - 1) * cw0 + shelfim);
-	const double b1 = 2 * a * ((a - 1) + (a + 1)*cw0);
-	const double b2 = a * ((a + 1) - (a - 1)*cw0 - shelfim);
-	const double a0 = (a + 1) + (a - 1)*cw0 + shelfim;
+BiquadFilterDef designAudioEqLowShelf(double omega, double db_gain, double s) {
+	/* Note: these are actually different from all the others. Not using the macros isn't a mistake. */
+	const double a= pow(10, db_gain/40.0);
+	const double w0 = 2*PI*omega;
+	const double cw0 = cos(w0);
+	const double sw0 = sin(w0);
+	const double alpha = sqrt((a * a + 1)/s - (a-1) * (a-1));
+
+	const double b0 = a * ( (a + 1) - (a - 1) * cw0 + alpha * sw0);
+	const double b1 = 2 * a * ((a - 1) - (a + 1)*cw0);
+	const double b2 = a * ((a + 1) - (a - 1)*cw0 - alpha * sw0);
+	const double a0 = (a + 1) + (a - 1)*cw0 + alpha * sw0;
 	const double a1 = -2 * ((a - 1) + (a + 1)*cw0 );
-	const double a2 = (a + 1) + (a - 1) * cw0 - shelfim;
+	const double a2 = (a + 1) + (a - 1) * cw0 - alpha * sw0;
 	RET;
 }
 
-BiquadFilterDef designAudioEqHighshelf(double omega, double s) {
-	const double dbgain = 0;
+BiquadFilterDef designAudioEqHighShelf(double omega, double db_gain, double s) {
+	/* Note: these are actually different from all the others. Not using the macros isn't a mistake. */
+	const double a= pow(10, db_gain/40.0);
 	IVARS_S;
 	const double b0 = a * ((a + 1) + (a - 1)*cw0 + shelfim);
 	const double b1 = -2 * a * ((a-1) + (a+1)*cw0);
