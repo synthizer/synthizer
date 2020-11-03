@@ -51,18 +51,18 @@ class FdnReverbEffect: public BaseEffect {
 	/*
 	 * The t60 of the reverb, in seconds.
 	 * */
-	float t60 = 100.0f;
+	float t60 = 3.5f;
 	/*
 	 * The mean free path, in seconds.
 	 * This is effectively meters/ speed of sound.
 	 * 0.01 is approximately 5 meters.
 	 * */
-	float mean_free_path = 0.05f;
+	float mean_free_path = 0.03f;
 	/*
 	 * Diffusion is a measure of how fast reflections spread. This can't be equated to a physical property, so we just treat it as a
 	 * percent. Internally, this feeds the algorithm which picks delay line lengths.
 	 * */
-	float late_reflections_diffusion = 0.5f;
+	float late_reflections_diffusion = 1.0f;
 };
 
 class GlobalFdnReverbEffect: public GlobalEffect<FdnReverbEffect> {

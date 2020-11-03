@@ -46,13 +46,14 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_createSource3D(&source, context));
 	CHECKED(syz_createBufferFromStream(&buffer, "file", argv[1], ""));
 	CHECKED(syz_createBufferGenerator(&generator, context));
-	//CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
-	CHECKED(syz_setD(generator, SYZ_P_POSITION, 10.0));
+	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
 	CHECKED(syz_createGlobalFdnReverb(&effect, context));;
 	CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
+	std::this_thread::sleep_for(std::chrono::seconds(2));
+	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 0));
 	std::this_thread::sleep_for(std::chrono::seconds(30));
 
 end:

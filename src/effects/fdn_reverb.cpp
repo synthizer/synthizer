@@ -37,13 +37,16 @@ void FdnReverbEffect::recomputeModel() {
 	 * And so on. SO that we have:
 	 * (1m + 1m) + (0.5m + 1.5m) + ... = 2 + 2 + ... = 2*(n/2)*m = n*m
 	 * where n is the line count and m the mean free path in samples. There is obviously error here because our array is an array of primes, but it's a reasonable approximation of the reality we'd like to have.
+	 * 
+	 * We vary the diffusion by changing the denominator of the fraction in the above, and expose a percent-based control for that purpose.
+	 * Using significantly large numbers (on the order of 2) for the exponent makes strange things happen for large diffusions; I tuned the constants in the below
+	 * difffusion equation by ear.
 	 * */
-
 	unsigned int mean_free_path_samples = this->mean_free_path * config::SR;
 	this->delays[0] = getClosestPrime(mean_free_path_samples);
 	this->delays[1] = getClosestPrimeRestricted(mean_free_path_samples, 1, &this->delays[0]);
 
-	float diffusion_base = 1.0 + this->late_reflections_diffusion;
+	float diffusion_base = 1.0 + 0.4 * this->late_reflections_diffusion;
 	for (unsigned int i = 2; i < LINES; i+=2) {
 		unsigned int iteration = i/2 + 1;
 		float fraction = 1.0f / powf(diffusion_base, iteration);
