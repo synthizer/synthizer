@@ -40,12 +40,14 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/context.cpp
 	src/decoding.cpp
 	src/effects/echo.cpp
+	src/effects/fdn_reverb.cpp
 	src/error.cpp
 	src/hrtf.cpp
 	src/logging.cpp
 	src/memory.cpp
 	src/noise_generator.cpp
 	src/panner_bank.cpp
+	src/prime_helpers.cpp
 	src/routable.cpp
 	src/router.cpp
 	src/single_file_libs.c

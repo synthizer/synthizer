@@ -21,7 +21,7 @@ class GlobalEffectBase {
 };
 
 /*
- * A global effect is an effect which soruces route to on a one-by-one basis. To use this, apply the CRTP.
+ * A global effect is an effect which sources route to on a one-by-one basis. To use this, apply the CRTP.
  * */
 template<typename BASE>
 class GlobalEffect: public BASE, public RouteInput, public GlobalEffectBase {

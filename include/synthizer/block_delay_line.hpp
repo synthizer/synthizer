@@ -88,7 +88,7 @@ class BlockDelayLine {
 
 		template<typename RET = void>
 		auto write(unsigned int channel, float value) -> std::enable_if_t<WRITE_ENABLED, RET> {
-			assert(channel < lanes);
+			assert(channel < LANES);
 			this->source[this->current_frame*LANES + channel] = value;
 		}
 
@@ -119,8 +119,8 @@ class BlockDelayLine {
 	}
 
 	template<typename F>
-	FLATTENED void runRWLoop(unsigned int max_delay, F &&closure) {
-		return runLoopPriv<F, true>(max_delay, std::BLOCK_SIZE, f, 0, f);
+	FLATTENED void runRwLoop(unsigned int max_delay, F &&f) {
+		return runLoopPrivSplit<F, F, true>(max_delay, config::BLOCK_SIZE, f, 0, f);
 	}
 
 	template<typename F1, typename F2>

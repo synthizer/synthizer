@@ -197,6 +197,8 @@ struct syz_EchoTapConfig {
 
 SYZ_CAPI syz_ErrorCode syz_echoSetTaps(syz_Handle handle, unsigned int n_taps, struct syz_EchoTapConfig *taps);
 
+SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle context);
+
 #ifdef __cplusplus
 }
 #endif

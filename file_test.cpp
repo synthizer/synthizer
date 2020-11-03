@@ -28,11 +28,6 @@ struct syz_RouteConfig route_config = {
 	.fade_time = 0.01,
 };
 
-std::array<syz_EchoTapConfig, 2> taps = {{
-		{ 0.1, 1.0, 0.0},
-		{ 0.2, 0.0, 1.0 },
-}};
-
 int main(int argc, char *argv[]) {
 	syz_Handle context, generator, source, buffer, effect;
 	int ecode = 0, ending = 0;
@@ -56,15 +51,9 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
-	CHECKED(syz_createGlobalEcho(&effect, context));;
-	CHECKED(syz_echoSetTaps(effect, taps.size(), &taps[0]));
-	while (true) {
-		CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
-		std::this_thread::sleep_for(std::chrono::seconds(3));
-		CHECKED(syz_routingRemoveRoute(context, source, effect, 0.01));
-		std::this_thread::sleep_for(std::chrono::seconds(3));
-	}
-	
+	CHECKED(syz_createGlobalFdnReverb(&effect, context));;
+	CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
+	std::this_thread::sleep_for(std::chrono::seconds(30));
 
 end:
 	ending = 1;

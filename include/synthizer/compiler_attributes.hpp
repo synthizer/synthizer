@@ -6,6 +6,7 @@
 
 /* Inline all of a function's callees if possible. */
 #define FLATTENED [[gnu::flatten]]
+#define FLATTENED
 
 /*
  * This function is printf-like. Argument m (1-based) is the format string, argument n is the first argument to be used for formatting
