@@ -6,6 +6,7 @@
 #include "synthizer/effects/global_effect.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/three_band_eq.hpp"
 #include "synthizer/types.hpp"
 
 #include <utility>
@@ -40,9 +41,11 @@ class FdnReverbEffect: public BaseEffect {
 	 * The delay lines. We pack them into one to prevent needing multiple modulus.
 	 * */
 	BlockDelayLine<LINES, nextMultipleOf(MAX_DELAY_SAMPLES, config::BLOCK_SIZE) / config::BLOCK_SIZE> lines;
-	/* The gains, one per line. */
-	std::array<float, LINES> gains = { { 0.5f } };
 	std::array<unsigned int, LINES> delays = { { 0 } };
+	/*
+	 * Allows control of frequency bands on the feedback paths, so that we can have different t60s.
+	 * */
+	ThreeBandEq<LINES> feedback_eq;
 
 	/*
 	 * When a property gets set, set to true to mark that we need to recompute the model.
@@ -51,7 +54,18 @@ class FdnReverbEffect: public BaseEffect {
 	/*
 	 * The t60 of the reverb, in seconds.
 	 * */
-	float t60 = 3.5f;
+	float t60 = 2.0f;
+	/*
+	 * rolloff ratios. The effective t60 for a band of the equalizer is rolloff * t60.
+	 * */
+	float late_reflections_lf_rolloff = 1.0f;
+	float late_reflections_hf_rolloff = 0.5f;
+	/*
+	 * Defines the bands of the eq filter for late reflections.
+	 * */
+	float late_reflections_lf_reference = 200.0f;
+	float late_reflections_hf_reference = 500.0f;
+
 	/*
 	 * The mean free path, in seconds.
 	 * This is effectively meters/ speed of sound.

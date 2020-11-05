@@ -6,7 +6,7 @@
 				"${workspaceFolder}/include",
 				"${workspaceFolder}/third_party/cpp11-on-multicore/common",
 				"${workspaceFolder}/third_party/dr_libs",
-				"${workspaceFolder}/third_party/wdl/WDL",
+				"${workspaceFolder}/third_party/wdl",
 				"${workspaceFolder}/third_party/miniaudio",
 				"${workspaceFolder}/third_party/plf_colony",
 				"${workspaceFolder}/third_party/stb",

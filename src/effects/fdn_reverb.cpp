@@ -62,7 +62,6 @@ void FdnReverbEffect::recomputeModel() {
 
 	/*
 	 * The gain for each line is computed from t60, the time to decay to -60 DB.
-	 * These will eventually be replaced with an equalizer.
 	 * 
 	 * The math to prove why this works is involved, see: https://ccrma.stanford.edu/~jos/pasp/Achieving_Desired_Reverberation_Times.html
 	 * What we do works for any matrix, but an intuitive (but inaccurate) explanation of our specific case follows:
@@ -71,14 +70,20 @@ void FdnReverbEffect::recomputeModel() {
 	 * i.e. the friction in this analogy.  If the ball has traveled 1 second and our t60 is 1 second, we want it to have "slowed down" by 60db.
 	 * This implies that the track has uniform friction.  Each line has delay samples of track, so we can work out the gain by determining what it should be
 	 * per sample, and multiplying by the length of the track.
+	 * 
+	 * We control this with an equalizer, which lets the user control how "bright" the reverb is.
 	 * */
 	float decay_per_sample_db = -60.0f / this->t60 / config::SR;
 	for (unsigned int i = 0; i < LINES; i++) {
 		unsigned int length = this->delays[i];
 		float decay_db = length * decay_per_sample_db;
-		this->gains[i] = dbToGain(decay_db);
-		/* If not, we'll feedback forever. */
-		assert(this->gains[i] < 1.0f);
+		ThreeBandEqParams params;
+		params.dbgain_lower = decay_db * this->late_reflections_lf_rolloff;
+		params.freq_lower = this->late_reflections_lf_reference;
+		params.dbgain_mid = decay_db;
+		params.dbgain_upper = decay_db * this->late_reflections_hf_rolloff;
+		params.freq_upper = this->late_reflections_hf_reference;
+		this->feedback_eq.setParametersForLane(i, params);
 	}
 }
 
@@ -117,15 +122,19 @@ void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_
 	 * Implement a householder reflection about <1, 1, 1, 1... >. This is a reflection about the hyperplane.
 	 * */
 
-	/*
-	 * We won't need to zero this in future, once the number of lines is no longer variable.
-	 * */
-		std::array<float, LINES> values = { { 0.0f } };
-		float sum = 0.0f;
+
+		/* not initialized because zeroing can be expensive and we set it immediately in the loop below. */
+		std::array<float, LINES> values;
 		for (unsigned int i = 0; i < LINES; i++) {
 			values[i] = rw.read(i, this->delays[i]);
-			sum += values[i];
 		}
+
+		/*
+	 	* Pass it through the equalizer, which handles feedback.
+	 	* */
+		this->feedback_eq.tick(&values[0], &values[0]);
+
+		float sum = std::accumulate(values.begin(), values.end(), 0.0f);
 		sum *= 2.0f / LINES;
 
 		/*
@@ -133,8 +142,7 @@ void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_
 		 * */
 		float input_per_line = input_sample * (1.0f / LINES);
 		for (unsigned int	 i = 0; i < LINES; i++) {
-			/* Don't forget the gain. */
-			rw.write(i, this->gains[i] * (values[i] - sum + input_per_line));
+			rw.write(i, values[i] - sum + input_per_line);
 		}
 
 		/*
