@@ -1,8 +1,7 @@
-
 #pragma once
 
 /*
- * The following is Xoshiro256=+ modified to be in a class
+ * The following is Xoshiro256++ modified to be in a class
  * and put in the synthizer namespace.
  * 
  * Most comments are the original.

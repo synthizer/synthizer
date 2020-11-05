@@ -85,6 +85,23 @@ void FdnReverbEffect::recomputeModel() {
 		params.freq_upper = this->late_reflections_hf_reference;
 		this->feedback_eq.setParametersForLane(i, params);
 	}
+
+	/*
+	 * The modulation depth and rate.
+	 * */
+	unsigned int mod_depth_in_samples = this->late_reflections_modulation_depth * config::SR;
+	unsigned int mod_rate_in_samples = config::SR / this->late_reflections_modulation_frequency;
+	for (unsigned int i = 0; i < LINES; i++) {
+		/*
+		 * vary the frequency slightly so that they're not all switching exactly on the same sample.
+		 * This smoothes out the peak of what is effectively a triangle wave.
+		 * */
+		this->late_modulators[i] = InterpolatedRandomSequence(this->late_modulators[i].tick(), mod_rate_in_samples + i, 0.0f, mod_depth_in_samples);
+	}
+	/*
+	 * account for the extra sample we need when interpolating here.
+	 * */
+	this->max_delay = this->delays[LINES - 1] + mod_depth_in_samples + 1;
 }
 
 void FdnReverbEffect::resetEffect() {
@@ -107,8 +124,7 @@ void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_
 	/*
 	 * Normally we would go through a temporary buffer to premix channels here, and we still might, but we're using the delay line's write loop and it's always to mono; just do it inline.
 	 * */
-	unsigned int max_delay = *std::max_element(&this->delays[0], &this->delays[0] + LINES);
-	this->lines.runRwLoop(max_delay, [&](unsigned int i, auto &rw) {
+	this->lines.runRwLoop(this->max_delay, [&](unsigned int i, auto &rw) {
 		float *input_ptr = input + input_channels * i;
 		float input_sample = 0.0f;
 
@@ -126,7 +142,12 @@ void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_
 		/* not initialized because zeroing can be expensive and we set it immediately in the loop below. */
 		std::array<float, LINES> values;
 		for (unsigned int i = 0; i < LINES; i++) {
-			values[i] = rw.read(i, this->delays[i]);
+			double delay = this->delays[i] + this->late_modulators[i].tick();
+			float w2 = delay - std::floor(delay);
+			float w1 = 1.0f - w2;
+			float v1 = rw.read(i, delay);
+			float v2 = rw.read(i, delay);
+		 values[i] = v1 * w1 + v2 * w2;
 		}
 
 		/*

@@ -4,8 +4,10 @@
 #include "synthizer/config.hpp"
 #include "synthizer/effects/base_effect.hpp"
 #include "synthizer/effects/global_effect.hpp"
+#include "synthizer/interpolated_random_sequence.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/random_generator.hpp"
 #include "synthizer/three_band_eq.hpp"
 #include "synthizer/types.hpp"
 
@@ -43,9 +45,17 @@ class FdnReverbEffect: public BaseEffect {
 	BlockDelayLine<LINES, nextMultipleOf(MAX_DELAY_SAMPLES, config::BLOCK_SIZE) / config::BLOCK_SIZE> lines;
 	std::array<unsigned int, LINES> delays = { { 0 } };
 	/*
+	 * Also accounts for the modulation depth.
+	 * */
+	unsigned int max_delay = 0;
+	/*
 	 * Allows control of frequency bands on the feedback paths, so that we can have different t60s.
 	 * */
 	ThreeBandEq<LINES> feedback_eq;
+	/*
+	 * Random number generator for modulating the delay lines in the late reflection.
+	 * */
+	std::array<InterpolatedRandomSequence, LINES> late_modulators;
 
 	/*
 	 * When a property gets set, set to true to mark that we need to recompute the model.
@@ -54,7 +64,7 @@ class FdnReverbEffect: public BaseEffect {
 	/*
 	 * The t60 of the reverb, in seconds.
 	 * */
-	float t60 = 2.0f;
+	float t60 = 2.5f;
 	/*
 	 * rolloff ratios. The effective t60 for a band of the equalizer is rolloff * t60.
 	 * */
@@ -71,12 +81,21 @@ class FdnReverbEffect: public BaseEffect {
 	 * This is effectively meters/ speed of sound.
 	 * 0.01 is approximately 5 meters.
 	 * */
-	float mean_free_path = 0.03f;
+	float mean_free_path = 0.04f;
 	/*
 	 * Diffusion is a measure of how fast reflections spread. This can't be equated to a physical property, so we just treat it as a
 	 * percent. Internally, this feeds the algorithm which picks delay line lengths.
 	 * */
 	float late_reflections_diffusion = 1.0f;
+	/*
+	 * How much modulation in the delay lines? Larger values reduce periodicity, at the cost of introducing chorus-like effects.
+	 * In seconds.
+	 * */
+	float late_reflections_modulation_depth = 0.001f;
+	/*
+	 * Frequency of modulation changes in hz.
+	 * */
+	float late_reflections_modulation_frequency = 0.5f;
 };
 
 class GlobalFdnReverbEffect: public GlobalEffect<FdnReverbEffect> {
