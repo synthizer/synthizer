@@ -111,7 +111,7 @@ void AudioOutputDevice::refillWorkingBuffer() {
 
 void AudioOutputDevice::doOutput(std::size_t frames, AudioSample *destination) {
 	float *resample_buffer;
-	int needed_frames = this->resampler.ResamplePrepare(frames, 2, &resample_buffer);
+	int needed_frames = this->resampler.ResamplePrepare(frames, 2, (WDL_ResampleSample **)&resample_buffer);
 	int new_queue_size = needed_frames / config::BLOCK_SIZE;
 	if(needed_frames % config::BLOCK_SIZE) new_queue_size += 1;
 	new_queue_size += 2;
@@ -131,7 +131,7 @@ void AudioOutputDevice::doOutput(std::size_t frames, AudioSample *destination) {
 	}
 
 	/* If this outputs less, miniaudio already zeroed for us. */
-	this->resampler.ResampleOut(destination, needed_frames, frames, 2);
+	this->resampler.ResampleOut((WDL_ResampleSample *)destination, needed_frames, frames, 2);
 }
 
 static std::shared_ptr<AudioOutputDevice> output_device = nullptr;
