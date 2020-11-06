@@ -434,3 +434,22 @@ cdef class GlobalEcho(_BaseObject):
             _checked(syz_echoSetTaps(self.handle, n_taps, cfgs))
         finally:
             PyMem_Free(cfgs)
+
+
+cdef class GlobalFdnReverb(_BaseObject):
+    def __init__(self, context):
+        cdef syz_Handle handle
+        _checked(syz_createGlobalFdnReverb(&handle, context._get_handle_checked(Context)))
+        super().__init__(handle)
+
+    input_filter_enabled = IntProperty(SYZ_P_INPUT_FILTER_ENABLED, conv_in = int, conv_out = bool)
+    input_filter_cutoff = DoubleProperty(SYZ_P_INPUT_FILTER_CUTOFF)
+    mean_free_path = DoubleProperty(SYZ_P_MEAN_FREE_PATH)
+    t60 = DoubleProperty(SYZ_P_T60)
+    late_reflections_lf_rolloff = DoubleProperty(SYZ_P_LATE_REFLECTIONS_LF_ROLLOFF)
+    late_reflections_lf_reference = DoubleProperty(SYZ_P_LATE_REFLECTIONS_LF_REFERENCE)
+    late_reflections_hf_rolloff = DoubleProperty(SYZ_P_LATE_REFLECTIONS_HF_ROLLOFF)
+    late_reflections_hf_reference = DoubleProperty(SYZ_P_LATE_REFLECTIONS_HF_REFERENCE)
+    late_reflections_diffusion = DoubleProperty(SYZ_P_LATE_REFLECTIONS_DIFFUSION)
+    late_reflections_modulation_depth = DoubleProperty(SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH)
+    late_reflections_modulation_frequency = DoubleProperty(SYZ_P_LATE_REFLECTIONS_MODULATION_FREQUENCY)

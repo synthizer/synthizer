@@ -27,22 +27,5 @@ gen.buffer = buffer
 src = synthizer.Source3D(ctx)
 src.add_generator(gen)
 
-echo = synthizer.GlobalEcho(ctx)
-ctx.config_route(src, echo)
-
-n_taps = 100
-duration = 2.0
-delta = duration / n_taps
-taps = [
-    EchoTapConfig(delta + i * delta + random.random() * 0.01, random.random(), random.random())
-    for i in range(n_taps)
-]
-
-norm_left = sum([i.gain_l** 2 for i in taps])
-norm_right = sum([i.gain_r ** 2 for i in taps])
-norm = 1.0 / math.sqrt(max(norm_left, norm_right))
-for t in taps:
-    t.gain_l *= norm
-    t.gain_r *= norm
-
-echo.set_taps(taps)
+reverb = synthizer.GlobalFdnReverb(ctx)
+ctx.config_route(src, reverb)
