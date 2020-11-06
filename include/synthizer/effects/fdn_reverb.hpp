@@ -123,7 +123,7 @@ class FdnReverbEffect: public BaseEffect {
 	 * Diffusion is a measure of how fast reflections spread. This can't be equated to a physical property, so we just treat it as a
 	 * percent. Internally, this feeds the algorithm which picks delay line lengths.
 	 * */
-	float late_reflections_diffusion = 0.2f;
+	float late_reflections_diffusion = 1.0f;
 	/*
 	 * How much modulation in the delay lines? Larger values reduce periodicity, at the cost of introducing chorus-like effects.
 	 * In seconds.
