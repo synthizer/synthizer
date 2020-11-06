@@ -33,4 +33,6 @@
 - [StreamingGenerator](./object_reference/streaming_generator.md)
 - [BufferGenerator](./object_reference/buffer_generator.md)
 - [NoiseGenerator](./object_reference/noise_generator.md)
+- [GlobalEffect](./object_reference/global_effect.md)
 - [Echo](./object_reference/echo.md)
+- [FdnReverb](./object_reference/fdn_reverb.md)
