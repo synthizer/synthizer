@@ -10,7 +10,7 @@
 
 namespace synthizer {
 template<bool FADE_IN, bool ADD>
-void EchoEffect::runEffectInternal(AudioSample *output) {
+void EchoEffect::runEffectInternal(AudioSample *output, float gain) {
 	this->line.runReadLoop(this->max_delay_tap, [&](unsigned int i, auto &reader) {
 		float acc_l = 0.0f;
 		float acc_r = 0.0f;
@@ -23,6 +23,8 @@ void EchoEffect::runEffectInternal(AudioSample *output) {
 			acc_l *= g;
 			acc_r *= g;
 		}
+		acc_l *= gain;
+		acc_r *= gain;
 		if (ADD) {
 			output[i * 2] += acc_l;
 			output[i * 2 + 1] += acc_r;
@@ -33,7 +35,7 @@ void EchoEffect::runEffectInternal(AudioSample *output) {
 	});
 }
 
-void EchoEffect::runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output) {
+void EchoEffect::runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output, float gain) {
 	thread_local std::array<AudioSample, config::BLOCK_SIZE * 2> working_buf;
 
 	auto *buffer = this->line.getNextBlock();
@@ -59,16 +61,16 @@ void EchoEffect::runEffect(unsigned int time_in_blocks, unsigned int input_chann
 
 	if (output_channels != 2) {
 		if (will_crossfade) {
-			this->runEffectInternal<true, false>(&working_buf[0]);
+			this->runEffectInternal<true, false>(&working_buf[0], gain);
 		} else {
-			this->runEffectInternal<false, false>(&working_buf[0]);
+			this->runEffectInternal<false, false>(&working_buf[0], gain);
 		}
 		mixChannels(config::BLOCK_SIZE, &working_buf[0], 2, output, output_channels);
 	} else {
 		if (will_crossfade) {
-			this->runEffectInternal<true, true>(output);
+			this->runEffectInternal<true, true>(output, gain);
 		} else {
-			this->runEffectInternal<false, true>(output);
+			this->runEffectInternal<false, true>(output, gain);
 		}
 	}
 }

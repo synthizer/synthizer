@@ -36,7 +36,7 @@ class FdnReverbEffect: public BaseEffect {
 	 * */
 	static constexpr unsigned int MAX_FEEDBACK_DELAY = 5 * config::SR;
 
-	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output) override;
+	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output, float gain) override;
 	void resetEffect() override;
 
 	#define EXPOSE(TYPE, FIELD, GETTER, SETTER) \

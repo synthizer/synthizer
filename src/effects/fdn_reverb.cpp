@@ -129,7 +129,7 @@ void FdnReverbEffect::resetEffect() {
 	this->lines.clear();
 }
 
-void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output) {
+void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output, float gain) {
 	/*
 	 * Output is stereo. For surround setups, we can get 99% of the benefit just by upmixing stereo differently, which we'll do in future by hand
 	 * as a special case.
@@ -198,8 +198,8 @@ void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_
 		float *frame = rw.readFrame(d);
 		float l = frame[0] + frame[2] + frame[4] + frame[6];
 		float r = frame[1] + frame[3] + frame[5] + frame[7];
-		output_buf_ptr[2*i] = l;
-		output_buf_ptr[2*i + 1] = r;
+		output_buf_ptr[2*i] = l * gain;
+		output_buf_ptr[2*i + 1] = r * gain;
 	});
 
 	mixChannels(config::BLOCK_SIZE, output_buf_ptr, 2, output, output_channels);

@@ -43,9 +43,9 @@ class GlobalEffect: public BASE, public RouteInput, public GlobalEffectBase {
 	#pragma clang diagnostic pop
 
 	void run(unsigned int channels, AudioSample *destination) {
-		this->runEffect(this->time_in_blocks, this->channels, &this->input_buffer[0], channels, destination);
+		this->runEffect(this->time_in_blocks, this->channels, &this->input_buffer[0], channels, destination, 1.0f);
 		/*
-		 * Reset this for the next time. This needs to live here since routers dont' know about effects if
+		 * Reset this for the next time. This needs to live here since routers don't know about effects if
 		 * there's no routing to them.
 		 * */
 		std::fill(&this->input_buffer[0], &this->input_buffer[this->channels * config::BLOCK_SIZE], 0.0f);

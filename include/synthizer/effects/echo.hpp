@@ -30,7 +30,7 @@ struct EchoTap {
  * */
 class EchoEffect: public BaseEffect {
 	public:
-	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output) override;
+	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output, float gain) override;
 	void resetEffect() override;
 
 	void pushNewConfig(deferred_vector<EchoTapConfig> &&config);
@@ -48,7 +48,7 @@ class EchoEffect: public BaseEffect {
 	 * Assumes that the audio is already in the delay line, and that the parent will handle channel mixing on the way out.
 	 * */
 	template<bool FADE_IN, bool ADD>
-	void runEffectInternal(AudioSample *output);
+	void runEffectInternal(AudioSample *output, float gain);
 
 	BlockDelayLine<2, MAX_DELAY / config::BLOCK_SIZE> line;
 	/*
