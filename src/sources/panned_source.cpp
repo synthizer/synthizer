@@ -22,6 +22,7 @@ PannedSource::PannedSource(const std::shared_ptr<Context> context): Source(conte
 
 void PannedSource::initInAudioThread() {
 	this->panner_lane = context->allocateSourcePannerLane(this->panner_strategy);
+	this->valid_lane = true;
 }
 
 double PannedSource::getAzimuth() {
