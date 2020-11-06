@@ -67,6 +67,14 @@ void FdnReverbEffect::recomputeModel() {
 	}
 
 	/*
+	 * If the user gave us an extreme value for mean fre path, it's possible that we are going over the maximum we can handle. While
+	 * this  would normally be guarded by the property range mechanisms, reading from the prime array can return values over the maximum.
+	 * */
+	for (unsigned int i = 0; i < LINES; i++) {
+		this->delays[i] = std::min(this->delays[i], MAX_FEEDBACK_DELAY);
+	}
+
+	/*
 	 * In order to minimize clipping and/or other crossfading artifacts, keep the lines sorted from least
 	 * delay to greatest.
 	 * */
@@ -129,9 +137,9 @@ void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_
 	alignas(config::ALIGNMENT) thread_local std::array<AudioSample, config::BLOCK_SIZE * 2> output_buf{ { 0.0f } };
 	AudioSample *output_buf_ptr = &output_buf[0];
 
-	if (this->recompute_model) {
+	if (this->dirty) {
 		this->recomputeModel();
-		this->recompute_model = false;
+		this->dirty = false;
 	}
 
 	/*
@@ -195,33 +203,6 @@ void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_
 	});
 
 	mixChannels(config::BLOCK_SIZE, output_buf_ptr, 2, output, output_channels);
-}
-
-double FdnReverbEffect::getLateReflectionsDiffusion() {
-	return this->late_reflections_diffusion;
-}
-
-void FdnReverbEffect::setLateReflectionsDiffusion(double value) {
-	this->late_reflections_diffusion = value;
-	this->recompute_model = true;
-}
-
-double FdnReverbEffect::getT60() {
-	return this->t60;
-}
-
-void FdnReverbEffect::setT60(double value) {
-	this->t60 = value;
-	this->recompute_model = true;
-}
-
-double FdnReverbEffect::getMeanFreePath() {
-	return this->mean_free_path;
-}
-
-void FdnReverbEffect::setMeanFreePath(double value) {
-	this->mean_free_path = value;
-	this->recompute_model = true;
 }
 
 }

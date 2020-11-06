@@ -23,19 +23,39 @@ class FdnReverbEffect: public BaseEffect {
 	public:
 	/* Maximum number of lines in the FDN. */
 	static constexpr unsigned int LINES = 8;
-	/* Must match data_processor/main.py's maximum prime. */
-	static constexpr unsigned int MAX_DELAY_SAMPLES = config::SR * 5;
-	static constexpr float MAX_DELAY_SECONDS = 5.0f;
+	/*
+	 * Must be large enough to account for the maximum theoretical delay we might see. Figure that out buy summing the following properties's maximums:
+	 * mean_free_path + late_reflections_delay + late_reflections_modulation_depth.
+	 * */
+	static constexpr unsigned int MAX_DELAY_SAMPLES = config::SR * 7;
+	static constexpr float MAX_DELAY_SECONDS = 7.0f;
+	/*
+	 * In the primes-finding algorithm, if we push up against the far end of what we can reasonably handle, we need to cap it.
+	 * 
+	 * The result is that extreme values will become periodic, but values this extreme aren't going to work anyway and it's better than crashing.
+	 * */
+	static constexpr unsigned int MAX_FEEDBACK_DELAY = 5 * config::SR;
 
 	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output) override;
 	void resetEffect() override;
 
-	double getLateReflectionsDiffusion();
-	void setLateReflectionsDiffusion(double value);
-	double getT60();
-	void setT60(double value);
-	double getMeanFreePath();
-	void setMeanFreePath(double value);
+	#define EXPOSE(TYPE, FIELD, GETTER, SETTER) \
+	TYPE GETTER() { return this->FIELD; } \
+	void SETTER(TYPE v) { this->FIELD = v; this->dirty = true; }
+
+
+	EXPOSE(int, input_filter_enabled, getInputFilterEnabled, setInputFilterEnabled)
+	EXPOSE(double, input_filter_cutoff, getInputFilterCutoff, setInputFilterCutoff)
+	EXPOSE(double, mean_free_path, getMeanFreePath, setMeanFreePath)
+	EXPOSE(double, t60, getT60, setT60)
+	EXPOSE(double, late_reflections_lf_rolloff, getLateReflectionsLfRolloff, setLateReflectionsLfRolloff)
+	EXPOSE(double, late_reflections_lf_reference, getLateReflectionsLfReference, setLateReflectionsLfReference)
+	EXPOSE(double, late_reflections_hf_rolloff, getLateReflectionsHfRolloff, setLateReflectionsHfRolloff)
+	EXPOSE(double, late_reflections_hf_reference, getLateReflectionsHfReference, setLateReflectionsHfReference)
+	EXPOSE(double, late_reflections_diffusion, getLateReflectionsDiffusion, setLateReflectionsDiffusion)
+	EXPOSE(double, late_reflections_modulation_depth, getLateReflectionsModulationDepth, setLateReflectionsModulationDepth)
+	EXPOSE(double, late_reflections_modulation_frequency, getLateReflectionsModulationFrequency, setLateReflectionsModulationFrequency)
+	EXPOSE(double, late_reflections_delay, getLateReflectionsDelay, setLateReflectionsDelay)
 
 	protected:
 	void recomputeModel();
@@ -70,12 +90,21 @@ class FdnReverbEffect: public BaseEffect {
 	/*
 	 * When a property gets set, set to true to mark that we need to recompute the model.
 	 * */
-	bool recompute_model = true;
+	bool dirty = true;
+
 	/*
 	 * The input filter is a lowpass for now. We might let this be configurable later.
 	 * */
 	bool input_filter_enabled = true;
 	float input_filter_cutoff = 2000.0f;
+
+
+	/*
+	 * The mean free path, in seconds.
+	 * This is effectively meters/ speed of sound.
+	 * 0.01 is approximately 5 meters.
+	 * */
+	float mean_free_path = 0.04f;
 	/*
 	 * The t60 of the reverb, in seconds.
 	 * */
@@ -90,13 +119,6 @@ class FdnReverbEffect: public BaseEffect {
 	 * */
 	float late_reflections_lf_reference = 200.0f;
 	float late_reflections_hf_reference = 500.0f;
-
-	/*
-	 * The mean free path, in seconds.
-	 * This is effectively meters/ speed of sound.
-	 * 0.01 is approximately 5 meters.
-	 * */
-	float mean_free_path = 0.04f;
 	/*
 	 * Diffusion is a measure of how fast reflections spread. This can't be equated to a physical property, so we just treat it as a
 	 * percent. Internally, this feeds the algorithm which picks delay line lengths.
