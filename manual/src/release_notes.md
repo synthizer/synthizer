@@ -5,6 +5,7 @@
 - Start building Python 3.9 wheels.
 - Sources now fade gain changes to prevent clicks, especially when feeding effects.
 - Expose `syz_resetEffect` for interactive experimentation purposes, to clear the internal state of effects. In python this is `.reset()` on any effect.
+- All effects now have a `SYZ_P_GAIN` property to set the overall gain of the effect.
 
 ## 0.7.4
 

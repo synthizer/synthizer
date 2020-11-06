@@ -42,8 +42,16 @@ class GlobalEffect: public BASE, public RouteInput, public GlobalEffectBase {
 		 {}
 	#pragma clang diagnostic pop
 
+ double getGain() {
+	 return this->gain;
+ }
+
+	void setGain(double g) {
+		this->gain = g;
+	}
+
 	void run(unsigned int channels, AudioSample *destination) {
-		this->runEffect(this->time_in_blocks, this->channels, &this->input_buffer[0], channels, destination, 1.0f);
+		this->runEffect(this->time_in_blocks, this->channels, &this->input_buffer[0], channels, destination, this->gain);
 		/*
 		 * Reset this for the next time. This needs to live here since routers don't know about effects if
 		 * there's no routing to them.
@@ -56,6 +64,7 @@ class GlobalEffect: public BASE, public RouteInput, public GlobalEffectBase {
 	alignas(config::ALIGNMENT) std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> input_buffer = { 0.0f };
 	unsigned int channels = 0;
 	unsigned int time_in_blocks = 0;
+	float gain = 1.0f;
 };
 
 }

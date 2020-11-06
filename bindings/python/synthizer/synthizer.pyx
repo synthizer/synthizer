@@ -401,6 +401,8 @@ cdef class GlobalEffect(_BaseObject):
     cpdef reset(self):
         _checked(syz_effectReset(self.handle))
 
+    gain = DoubleProperty(SYZ_P_GAIN)
+
 cdef class EchoTapConfig:
     """An echo tap. Passed to GlobalEcho.set_taps."""
     cdef public float delay

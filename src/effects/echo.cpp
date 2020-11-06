@@ -87,12 +87,17 @@ void EchoEffect::pushNewConfig(deferred_vector<EchoTapConfig> &&config) {
 
 }
 
+#define PROPERTY_CLASS GlobalEchoEffect
+#define PROPERTY_LIST EFFECT_PROPERTIES
+#define PROPERTY_BASE BaseObject
+#include "synthizer/property_impl.hpp"
+
 using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
-	auto x = ctx->createObject<GlobalEffect<EchoEffect>>(1);
+	auto x = ctx->createObject<GlobalEchoEffect>(1);
 	*out = toC(x);
 	std::shared_ptr<GlobalEffectBase> e = x;
 	ctx->registerGlobalEffect(	e);

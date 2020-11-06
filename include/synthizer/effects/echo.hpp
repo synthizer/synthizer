@@ -2,8 +2,8 @@
 
 #include "synthizer/block_delay_line.hpp"
 #include "synthizer/config.hpp"
-
 #include "synthizer/effects/base_effect.hpp"
+#include "synthizer/effects/global_effect.hpp"
 #include "synthizer/memory.hpp"
 #include "synthizer/types.hpp"
 
@@ -60,6 +60,14 @@ class EchoEffect: public BaseEffect {
 	deferred_vector<EchoTap> taps;
 	/* What we need to pass to runRead Loop. */
 	unsigned int max_delay_tap = 0;
+};
+
+class GlobalEchoEffect: public GlobalEffect<EchoEffect> {
+	public:
+	template<typename... ARGS>
+	GlobalEchoEffect(ARGS&&... args): GlobalEffect<EchoEffect>(std::forward<ARGS>(args)...) {}
+
+	PROPERTY_METHODS;
 };
 
 }

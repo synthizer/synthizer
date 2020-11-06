@@ -74,7 +74,11 @@ INT_P(SYZ_P_LOOPING, looping, Looping, 0, 1)
 #define NOISE_GENERATOR_PROPERTIES \
 INT_P(SYZ_P_NOISE_TYPE, noise_type, NoiseType, 0, SYZ_NOISE_TYPE_COUNT - 1)
 
+#define EFFECT_PROPERTIES \
+DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX)
+
 #define FDN_REVERB_EFFECT_PROPERTIES \
+EFFECT_PROPERTIES \
 INT_P(SYZ_P_INPUT_FILTER_ENABLED, input_filter_enabled, InputFilterEnabled, 0, 1) \
 DOUBLE_P(SYZ_P_INPUT_FILTER_CUTOFF, input_filter_cutoff, InputFilterCutoff, 0.0, 22050.0) \
 DOUBLE_P(SYZ_P_MEAN_FREE_PATH, mean_free_path, MeanFreePath, 0.0, 5.0) \
