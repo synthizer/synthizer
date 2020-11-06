@@ -460,3 +460,5 @@ cdef class GlobalFdnReverb(GlobalEffect):
     late_reflections_diffusion = DoubleProperty(SYZ_P_LATE_REFLECTIONS_DIFFUSION)
     late_reflections_modulation_depth = DoubleProperty(SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH)
     late_reflections_modulation_frequency = DoubleProperty(SYZ_P_LATE_REFLECTIONS_MODULATION_FREQUENCY)
+    late_reflections_delay = DoubleProperty(SYZ_P_LATE_REFLECTIONS_DELAY)
+
