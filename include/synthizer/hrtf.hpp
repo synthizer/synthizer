@@ -81,7 +81,7 @@ class HrtfPanner: public AbstractPanner {
 	 * We'll use modulus on 1/3 blocks on average.
 	 * */
 	BlockDelayLine<CHANNELS, nextMultipleOf(config::HRTF_MAX_ITD + config::BLOCK_SIZE * 2, config::BLOCK_SIZE)/ config::BLOCK_SIZE> input_line;
-	/* This is an extra sample lon to make linear interpolation easier. */
+	/* This is an extra sample long to make linear interpolation easier. */
 	BlockDelayLine<CHANNELS * 2, nextMultipleOf(config::BLOCK_SIZE*2 + config::HRTF_MAX_ITD + 1, config::BLOCK_SIZE) / config::BLOCK_SIZE> itd_line;
 
 	/*
