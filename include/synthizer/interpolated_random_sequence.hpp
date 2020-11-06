@@ -31,6 +31,13 @@ class InterpolatedRandomSequence {
 		 this->countdown = 1;
 		 this->range_size = (this->range_max - this->range_min);
 		 this->step_size = this->next_value - this->last_value;
+		 /*
+		  *Prevent underflow.
+		  */
+		 if (this->steps_per_generation == 0) {
+			 this->steps_per_generation = 1;
+			 this->steps_per_generation_inv = 1.0f / this->steps_per_generation;
+		 }
 	 }
 
 	float tick() {
