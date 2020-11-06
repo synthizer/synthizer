@@ -74,7 +74,7 @@ class HrtfPanner: public AbstractPanner {
 
 	private:
 	template<typename R>
-	void stepConvolution(R &&reader, const float *hrir, AudioSample4 *dest_l, AudioSample4 *dest_r);
+	void stepConvolution(R &&reader, const float *hrir, std::array<float, 4> *dest_l, std::array<float, 4> *dest_r);
 
 	/*
 	 * 2 blocks plus the max ITD.

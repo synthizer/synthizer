@@ -205,19 +205,21 @@ void HrtfPanner::recycleLane(unsigned int lane) {
 }
 
 template<typename R>
-void HrtfPanner::stepConvolution(R &&reader, const float *hrir, AudioSample4 *dest_l, AudioSample4 *dest_r) {
-	AudioSample4 accumulator_left = { 0.0f };
-	AudioSample4 accumulator_right = { 0.0f };
+void HrtfPanner::stepConvolution(R &&reader, const float *hrir, std::array<float, 4> *dest_l, std::array<float, 4> *dest_r) {
+	std::array<float, 4> accumulator_left = { { 0.0f } };
+	std::array<float, 4> accumulator_right = { { 0.0f } };
 	for(unsigned int j = 0; j < data::hrtf::IMPULSE_LENGTH; j++) {
-		auto tmp = reader.read4(0, j);
-		auto hrir_left = ((AudioSample4*)hrir)[j * 2];
-		auto hrir_right = ((AudioSample4*)hrir)[j * 2 + 1];
-		accumulator_left += tmp*hrir_left;
-		accumulator_right += tmp * hrir_right;
+		auto tmp = reader.readFrame(j);
+		auto hrir_left = &hrir[j * 2 * 4];
+		auto hrir_right = &hrir[(j * 2 + 1) * 4];
+		for (unsigned int k = 0; k < CHANNELS; k++) {
+			accumulator_left[k] += tmp[k] *hrir_left[k];
+			accumulator_right[k] += tmp[k] * hrir_right[k];
+		}
 	}
 	// We have to scatter these out, to re-interleave them.
-	*dest_l = { accumulator_left[0], accumulator_right[0], accumulator_left[1], accumulator_right[1] };
-	*dest_r = { accumulator_left[2], accumulator_right[2], accumulator_left[3], accumulator_right[3] };
+	*dest_l = std::array<float, 4>{ accumulator_left[0], accumulator_right[0], accumulator_left[1], accumulator_right[1] };
+	*dest_r = std::array<float, 4>{ accumulator_left[2], accumulator_right[2], accumulator_left[3], accumulator_right[3] };
 }
 
 void HrtfPanner::run(AudioSample *output) {
@@ -252,20 +254,28 @@ void HrtfPanner::run(AudioSample *output) {
 	AudioSample *itd_block = this->itd_line.getNextBlock();
 	input_line.runReadLoopSplit(data::hrtf::IMPULSE_LENGTH - 1,
 	crossfade_samples, [&](unsigned int i, auto &reader) {
-		AudioSample4 l_old, l_new, r_old, r_new;
+		std::array<float, 4> l_old, l_new, r_old, r_new;
 		this->stepConvolution(reader, prev_hrir, &l_old, &r_old);
 		this->stepConvolution(reader, current_hrir, &l_new, &r_new);
-		AudioSample4 *out = (AudioSample4*)(itd_block + CHANNELS * 2 * i);
+		float *out = itd_block + CHANNELS * 2 * i;
 		float weight = i/(float)config::CROSSFADE_SAMPLES;
-		out[0] = l_new*weight + l_old*(1.0f-weight);
-		out[1] = r_new*weight + r_old*(1.0f-weight);
+		for (unsigned int j = 0; j < 4; j++) {
+			out[j] = l_new[j]*weight + l_old[j]*(1.0f-weight);
+		}
+		for (unsigned int j = 0; j < 4; j++) {
+			out[4 + j] = r_new[j]*weight + r_old[j]*(1.0f-weight);
+		}
 	},
 	normal_samples, [&](unsigned int i, auto &reader) {
-		AudioSample4 l, r;
+		std::array<float, 4> l, r;
 		this->stepConvolution(reader, current_hrir, &l, &r);
-		AudioSample4 *out = (AudioSample4*)(itd_block + CHANNELS * 2 * i);
-		out[0] = l;
-		out[1] = r;
+		float *out = itd_block + CHANNELS * 2 * i;
+		for (unsigned int j = 0; j < 4; j++) {
+			out[j] = l[j];
+		}
+		for (unsigned int j = 0; j < 4; j++) {
+			out[4 + j] = r[j];
+		}
 	});
 
 	/*

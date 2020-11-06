@@ -15,7 +15,9 @@ namespace synthizer {
  * This file implements a delay line which allows for delays of up to N blocks, and contains special helper methods to avoid modulus in some cases.
  * The data is allocated statically.
  * 
- * Data is always aligned such that you can get AudioSample4 with pointer casting if the line is a multiple of 4; and in that case, we provide helper methods for doing so.
+ * data is always aligned so that if you read a delay line of the appropriate width, it's possible
+ * to convert it to a SIMD vector.
+
  * 
  * Primarily, this is of use to the HRTF implementation which uses BlockDelayLine<8, 2> to avoid modulus on most blocks, and
  * will probably also be used by FDN reverberation for similar reasons
@@ -25,10 +27,10 @@ namespace synthizer {
  * The per-block method:
  * - Something calls line.getNextBlock(), which returns a pointer to the next block of data.
  * - Something fills the next block of data.
- * - Then call runReadLoop, with a templated function that gets passed an object with read(channel, delay) and read4(channel, delay) methods.
+ * - Then call runReadLoop, with a templated function that gets passed an object with read(channel, delay).
  * 
  * The per-sample pattern:
- * - Something calls runRWLoop with a closure which gets passed something with read and read4 as above, but also write(unsigned int channel, float value) and write4(unsigned int channel, AudioSample4 value).
+ * - Something calls runRWLoop with a closure which gets passed something with read as above, but also write(unsigned int channel, float value).
  * 
  * In the first pattern, and in the case that the closure writes before reading in the second pattern, 0 delay is possible.
  * 
@@ -71,16 +73,6 @@ class BlockDelayLine {
 			return this->source[index*LANES+channel];
 		}
 
-		template<typename RET = AudioSample4>
-		auto read4(unsigned int channel, unsigned int delay) -> std::enable_if_t<LANES % 4 == 0, RET> {
-			assert(channel < LANES);
-			assert(channel %4 == 0);
-			assert(channel + 4 <= LANES);
-			unsigned ind = IND_PRODUCER(delay, this->current_frame);
-			auto addr = &this->source[LANES*ind + channel];
-			return *(AudioSample4*)addr;
-		}
-
 		float* readFrame(unsigned int delay) {
 			auto ind = IND_PRODUCER(delay, this->current_frame);
 			return &this->source[ind*LANES];
@@ -90,13 +82,6 @@ class BlockDelayLine {
 		auto write(unsigned int channel, float value) -> std::enable_if_t<WRITE_ENABLED, RET> {
 			assert(channel < LANES);
 			this->source[this->current_frame*LANES + channel] = value;
-		}
-
-		template<typename RET = void>
-		auto write4(unsigned int channel, AudioSample4 value) -> std::enable_if_t<WRITE_ENABLED && LANES % 4 == 0, RET> {
-			assert(channel < lanes);
-			assert(channel % 4 == 0);
-			*(AudioSample4)&this->source[this->current_frame*LANES + channels] = value;
 		}
 
 		template<typename RET = AudioSample *>

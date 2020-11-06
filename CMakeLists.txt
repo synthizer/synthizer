@@ -101,9 +101,6 @@ if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
 	add_executable(delay_line_test test/delay_line.cpp)
 	target_link_libraries(delay_line_test synthizer)
 
-	add_executable(convolve_bench convolve_bench.cpp)
-	target_link_libraries(convolve_bench synthizer)
-
 	add_executable(file_test file_test.cpp)
 	target_link_libraries(file_test synthizer)
 
