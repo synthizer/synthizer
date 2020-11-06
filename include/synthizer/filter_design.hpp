@@ -12,7 +12,7 @@ template<std::size_t num, std::size_t den, typename enabled = void>
 class IIRFilterDef;
 
 template<std::size_t num, std::size_t den>
-class IIRFilterDef<num, den, typename std::enable_if<(num > 0 && den > 0)>::type> {
+class IIRFilterDef<num, den, typename std::enable_if<(num > 0)>::type> {
 	public:
 	/*
 	 * Numerator of the filter (b_x in audio EQ cookbook).
@@ -30,6 +30,11 @@ class IIRFilterDef<num, den, typename std::enable_if<(num > 0 && den > 0)>::type
 	 * */
 	double gain;
 };
+
+/*]
+ * A wire is the identity filter.
+ * */
+IIRFilterDef<1, 0> designWire();
 
 /*
  * A single-zero filter.

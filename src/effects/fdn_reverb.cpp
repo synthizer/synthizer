@@ -17,6 +17,18 @@ namespace synthizer {
 
 void FdnReverbEffect::recomputeModel() {
 	/*
+	 * Design the input filter. It's as straightforward as it looks.
+	 * */
+	if (this->input_filter_enabled) {
+		this->input_filter.setParameters(designAudioEqLowpass(this->input_filter_cutoff / config::SR));
+	} else {
+		this->input_filter.setParameters(designWire());
+	}
+
+
+	this->late_reflections_delay_samples = this->late_reflections_delay * config::SR;
+
+	/*
 	 * The average delay line length is the mean free path. You can think about this as if delay lines in the FDN all ran to walls.
 	 * We want the average distance to those walls to be the mean free path.
 	 * 
@@ -102,6 +114,7 @@ void FdnReverbEffect::recomputeModel() {
 	 * account for the extra sample we need when interpolating here.
 	 * */
 	this->max_delay = this->delays[LINES - 1] + mod_depth_in_samples + 1;
+	this->max_delay = std::max(this->max_delay, this->late_reflections_delay_samples);
 }
 
 void FdnReverbEffect::resetEffect() {
@@ -134,10 +147,14 @@ void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_
 		}
 		input_sample *= 1.0f / input_channels;
 
-	/*
-	 * Implement a householder reflection about <1, 1, 1, 1... >. This is a reflection about the hyperplane.
-	 * */
+		/*
+		 * Apply the initial filter. The purpose is to let the user make the reverb less harsh on high-frequency sounds.
+		 * */
+		this->input_filter.tick(&input_sample, &input_sample);
 
+		/*
+		* Implement a householder reflection about <1, 1, 1, 1... >. This is a reflection about the hyperplane.
+		* */
 
 		/* not initialized because zeroing can be expensive and we set it immediately in the loop below. */
 		std::array<float, LINES> values;
@@ -167,11 +184,12 @@ void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_
 		}
 
 		/*
-		 * We need two mostly decorrelated channels, but want to also avoid panning artifacts. To do this,
-		 * feed the first delay line to both, then feed a subset of the rest to each channel.
+		 * We want two decorrelated channels, with roughly the same amount of reflections in each.
 		 * */
-		float l = values[0] + values[2] + values[4] + values[6];
-		float r = values[1] + values[3] + values[5] + values[7];
+		unsigned int d = this->late_reflections_delay_samples;
+		float *frame = rw.readFrame(d);
+		float l = frame[0] + frame[2] + frame[4] + frame[6];
+		float r = frame[1] + frame[3] + frame[5] + frame[7];
 		output_buf_ptr[2*i] = l;
 		output_buf_ptr[2*i + 1] = r;
 	});

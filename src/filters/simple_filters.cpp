@@ -9,6 +9,13 @@ using namespace std;
 
 namespace synthizer {
 
+IIRFilterDef<1, 0> designWire() {
+	IIRFilterDef<1, 0> def;
+	def.gain = 1.0;
+	def.num_coefs[0] = 1.0;
+	return def;
+}
+
 /*
  * Compute coefficients for a zero of the polynomial a0+a1 z^-1
  * 

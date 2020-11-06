@@ -31,7 +31,7 @@ struct syz_RouteConfig route_config = {
 int main(int argc, char *argv[]) {
 	syz_Handle context, generator, source, buffer, effect;
 	int ecode = 0, ending = 0;
-	double angle, delta;
+	double angle = 0.0, angle_per_second = 90.0;
 
 	if (argc != 2) {
 		printf("Usage: wav_test <path>\n");
@@ -54,7 +54,15 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 0));
-	std::this_thread::sleep_for(std::chrono::seconds(30));
+	while (true) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		angle += 0.01 * angle_per_second;
+		angle = fmod(angle, 360.0);
+		double rad = angle * PI / 180.0;
+		double y = cos(rad);
+		double x = sin(rad);
+		CHECKED(syz_setD3(source, SYZ_P_POSITION, x, y, 0.0));
+	}
 
 end:
 	ending = 1;

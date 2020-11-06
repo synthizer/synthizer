@@ -4,6 +4,7 @@
 #include "synthizer/config.hpp"
 #include "synthizer/effects/base_effect.hpp"
 #include "synthizer/effects/global_effect.hpp"
+#include "synthizer/iir_filter.hpp"
 #include "synthizer/interpolated_random_sequence.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/memory.hpp"
@@ -40,6 +41,15 @@ class FdnReverbEffect: public BaseEffect {
 	void recomputeModel();
 
 	/*
+	 * The delay, in samples, of the late reflections relative to the input.
+	 * */
+	unsigned int late_reflections_delay_samples;
+
+	/*
+	 * Used to filter the input.
+	 * */
+	IIRFilter<1, 3, 3> input_filter;
+	/*
 	 * The delay lines. We pack them into one to prevent needing multiple modulus.
 	 * */
 	BlockDelayLine<LINES, nextMultipleOf(MAX_DELAY_SAMPLES, config::BLOCK_SIZE) / config::BLOCK_SIZE> lines;
@@ -62,9 +72,14 @@ class FdnReverbEffect: public BaseEffect {
 	 * */
 	bool recompute_model = true;
 	/*
+	 * The input filter is a lowpass for now. We might let this be configurable later.
+	 * */
+	bool input_filter_enabled = true;
+	float input_filter_cutoff = 2000.0f;
+	/*
 	 * The t60 of the reverb, in seconds.
 	 * */
-	float t60 = 2.5f;
+	float t60 = 5.0f;
 	/*
 	 * rolloff ratios. The effective t60 for a band of the equalizer is rolloff * t60.
 	 * */
@@ -86,16 +101,17 @@ class FdnReverbEffect: public BaseEffect {
 	 * Diffusion is a measure of how fast reflections spread. This can't be equated to a physical property, so we just treat it as a
 	 * percent. Internally, this feeds the algorithm which picks delay line lengths.
 	 * */
-	float late_reflections_diffusion = 1.0f;
+	float late_reflections_diffusion = 0.2f;
 	/*
 	 * How much modulation in the delay lines? Larger values reduce periodicity, at the cost of introducing chorus-like effects.
 	 * In seconds.
 	 * */
-	float late_reflections_modulation_depth = 0.001f;
+	float late_reflections_modulation_depth = 0.01f;
 	/*
 	 * Frequency of modulation changes in hz.
 	 * */
 	float late_reflections_modulation_frequency = 0.5f;
+	float late_reflections_delay = 0.03f;
 };
 
 class GlobalFdnReverbEffect: public GlobalEffect<FdnReverbEffect> {
