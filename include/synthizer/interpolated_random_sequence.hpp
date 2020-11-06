@@ -9,6 +9,10 @@ namespace synthizer {
 /*
  * An interpolated random sequence which will pull from the random number generator
  * on a specified period, produce random values in a specified range, and interpolate to the next one.
+ * 
+ * Like with faders, it's intended that users reconfigure these by reconstructing. To do so, tick the old one and feed that value to the new one
+ * as the start value. To facilitate this use case, the first interpolation period will transition to within the range, and all others after that
+ * will stay there.
  * */
 class InterpolatedRandomSequence {
 	public:
@@ -16,11 +20,11 @@ class InterpolatedRandomSequence {
 
 	InterpolatedRandomSequence(float start_value, unsigned int steps, float min_value, float max_value) :
 	 last_value(start_value),
+	 next_value(start_value),
 	 range_min(min_value),
 	 range_max(max_value),
 	 steps_per_generation(steps),
 	 steps_per_generation_inv(1.0f / steps) {
-		 this->next_value = 0.0f;
 		 /*
 		  * Force the first tick to return the start, then immediately recompute.
 		  * */
@@ -42,7 +46,6 @@ class InterpolatedRandomSequence {
 			this->countdown = this->steps_per_generation;
 			this->step_size = this->next_value - this->last_value;
 		}
-		assert(val >= this->range_min && val < this->range_max);
 		return val;
 	}
 
