@@ -81,17 +81,15 @@ DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX)
 EFFECT_PROPERTIES \
 INT_P(SYZ_P_INPUT_FILTER_ENABLED, input_filter_enabled, InputFilterEnabled, 0, 1) \
 DOUBLE_P(SYZ_P_INPUT_FILTER_CUTOFF, input_filter_cutoff, InputFilterCutoff, 0.0, 22050.0) \
-DOUBLE_P(SYZ_P_MEAN_FREE_PATH, mean_free_path, MeanFreePath, 0.0, 5.0) \
+DOUBLE_P(SYZ_P_MEAN_FREE_PATH, mean_free_path, MeanFreePath, 0.0, 0.5) \
 DOUBLE_P(SYZ_P_T60, t60, T60, 0.0, 100.0) \
 DOUBLE_P(SYZ_P_LATE_REFLECTIONS_LF_ROLLOFF, late_reflections_lf_rolloff, LateReflectionsLfRolloff, 0.0, 2.0) \
 DOUBLE_P(SYZ_P_LATE_REFLECTIONS_LF_REFERENCE, late_reflections_lf_reference, LateReflectionsLfReference, 0.0, 22050.0) \
 DOUBLE_P(SYZ_P_LATE_REFLECTIONS_HF_ROLLOFF, late_reflections_hf_rolloff, LateReflectionsHfRolloff, 0.0, 2.0) \
 DOUBLE_P(SYZ_P_LATE_REFLECTIONS_DIFFUSION, late_reflections_diffusion, LateReflectionsDiffusion, 0.0, 1.0) \
-DOUBLE_P(SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH, late_reflections_modulation_depth, LateReflectionsModulationDepth, 0.0, 1.0) \
+DOUBLE_P(SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH, late_reflections_modulation_depth, LateReflectionsModulationDepth, 0.0, 0.3) \
 DOUBLE_P(SYZ_P_LATE_REFLECTIONS_MODULATION_FREQUENCY, late_reflections_modulation_frequency, LateReflectionsModulationFrequency, 0.01, 100.0) \
-DOUBLE_P(SYZ_P_LATE_REFLECTIONS_DELAY, late_reflections_delay, LateReflectionsDelay, 0.0, 1.0)
-
-
+DOUBLE_P(SYZ_P_LATE_REFLECTIONS_DELAY, late_reflections_delay, LateReflectionsDelay, 0.0, 0.5)
 
 #ifdef __cplusplus
 }

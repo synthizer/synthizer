@@ -21,20 +21,25 @@ namespace synthizer {
  * */
 class FdnReverbEffect: public BaseEffect {
 	public:
-	/* Maximum number of lines in the FDN. */
+	/* Number of lines in the FDN. */
 	static constexpr unsigned int LINES = 8;
 	/*
 	 * Must be large enough to account for the maximum theoretical delay we might see. Figure that out buy summing the following properties's maximums:
-	 * mean_free_path + late_reflections_delay + late_reflections_modulation_depth.
+	 * mean_free_path + late_reflections_modulation_depth.
+	 * late_reflections_delay doesn't need to be accounted for, as long as its maximum is below the above sum.
+	 * 
+	 * Also, add in a little bit extra so that prime numbers above the range have room, since reading the primes array can go out of range.
 	 * */
-	static constexpr unsigned int MAX_DELAY_SAMPLES = config::SR * 7;
-	static constexpr float MAX_DELAY_SECONDS = 7.0f;
+	static constexpr unsigned int MAX_DELAY_SAMPLES = config::SR * 1;
+	static constexpr float MAX_DELAY_SECONDS = 1.0f;
 	/*
 	 * In the primes-finding algorithm, if we push up against the far end of what we can reasonably handle, we need to cap it.
 	 * 
 	 * The result is that extreme values will become periodic, but values this extreme aren't going to work anyway and it's better than crashing.
+	 * 
+	 * This must not be larger than mean free path + slack used to setmAX_DELAY_{SAMPLES,SECONDS}.
 	 * */
-	static constexpr unsigned int MAX_FEEDBACK_DELAY = 5 * config::SR;
+	static constexpr unsigned int MAX_FEEDBACK_DELAY = 0.35 * config::SR;
 
 	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output, float gain) override;
 	void resetEffect() override;

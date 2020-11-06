@@ -24,16 +24,16 @@ Enum | Type | Default | Range | Description
 --- | --- | --- | --- | ---
 SYZ_P_INPUT_FILTER_ENABLED | int | 1 | 0 or 1 | Whether or not the input filter is enabled.
 SYZ_P_INPUT_FILTER_CUTOFF | double | 2000.0 | 0.0 to 22050.0 | The cutoff of the input filter
-SYZ_P_MEAN_FREE_PATH | double | 0.02 | 0.0 to 5.0 | The mean free path of the simulated environment.
+SYZ_P_MEAN_FREE_PATH | double | 0.02 | 0.0 to 0.5 | The mean free path of the simulated environment.
 SYZ_P_T60 | double | 1.0 | 0.0 to 100.0 | The T60 of the reverb
 SYZ_P_LATE_REFLECTIONS_LF_ROLLOFF | double | 1.0 | 0.0 to 2.0 | A multiplicative factor on T60 for the low frequency band
 SYZ_P_LATE_REFLECTIONS_LF_REFERENCE | double | 200.0 | 0.0 to 22050.0 | Where the low band of the feedback equalizer ends
 SYZ_P_LATE_REFLECTIONS_HF_ROLLOFF | double | 0.5 | 0.0 to 2.0 | A multiplicative factor on T60 for the high frequency band
 SYZ_P_LATE_REFLECTIONS_HF_REFERENCE | double | 500.0 | 0.0 to 22050.0 | Where the high band of the equalizer starts.
 SYZ_P_LATE_REFLECTIONS_DIFFUSION | double | 1.0 | 0.0 to 1.0 | Controls the diffusion of the late reflections as a percent.
-SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH | double | 0.01 | 0.0 to 1.0 | The depth of the modulation of the delay lines on the feedback path in seconds.
+SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH | double | 0.01 | 0.0 to 0.3 | The depth of the modulation of the delay lines on the feedback path in seconds.
 SYZ_P_LATE_REFLECTIONS_MODULATION_FREQUENCY | double | 0.5 | 0.01 to 100.0 | The frequency of the modulation of the delay lines inthe feedback paths.
-SYZ_P_LATE_REFLECTIONS_DELAY | double | 0.01 | 0.0 to 1.0 | The delay of the late reflections relative to the input in seconds.
+SYZ_P_LATE_REFLECTIONS_DELAY | double | 0.01 | 0.0 to 0.5 | The delay of the late reflections relative to the input in seconds.
 
 ## Remarks
 
