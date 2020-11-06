@@ -98,17 +98,16 @@ class FdnReverbEffect: public BaseEffect {
 	bool input_filter_enabled = true;
 	float input_filter_cutoff = 2000.0f;
 
-
 	/*
 	 * The mean free path, in seconds.
 	 * This is effectively meters/ speed of sound.
 	 * 0.01 is approximately 5 meters.
 	 * */
-	float mean_free_path = 0.04f;
+	float mean_free_path = 0.02f;
 	/*
 	 * The t60 of the reverb, in seconds.
 	 * */
-	float t60 = 5.0f;
+	float t60 = 1.0f;
 	/*
 	 * rolloff ratios. The effective t60 for a band of the equalizer is rolloff * t60.
 	 * */
@@ -133,7 +132,7 @@ class FdnReverbEffect: public BaseEffect {
 	 * Frequency of modulation changes in hz.
 	 * */
 	float late_reflections_modulation_frequency = 0.5f;
-	float late_reflections_delay = 0.03f;
+	float late_reflections_delay = 0.01f;
 };
 
 class GlobalFdnReverbEffect: public GlobalEffect<FdnReverbEffect> {

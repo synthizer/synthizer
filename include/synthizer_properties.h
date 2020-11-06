@@ -88,7 +88,9 @@ DOUBLE_P(SYZ_P_LATE_REFLECTIONS_LF_REFERENCE, late_reflections_lf_reference, Lat
 DOUBLE_P(SYZ_P_LATE_REFLECTIONS_HF_ROLLOFF, late_reflections_hf_rolloff, LateReflectionsHfRolloff, 0.0, 2.0) \
 DOUBLE_P(SYZ_P_LATE_REFLECTIONS_DIFFUSION, late_reflections_diffusion, LateReflectionsDiffusion, 0.0, 1.0) \
 DOUBLE_P(SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH, late_reflections_modulation_depth, LateReflectionsModulationDepth, 0.0, 1.0) \
-DOUBLE_P(SYZ_P_LATE_REFLECTIONS_MODULATION_FREQUENCY, late_reflections_modulation_frequency, LateReflectionsModulationFrequency, 0.01, 100.0)
+DOUBLE_P(SYZ_P_LATE_REFLECTIONS_MODULATION_FREQUENCY, late_reflections_modulation_frequency, LateReflectionsModulationFrequency, 0.01, 100.0) \
+DOUBLE_P(SYZ_P_LATE_REFLECTIONS_DELAY, late_reflections_delay, LateReflectionsDelay, 0.0, 1.0)
+
 
 
 #ifdef __cplusplus
