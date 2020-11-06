@@ -126,6 +126,7 @@ class StrategyBank {
 	void run(unsigned int channels, AudioSample *destination) {
 		unsigned int last_channel_count = 0;
 		unsigned int last_lane_count = 0;
+		bool first = true;
 		bool needs_final_fold = false;
 		dropPanners(this->panners);
 
@@ -136,13 +137,14 @@ class StrategyBank {
 			unsigned int nch = i.panner.getOutputChannelCount();
 			unsigned int nl = i.panner.getLaneCount();
 			i.panner.run(&working_buffer[0]);
-			if (nch != last_channel_count || nl != last_lane_count) {
+			if (first == false && (nch != last_channel_count || nl != last_lane_count)) {
 				this->fold(nch, nl, channels, destination);
 				std::fill(this->working_buffer.begin(), this->working_buffer.end(), 0.0f);
 				needs_final_fold = false;
-				last_channel_count = nch;
-				last_lane_count = nl;
 			}
+			last_channel_count = nch;
+			last_lane_count = nl;
+			first = false;
 		}
 		if (needs_final_fold) {
 			this->fold(last_channel_count, last_lane_count, channels, destination);
