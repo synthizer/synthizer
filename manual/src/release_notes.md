@@ -1,11 +1,15 @@
 # Release Notes
 
-## 0.7.5 (WIP)
+## 0.7.5
 
+- Introduce [reverb](./object_reference/fdn_reverb.md).
 - Start building Python 3.9 wheels.
 - Sources now fade gain changes to prevent clicks, especially when feeding effects.
 - Expose `syz_resetEffect` for interactive experimentation purposes, to clear the internal state of effects. In python this is `.reset()` on any effect.
 - All effects now have a `SYZ_P_GAIN` property to set the overall gain of the effect.
+- internally fix the bitsets, which manifested as weird issues with allocating sources to panner lanes, for example
+  issue #16 where PannedSource could become silent.  Note that this may introduce other issues in exchange: it was assumed
+  that the bitsets were working this entire time.
 
 ## 0.7.4
 
