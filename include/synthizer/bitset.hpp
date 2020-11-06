@@ -22,7 +22,7 @@ class Bitset {
 		assert(index < BITS);
 		unsigned int byte = this->data[index/8];
 		unsigned int bit = index%8;
-		return (byte & (1 << bit)) == 1;
+		return (byte & (1 << bit)) != 0;
 	}
 
 	void set(unsigned int index, bool value) {
