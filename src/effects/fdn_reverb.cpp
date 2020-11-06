@@ -127,6 +127,8 @@ void FdnReverbEffect::recomputeModel() {
 
 void FdnReverbEffect::resetEffect() {
 	this->lines.clear();
+	this->feedback_eq.reset();
+	this->input_filter.reset();
 }
 
 void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output, float gain) {

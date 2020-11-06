@@ -53,6 +53,11 @@ class ThreeBandEq {
 		this->upper.tick(&intermediate[0], output);
 	}
 
+	void reset() {
+		this->lower.reset();
+		this->upper.reset();
+	}
+
 	private:
 	/* Returns [lower, upper] */
 	std::tuple<IIRFilterDef<3, 3>, IIRFilterDef<3, 3>> design(const ThreeBandEqParams &params) {
