@@ -81,6 +81,8 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle output, syz_Handle input, float fade_out)
 
+    syz_ErrorCode syz_effectReset(syz_Handle effect)
+
     syz_ErrorCode syz_createGlobalEcho(syz_Handle* out, syz_Handle context)
 
     cdef struct syz_EchoTapConfig:

@@ -397,6 +397,10 @@ cdef class NoiseGenerator(Generator):
 
     noise_type = enum_property(SYZ_P_NOISE_TYPE, lambda x: NoiseType(x))
 
+cdef class GlobalEffect(_BaseObject):
+    cpdef reset(self):
+        _checked(syz_effectReset(self.handle))
+
 cdef class EchoTapConfig:
     """An echo tap. Passed to GlobalEcho.set_taps."""
     cdef public float delay
@@ -408,7 +412,8 @@ cdef class EchoTapConfig:
         self.gain_l = gain_l
         self.gain_r = gain_r
 
-cdef class GlobalEcho(_BaseObject):
+
+cdef class GlobalEcho(GlobalEffect):
     def __init__(self, context):
         cdef syz_Handle handle
         _checked(syz_createGlobalEcho(&handle, context._get_handle_checked(Context)))
@@ -436,7 +441,7 @@ cdef class GlobalEcho(_BaseObject):
             PyMem_Free(cfgs)
 
 
-cdef class GlobalFdnReverb(_BaseObject):
+cdef class GlobalFdnReverb(GlobalEffect):
     def __init__(self, context):
         cdef syz_Handle handle
         _checked(syz_createGlobalFdnReverb(&handle, context._get_handle_checked(Context)))

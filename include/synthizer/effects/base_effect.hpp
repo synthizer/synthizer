@@ -26,7 +26,7 @@ class BaseEffect {
 	 * It is also acceptable not to write to the output argument if the effect is, i.e, using PannerBank infrastructure to share panning costs.
 	 * In that case, however, the implementation can't play nice with generators in future when that's added.
 	 * 
-	 * timeInBlocks exists to allow for crossfading, without us slowly accumulating a bunch of clocks everywhere.
+	 * time_in_blocks exists to allow for crossfading, without us slowly accumulating a bunch of clocks everywhere.
 	 * */
 	virtual void runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output) = 0;
 	virtual void resetEffect() = 0;
