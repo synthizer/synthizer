@@ -724,20 +724,20 @@ const ImpulseArray IMPULSES{ {
 } };
 
 const std::array<ElevationDef, 14> ELEVATIONS{ {
-    { .angle = -40, .azimuth_start = 0, .azimuth_count = 56 },
-    { .angle = -30, .azimuth_start = 56, .azimuth_count = 60 },
-    { .angle = -20, .azimuth_start = 116, .azimuth_count = 72 },
-    { .angle = -10, .azimuth_start = 188, .azimuth_count = 72 },
-    { .angle = 0, .azimuth_start = 260, .azimuth_count = 72 },
-    { .angle = 10, .azimuth_start = 332, .azimuth_count = 72 },
-    { .angle = 20, .azimuth_start = 404, .azimuth_count = 72 },
-    { .angle = 30, .azimuth_start = 476, .azimuth_count = 60 },
-    { .angle = 40, .azimuth_start = 536, .azimuth_count = 56 },
-    { .angle = 50, .azimuth_start = 592, .azimuth_count = 45 },
-    { .angle = 60, .azimuth_start = 637, .azimuth_count = 36 },
-    { .angle = 70, .azimuth_start = 673, .azimuth_count = 24 },
-    { .angle = 80, .azimuth_start = 697, .azimuth_count = 12 },
-    { .angle = 90, .azimuth_start = 709, .azimuth_count = 1 },
+    { -40, 0, 56 },
+    { -30, 56, 60 },
+    { -20, 116, 72 },
+    { -10, 188, 72 },
+    { 0, 260, 72 },
+    { 10, 332, 72 },
+    { 20, 404, 72 },
+    { 30, 476, 60 },
+    { 40, 536, 56 },
+    { 50, 592, 45 },
+    { 60, 637, 36 },
+    { 70, 673, 24 },
+    { 80, 697, 12 },
+    { 90, 709, 1 },
 } };
 
 }

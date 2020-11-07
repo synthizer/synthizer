@@ -71,10 +71,10 @@ class BufferData {
 		std::size_t actual_index = index / config::BUFFER_CHUNK_SIZE;
 		std::size_t rounded_index = actual_index * config::BUFFER_CHUNK_SIZE;
 		return {
-			.start = rounded_index,
+			/*.start=*/rounded_index,
 			/* Note: this is more complicated because it has to account for a potential partial page at the end. */
-			.end = rounded_index + std::min(this->length - rounded_index, config::BUFFER_CHUNK_SIZE),
-			.data = this->chunks[actual_index],
+			/*.end=*/ rounded_index + std::min(this->length - rounded_index, config::BUFFER_CHUNK_SIZE),
+			/*.data=*/ this->chunks[actual_index],
 		};
 	}
 

@@ -4,10 +4,25 @@ project(synthizer VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-add_compile_options(-Xclang -fno-caret-diagnostics
-	-Xclang -Wno-deprecated-declarations
-	-Xclang -Wno-logical-op-parentheses
-)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	add_compile_options(-Xclang -fno-caret-diagnostics
+		-Xclang -Wno-deprecated-declarations
+		-Xclang -Wno-logical-op-parentheses
+	)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+	add_compile_options(
+		# Lets us use Clang pragmas.
+		/wd4068
+		# allows implicit casts to smaller types. We need this because we can't i.e. std::copy(double, float) without hitting it.
+		/wd4244
+		/wd4267
+		# Lets property generation work, namely property_impl.hpp
+		/Zc:preprocessor
+		# And now we need to silence a winbase.h warning because it's got a macro expanding to undefined somehow. Noe that this isn't our code:
+		/wd5105
+	)
+endif()
+
 
 # We always use MultiThreaded, until I can figure out Python setuptools runtime picking options.
 #set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

@@ -23,10 +23,7 @@ auto ret = x; \
 	} \
 } while(0)
 
-struct syz_RouteConfig route_config = {
-	.gain = 1.0,
-	.fade_time = 0.01,
-};
+struct syz_RouteConfig route_config = { 1.0, 0.01, };
 
 int main(int argc, char *argv[]) {
 	syz_Handle context, generator, source, buffer, effect;

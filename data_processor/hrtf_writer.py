@@ -55,7 +55,7 @@ const ImpulseArray IMPULSES{ {
 
 const std::array<ElevationDef, {{ data.num_elevs }}> ELEVATIONS{ {
     {%- for e in elevation_defs %}
-    { .angle = {{ e.angle }}, .azimuth_start = {{ e.azimuth_start }}, .azimuth_count = {{ e.azimuth_count }} },
+    { {{ e.angle }}, {{ e.azimuth_start }}, {{ e.azimuth_count }} },
     {%- endfor %}
 } };
 

@@ -22,7 +22,7 @@ class SampleVector {
 
 	template<typename O>
 	SampleVector<T, n> &setScalar(O other) {
-		std::fill(this->values.begin(), this->values.end(), other);
+		std::fill(this->values.begin(), this->values.end(), (T)other);
 		return *this;
 	}
 
