@@ -10,7 +10,7 @@
 
 namespace synthizer {
 template<bool FADE_IN, bool ADD>
-void EchoEffect::runEffectInternal(AudioSample *output, float gain) {
+void EchoEffect::runEffectInternal(float *output, float gain) {
 	this->line.runReadLoop(this->max_delay_tap, [&](unsigned int i, auto &reader) {
 		float acc_l = 0.0f;
 		float acc_r = 0.0f;
@@ -35,8 +35,8 @@ void EchoEffect::runEffectInternal(AudioSample *output, float gain) {
 	});
 }
 
-void EchoEffect::runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output, float gain) {
-	thread_local std::array<AudioSample, config::BLOCK_SIZE * 2> working_buf;
+void EchoEffect::runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) {
+	thread_local std::array<float, config::BLOCK_SIZE * 2> working_buf;
 
 	auto *buffer = this->line.getNextBlock();
 	std::fill(buffer, buffer + config::BLOCK_SIZE * 2, 0.0f);

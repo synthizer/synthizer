@@ -131,13 +131,13 @@ void FdnReverbEffect::resetEffect() {
 	this->input_filter.reset();
 }
 
-void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output, float gain) {
+void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) {
 	/*
 	 * Output is stereo. For surround setups, we can get 99% of the benefit just by upmixing stereo differently, which we'll do in future by hand
 	 * as a special case.
 	 * */
-	alignas(config::ALIGNMENT) thread_local std::array<AudioSample, config::BLOCK_SIZE * 2> output_buf{ { 0.0f } };
-	AudioSample *output_buf_ptr = &output_buf[0];
+	alignas(config::ALIGNMENT) thread_local std::array<float, config::BLOCK_SIZE * 2> output_buf{ { 0.0f } };
+	float *output_buf_ptr = &output_buf[0];
 
 	if (this->dirty) {
 		this->recomputeModel();

@@ -191,10 +191,10 @@ unsigned int HrtfPanner::getLaneCount() {
 	return CHANNELS;
 }
 
-std::tuple<AudioSample *, unsigned int>
+std::tuple<float *, unsigned int>
 HrtfPanner::getLane(unsigned int channel) {
 	assert(channel < HrtfPanner::CHANNELS);
-	AudioSample *ptr = this->input_line.getNextBlock();
+	float *ptr = this->input_line.getNextBlock();
 	return { ptr + channel, CHANNELS };
 }
 
@@ -222,9 +222,9 @@ void HrtfPanner::stepConvolution(R &&reader, const float *hrir, std::array<float
 	*dest_r = std::array<float, 4>{ accumulator_left[2], accumulator_right[2], accumulator_left[3], accumulator_right[3] };
 }
 
-void HrtfPanner::run(AudioSample *output) {
-	AudioSample *prev_hrir = nullptr;
-	AudioSample *current_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * data::hrtf::IMPULSE_LENGTH ];
+void HrtfPanner::run(float *output) {
+	float *prev_hrir = nullptr;
+	float *current_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * data::hrtf::IMPULSE_LENGTH ];
 
 	bool crossfade = false;
 	for(unsigned int i = 0; i < CHANNELS; i++) {
@@ -251,7 +251,7 @@ void HrtfPanner::run(AudioSample *output) {
 	unsigned int normal_samples = config::BLOCK_SIZE - crossfade_samples;
 	assert(crossfade_samples + normal_samples == config::BLOCK_SIZE);
 
-	AudioSample *itd_block = this->itd_line.getNextBlock();
+	float *itd_block = this->itd_line.getNextBlock();
 	input_line.runReadLoopSplit(data::hrtf::IMPULSE_LENGTH - 1,
 	crossfade_samples, [&](unsigned int i, auto &reader) {
 		std::array<float, 4> l_old, l_new, r_old, r_new;
@@ -301,7 +301,7 @@ void HrtfPanner::run(AudioSample *output) {
 	this->itd_line.runReadLoopSplit(config::HRTF_MAX_ITD,
 		/* Crossfade the delays, if necessary. */
 		crossfade_samples, [&](unsigned int i, auto &reader) {
-			AudioSample *o = output + i * CHANNELS * 2;
+			float *o = output + i * CHANNELS * 2;
 			double fraction = i/(float)config::CROSSFADE_SAMPLES;
 			for(unsigned int c = 0; c < CHANNELS; c++) {
 				auto [old_left, old_right ] = this->prev_itds[c];
@@ -323,7 +323,7 @@ void HrtfPanner::run(AudioSample *output) {
 		},
 		/* Then do the main loop. */
 		normal_samples, [&](unsigned int i, auto &reader) {
-			AudioSample *o = output + i * CHANNELS * 2;
+			float *o = output + i * CHANNELS * 2;
 			for(unsigned int j = 0; j < CHANNELS*2; j++) {
 				o[j] += reader.read(j, delays[j]);
 			}

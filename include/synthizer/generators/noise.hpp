@@ -28,7 +28,7 @@ class ExposedNoiseGenerator: public Generator {
 		return this->channels;
 	}
 
-	void generateBlock(AudioSample *out) override;
+	void generateBlock(float *out) override;
 	void setPitchBend(double newPitchBend) override;
 
 	int getNoiseType();

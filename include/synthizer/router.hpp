@@ -35,7 +35,7 @@ class Router;
 class InputHandle {
 	public:
 	/* Configure the buffer to which audio is being routed. */
-	InputHandle(Router *router, AudioSample *buffer, unsigned int channels);
+	InputHandle(Router *router, float *buffer, unsigned int channels);
 	~InputHandle();
 	InputHandle(const InputHandle &) = delete;
 
@@ -44,7 +44,7 @@ class InputHandle {
 	friend class OutputHandle;
 	/* NOTE: Routers set the routers in their handles to NULL on shutdown to avoid the overhead of deling with weak_ptr/shared_ptr. */
 	Router *router = nullptr;
-	AudioSample *buffer = nullptr;
+	float *buffer = nullptr;
 	unsigned int channels = 0;
 };
 
@@ -60,7 +60,7 @@ class OutputHandle {
 	/*
 	 * Given an input buffer of audio data, route it to the appropriate destinations.
 	 * */
-	void routeAudio(AudioSample *buffer, unsigned int channels);
+	void routeAudio(float *buffer, unsigned int channels);
 
 	private:
 	friend class Router;

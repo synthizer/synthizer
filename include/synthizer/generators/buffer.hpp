@@ -14,7 +14,7 @@ class BufferGenerator: public Generator {
 	BufferGenerator(std::shared_ptr<Context> ctx): Generator(ctx) {}
 
 	unsigned int getChannels() override;
-	void generateBlock(AudioSample *output) override;
+	void generateBlock(float *output) override;
 	double getPitchBend();
 	void setPitchBend(double newPitchBend) override;
 	std::shared_ptr<Buffer> getBuffer();
@@ -27,12 +27,12 @@ class BufferGenerator: public Generator {
 	PROPERTY_METHODS;
 	private:
 	template<bool L>
-	void readInterpolated(double pos, AudioSample *out);
+	void readInterpolated(double pos, float *out);
 	/* Adds to destination, per the generators API. */
-	void generateNoPitchBend(AudioSample *out);
+	void generateNoPitchBend(float *out);
 	template<bool L>
-	void generatePitchBendHelper(AudioSample *out);
-	void generatePitchBend(AudioSample *out);
+	void generatePitchBendHelper(float *out);
+	void generatePitchBend(float *out);
 
 	std::weak_ptr<Buffer> buffer;
 	BufferReader reader;

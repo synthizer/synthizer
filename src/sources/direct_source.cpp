@@ -17,7 +17,7 @@ void DirectSource::run() {
 	 * In future this'll need to be done better.
 	 * */
 	this->fillBlock(2);
-	AudioSample *buf = this->context->getDirectBuffer();
+	float *buf = this->context->getDirectBuffer();
 	for(unsigned int i = 0; i < config::BLOCK_SIZE * 2; i++) {
 		buf[i] += this->block[i];
 	}

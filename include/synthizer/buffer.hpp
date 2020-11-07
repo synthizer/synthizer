@@ -151,7 +151,7 @@ class BufferReader {
 		return this->chunk.data[(pos - this->chunk.start) * this->channels + channel];
 	}
 
-	AudioSample readSample(std::size_t pos, unsigned int channel) {
+	float readSample(std::size_t pos, unsigned int channel) {
 		return this->readSampleI16(pos, channel) / 32768.0f;
 	}
 
@@ -170,7 +170,7 @@ class BufferReader {
 		std::copy(ptr, ptr + this->channels, out);
 	}
 
-	void readFrame(std::size_t pos, AudioSample *out) {
+	void readFrame(std::size_t pos, float *out) {
 		std::array<std::int16_t, config::MAX_CHANNELS> intermediate;
 		readFrameI16(pos, &intermediate[0]);
 		for (unsigned int i = 0; i < this->channels; i++) {
@@ -204,11 +204,11 @@ class BufferReader {
 	}
 
 	/*
-	 * Read frames into an AudioSample. If the workspace and workspace_len parameters are specified, they will be used as scratch space for the intermediate conversion.
+	 * Read frames into a float*. If the workspace and workspace_len parameters are specified, they will be used as scratch space for the intermediate conversion.
 	 * They exist to allow for more than the default stack-allocated workspace size, which can speed up the loops here significantly.
 	 * workspace must be aligned and workspace_len is in elements, not frames.
 	 * */
-	std::size_t readFrames(std::size_t pos, std::size_t count, AudioSample *out, std::size_t workspace_len = 0, std::int16_t *workspace = nullptr) {
+	std::size_t readFrames(std::size_t pos, std::size_t count, float *out, std::size_t workspace_len = 0, std::int16_t *workspace = nullptr) {
 		alignas(config::ALIGNMENT) std::array<std::int16_t, config::MAX_CHANNELS * 16> default_workspace = { 0 };
 
 		if (workspace_len * this->channels < default_workspace.size() || workspace == nullptr) {
@@ -218,7 +218,7 @@ class BufferReader {
 
 		std::size_t workspace_frames = workspace_len / this->channels;
 		std::size_t written = 0;
-		AudioSample *cursor = out;
+		float *cursor = out;
 
 		while (written < count) {
 			std::size_t requested = std::min(count - written, workspace_frames);

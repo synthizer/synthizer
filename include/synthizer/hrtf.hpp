@@ -66,9 +66,9 @@ class HrtfPanner: public AbstractPanner {
 	HrtfPanner();
 	unsigned int getOutputChannelCount();
 	unsigned int getLaneCount();
-	std::tuple<AudioSample *, unsigned int> getLane(unsigned int channel);
+	std::tuple<float *, unsigned int> getLane(unsigned int channel);
 	void recycleLane(unsigned int channel);
-	void run(AudioSample *output);
+	void run(float *output);
 	void setPanningAngles(unsigned int lane, double azimuth, double elevation);
 	void setPanningScalar(unsigned int lane, double scalar);
 
@@ -92,8 +92,8 @@ class HrtfPanner: public AbstractPanner {
 	 * These are stored like: [l1, l2, l3, l4, r1, r2, r3, r4]
 	 * We do the convolution with a specialized kernel that can deal with this.
 	 * */
-	static_assert(data::hrtf::IMPULSE_LENGTH % (config::ALIGNMENT / sizeof(AudioSample)) == 0, "Hrtf dataset length must be a multiple of  alignment/sizeof(AudioSample) for SIMD purposes");
-	alignas(config::ALIGNMENT) std::array<AudioSample, data::hrtf::IMPULSE_LENGTH*CHANNELS*2*2> hrirs = { 0.0f };
+	static_assert(data::hrtf::IMPULSE_LENGTH % (config::ALIGNMENT / sizeof(float)) == 0, "Hrtf dataset length must be a multiple of  alignment/sizeof(float) for SIMD purposes");
+	alignas(config::ALIGNMENT) std::array<float, data::hrtf::IMPULSE_LENGTH*CHANNELS*2*2> hrirs = { 0.0f };
 	unsigned int current_hrir = 0;
 	std::array<std::tuple<double, double>, CHANNELS> prev_itds{};
 	std::array<double, CHANNELS> azimuths = { { 0.0 } };

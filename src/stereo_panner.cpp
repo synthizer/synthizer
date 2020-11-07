@@ -16,7 +16,7 @@ unsigned int StereoPanner::getLaneCount() {
 	return LANES;
 }
 
-void StereoPanner::run(AudioSample *output) {
+void StereoPanner::run(float *output) {
 	for (unsigned int ch = 0; ch < LANES * 2; ch++) {
 		float *d = &this->data[ch / 2];
 		float *o = output + ch;
@@ -27,7 +27,7 @@ void StereoPanner::run(AudioSample *output) {
 	}
 }
 
-std::tuple<AudioSample *, unsigned int> StereoPanner::getLane(unsigned int lane) {
+std::tuple<float *, unsigned int> StereoPanner::getLane(unsigned int lane) {
 	assert(lane < LANES);
 	return {&this->data[lane], LANES};
 }

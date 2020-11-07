@@ -28,7 +28,7 @@ StreamingGenerator::StreamingGenerator(const std::shared_ptr<Context> &ctx, cons
 		this->resampler->SetRates(old_sr, config::SR);
 	}
 
-	background_thread.start([this] (std::size_t channels, AudioSample *dest) {
+	background_thread.start([this] (std::size_t channels, float *dest) {
 		this->generateBlockInBackground(channels, dest);
 	});
 }
@@ -42,9 +42,9 @@ unsigned int StreamingGenerator::getChannels() {
 	return channels;
 }
 
-void StreamingGenerator::generateBlock(AudioSample *output) {
-	thread_local std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> tmp_buf;
-	AudioSample *tmp_buf_ptr = &tmp_buf[0];
+void StreamingGenerator::generateBlock(float *output) {
+	thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> tmp_buf;
+	float *tmp_buf_ptr = &tmp_buf[0];
 
 	auto got = this->background_thread.read(config::BLOCK_SIZE, tmp_buf_ptr);
 	for (unsigned int i = 0; i < got * this->channels; i++) {
@@ -82,7 +82,7 @@ static double fillBufferFromDecoder(AudioDecoder &decoder, unsigned int size, un
 	unsigned int needed = size;
 	bool justLooped = false;
 
-	AudioSample *cursor = dest;
+	float *cursor = dest;
 	while (needed) {
 		unsigned int got = decoder.writeSamplesInterleaved(needed, cursor);
 		cursor += channels*got;
@@ -106,7 +106,7 @@ static double fillBufferFromDecoder(AudioDecoder &decoder, unsigned int size, un
 	return position_in;
 }
 
-void StreamingGenerator::generateBlockInBackground(std::size_t channels, AudioSample *out) {
+void StreamingGenerator::generateBlockInBackground(std::size_t channels, float *out) {
 	try {
 		bool looping = this->looping.load(std::memory_order_acquire) == 1;
 

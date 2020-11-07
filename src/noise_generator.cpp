@@ -43,7 +43,7 @@ float NoiseGenerator::generateSample() {
 	return 0.0f;
 }
 
-void NoiseGenerator::generateBlock(unsigned int size, AudioSample *block, unsigned int stride) {
+void NoiseGenerator::generateBlock(unsigned int size, float *block, unsigned int stride) {
 	switch (this->noise_type) {
 	case SYZ_NOISE_TYPE_UNIFORM:
 		return this->generateBlockUniform(size, block, stride);
@@ -60,7 +60,7 @@ float NoiseGenerator::generateSampleUniform() {
 	return this->random_gen.generateFloat();
 }
 
-void NoiseGenerator::generateBlockUniform(unsigned int size, AudioSample *block, unsigned int stride) {
+void NoiseGenerator::generateBlockUniform(unsigned int size, float *block, unsigned int stride) {
 	unsigned int i = 0;
 	for (unsigned int j = 0; j < size / 4; i+=4, j++) {
 		float f1, f2, f3, f4;
@@ -93,7 +93,7 @@ float NoiseGenerator::generateSampleVM() {
 	return out * (1.0f / VM_GENERATOR_COUNT);
 }
 
-void NoiseGenerator::generateBlockVM(unsigned int size, AudioSample *block, unsigned int stride) {
+void NoiseGenerator::generateBlockVM(unsigned int size, float *block, unsigned int stride) {
 	for (unsigned int i = 0; i < size; i++) {
 		block[i * stride] += this->generateSampleVM();
 	}
@@ -109,7 +109,7 @@ float NoiseGenerator::generateSampleFilteredBrown() {
 	return sample;
 }
 
-void NoiseGenerator::generateBlockFilteredBrown(unsigned int size, AudioSample *block, unsigned int stride) {
+void NoiseGenerator::generateBlockFilteredBrown(unsigned int size, float *block, unsigned int stride) {
 	unsigned int i =0;
 	/*for (unsigned int j = 0; j < size / 4; i += 4, j++) {
 		float f1, f2, f3, f4;

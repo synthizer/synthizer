@@ -43,7 +43,7 @@ class Source: public RouteOutput {
 	/*
 	 * An internal buffer, which accumulates all generators.
 	 * */
-	alignas(config::ALIGNMENT) std::array<AudioSample, config::BLOCK_SIZE * config::ALIGNMENT> block;
+	alignas(config::ALIGNMENT) std::array<float, config::BLOCK_SIZE * config::ALIGNMENT> block;
 
 	/*
 	 * Fill the internal block, downmixing and/or upmixing generators

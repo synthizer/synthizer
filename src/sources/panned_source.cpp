@@ -89,7 +89,7 @@ void PannedSource::run() {
 	/* And output. */
 	this->panner_lane->update();
 	unsigned int stride = this->panner_lane->stride;
-	AudioSample *dest = this->panner_lane->destination;
+	float *dest = this->panner_lane->destination;
 	float g = this->gain_3d;
 	for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 		dest[i * stride] = g * block[i];

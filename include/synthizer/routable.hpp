@@ -27,7 +27,7 @@ class RouteOutput: public BaseObject {
 
 class RouteInput: public BaseObject {
 	public:
-	RouteInput(const std::shared_ptr<Context> &ctx, AudioSample *buffer, unsigned int channels);
+	RouteInput(const std::shared_ptr<Context> &ctx, float *buffer, unsigned int channels);
 
 	router::InputHandle *getInputHandle() override {
 		return &this->input_handle;

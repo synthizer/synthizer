@@ -43,7 +43,7 @@ class AudioDecoder {
 	 * 
 	 * This class isn't responsible for channel conversion. Only audio I/O.
 	 * */
-	virtual std::int64_t writeSamplesInterleaved(std::int64_t num, AudioSample *samples, std::int64_t channels = 0) = 0;
+	virtual std::int64_t writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels = 0) = 0;
 	/* Seek to a specific PCM frame.
 	 *
 	 * If this is past the end, then the position of the underlying stream is set to the end, and no samples are output.

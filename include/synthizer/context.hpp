@@ -179,7 +179,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	/* Get the direct buffer, which is where things write when they want to bypass panning. This includes effects and direct sources, etc.
 	 * Inline because it's super inexpensive.
 	 * */
-	AudioSample *getDirectBuffer() {
+	float *getDirectBuffer() {
 		return &this->direct_buffer[0];
 	}
 
@@ -203,7 +203,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	 * 
 	 * The number of channels shouldn't change for the duration of this context in most circumstances.
 	 * */
-	void generateAudio(unsigned int channels, AudioSample *output);
+	void generateAudio(unsigned int channels, float *output);
 
 	/*
 	 * The audio thread itself.
@@ -254,7 +254,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	/* Collections of objects that require execution: sources, etc. all go here eventually. */
 
 	/* direct_buffer is a buffer to which we write when we want to output, bypassing panner banks. */
-	alignas(config::ALIGNMENT) std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> direct_buffer;
+	alignas(config::ALIGNMENT) std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> direct_buffer;
 
 	/* The key is a raw pointer for easy lookup. */
 	deferred_unordered_map<void *, std::weak_ptr<Source>> sources;

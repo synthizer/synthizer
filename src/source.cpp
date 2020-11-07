@@ -53,8 +53,8 @@ void Source::setGain(double gain) {
 }
 
 void Source::fillBlock(unsigned int channels) {
-	alignas(config::ALIGNMENT) thread_local std::array<AudioSample, config::MAX_CHANNELS * config::BLOCK_SIZE> premix_array = {0.0f };
-	AudioSample *premix = &premix_array[0];
+	alignas(config::ALIGNMENT) thread_local std::array<float, config::MAX_CHANNELS * config::BLOCK_SIZE> premix_array = {0.0f };
+	float *premix = &premix_array[0];
 
 	std::fill(&this->block[0], &this->block[0] + channels * config::BLOCK_SIZE, 0.0f);
 

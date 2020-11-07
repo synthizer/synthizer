@@ -39,7 +39,7 @@ namespace synthizer {
 
 template<unsigned int LANES, unsigned int SIZE_IN_BLOCKS>
 class BlockDelayLine {
-	alignas(config::ALIGNMENT) std::array<AudioSample, config::BLOCK_SIZE * SIZE_IN_BLOCKS * LANES> data = { 0.0f };
+	alignas(config::ALIGNMENT) std::array<float, config::BLOCK_SIZE * SIZE_IN_BLOCKS * LANES> data = { 0.0f };
 
 	public:
 	BlockDelayLine() {}
@@ -59,15 +59,15 @@ class BlockDelayLine {
 	template<unsigned int (*IND_PRODUCER)(unsigned int, unsigned int), bool WRITE_ENABLED>
 	class Reader {
 		private:
-		std::array<AudioSample, LANES * SIZE_IN_BLOCKS * config::BLOCK_SIZE> &source;
+		std::array<float, LANES * SIZE_IN_BLOCKS * config::BLOCK_SIZE> &source;
 		unsigned int current_frame;
 
 		public:
-		Reader(std::array<AudioSample, LANES * SIZE_IN_BLOCKS * config::BLOCK_SIZE> &source, unsigned int current_frame): source(source), current_frame(current_frame) {}
+		Reader(std::array<float, LANES * SIZE_IN_BLOCKS * config::BLOCK_SIZE> &source, unsigned int current_frame): source(source), current_frame(current_frame) {}
 		Reader(const Reader&) = delete;
 		Reader(const Reader &&) = delete;
 
-		AudioSample read(unsigned int channel, unsigned int delay) {
+		float read(unsigned int channel, unsigned int delay) {
 			assert(channel < LANES);
 			unsigned int index = IND_PRODUCER(delay, this->current_frame);
 			return this->source[index*LANES+channel];
@@ -84,7 +84,7 @@ class BlockDelayLine {
 			this->source[this->current_frame*LANES + channel] = value;
 		}
 
-		template<typename RET = AudioSample *>
+		template<typename RET = float *>
 		auto writeFrame() -> std::enable_if_t<WRITE_ENABLED, RET> {
 			return &this->source[this->current_frame * LANES];
 		}
@@ -118,7 +118,7 @@ class BlockDelayLine {
 		return this->runPrivLoopSplit<F1, F2, true>(max_delay, first, first_c, second, second_c);
 	}
 
-	AudioSample *getNextBlock() {
+	float *getNextBlock() {
 		assert(this->current_frame % config::BLOCK_SIZE == 0);
 		assert(this->current_frame < this->data.size());
 

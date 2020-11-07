@@ -21,7 +21,7 @@ namespace synthizer {
 
 class DitherGenerator {
 	public:
-	AudioSample generate() {
+	float generate() {
 		float r1 = this->distribution(this->engine);
 		float r2 = this->distribution(this->engine);
 		return 1.0f -r1 -r2;
@@ -33,7 +33,7 @@ class DitherGenerator {
 };
 
 /*
- * Takes a callable std::size_t producer(std::size_t frames, AudioSample *destination) and generates a buffer.
+ * Takes a callable std::size_t producer(std::size_t frames, float *destination) and generates a buffer.
  * Producer must always return the number of samples requested exactly, unless the end of the buffer is reached, in which case it should rewturn less. We use 
  * the less condition to indicate that we're done.
  * */
@@ -42,7 +42,7 @@ std::shared_ptr<BufferData> generateBufferData(unsigned int channels, unsigned i
 	DitherGenerator dither;
 	WDL_Resampler *resampler = nullptr;
 	deferred_vector<std::int16_t *> chunks;
-	AudioSample *working_buf = nullptr;
+	float *working_buf = nullptr;
 	std::int16_t *next_chunk = nullptr;
 
 	if (channels > config::MAX_CHANNELS) {
@@ -64,14 +64,14 @@ std::shared_ptr<BufferData> generateBufferData(unsigned int channels, unsigned i
 		std::size_t length = 0;
 		bool last = false;
 
-		working_buf = new AudioSample[chunk_size_samples];
+		working_buf = new float[chunk_size_samples];
 
 		while (last == false) {
 			next_chunk = allocAligned<std::int16_t>(channels * config::BUFFER_CHUNK_SIZE);
 			std::size_t next_chunk_len = 0;
 
 			if (resampler != nullptr) {
-				AudioSample *dst;
+				float *dst;
 				auto needed = resampler->ResamplePrepare(config::BUFFER_CHUNK_SIZE, channels, &dst);
 				auto got = producer(needed, dst);
 				last = got < needed;
@@ -114,7 +114,7 @@ std::shared_ptr<BufferData> generateBufferData(unsigned int channels, unsigned i
 std::shared_ptr<BufferData> bufferDataFromDecoder(const std::shared_ptr<AudioDecoder> &decoder) {
 	auto channels = decoder->getChannels();
 	auto sr = decoder->getSr();
-	return generateBufferData(channels, sr, [&](auto frames, AudioSample *dest) {
+	return generateBufferData(channels, sr, [&](auto frames, float *dest) {
 		return decoder->writeSamplesInterleaved(frames, dest);
 	});
 }

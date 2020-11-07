@@ -20,7 +20,7 @@ unsigned int BufferGenerator::getChannels() {
 	return this->reader.getChannels();
 }
 
-void BufferGenerator::generateBlock(AudioSample *output) {
+void BufferGenerator::generateBlock(float *output) {
 	auto buffer = this->buffer.lock();
 	if (buffer == nullptr || buffer->getLength() == 0) {
 		return;
@@ -32,8 +32,8 @@ void BufferGenerator::generateBlock(AudioSample *output) {
 }
 
 template<bool L>
-void BufferGenerator::readInterpolated(double pos, AudioSample *out) {
-	std::array<AudioSample, config::MAX_CHANNELS> f1, f2;
+void BufferGenerator::readInterpolated(double pos, float *out) {
+	std::array<float, config::MAX_CHANNELS> f1, f2;
 	std::size_t lower = std::floor(pos);
 	std::size_t upper = lower + 1;
 	if (L) upper = upper % this->reader.getLength();
@@ -48,7 +48,7 @@ void BufferGenerator::readInterpolated(double pos, AudioSample *out) {
 }
 
 template<bool L>
-void BufferGenerator::generatePitchBendHelper(AudioSample *output) {
+void BufferGenerator::generatePitchBendHelper(float *output) {
 	double pos = this->position;
 	double delta = this->pitch_bend;
 	for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
@@ -60,7 +60,7 @@ void BufferGenerator::generatePitchBendHelper(AudioSample *output) {
 	this->position = std::min<double>(pos, this->reader.getLength());
 }
 
-void BufferGenerator::generatePitchBend(AudioSample *output) {
+void BufferGenerator::generatePitchBend(float *output) {
 	if (looping) {
 		return this->generatePitchBendHelper<true>(output);
 	} else {
@@ -68,10 +68,10 @@ void BufferGenerator::generatePitchBend(AudioSample *output) {
 	}
 }
 
-void BufferGenerator::generateNoPitchBend(AudioSample *output) {
-	alignas(config::ALIGNMENT) thread_local std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> workspace = { 0.0f };
+void BufferGenerator::generateNoPitchBend(float *output) {
+	alignas(config::ALIGNMENT) thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> workspace = { 0.0f };
 	std::size_t pos = std::round(this->position);
-	AudioSample *cursor = output;
+	float *cursor = output;
 	unsigned int remaining = config::BLOCK_SIZE;
 	while (remaining) {
 		auto got = this->reader.readFrames(pos, remaining, &workspace[0]);

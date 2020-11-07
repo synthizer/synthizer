@@ -53,7 +53,7 @@ class GenerationThread {
 	/*
 	 * Reads frames. Returns the amount actually read.
 	 * */
-	std::size_t read(std::size_t amount, AudioSample *dest);
+	std::size_t read(std::size_t amount, float *dest);
 
 	/*
 	 * used for pitch bend, etc. Skips frames in the buffer.
@@ -91,7 +91,7 @@ void GenerationThread::stop() {
 	}
 }
 
-std::size_t GenerationThread::read(std::size_t amount, AudioSample *dest) {
+std::size_t GenerationThread::read(std::size_t amount, float *dest) {
 	if (this->leadin_complete.load(std::memory_order_relaxed) == 0) {
 		return 0;
 	}

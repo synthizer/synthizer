@@ -30,7 +30,7 @@ class BaseEffect {
 	 * 
 	 * The gain argument should be applied by the effect.  It's folded in to avoid the need for further temporary buffers.
 	 * */
-	virtual void runEffect(unsigned int time_in_blocks, unsigned int input_channels, AudioSample *input, unsigned int output_channels, AudioSample *output, float gain) = 0;
+	virtual void runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) = 0;
 	virtual void resetEffect() = 0;
 };
 

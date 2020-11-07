@@ -10,7 +10,7 @@ namespace synthizer {
 /*
  * Mix by dropping extra channels from in or adding extra zeros to out.
  * */
-static void truncateChannels(unsigned int length, AudioSample *in, unsigned int inChannelCount, AudioSample *out, unsigned int outChannelCount) {
+static void truncateChannels(unsigned int length, float *in, unsigned int inChannelCount, float *out, unsigned int outChannelCount) {
 	unsigned int minChannelCount = inChannelCount < outChannelCount ? inChannelCount : outChannelCount;
 	for (unsigned int i = 0; i < length; i++) {
 		for (unsigned int ch = 0; ch < minChannelCount; ch++) {
@@ -19,20 +19,20 @@ static void truncateChannels(unsigned int length, AudioSample *in, unsigned int 
 	}
 }
 
-static void upmixMono(unsigned int length, AudioSample *in, AudioSample *out, unsigned int outChannelCount) {
+static void upmixMono(unsigned int length, float *in, float *out, unsigned int outChannelCount) {
 	for (unsigned int i = 0; i < length; i++) {
-		AudioSample *frame = out + outChannelCount * i;
+		float *frame = out + outChannelCount * i;
 		for (unsigned int j = 0; j < outChannelCount; j++) {
 			frame[j] += in[i];
 		}
 	}
 }
 
-static void downmixMono(unsigned int length, AudioSample *in, unsigned int inChannelCount, AudioSample *out) {
+static void downmixMono(unsigned int length, float *in, unsigned int inChannelCount, float *out) {
 	float normfactor = 1.0f / inChannelCount;
 	for (unsigned int i = 0; i < length; i++) {
-		AudioSample *frame = in + i * inChannelCount;
-		AudioSample sum = 0.0f;
+		float *frame = in + i * inChannelCount;
+		float sum = 0.0f;
 		for (unsigned int j = 0; j < inChannelCount; j++) {
 			sum += frame[j];
 		}
@@ -40,7 +40,7 @@ static void downmixMono(unsigned int length, AudioSample *in, unsigned int inCha
 	}
 }
 
-void mixChannels(unsigned int length, AudioSample *in, unsigned int inChannelCount, AudioSample *out, unsigned int outChannelCount) {
+void mixChannels(unsigned int length, float *in, unsigned int inChannelCount, float *out, unsigned int outChannelCount) {
 	assert(inChannelCount != 0);
 	assert(outChannelCount != 0);
 	if (inChannelCount == outChannelCount) {

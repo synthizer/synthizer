@@ -18,7 +18,7 @@ class AudioOutputDevice;
 class AudioOutput {
 	public:
 	virtual ~AudioOutput() {}
-	virtual AudioSample *beginWrite() = 0;
+	virtual float *beginWrite() = 0;
 	virtual void endWrite() = 0;
 	virtual void shutdown() = 0;
 };

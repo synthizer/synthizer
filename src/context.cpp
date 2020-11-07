@@ -174,7 +174,7 @@ std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_ST
 	return this->source_panners->allocateLane(strategy);
 }
 
-void Context::generateAudio(unsigned int channels, AudioSample *destination) {
+void Context::generateAudio(unsigned int channels, float *destination) {
 	std::fill(destination, destination + channels * config::BLOCK_SIZE, 0.0f);
 	std::fill(this->getDirectBuffer(), this->getDirectBuffer() + config::BLOCK_SIZE * channels, 0.0f);
 
@@ -220,7 +220,7 @@ void Context::flushPropertyWrites() {
 void Context::audioThreadFunc() {
 	logDebug("Thread started");
 	while (this->running.load()) {
-		AudioSample *write_audio = nullptr;
+		float *write_audio = nullptr;
 
 		this->flushPropertyWrites();
 

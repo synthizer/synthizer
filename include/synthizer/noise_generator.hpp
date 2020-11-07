@@ -21,7 +21,7 @@ class NoiseGenerator {
 	void setNoiseType(int type);
 	float generateSample();
 	/* Adds, as with the rest of Synthizer. */
-	void generateBlock(unsigned int size, AudioSample *block, unsigned int stride = 1);
+	void generateBlock(unsigned int size, float *block, unsigned int stride = 1);
 
 	private:
 	float generateSampleUniform();
@@ -61,13 +61,13 @@ class NoiseGenerator {
 	unsigned int vm_counter = 0;
 	void initVM();
 	float generateSampleVM();
-	void generateBlockVM(unsigned int size, AudioSample *block, unsigned int stride);
+	void generateBlockVM(unsigned int size, float *block, unsigned int stride);
 
 	/* -6DB filter for brown noise. */
 	IIRFilter<1, 3, 3> brown_filter;
 	void initFilteredBrown();
 	float generateSampleFilteredBrown();
-	void generateBlockFilteredBrown(unsigned int size, AudioSample *block, unsigned int stride);
+	void generateBlockFilteredBrown(unsigned int size, float *block, unsigned int stride);
 };
 
 }

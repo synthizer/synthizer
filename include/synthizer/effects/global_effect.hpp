@@ -17,7 +17,7 @@ namespace synthizer {
  * */
 class GlobalEffectBase {
 	public:
-	virtual void run(unsigned int channels, AudioSample *output) = 0;
+	virtual void run(unsigned int channels, float *output) = 0;
 };
 
 /*
@@ -50,7 +50,7 @@ class GlobalEffect: public BASE, public RouteInput, public GlobalEffectBase {
 		this->gain = g;
 	}
 
-	void run(unsigned int channels, AudioSample *destination) {
+	void run(unsigned int channels, float *destination) {
 		this->runEffect(this->time_in_blocks, this->channels, &this->input_buffer[0], channels, destination, this->gain);
 		/*
 		 * Reset this for the next time. This needs to live here since routers don't know about effects if
@@ -61,7 +61,7 @@ class GlobalEffect: public BASE, public RouteInput, public GlobalEffectBase {
 	}
 
 	private:
-	alignas(config::ALIGNMENT) std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> input_buffer = { 0.0f };
+	alignas(config::ALIGNMENT) std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> input_buffer = { 0.0f };
 	unsigned int channels = 0;
 	unsigned int time_in_blocks = 0;
 	float gain = 1.0f;

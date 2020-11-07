@@ -24,7 +24,7 @@ class PannerLane {
 	virtual void update() = 0;
 
 	unsigned int stride = 1;
-	AudioSample *destination = nullptr;
+	float *destination = nullptr;
 
 	virtual void setPanningAngles(double azimuth, double elvation) = 0;
 	virtual void setPanningScalar(double scalar) = 0;
@@ -40,9 +40,9 @@ class AbstractPanner {
 	virtual unsigned int getOutputChannelCount() = 0;
 	virtual unsigned int getLaneCount() = 0;
 	/* writes lanes*channels. Should add to the output. The pannerBank will collapse/remix as necessary. */
-	virtual void run(AudioSample *output) = 0;
+	virtual void run(float *output) = 0;
 	/* (destination, stride). Allocation and freeing is handled elsewhere. */
-	virtual std::tuple<AudioSample *, unsigned int> getLane(unsigned int lane) = 0;
+	virtual std::tuple<float *, unsigned int> getLane(unsigned int lane) = 0;
 	/* Called when we're going to reuse a lane. */
 	virtual void recycleLane(unsigned int lane) = 0;
 
@@ -65,7 +65,7 @@ class AbstractPanner {
 class AbstractPannerBank {
 	public:
 	/* Will output the same channels as the final device in the end. Today, outputs 2 channels until context infrastructure fully exists. */
-	virtual void run(unsigned int channels, AudioSample *destination) = 0;
+	virtual void run(unsigned int channels, float *destination) = 0;
 	virtual std::shared_ptr<PannerLane> allocateLane(enum SYZ_PANNER_STRATEGY strategy) = 0;
 };
 

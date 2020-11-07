@@ -9,11 +9,6 @@
 namespace synthizer {
 
 /*
- * Basic sample type.
- */
-using AudioSample = float;
-
-/*
  * Some types, i.e. SIMD extensions, may not have a simple way to be zero initialized.
  * In particular, Clang and GCC don't document the interaction with C++ initializer lists.
  * Since the only operation that varies is the zeroing operation for most of this library,we deal with that here.

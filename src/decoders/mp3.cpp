@@ -28,7 +28,7 @@ class Mp3Decoder: public AudioDecoder {
 	public:
 	Mp3Decoder(std::shared_ptr<LookaheadByteStream> stream);
 	~Mp3Decoder();
-	std::int64_t writeSamplesInterleaved(std::int64_t num, AudioSample *samples, std::int64_t channels = 0);
+	std::int64_t writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels = 0);
 	int getSr();
 	int getChannels();
 	AudioFormat getFormat();
@@ -40,7 +40,7 @@ class Mp3Decoder: public AudioDecoder {
 	private:
 	drmp3 mp3;
 	std::shared_ptr<ByteStream> stream;
-	AudioSample *tmp_buf = nullptr;
+	float *tmp_buf = nullptr;
 	std::int64_t frame_count = 0;
 
 	static const int TMP_BUF_FRAMES = 1024;
@@ -66,7 +66,7 @@ Mp3Decoder::Mp3Decoder(std::shared_ptr<LookaheadByteStream> stream) {
 		}
 	}
 
-	this->tmp_buf = new AudioSample[TMP_BUF_FRAMES*this->mp3.channels];
+	this->tmp_buf = new float[TMP_BUF_FRAMES*this->mp3.channels];
 }
 
 Mp3Decoder::~Mp3Decoder() {
@@ -74,7 +74,7 @@ Mp3Decoder::~Mp3Decoder() {
 	delete this->tmp_buf;
 }
 
-std::int64_t Mp3Decoder::writeSamplesInterleaved(std::int64_t num, AudioSample *samples, std::int64_t channels) {
+std::int64_t Mp3Decoder::writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels) {
 	auto actualChannels = channels < 1 ? this->mp3.channels : channels;
 	/* Fast case: if the channels are equal, just write. */
 	if (actualChannels == this->mp3.channels) {

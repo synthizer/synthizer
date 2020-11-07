@@ -11,5 +11,5 @@ namespace synthizer {
  * 
  * As is the Synthizer convention, this adds to output, not replaces.
  * */
-void mixChannels(unsigned int length, AudioSample *in, unsigned int inChannelCount, AudioSample *out, unsigned int outChannelCount);
+void mixChannels(unsigned int length, float *in, unsigned int inChannelCount, float *out, unsigned int outChannelCount);
 }

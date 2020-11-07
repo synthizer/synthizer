@@ -23,7 +23,7 @@ class StreamingGenerator: public Generator {
 	~StreamingGenerator();
 
 	unsigned int getChannels() override;
-	void generateBlock(AudioSample *output) override;
+	void generateBlock(float *output) override;
 	void setPitchBend(double newPitchBend) override;
 	int getLooping();
 	void setLooping(int looping);
@@ -33,7 +33,7 @@ class StreamingGenerator: public Generator {
 
 	private:
 	/* The body of the background thread. */
-	void generateBlockInBackground(std::size_t channels, AudioSample *out);
+	void generateBlockInBackground(std::size_t channels, float *out);
 
 	GenerationThread background_thread;
 	std::shared_ptr<AudioDecoder> decoder = nullptr;

@@ -111,7 +111,7 @@ class StrategyBank {
 		return allocateLaneHelper(this->panners);
 	}
 
-	void fold(unsigned int channels, unsigned int lanes, unsigned int dest_channels, AudioSample *destination) {
+	void fold(unsigned int channels, unsigned int lanes, unsigned int dest_channels, float *destination) {
 		unsigned int needed_channels = std::min(channels, dest_channels);
 		unsigned int stride = channels*lanes;
 		for(unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
@@ -123,7 +123,7 @@ class StrategyBank {
 		}
 	}
 
-	void run(unsigned int channels, AudioSample *destination) {
+	void run(unsigned int channels, float *destination) {
 		unsigned int last_channel_count = 0;
 		unsigned int last_lane_count = 0;
 		bool first = true;
@@ -153,12 +153,12 @@ class StrategyBank {
 
 	private:
 	deferred_colony<PannerBlock<T>> panners;
-	alignas(config::ALIGNMENT) std::array<AudioSample, config::BLOCK_SIZE*config::MAX_CHANNELS*config::PANNER_MAX_LANES> working_buffer;
+	alignas(config::ALIGNMENT) std::array<float, config::BLOCK_SIZE*config::MAX_CHANNELS*config::PANNER_MAX_LANES> working_buffer;
 };
 
 class PannerBank: public AbstractPannerBank {
 	public:
-	void run(unsigned int channels, AudioSample *destination) {
+	void run(unsigned int channels, float *destination) {
 		this->hrtf.run(channels, destination);
 		this->stereo.run(channels, destination);
 	}

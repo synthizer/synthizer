@@ -29,7 +29,7 @@ int compareRoutes(const Route &a, const Route &b) {
 	return k1 < k2 ? -1 : 1;
 }
 
-InputHandle::InputHandle(Router *router, AudioSample *buffer, unsigned int channels) {
+InputHandle::InputHandle(Router *router, float *buffer, unsigned int channels) {
 	this->router = router;
 	this->buffer = buffer;
 	this->channels = channels;
@@ -47,8 +47,8 @@ OutputHandle::~OutputHandle() {
 	if (router) this->router->unregisterOutputHandle(this);
 }
 
-void OutputHandle::routeAudio(AudioSample *buffer, unsigned int channels) {
-	alignas(config::ALIGNMENT)  thread_local std::array<AudioSample, config::BLOCK_SIZE * config::MAX_CHANNELS> _working_buf;
+void OutputHandle::routeAudio(float *buffer, unsigned int channels) {
+	alignas(config::ALIGNMENT)  thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> _working_buf;
 	auto *working_buf = &_working_buf[0];
 	auto start = this->router->findRun(this);
 	if (start == router->routes.end()) {

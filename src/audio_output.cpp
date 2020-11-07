@@ -18,15 +18,15 @@ class AudioOutputImpl: public AudioOutput {
 	public:
 	AudioOutputImpl(std::size_t initial_queue_size, std::function<void(void)> &availability_callback);
 	~AudioOutputImpl();
-	AudioSample *beginWrite();
+	float *beginWrite();
 	void endWrite();
-	void fillBuffer(AudioSample *buffer, bool add = true);
+	void fillBuffer(float *buffer, bool add = true);
 	void shutdown();
 	std::weak_ptr<AudioOutputDevice> device;
 	std::weak_ptr<AudioOutputImpl> self;
 	int writes_to_start;
 	std::atomic<int> started = 0;
-	BoundedBlockQueue<AudioSample> queue;
+	BoundedBlockQueue<float> queue;
 	std::function<void(void)> availability_callback;
 };
 
@@ -41,7 +41,7 @@ class AudioOutputDevice {
 	AudioOutputDevice();
 	~AudioOutputDevice();
 
-	void doOutput(std::size_t frames, AudioSample *destination);
+	void doOutput(std::size_t frames, float *destination);
 	void refillWorkingBuffer();
 
 	float *working_buffer;
@@ -57,7 +57,7 @@ class AudioOutputDevice {
 
 static void miniaudioDataCallback(ma_device* device, void *output, const void *input, ma_uint32 frames) {
 	AudioOutputDevice *dev = (AudioOutputDevice *)device->pUserData;
-	dev->doOutput(frames, (AudioSample *) output);
+	dev->doOutput(frames, (float *) output);
 }
 
 AudioOutputDevice::AudioOutputDevice() {
@@ -109,7 +109,7 @@ void AudioOutputDevice::refillWorkingBuffer() {
 	this->working_buffer_remaining = config::BLOCK_SIZE;
 }
 
-void AudioOutputDevice::doOutput(std::size_t frames, AudioSample *destination) {
+void AudioOutputDevice::doOutput(std::size_t frames, float *destination) {
 	float *resample_buffer;
 	int needed_frames = this->resampler.ResamplePrepare(frames, 2, (WDL_ResampleSample **)&resample_buffer);
 	int new_queue_size = needed_frames / config::BLOCK_SIZE;
@@ -154,7 +154,7 @@ AudioOutputImpl::~AudioOutputImpl() {
 	shutdown();
 }
 
-AudioSample *AudioOutputImpl::beginWrite() {
+float *AudioOutputImpl::beginWrite() {
 	return this->queue.beginWrite();
 }
 
@@ -168,8 +168,8 @@ void AudioOutputImpl::endWrite() {
 	}
 }
 
-void AudioOutputImpl::fillBuffer(AudioSample *buffer, bool add) {
-	AudioSample *avail;
+void AudioOutputImpl::fillBuffer(float *buffer, bool add) {
+	float *avail;
 	if (this->started.load(std::memory_order_relaxed) == 0 || (avail = this->queue.beginReadImmediate()) == nullptr) {
 		if (add == false) std::fill(buffer, buffer + config::BLOCK_SIZE * 2, 0.0f);
 		return;

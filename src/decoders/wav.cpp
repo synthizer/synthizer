@@ -28,7 +28,7 @@ class WavDecoder: public AudioDecoder {
 	public:
 	WavDecoder(std::shared_ptr<LookaheadByteStream> stream);
 	~WavDecoder();
-	std::int64_t writeSamplesInterleaved(std::int64_t num, AudioSample *samples, std::int64_t channels = 0);
+	std::int64_t writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels = 0);
 	int getSr();
 	int getChannels();
 	AudioFormat getFormat();
@@ -40,7 +40,7 @@ class WavDecoder: public AudioDecoder {
 	private:
 	drwav wav;
 	std::shared_ptr<ByteStream> stream;
-	AudioSample *tmp_buf = nullptr;
+	float *tmp_buf = nullptr;
 
 	static const int TMP_BUF_FRAMES = 1024;
 };
@@ -58,7 +58,7 @@ WavDecoder::WavDecoder(std::shared_ptr<LookaheadByteStream> stream) {
 	if(this->wav.channels == 0)
 		throw Error("Got a wave file with 0 channels.");
 
-	this->tmp_buf = new AudioSample[TMP_BUF_FRAMES*this->wav.channels];
+	this->tmp_buf = new float[TMP_BUF_FRAMES*this->wav.channels];
 }
 
 WavDecoder::~WavDecoder() {
@@ -66,7 +66,7 @@ WavDecoder::~WavDecoder() {
 	delete this->tmp_buf;
 }
 
-std::int64_t WavDecoder::writeSamplesInterleaved(std::int64_t num, AudioSample *samples, std::int64_t channels) {
+std::int64_t WavDecoder::writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels) {
 	auto actualChannels = channels < 1 ? this->wav.channels : channels;
 	/* Fast case: if the channels are equal, just write. */
 	if (actualChannels == this->wav.channels)

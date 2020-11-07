@@ -9,7 +9,7 @@
 
 namespace synthizer {
 
-void ExposedNoiseGenerator::generateBlock(AudioSample *out) {
+void ExposedNoiseGenerator::generateBlock(float *out) {
 	for (unsigned int i = 0; i < this->channels; i++) {
 		this->generators[i].generateBlock(config::BLOCK_SIZE, out + i, this->channels);
 	}
