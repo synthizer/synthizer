@@ -1,5 +1,7 @@
 #pragma once
 
+#include "synthizer/math.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cmath>

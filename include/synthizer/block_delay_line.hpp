@@ -115,7 +115,7 @@ class BlockDelayLine {
 
 	template<typename F1, typename F2>
 	FLATTENED void runRwLoopSplit(unsigned int max_delay, unsigned int first, F1 &&first_c, unsigned int second, F2 &&second_c) {
-		return this->runPrivLoopSplit<F1, F2, true>(max_delay, first, first_c, second, second_c);
+		return this->runLoopPrivSplit<F1, F2, true>(max_delay, first, first_c, second, second_c);
 	}
 
 	float *getNextBlock() {

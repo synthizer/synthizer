@@ -12,7 +12,7 @@
 namespace synthizer::concurrent_slab {
 
 class NoCellError: std::exception {
-	const char *what() const override {
+	const char *what() const noexcept override {
 		return "No cell left in slab";
 	}
 };

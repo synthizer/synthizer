@@ -69,7 +69,7 @@ template<typename T>
 T* allocAligned(std::size_t elements, std::size_t alignment = config::ALIGNMENT) {
 	void *d;
 
-	if constexpr (std::is_same(T, void>::value) {
+	if constexpr (std::is_same<T, void>::value) {
 		d = std::aligned_alloc(alignment, elements);
 	} else {
 		d = std::aligned_alloc(std::max(alignment, alignof(T)), elements * sizeof(T));
