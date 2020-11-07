@@ -9,20 +9,6 @@
 namespace synthizer {
 
 /*
- * Some types, i.e. SIMD extensions, may not have a simple way to be zero initialized.
- * In particular, Clang and GCC don't document the interaction with C++ initializer lists.
- * Since the only operation that varies is the zeroing operation for most of this library,we deal with that here.
- */
-template<typename T>
-T zeroValue();
-
-template<>
-inline float zeroValue<float>() { return 0.0f; }
-template<>
-inline double zeroValue<double>() { return 0.0; }
-
-
-/*
  * Some basic SFINAE helpers.
  */
 template<unsigned int n, typename T=void>
