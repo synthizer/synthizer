@@ -1,19 +1,20 @@
-#include <new>
-#include <thread>
-#include <array>
-#include <vector>
-#include <shared_mutex>
-#include <mutex>
-#include <memory>
-#include <iostream>
-#include <sstream>
-#include <iterator>
-#include <map>
-#include <assert.h>
-#include <cstdlib>
-
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/threadsafe_initializer.hpp"
+
+#include <array>
+#include <cassert>
+#include <cstdlib>
+#include <iostream>
+#include <iterator>
+#include <list>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <new>
+#include <shared_mutex>
+#include <sstream>
+#include <thread>
+#include <vector>
 
 namespace synthizer {
 

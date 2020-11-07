@@ -3,7 +3,7 @@
 
 #include <array>
 #include <cassert>
-#include <cmath>
+#include <math.h>
 #include <tuple>
 
 namespace synthizer {
@@ -45,7 +45,7 @@ void StereoPanner::setPanningAngles(unsigned int lane, double azimuth, double el
 	 * Angles are clockwise from forward; we want clockwise from left.
 	 * Then if we wrap, drop the wrapped part.
 	 * */
-	double angle = std::fmod(90.0 + azimuth, 360.0);
+	double angle = fmod(90.0 + azimuth, 360.0);
 	double scalar;
 	if (angle <= 180) {
 		scalar = -1.0 + 2.0 * (angle / 180.0);
@@ -67,8 +67,8 @@ void StereoPanner::setPanningScalar(unsigned int lane, double scalar) {
 	 * */
 	double angle = (1.0 + scalar) / 2.0 * 90.0;
 	angle *= PI / 180.0;
-	float left = std::cosf(angle);
-	float right = std::sinf(angle);
+	float left = cosf(angle);
+	float right = sinf(angle);
 	this->gains[lane * 2] = left;
 	this->gains[lane * 2 + 1] = right;
 }

@@ -144,7 +144,7 @@ void BoundedBlockQueue<T>::setQueueSize(std::size_t size) {
 	for(;;) {
 		// Nothing to do.
 		if (cur_size >= size) return;
-		if (this->queue_size.compare_exchange_weak(&cur_size, size, std::memory_order_relaxed, std::memory_order_relaxed))
+		if (this->queue_size.compare_exchange_weak(cur_size, size, std::memory_order_relaxed, std::memory_order_relaxed))
 			break;
 	}
 }

@@ -1,5 +1,9 @@
 #pragma once
 
+/*
+ * cpp11-on-multicore is broken and we need to bring errno into scope for it.
+ * */
+#include <errno.h>
 #include "sema.h"
 
 #include <atomic>
