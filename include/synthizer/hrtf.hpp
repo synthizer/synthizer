@@ -61,7 +61,7 @@ void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned
  * */
 class HrtfPanner: public AbstractPanner {
 	public:
-	static const std::size_t CHANNELS = 4;
+	static constexpr std::size_t CHANNELS = 4;
 
 	HrtfPanner();
 	unsigned int getOutputChannelCount();

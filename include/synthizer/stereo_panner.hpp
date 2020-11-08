@@ -11,8 +11,8 @@ namespace synthizer {
 
 class StereoPanner: public AbstractPanner {
 	public:
-	static const unsigned int CHANNELS = 2;
-	static const unsigned int LANES = 4;
+	static constexpr unsigned int CHANNELS = 2;
+	static constexpr unsigned int LANES = 4;
 
 	unsigned int getOutputChannelCount() override;
 	unsigned int getLaneCount() override;

@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.15.0)
-project(synthizer VERSION 0.1.0)
+project(synthizer VERSION 0.1.0 LANGUAGES C CXX)
+
+find_package(Threads)
 
 include(CTest)
 enable_testing()
@@ -98,7 +100,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	$<TARGET_OBJECTS:wdl>
 )
 target_compile_features(synthizer PUBLIC cxx_std_17)
-target_link_libraries(synthizer wdl)
+target_link_libraries(synthizer wdl Threads::Threads ${CMAKE_DL_LIBS})
 # tells synthizer.h to define SYZ_CAPI for exporting.
 target_compile_definitions(synthizer PRIVATE BUILDING_SYNTHIZER)
 
