@@ -49,7 +49,7 @@ std::tuple<double, double> computeInterauralTimeDifference(double azimuth, doubl
 	 * What we have is the angle between the x axis and our spherical vector,
 	 * so to get y we subtract.
 	 * */
-	double angle = PI / 2 - acos(abs(x));
+	double angle = PI / 2 - acos(fabs(x));
 
 	/* Interaural time delay in seconds, using the Woodworth formula. */
 	double itd_s = (hrir_parameters->head_radius / hrir_parameters->speed_of_sound) * ( angle + sin(angle));

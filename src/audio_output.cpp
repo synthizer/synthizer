@@ -66,14 +66,14 @@ AudioOutputDevice::AudioOutputDevice() {
 	config = ma_device_config_init(ma_device_type_playback);
 	config.playback.format = ma_format_f32;
 	config.playback.channels = 2;
-	config.periodSizeInFrames = config::BLOCK_SIZE;
+	config.periodSizeInFrames = 0;
 	/* Default periods. */
 	config.periods = 0;
 	/* Use default sample rate. */
 	config.sampleRate = 0;
 	config.dataCallback = miniaudioDataCallback;
 	config.pUserData = (void*) this;
-	config.performanceProfile = ma_performance_profile_low_latency;
+	config.performanceProfile = ma_performance_profile_conservative;
 
 	if (ma_device_init(NULL, &config, &this->device) != MA_SUCCESS)
 		throw EAudioDevice("Unable to initialize miniaudio.");

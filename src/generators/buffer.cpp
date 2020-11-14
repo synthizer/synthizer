@@ -24,7 +24,7 @@ void BufferGenerator::generateBlock(float *output) {
 	auto buffer = this->buffer.lock();
 	if (buffer == nullptr || buffer->getLength() == 0) {
 		return;
-	} else if (abs(1.0 - this->pitch_bend) > 0.001) {
+	} else if (std::fabs(1.0 - this->pitch_bend) > 0.001) {
 		return this->generatePitchBend(output);
 	} else {
 		return this->generateNoPitchBend(output);

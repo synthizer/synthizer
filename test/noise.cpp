@@ -23,7 +23,7 @@ auto ret = x; \
 } while(0)
 
 int main(int argc, char *argv[]) {
-	syz_Handle context, generator, source;
+	syz_Handle context = 0, generator = 0, source = 0;
 	int ecode = 0, ending = 0;
 
 	CHECKED(syz_configureLoggingBackend(SYZ_LOGGING_BACKEND_STDERR, nullptr));

@@ -52,7 +52,7 @@ static void backgroundThreadFunc() {
 static std::thread background_thread;
 void startBackgroundThread() {
 	background_thread_running.store(1, std::memory_order_relaxed);
-	background_thread = std::move(std::thread(backgroundThreadFunc));
+	background_thread = std::thread(backgroundThreadFunc);
 }
 
 void stopBackgroundThread() {

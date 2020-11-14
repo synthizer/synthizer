@@ -16,9 +16,10 @@
 
 namespace synthizer {
 
-StreamingGenerator::StreamingGenerator(const std::shared_ptr<Context> &ctx, const std::shared_ptr<AudioDecoder> &decoder): Generator(ctx), decoder(decoder),
+StreamingGenerator::StreamingGenerator(const std::shared_ptr<Context> &ctx, const std::shared_ptr<AudioDecoder> &decoder): Generator(ctx),
 	/* 100 MS latency. */
-	background_thread(decoder->getChannels(), nextMultipleOf(0.1 * config::SR, config::BLOCK_SIZE)) {
+	background_thread(decoder->getChannels(), nextMultipleOf(0.1 * config::SR, config::BLOCK_SIZE)),
+	decoder(decoder) {
 	this->channels = decoder->getChannels();
 	double old_sr = decoder->getSr();
 	if (old_sr != config::SR) {

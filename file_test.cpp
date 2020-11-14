@@ -26,7 +26,7 @@ auto ret = x; \
 struct syz_RouteConfig route_config = { 1.0, 0.01, };
 
 int main(int argc, char *argv[]) {
-	syz_Handle context, generator, source, buffer, effect;
+	syz_Handle context = 0, generator = 0, source = 0, buffer = 0, effect = 0;
 	int ecode = 0, ending = 0;
 	double angle = 0.0, angle_per_second = 90.0;
 
@@ -47,8 +47,8 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
-	CHECKED(syz_createGlobalFdnReverb(&effect, context));;
-	CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
+	CHECKED(syz_createGlobalFdnReverb(&effect, context));
+	//CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 0));
 	while (true) {

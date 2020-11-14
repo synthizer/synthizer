@@ -24,7 +24,7 @@ auto ret = x; \
 } while(0)
 
 int main(int argc, char *argv[]) {
-	syz_Handle context, source;
+	syz_Handle context = 0, source = 0;
 	int ecode = 0, ending = 0;
 	unsigned int iterations = 100000;
 	std::chrono::high_resolution_clock::time_point t_start, t_end;

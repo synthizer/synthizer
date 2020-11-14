@@ -36,10 +36,10 @@ void Context::initContext() {
 
 	this->source_panners = createPannerBank();
 	this->running.store(1);
-	this->context_thread = std::move(std::thread([&] () {
+	this->context_thread = std::thread([&] () {
 		setThreadPurpose("context-thread");
 		this->audioThreadFunc();
-	}));
+	});
 }
 
 Context::~Context() {

@@ -18,7 +18,7 @@ class NoCellError: std::exception {
 };
 
 class CellNotAllocatedError: std::exception {
-	const char *what() {
+	const char *what() const noexcept override {
 		return "Cell not allocated";
 	}
 };
@@ -111,10 +111,11 @@ class ConcurrentSlab {
 };
 
 template<typename T, typename FINALIZER, std::size_t capacity>
-ConcurrentSlab<T, FINALIZER, capacity>::ConcurrentSlab(FINALIZER finalizer): finalizer(finalizer),
+ConcurrentSlab<T, FINALIZER, capacity>::ConcurrentSlab(FINALIZER finalizer): 
 	cells(),
 	refcounts(),
-	freelist() {
+	freelist(),
+	finalizer(finalizer) {
 	/*
 	 * Fill the free list.
 	 * 

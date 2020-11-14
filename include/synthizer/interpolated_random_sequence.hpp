@@ -19,12 +19,12 @@ class InterpolatedRandomSequence {
 	InterpolatedRandomSequence(): InterpolatedRandomSequence(0.0f, 10, 0.0f, 1.0f) {}
 
 	InterpolatedRandomSequence(float start_value, unsigned int steps, float min_value, float max_value) :
-	 last_value(start_value),
-	 next_value(start_value),
-	 range_min(min_value),
+		range_min(min_value),
 	 range_max(max_value),
 	 steps_per_generation(steps),
-	 steps_per_generation_inv(1.0f / steps) {
+	 steps_per_generation_inv(1.0f / steps),
+	 last_value(start_value),
+	 next_value(start_value) {
 		 /*
 		  * Force the first tick to return the start, then immediately recompute.
 		  * */

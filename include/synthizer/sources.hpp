@@ -95,7 +95,7 @@ class PannedSource: public Source {
 	private:
 	enum SYZ_PANNER_STRATEGY panner_strategy = SYZ_PANNER_STRATEGY_HRTF;
 	std::shared_ptr<PannerLane> panner_lane;
-	double azimuth = 0.0, elevation = 0.0, panning_scalar = 0.5, gain = 1.0, gain_3d = 1.0;
+	double azimuth = 0.0, elevation = 0.0, panning_scalar = 0.5, gain_3d = 1.0;
 	bool needs_panner_set = true;
 	/* If true, the last thing set was scalar and we use that; otherwise use azimuth/elevation. */
 	bool is_scalar_panning = false;

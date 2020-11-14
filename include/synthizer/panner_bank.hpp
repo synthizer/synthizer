@@ -64,6 +64,8 @@ class AbstractPanner {
  * */
 class AbstractPannerBank {
 	public:
+	virtual ~AbstractPannerBank() {}
+
 	/* Will output the same channels as the final device in the end. Today, outputs 2 channels until context infrastructure fully exists. */
 	virtual void run(unsigned int channels, float *destination) = 0;
 	virtual std::shared_ptr<PannerLane> allocateLane(enum SYZ_PANNER_STRATEGY strategy) = 0;

@@ -170,7 +170,7 @@ void deferredFree(freeCallback *cb, void *value) {
 }
 
 void initializeMemorySubsystem() {
-	deferred_free_thread = std::move(std::thread{deferredFreeWorker});
+	deferred_free_thread = std::thread{deferredFreeWorker};
 }
 
 void shutdownMemorySubsystem() {

@@ -76,9 +76,9 @@ template<typename CALLABLE>
 void GenerationThread::start(CALLABLE &&callable) {
 	this->leadin_complete.store(0);
 	this->running.store(1);
-	this->thread = std::move(std::thread([=] () {
+	this->thread = std::thread([=] () {
 		this->backgroundThread(callable);
-	}));
+	});
 }
 
 void GenerationThread::stop() {

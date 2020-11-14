@@ -73,7 +73,7 @@ void log(enum SYZ_LOG_LEVEL level, const char *format, ...) {
 
 	if (logging_enabled.load(std::memory_order_relaxed) != 0 && level <= getLogLevel()) {
 		auto wrote = std::vsnprintf(log_message_buf, MAX_LOG_MESSAGE_LENGTH, format, args);
-		log_message_buf[MAX_LOG_MESSAGE_LENGTH] = '\0';
+		log_message_buf[wrote] = '\0';
 		fprintf(stderr, "%s(%s %i) %s\n",
 		    logLevelAsString(), getThreadPurposeAsChar(), getThreadId(), log_message_buf);
 	}
