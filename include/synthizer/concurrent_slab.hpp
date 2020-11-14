@@ -92,23 +92,29 @@ class ConcurrentSlab {
 	std::uint16_t incRef(std::size_t index);
 	std::uint16_t decRef(std::size_t index);
 
-	/*
+	/**
+	 * NOTE: something about GCC 10 breaks if the following are initialized inline; initialize them as
+	 * part of the constructor.
+	 *
 	 * The slab representation is arrays for packing.
 	 * */
 	/* The cells themselves. */
-	std::array<T, capacity> cells{};
+	std::array<T, capacity> cells;
 	/* The reference counts for the cells. */
-	std::array<std::atomic<std::uint16_t>, capacity> refcounts{};
+	std::array<std::atomic<std::uint16_t>, capacity> refcounts;
 	/* The free list is a linked list implemented as an array. */
 	const std::uint16_t FREELIST_SENTINEL = capacity;
-	std::array<std::atomic<std::uint16_t>, capacity> freelist{};
+	std::array<std::atomic<std::uint16_t>, capacity> freelist;
 	std::atomic<std::uint16_t> freelist_head = FREELIST_SENTINEL;
 
 	FINALIZER finalizer;
 };
 
 template<typename T, typename FINALIZER, std::size_t capacity>
-ConcurrentSlab<T, FINALIZER, capacity>::ConcurrentSlab(FINALIZER finalizer): finalizer(finalizer) {
+ConcurrentSlab<T, FINALIZER, capacity>::ConcurrentSlab(FINALIZER finalizer): finalizer(finalizer),
+	cells(),
+	refcounts(),
+	freelist() {
 	/*
 	 * Fill the free list.
 	 * 
