@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.7.6 (WIP)
+
+- Prebuilt C artifacts for Windows now link against the multithreaded dynamic CRT. This was done to speed up Python builds and because there is
+  no obvious right choice. If you need a different configuration, please build from source specifying `CMAKE_MSVC_RUNTIME_LIBRARY` and `SYNTHIZER_LIB_TYPE` to appropriate values.
+
 ## 0.7.5
 
 - Introduce [reverb](./object_reference/fdn_reverb.md).
