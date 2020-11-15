@@ -44,6 +44,7 @@ foreach ($build_type in $build_types) {
 			"-DCMAKE_BUILD_TYPE=$build_type" `
 			"-DCI_SYNTHIZER_NAME=$ci_name" `
 			"-DSYNTHIZER_LIB_TYPE=$($lib_type.toUpper())"
+			"-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL"
 		invoke-utility ninja
 		cd ..
 	}
