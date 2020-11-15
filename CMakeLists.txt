@@ -25,11 +25,6 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	)
 endif()
 
-
-# We always use MultiThreaded, until I can figure out Python setuptools runtime picking options.
-#set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
-
 # We must turn on VC++ extended alignment for Windows for plf::colony.
 add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE)
 
