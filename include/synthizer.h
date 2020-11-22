@@ -4,15 +4,17 @@
 extern "C" {
 #endif
 
-
 /* Inject DLL attributes etc here. */
 #ifdef _WIN32
-	#ifdef BUILDING_SYNTHIZER
-		#define SYZ_CAPI __declspec(dllexport)
-	#else
-		#define SYZ_CAPI
+	#ifdef SYNTHIZER_SHARED
+		#ifdef BUILDING_SYNTHIZER
+			#define SYZ_CAPI __declspec(dllexport)
+		#else
+			#define SYZ_CAPI __declspec(dllimport)
+		#endif
 	#endif
-#else
+#endif
+#ifndef SYZ_CAPI
 	#define SYZ_CAPI
 #endif
 

@@ -96,8 +96,13 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 )
 target_compile_features(synthizer PUBLIC cxx_std_17)
 target_link_libraries(synthizer wdl Threads::Threads ${CMAKE_DL_LIBS})
-# tells synthizer.h to define SYZ_CAPI for exporting.
 target_compile_definitions(synthizer PRIVATE BUILDING_SYNTHIZER)
+# tells synthizer.h to define SYZ_CAPI for exporting shared object/dll symbols.
+# On windows this is dllexport.
+if("${SYNTHIZER_LIB_TYPE}" STREQUAL "SHARED")
+	target_compile_definitions(synthizer PRIVATE SYNTHIZER_SHARED)
+endif()
+
 
 # For CI artifacts:
 if(DEFINED CI_SYNTHIZER_NAME)
