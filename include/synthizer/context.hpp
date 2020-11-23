@@ -11,7 +11,6 @@
 #include "synthizer/types.hpp"
 
 #include "concurrentqueue.h"
-#include "sema.h"
 
 #include <atomic>
 #include <array>
@@ -205,18 +204,9 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	 * */
 	void generateAudio(unsigned int channels, float *output);
 
-	/*
-	 * The audio thread itself.
-	 * */
-	void audioThreadFunc();
-
 	moodycamel::ConcurrentQueue<Invokable *> pending_invokables;
-	std::thread context_thread;
-	/*
-	 * Wake the context thread, either because a command was submitted or a block of audio was removed.
-	 * */
-	Semaphore context_semaphore;
 	std::atomic<int> running;
+	std::atomic<int> in_audio_callback = 0;
 	std::shared_ptr<AudioOutput> audio_output;
 
 	/*

@@ -16,18 +16,13 @@ class AudioOutputDevice;
 
 class AudioOutputImpl: public AudioOutput {
 	public:
-	AudioOutputImpl(std::size_t initial_queue_size, std::function<void(void)> &availability_callback);
+	AudioOutputImpl(const std::function<void(unsigned int, float *)> &callback);
 	~AudioOutputImpl();
-	float *beginWrite();
-	void endWrite();
-	void fillBuffer(float *buffer, bool add = true);
+	void fillBuffer(float *buffer);
 	void shutdown();
 	std::weak_ptr<AudioOutputDevice> device;
 	std::weak_ptr<AudioOutputImpl> self;
-	int writes_to_start;
-	std::atomic<int> started = 0;
-	BoundedBlockQueue<float> queue;
-	std::function<void(void)> availability_callback;
+	std::function<void(unsigned int, float *)> callback;
 };
 
 /*
@@ -48,7 +43,6 @@ class AudioOutputDevice {
 	// in frames.
 	std::size_t working_buffer_remaining = 0;
 
-	std::atomic<std::size_t> queue_size;
 	Dock<AudioOutputImpl> dock;
 	WDL_Resampler resampler;
 	ma_device_config device_config;
@@ -86,9 +80,6 @@ AudioOutputDevice::AudioOutputDevice() {
 		ma_device_uninit(&this->device);
 		throw EAudioDevice("Unable to start Miniaudio device");
 	}
-
-	// Spin until we have a queue size.
-	while(this->queue_size.load(std::memory_order_relaxed) == 0);
 }
 
 AudioOutputDevice::~AudioOutputDevice() {
@@ -98,24 +89,16 @@ AudioOutputDevice::~AudioOutputDevice() {
 
 void AudioOutputDevice::refillWorkingBuffer() {
 	// For now all devices are stereo only, but this is where we'd implement the final mixing later.
-	bool seen = false;
+	std::fill(this->working_buffer, this->working_buffer + config::BLOCK_SIZE * 2, 0.0f);
 	this->dock.walk([&](auto &dev) {
-		dev.fillBuffer(this->working_buffer, seen);
-		seen = true;
+		dev.fillBuffer(this->working_buffer);
 	});
-	if (seen == false) {
-		std::fill(this->working_buffer, this->working_buffer + config::BLOCK_SIZE * 2, 0.0f);
-	}
 	this->working_buffer_remaining = config::BLOCK_SIZE;
 }
 
 void AudioOutputDevice::doOutput(std::size_t frames, float *destination) {
 	float *resample_buffer;
 	int needed_frames = this->resampler.ResamplePrepare(frames, 2, (WDL_ResampleSample **)&resample_buffer);
-	int new_queue_size = needed_frames / config::BLOCK_SIZE;
-	if(needed_frames % config::BLOCK_SIZE) new_queue_size += 1;
-	new_queue_size += 2;
-	this->queue_size.store(std::max<std::size_t>(this->queue_size.load(std::memory_order_relaxed), new_queue_size), std::memory_order_relaxed);
 
 	float *cur = resample_buffer;
 	int remaining_frames = needed_frames;
@@ -146,45 +129,16 @@ void shutdownOutputDevice() {
 	output_device = nullptr;
 }
 
-AudioOutputImpl::AudioOutputImpl(std::size_t initial_queue_size, std::function<void(void)> &availability_callback):
-	writes_to_start(initial_queue_size) , queue(config::BLOCK_SIZE * 2, initial_queue_size), availability_callback(availability_callback) {
+AudioOutputImpl::AudioOutputImpl(const std::function<void(unsigned int, float *)> &callback):
+	callback(callback) {
 }
 
 AudioOutputImpl::~AudioOutputImpl() {
 	shutdown();
 }
 
-float *AudioOutputImpl::beginWrite() {
-	return this->queue.beginWrite();
-}
-
-void AudioOutputImpl::endWrite() {
-	this->queue.endWrite();
-	if (this->writes_to_start) {
-		this->writes_to_start--;
-	}
-	if (this->writes_to_start == 0) {
-		this->started.store(1, std::memory_order_relaxed);
-	}
-}
-
-void AudioOutputImpl::fillBuffer(float *buffer, bool add) {
-	float *avail;
-	if (this->started.load(std::memory_order_relaxed) == 0 || (avail = this->queue.beginReadImmediate()) == nullptr) {
-		if (add == false) std::fill(buffer, buffer + config::BLOCK_SIZE * 2, 0.0f);
-		return;
-	}
-	if (add) {
-		for(std::size_t i = 0; i < config::BLOCK_SIZE * 2; i++) {
-			buffer[i] += avail[i];
-		}
-	} else {
-		std::copy(avail, avail + config::BLOCK_SIZE * 2, buffer);
-	}
-	this->queue.endRead();
-	if (this->availability_callback) {
-		this->availability_callback();
-	}
+void AudioOutputImpl::fillBuffer(float *buffer) {
+	this->callback(2, buffer);
 }
 
 void AudioOutputImpl::shutdown() {
@@ -194,16 +148,14 @@ void AudioOutputImpl::shutdown() {
 	dev->dock.undock(us);
 }
 
-std::shared_ptr<AudioOutput> createAudioOutput(std::function<void(void)> availability_callback, bool blocking) {
+std::shared_ptr<AudioOutput> createAudioOutput(const std::function<void(unsigned int, float *)> &callback) {
 	if (output_device == nullptr) {
 		throw EUninitialized();
 	}
 
-	auto ao = std::make_shared<AudioOutputImpl>(output_device->queue_size.load(std::memory_order_relaxed), availability_callback);
+	auto ao = std::make_shared<AudioOutputImpl>(callback);
 	ao->self = ao;
 	ao->device = output_device;
-	ao->queue.setWritesWillBlock(blocking);
-
 	output_device->dock.dock(ao);
 	return ao;
 }

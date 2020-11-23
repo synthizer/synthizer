@@ -4,6 +4,8 @@
 
 - Prebuilt C artifacts for Windows now link against the multithreaded dynamic CRT. This was done to speed up Python builds and because there is
   no obvious right choice. If you need a different configuration, please build from source specifying `CMAKE_MSVC_RUNTIME_LIBRARY` and `SYNTHIZER_LIB_TYPE` to appropriate values.
+- The audio generation all runs inline in the audio callback. This has the knock-on effecrt of making.
+  property reads even more slow than they were already, but is necessary to work well on Linux.
 
 ## 0.7.5
 

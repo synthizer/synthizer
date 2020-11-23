@@ -18,8 +18,6 @@ class AudioOutputDevice;
 class AudioOutput {
 	public:
 	virtual ~AudioOutput() {}
-	virtual float *beginWrite() = 0;
-	virtual void endWrite() = 0;
 	virtual void shutdown() = 0;
 };
 
@@ -38,8 +36,8 @@ void shutdownOutputDevice();
  * 
  * Outputs remain docked for the lifetime of the output or unless shutdown is called.
  * 
- * The argument is a callback which will be called on underflow and/or when a buffer is available in the queue.
+ * The argument is a callback (channels, output) which should fill output with 1 block of data by adding, as is the Synthizer convention.
  * */
-std::shared_ptr<AudioOutput> createAudioOutput(std::function<void(void)> availability_callback = {}, bool blocking = true);
+std::shared_ptr<AudioOutput> createAudioOutput(const std::function<void(unsigned int, float *)> &callback);
 
 }

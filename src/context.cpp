@@ -3,6 +3,7 @@
 #include "synthizer_properties.h"
 
 #include "synthizer/audio_output.hpp"
+#include "synthizer/at_scope_exit.hpp"
 #include "synthizer/background_thread.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
@@ -29,17 +30,13 @@ Context::Context(): BaseObject(nullptr) { }
 
 void Context::initContext() {
 	std::weak_ptr<Context> ctx_weak = this->shared_from_this();
-	this->audio_output = createAudioOutput([ctx_weak] () {
+	this->audio_output = createAudioOutput([ctx_weak] (unsigned int channels, float *buffer) {
 		auto ctx_strong = ctx_weak.lock();
-		if (ctx_strong) ctx_strong->context_semaphore.signal();
-	}, false);
+		ctx_strong->generateAudio(channels, buffer);
+	});
 
 	this->source_panners = createPannerBank();
 	this->running.store(1);
-	this->context_thread = std::thread([&] () {
-		setThreadPurpose("context-thread");
-		this->audioThreadFunc();
-	});
 }
 
 Context::~Context() {
@@ -56,9 +53,14 @@ std::shared_ptr<Context> Context::getContext() {
 void Context::shutdown() {
 	logDebug("Context shutdown");
 	this->running.store(0);
-	this->context_semaphore.signal();
-	this->context_thread.join();
-
+	this->audio_output->shutdown();
+	/*
+	 * We want to make sure that the audio callback has seen our shutdown. Otherwise, it may try to run the loop.
+	 * After this, the audio callback will output 0 until such time as the context shared_ptr dies.
+	 * */
+	while (this->in_audio_callback.load()) {
+		std::this_thread::yield();
+	}
 	this->delete_directly.store(1);
 	this->drainDeletionQueues();
 }
@@ -70,7 +72,6 @@ void Context::cDelete() {
 
 void Context::enqueueInvokable(Invokable *invokable) {
 	pending_invokables.enqueue(invokable);
-	this->context_semaphore.signal();
 }
 
 template<typename T>
@@ -175,34 +176,67 @@ std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_ST
 }
 
 void Context::generateAudio(unsigned int channels, float *destination) {
-	std::fill(destination, destination + channels * config::BLOCK_SIZE, 0.0f);
-	std::fill(this->getDirectBuffer(), this->getDirectBuffer() + config::BLOCK_SIZE * channels, 0.0f);
-
-	auto i = this->sources.begin();
-	while (i != this->sources.end()) {
-		auto [k, v] = *i;
-		auto s = v.lock();
-		if (s == nullptr) {
-			i = this->sources.erase(i);
-			continue;
-		}
-		s->run();
-		i++;
+	if (this->running.load() == 0) {
+		return;
 	}
 
-	this->source_panners->run(channels, destination);
-
-	weak_vector::iterate_removing(this->global_effects, [&](auto &e) {
-		e->run(channels, this->getDirectBuffer());
+	this->in_audio_callback.store(1);
+	auto release_audio_thread = AtScopeExit([&]() {
+		this->in_audio_callback.store(0);
 	});
-	this->getRouter()->finishBlock();
 
-	/* Write the direct buffer. */
-	for (unsigned int i = 0; i < config::BLOCK_SIZE * channels; i++) {
-		destination[i] += this->direct_buffer[i];
+	/*
+	 * no exception should ever be thrown, but if that proves not to be the case we want to know about it.
+	 * */
+	try {
+		this->flushPropertyWrites();
+
+		Invokable *inv;
+		while (pending_invokables.try_dequeue(inv)) {
+			this->flushPropertyWrites();
+			inv->invoke();
+		}
+
+		/*
+			* This needs to be moved to a dedicated thread. eventually, but this will do for now.
+			* Unfortunately doing better is going to require migrating off shared_ptr, though it's not clear yet as to what it will be replaced with.
+			* */
+		DeletionRecord rec;
+		while (pending_deletes.try_dequeue(rec)) {
+			rec.callback(rec.arg);
+		}
+
+		std::fill(destination, destination + channels * config::BLOCK_SIZE, 0.0f);
+		std::fill(this->getDirectBuffer(), this->getDirectBuffer() + config::BLOCK_SIZE * channels, 0.0f);
+
+		auto i = this->sources.begin();
+		while (i != this->sources.end()) {
+			auto [k, v] = *i;
+			auto s = v.lock();
+			if (s == nullptr) {
+				i = this->sources.erase(i);
+				continue;
+			}
+			s->run();
+			i++;
+		}
+
+		this->source_panners->run(channels, destination);
+
+		weak_vector::iterate_removing(this->global_effects, [&](auto &e) {
+			e->run(channels, this->getDirectBuffer());
+		});
+		this->getRouter()->finishBlock();
+
+		/* Write the direct buffer. */
+		for (unsigned int i = 0; i < config::BLOCK_SIZE * channels; i++) {
+			destination[i] += this->direct_buffer[i];
+		}
+
+		this->block_time++;
+	} catch(...) {
+		logError("Got an exception in the audio callback");
 	}
-
-	this->block_time++;
 }
 
 void Context::flushPropertyWrites() {
@@ -215,42 +249,6 @@ void Context::flushPropertyWrites() {
 			logError("Got exception applying property write: %s", e.what());
 		}
 	}
-}
-
-void Context::audioThreadFunc() {
-	logDebug("Thread started");
-	while (this->running.load()) {
-		float *write_audio = nullptr;
-
-		this->flushPropertyWrites();
-
-		write_audio = this->audio_output->beginWrite();
-		while (write_audio) {
-			this->generateAudio(2, write_audio);
-			this->audio_output->endWrite();
-			write_audio = this->audio_output->beginWrite();
-		}
-
-		Invokable *inv;
-		while (pending_invokables.try_dequeue(inv)) {
-			this->flushPropertyWrites();
-			inv->invoke();
-		}
-
-		/*
-		 * This needs to be moved to a dedicated thread. eventually, but this will do for now.
-		 * Unfortunately doing better is going to require migrating off shared_ptr, though it's not clear yet as to what it will be replaced with.
-		 * */
-		DeletionRecord rec;
-		while (pending_deletes.try_dequeue(rec)) {
-			rec.callback(rec.arg);
-		}
-
-		this->context_semaphore.wait();
-	}
-
-	this->audio_output->shutdown();
-	logDebug("Context thread terminating");
 }
 
 void Context::enqueueDeletionRecord(DeletionCallback cb, void *arg) {
