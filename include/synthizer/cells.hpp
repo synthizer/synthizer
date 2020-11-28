@@ -6,7 +6,7 @@
 namespace synthizer {
 
 /*
- * boxes are used to send values between threads, so that things such as properties can be set without the overhead of queues where possible. An example of this usage is
+ * Cells are used to send values between threads, so that things such as properties can be set without the overhead of queues where possible. An example of this usage is
  * the Decoding generator, which needs to be able to send position and looping to a background thread.
  * 
  * In general the receiver calls read, which returns true if there's an update that no oneb has observed, and the sender calls
@@ -14,21 +14,21 @@ namespace synthizer {
  * */
 
 /*
- * The InvalidValueBox uses the CRTP to indicate an invallid value that will never be put into the box,
+ * The InvalidValueCell uses the CRTP to indicate an invallid value that will never be put into the cell,
  * and uses it to tell whether an update is pending. This box is MPMC, except that each update can be observed by at most one thread.
  * 
  * This will work on any type that can be used with constexpr, but should probably only be used on things smaller than primitives,
  * since larger types aren't going to be lockfree.
  * */
 template<typename T, typename INVAL_PROVIDER>
-class InvalidValueBox: INVAL_PROVIDER {
+class InvalidValueCell: INVAL_PROVIDER {
 	public:
-	InvalidValueBox(T initial) {
+	InvalidValueCell(T initial) {
 		this->value.store(initial, std::memory_order_relaxed);
 	}
 
 	/*
-	 * Read from the box. Out is untouched if this returns false.
+	 * Read from the cell. Out is untouched if this returns false.
 	 * */
 	bool read(T* out) {
 		T tmp;
@@ -67,9 +67,9 @@ class InvalidInfiniteDouble {
 	}
 };
 
-/* Typedef for a box that can hold 0 or 1. */
-using BoolBox = InvalidValueBox<int, TemplateInvalidProvider<int, 2>>;
-/* Typedef for a box that can hold any finite double. */
-using FiniteDoubleBox = InvalidValueBox<double, InvalidInfiniteDouble>;
+/* Typedef for a cell that can hold 0 or 1. */
+using BoolCell = InvalidValueCell<int, TemplateInvalidProvider<int, 2>>;
+/* Typedef for a cell that can hold any finite double. */
+using FiniteDoubleCell = InvalidValueCell<double, InvalidInfiniteDouble>;
 
 }

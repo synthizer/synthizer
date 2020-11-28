@@ -1,6 +1,6 @@
 #pragma once
 
-#include "synthizer/boxes.hpp"
+#include "synthizer/cells.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/generation_thread.hpp"
 #include "synthizer/generator.hpp"
@@ -41,7 +41,7 @@ class StreamingGenerator: public Generator {
 	unsigned int channels = 0;
 	std::atomic<int> looping = 0;
 	std::atomic<double> position = 0.0;
-	FiniteDoubleBox next_position = 0.0;
+	FiniteDoubleCell next_position = 0.0;
 
 	double pitch_bend = 1.0;
 	/*

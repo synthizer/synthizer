@@ -3,6 +3,7 @@
 #include "synthizer/generators/streaming.hpp"
 
 #include "synthizer/c_api.hpp"
+#include "synthizer/cells.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/decoding.hpp"
