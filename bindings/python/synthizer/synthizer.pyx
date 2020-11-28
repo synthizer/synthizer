@@ -1,4 +1,5 @@
 #cython: auto_pickle=False
+# distutils: language = c++
 import contextlib
 import threading
 
@@ -10,7 +11,7 @@ from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
 
 # We want the ability to acquire and release the GIL, which means making sure it's initialized.
 # It's unclear if you need this for with nogil as well as for with gil, but let's just avoid the headache entirely.
-cdef extern from "python.h":
+cdef extern from "Python.h":
     int PyEval_InitThreads()
 PyEval_InitThreads()
 
@@ -20,7 +21,7 @@ cdef class SynthizerError(Exception):
 
     def __init__(self):
         self.code = syz_getLastErrorCode()
-        cdef char *tmp = syz_getLastErrorMessage()
+        cdef const char *tmp = syz_getLastErrorMessage()
         if tmp == NULL:
             self.message = ""
         else:
@@ -326,11 +327,6 @@ cdef class Source3D(PannedSourceCommon):
     closeness_boost_distance = DoubleProperty(SYZ_P_CLOSENESS_BOOST_DISTANCE)
     position = Double3Property(SYZ_P_POSITION)
     orientation = Double6Property(SYZ_P_ORIENTATION)
-
-# The auto-generated files cna't add nogil, so we need to redecalre and add it ourselves.
-# In future, we can probably fork autopxd2 to do this instead, but for now this is the only nogil function.
-cdef extern from "synthizer.h":
-    syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, const char *protocol, const char *path, const char *options) nogil
 
 cdef class Buffer(_BaseObject):
     """Use Buffer.from_stream(protocol, path, options) to initialize."""

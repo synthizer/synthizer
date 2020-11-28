@@ -8,3 +8,5 @@ dist
 
 /_skbuild
 /synthizer-git-repo
+*.cpp
+*.so
