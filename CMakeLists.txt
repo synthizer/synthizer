@@ -133,7 +133,11 @@ if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
 	add_executable(test_noise test/noise.cpp)
 	target_link_libraries(test_noise synthizer)
 
+	add_executable(test_latch test/latch.cpp)
+	target_link_libraries(test_latch synthizer)
+
 	add_test(NAME delay_line COMMAND delay_line_test)
+	add_test(NAME latch COMMAND test_latch)
 endif()
 
 install(
