@@ -8,7 +8,7 @@ from setuptools import Extension, setup
 from Cython.Build import cythonize
 from Cython.Compiler import Options
 
-VERSION = "0.7.5"
+VERSION = "0.7.6"
 
 # A helper for rmtree. On Windows, read-only files can't be deleted by rmtree, so we make them not readonly.
 def handle_remove_readonly(func, path, exc):
@@ -51,7 +51,7 @@ else:
     if os.path.exists(git_dir):
         shutil.rmtree(git_dir, onerror=handle_remove_readonly)
     # try cloning the Synthizer repository.
-    subprocess.check_call(["git", "clone", "https://github.com/synthizer/synthizer", "synthizer-git-repo"])
+    subprocess.check_call(["git", "clone", "https://github.com/synthizer/synthizer", "synthizer-git-repo", "--branch", VERSION])
     # Configure and build Synthizer itself.
     cmake = cmaker.CMaker()
     # Force Ninja on all platforms. This lets us work on Windows reliably if run from an MSVC shell, wher reliably
