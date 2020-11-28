@@ -16,6 +16,7 @@ environment:
       CXXFLAGS: -m32
       LDFLAGS: -machine:x86
     - CI_ARCHITECTURE: 64
+      PYTHON_SDIST: "true"
 
 build_script:
 - ps: 'dir Env:'
