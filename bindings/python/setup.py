@@ -56,7 +56,7 @@ else:
     cmake = cmaker.CMaker()
     # Force Ninja on all platforms. This lets us work on Windows reliably if run from an MSVC shell, wher reliably
     # means fail noisily and obviously at the beginning if the world is insane.
-    cmake.configure(cmake_source_dir=git_dir, generator_name='Ninja', clargs=["-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded"])
+    cmake.configure(cmake_source_dir=git_dir, generator_name='Ninja', clargs=["-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded", "-DCMAKE_POSITION_INDEPENDENT_CODE=TRUE"])
     cmake.make()
     # what actually happens here is that Synthizer only installs one path. It is unfortunately the case that
     # skbuild is making architecture specific directories so, instead of guessing, just grab it.
