@@ -5,3 +5,6 @@ synthizer/*.c
 build
 dist
 *.egg-info
+
+/_skbuild
+/synthizer-git-repo
