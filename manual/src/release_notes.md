@@ -4,6 +4,7 @@
 
 - Synthizer now builds on Linux.  This is preliminary.  If you experience issues, please report them, as Linux isn't my primary platform.  That said, I have received multiple confirmations that it works.
 - Python now publishes source distributions, which are capable of building without any extra intervention on your part, except for Windows which requires being in an appropriate MSVC shell.  On Linux, you can install Synthizer into virtualenvs with a simple `pip install synthizer`, assuming a supported C and C++ compiler.
+  - Note that git is currently required in order to clone the Synthizer repository. We might include Synthizer inline in future.
 - Prebuilt C artifacts for Windows now link against the multithreaded dynamic CRT. This was done to speed up Python builds and because there is
   no obvious right choice. If you need a different configuration, please build from source specifying `CMAKE_MSVC_RUNTIME_LIBRARY` and `SYNTHIZER_LIB_TYPE` to appropriate values.
 - The audio generation all runs inline in the audio callback. This has the knock-on effect of making.
