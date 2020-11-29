@@ -9,7 +9,7 @@
 #define PROPERTY_CLASS FdnReverbEffect<GlobalEffect>
 #define PROPERTY_CLASS_IS_TEMPLATE
 #define PROPERTY_LIST FDN_REVERB_EFFECT_PROPERTIES
-#define PROPERTY_BASE BaseObject
+#define PROPERTY_BASE GlobalEffect
 #include "synthizer/property_impl.hpp"
 
 using namespace synthizer;

@@ -42,6 +42,7 @@ class GlobalEffect: public BaseEffect, public RouteInput {
 		this->time_in_blocks++;
 	}
 
+	#include "synthizer/property_methods.hpp"
 	private:
 	alignas(config::ALIGNMENT) std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> input_buffer = { 0.0f };
 	unsigned int channels = 0;
