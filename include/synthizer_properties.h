@@ -40,18 +40,15 @@ DOUBLE_P(SYZ_P_CLOSENESS_BOOST_DISTANCE, closeness_boost_distance, ClosenessBoos
 DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX) \
 
 #define PANNED_SOURCE_PROPERTIES_COMMON \
-SOURCE_PROPERTIES \
 INT_P(SYZ_P_PANNER_STRATEGY, panner_strategy, PannerStrategy, 0, SYZ_PANNER_STRATEGY_COUNT - 1) \
 
 
 #define PANNED_SOURCE_PROPERTIES \
-PANNED_SOURCE_PROPERTIES_COMMON \
 DOUBLE_P(SYZ_P_AZIMUTH, azimuth, Azimuth, 0.0f, 360.0f) \
 DOUBLE_P(SYZ_P_ELEVATION, elevation, Elevation, -90.0f, 90.0f)\
 DOUBLE_P(SYZ_P_PANNING_SCALAR, panning_scalar, PanningScalar, -1.0, 1.0)
 
 #define SOURCE3D_PROPERTIES \
-PANNED_SOURCE_PROPERTIES_COMMON \
 DOUBLE3_P(SYZ_P_POSITION, position, Position) \
 DOUBLE6_P(SYZ_P_ORIENTATION, orientation, Orientation) \
 INT_P(SYZ_P_DISTANCE_MODEL, distance_model, DistanceModel, 0, SYZ_DISTANCE_MODEL_COUNT - 1) \

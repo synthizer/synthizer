@@ -83,7 +83,7 @@ void Source3D::run() {
 }
 
 #define PROPERTY_CLASS Source3D
-#define PROPERTY_BASE Source
+#define PROPERTY_BASE PannedSource
 #define PROPERTY_LIST SOURCE3D_PROPERTIES
 #include "synthizer/property_impl.hpp"
 
