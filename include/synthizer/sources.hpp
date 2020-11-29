@@ -53,7 +53,7 @@ class Source: public RouteOutput {
 	 * */
 	void fillBlock(unsigned int channels);
 
-	PROPERTY_METHODS;
+	#include "synthizer/property_methods.hpp"
 	private:
 	deferred_vector<std::weak_ptr<Generator>> generators;
 	double gain = 1.0;
@@ -91,7 +91,7 @@ class PannedSource: public Source {
 
 	void run() override;
 
-	PROPERTY_METHODS;
+	#include "synthizer/property_methods.hpp"
 	private:
 	enum SYZ_PANNER_STRATEGY panner_strategy = SYZ_PANNER_STRATEGY_HRTF;
 	std::shared_ptr<PannerLane> panner_lane;
@@ -115,7 +115,7 @@ class Source3D: public PannedSource, public DistanceParamsMixin  {
 
 	void run() override;
 
-	PROPERTY_METHODS;
+	#include "synthizer/property_methods.hpp"
 	private:
 	std::array<double, 3> position{ 0.0f, 0.0f, 0.0f };
 	std::array<double, 6> orientation{ 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f };

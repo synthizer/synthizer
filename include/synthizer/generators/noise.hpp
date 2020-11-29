@@ -34,7 +34,7 @@ class ExposedNoiseGenerator: public Generator {
 	int getNoiseType();
 	void setNoiseType(int type);
 
-	PROPERTY_METHODS;
+	#include "synthizer/property_methods.hpp"
 	private:
 	deferred_vector<NoiseGenerator> generators;
 	unsigned int channels;

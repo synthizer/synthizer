@@ -190,7 +190,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 		return &this->router;
 	}
 
-	PROPERTY_METHODS;
+	#include "synthizer/property_methods.hpp"
 	private:
 	/*
 	 * Flush all pending property writes.

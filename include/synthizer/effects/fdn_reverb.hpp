@@ -145,7 +145,7 @@ class GlobalFdnReverbEffect: public GlobalEffect<FdnReverbEffect> {
 	template<typename... ARGS>
 	GlobalFdnReverbEffect(ARGS&&... args): GlobalEffect<FdnReverbEffect>(std::forward<ARGS>(args)...) {}
 
-	PROPERTY_METHODS;
+	#include "synthizer/property_methods.hpp"
 };
 
 }

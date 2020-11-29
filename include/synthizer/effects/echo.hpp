@@ -67,7 +67,7 @@ class GlobalEchoEffect: public GlobalEffect<EchoEffect> {
 	template<typename... ARGS>
 	GlobalEchoEffect(ARGS&&... args): GlobalEffect<EchoEffect>(std::forward<ARGS>(args)...) {}
 
-	PROPERTY_METHODS;
+	#include "synthizer/property_methods.hpp"
 };
 
 }

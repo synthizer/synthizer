@@ -24,7 +24,7 @@ class BufferGenerator: public Generator {
 	double getPosition();
 	void setPosition(double pos);
 
-	PROPERTY_METHODS;
+	#include "synthizer/property_methods.hpp"
 	private:
 	template<bool L>
 	void readInterpolated(double pos, float *out);

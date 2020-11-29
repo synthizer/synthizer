@@ -29,7 +29,7 @@ class StreamingGenerator: public Generator {
 	void setLooping(int looping);
 	double getPosition();
 	void setPosition(double newPosition);
-	PROPERTY_METHODS;
+	#include "synthizer/property_methods.hpp"
 
 	private:
 	/* The body of the background thread. */
