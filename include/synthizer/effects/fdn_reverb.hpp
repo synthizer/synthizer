@@ -314,7 +314,7 @@ void FdnReverbEffect<BASE>::runEffect(unsigned int time_in_blocks, unsigned int 
 			float w2 = delay - std::floor(delay);
 			float w1 = 1.0f - w2;
 			float v1 = rw.read(i, delay);
-			float v2 = rw.read(i, delay);
+			float v2 = rw.read(i, delay + 1);
 		 values[i] = v1 * w1 + v2 * w2;
 		}
 
