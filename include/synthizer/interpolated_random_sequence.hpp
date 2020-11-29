@@ -56,6 +56,14 @@ class InterpolatedRandomSequence {
 		return val;
 	}
 
+	/*
+	 * Returns the maximum value that this sequence can return. This is not just range_max because of
+	 * transitions from initial values outside the range. Used in order to let us compute proper max delays.
+	 * */
+	float getMaxValue() {
+		return std::max(this->last_value, this->range_max);
+	}
+
 	private:
 	RandomGenerator generator;
 	float range_min, range_max, range_size;

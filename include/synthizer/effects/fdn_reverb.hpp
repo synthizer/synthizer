@@ -93,10 +93,6 @@ class FdnReverbEffect: public BASE {
 	BlockDelayLine<LINES, nextMultipleOf(MAX_DELAY_SAMPLES, config::BLOCK_SIZE) / config::BLOCK_SIZE> lines;
 	std::array<unsigned int, LINES> delays = { { 0 } };
 	/*
-	 * Also accounts for the modulation depth.
-	 * */
-	unsigned int max_delay = 0;
-	/*
 	 * Allows control of frequency bands on the feedback paths, so that we can have different t60s.
 	 * */
 	ThreeBandEq<LINES> feedback_eq;
@@ -257,11 +253,6 @@ void FdnReverbEffect<BASE>::recomputeModel() {
 		 * */
 		this->late_modulators[i] = InterpolatedRandomSequence(this->late_modulators[i].tick(), mod_rate_in_samples + i, 0.0f, mod_depth_in_samples);
 	}
-	/*
-	 * account for the extra sample we need when interpolating here.
-	 * */
-	this->max_delay = this->delays[LINES - 1] + mod_depth_in_samples + 1;
-	this->max_delay = std::max(this->max_delay, this->late_reflections_delay_samples);
 }
 
 template<typename BASE>
@@ -286,9 +277,25 @@ void FdnReverbEffect<BASE>::runEffect(unsigned int time_in_blocks, unsigned int 
 	}
 
 	/*
+	 * Compute the max delay. This needs to be done here because
+	 * modulation has to factor in.
+	 * */
+	unsigned int max_delay = 0;
+	for (unsigned int i = 0; i < LINES; i++) {
+		/*
+		 * account for the extra sample we need when interpolating here.
+		 * Also account for any floating point issues by adding one more sample. Shouldn't be necessary, but won't hurt anything
+		 * and may protect against bugs if interpolatedRandomSequence is ever modified.
+		 * */
+		unsigned int new_max_delay = this->delays[i] + this->late_modulators[i].getMaxValue() + 2;
+		max_delay = std::max(new_max_delay, max_delay);
+	}
+	max_delay = std::max(max_delay, this->late_reflections_delay_samples);
+
+	/*
 	 * Normally we would go through a temporary buffer to premix channels here, and we still might, but we're using the delay line's write loop and it's always to mono; just do it inline.
 	 * */
-	this->lines.runRwLoop(this->max_delay, [&](unsigned int i, auto &rw) {
+	this->lines.runRwLoop(max_delay, [&](unsigned int i, auto &rw) {
 		float *input_ptr = input + input_channels * i;
 		float input_sample = 0.0f;
 
