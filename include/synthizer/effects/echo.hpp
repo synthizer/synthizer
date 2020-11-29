@@ -4,7 +4,6 @@
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/effects/base_effect.hpp"
-#include "synthizer/effects/global_effect.hpp"
 #include "synthizer/memory.hpp"
 #include "synthizer/types.hpp"
 
@@ -14,6 +13,8 @@
 #include <utility>
 
 namespace synthizer {
+
+class Context;
 
 struct EchoTapConfig {
 	float gain_l = 0.5, gain_r = 0.5;
@@ -25,6 +26,16 @@ struct EchoTap {
  EchoTapConfig config;
 };
 
+constexpr unsigned int ECHO_MAX_DELAY = nextMultipleOf(config::SR * 5, config::BLOCK_SIZE);
+
+/*
+ * Shim base class for the C API, so that it can work for both global and generator-specific echoes.
+ * */
+class EchoEffectCInterface {
+	public:
+	virtual void pushNewConfig(deferred_vector<EchoTapConfig> &&config) = 0;
+};
+
 /*
  * A stereo echo effect with variable taps. This gets to use the "echo" name because it is broadly speaking the most
  * common form of echo.
@@ -32,14 +43,16 @@ struct EchoTap {
  * Right now the delay line length is hardcoded to approximately 5 seconds: this is because we've yet to need a dynamically sized delay line, so there's not currently
  * one implemented. I'm going to circle back on this later, but for the sake of early access, let's get this out the door without it.
  * */
-class EchoEffect: public BaseEffect {
+template<typename BASE>
+class EchoEffect: public BASE, public EchoEffectCInterface {
 	public:
+	EchoEffect(const std::shared_ptr<Context> &ctx, unsigned int channels): BASE(ctx, channels) {}
+
 	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) override;
 	void resetEffect() override;
 
-	void pushNewConfig(deferred_vector<EchoTapConfig> &&config);
+	void pushNewConfig(deferred_vector<EchoTapConfig> &&config) override;
 
-	static const unsigned int MAX_DELAY = nextMultipleOf(config::SR * 5, config::BLOCK_SIZE);
 	private:
 	/*
 	 * There's actually 4 entirely distinct scenarios, both of the following in any combination:
@@ -54,7 +67,7 @@ class EchoEffect: public BaseEffect {
 	template<bool FADE_IN, bool ADD>
 	void runEffectInternal(float *output, float gain);
 
-	BlockDelayLine<2, MAX_DELAY / config::BLOCK_SIZE> line;
+	BlockDelayLine<2, ECHO_MAX_DELAY / config::BLOCK_SIZE> line;
 	/*
 	 * Configurations are pushed onto this queue, then picked up the next time runEffect is called.
 	 * 
@@ -66,16 +79,9 @@ class EchoEffect: public BaseEffect {
 	unsigned int max_delay_tap = 0;
 };
 
-class GlobalEchoEffect: public GlobalEffect<EchoEffect> {
-	public:
-	template<typename... ARGS>
-	GlobalEchoEffect(ARGS&&... args): GlobalEffect<EchoEffect>(std::forward<ARGS>(args)...) {}
-
-	#include "synthizer/property_methods.hpp"
-};
-
+template<typename BASE>
 template<bool FADE_IN, bool ADD>
-void EchoEffect::runEffectInternal(float *output, float gain) {
+void EchoEffect<BASE>::runEffectInternal(float *output, float gain) {
 	this->line.runReadLoop(this->max_delay_tap, [&](unsigned int i, auto &reader) {
 		float acc_l = 0.0f;
 		float acc_r = 0.0f;
@@ -100,7 +106,8 @@ void EchoEffect::runEffectInternal(float *output, float gain) {
 	});
 }
 
-void EchoEffect::runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) {
+template<typename BASE>
+void EchoEffect<BASE>::runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) {
 	thread_local std::array<float, config::BLOCK_SIZE * 2> working_buf;
 
 	auto *buffer = this->line.getNextBlock();
@@ -140,11 +147,13 @@ void EchoEffect::runEffect(unsigned int time_in_blocks, unsigned int input_chann
 	}
 }
 
-void EchoEffect::resetEffect() {
+template<typename BASE>
+void EchoEffect<BASE>::resetEffect() {
 	this->line.clear();
 }
 
-void EchoEffect::pushNewConfig(deferred_vector<EchoTapConfig> &&config) {
+template<typename BASE>
+void EchoEffect<BASE>::pushNewConfig(deferred_vector<EchoTapConfig> &&config) {
 	if (this->pending_configs.enqueue(std::move(config)) == false) {
 		throw std::bad_alloc();
 	}

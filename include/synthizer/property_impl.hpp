@@ -29,6 +29,12 @@ namespace synthizer {
 #error "Need PROPERTY_LIST defined to know where to get properties from"
 #endif
 
+#ifdef PROPERTY_CLASS_IS_TEMPLATE
+#define TEMPLATE_HEADER template<>
+#else
+#define TEMPLATE_HEADER
+#endif
+
 #define P_INT_MIN property_impl::int_min
 #define P_INT_MAX property_impl::int_max
 #define P_DOUBLE_MIN property_impl::double_min
@@ -78,6 +84,7 @@ break;
 #define DOUBLE3_P(...) HAS_(__VA_ARGS__)
 #define DOUBLE6_P(...) HAS_(__VA_ARGS__)
 
+TEMPLATE_HEADER
 bool PROPERTY_CLASS::hasProperty(int property) {
 	switch (property) {
 	PROPERTY_LIST
@@ -102,6 +109,7 @@ bool PROPERTY_CLASS::hasProperty(int property) {
 /* Getting objects is different; we have to cast to the base class. */
 #define OBJECT_P(p, ...) GET_CONV_(std::shared_ptr<CExposable>, [] (auto &x) { return std::static_pointer_cast<CExposable>(x); }, p, __VA_ARGS__)
 
+TEMPLATE_HEADER
 property_impl::PropertyValue PROPERTY_CLASS::getProperty(int property) {
 	switch (property) {
 	PROPERTY_LIST
@@ -122,6 +130,7 @@ property_impl::PropertyValue PROPERTY_CLASS::getProperty(int property) {
 #define DOUBLE3_P(...)  VALIDATE_(property_impl::arrayd3, [] (auto &x) {}, __VA_ARGS__)
 #define DOUBLE6_P(...)  VALIDATE_(property_impl::arrayd6, [] (auto &x) {}, __VA_ARGS__)
 
+TEMPLATE_HEADER
 void PROPERTY_CLASS::validateProperty(int property, const property_impl::PropertyValue &value) {
 	switch (property) {
 	PROPERTY_LIST
@@ -142,6 +151,7 @@ void PROPERTY_CLASS::validateProperty(int property, const property_impl::Propert
 #define DOUBLE3_P(...)  SET_(property_impl::arrayd3, [] (auto &x) { return *x; }, __VA_ARGS__)
 #define DOUBLE6_P(...)  SET_(property_impl::arrayd6, [] (auto &x) { return *x; }, __VA_ARGS__)
 
+TEMPLATE_HEADER
 void PROPERTY_CLASS::setProperty(int property, const property_impl::PropertyValue &value) {
 	switch (property) {
 	PROPERTY_LIST
@@ -166,5 +176,6 @@ void PROPERTY_CLASS::setProperty(int property, const property_impl::PropertyValu
 #undef INT_MAX
 #undef FLOAT_MIN
 #undef FLOAT_MAX
-
+#undef PROPERTY_CLASS_IS_TEMPLATE
+#undef TEMPLATE_HEADER
 }

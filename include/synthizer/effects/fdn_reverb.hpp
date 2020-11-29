@@ -1,11 +1,9 @@
 #pragma once
 
-
 #include "synthizer/block_delay_line.hpp"
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/effects/base_effect.hpp"
-#include "synthizer/effects/global_effect.hpp"
 #include "synthizer/iir_filter.hpp"
 #include "synthizer/interpolated_random_sequence.hpp"
 #include "synthizer/math.hpp"
@@ -19,15 +17,19 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <memory>
 #include <numeric>
 #include <utility>
 
 namespace synthizer {
 
+class Context;
+
 /*
  * An FDN reverberator using a household reflection matrix and an early reflections model.
  * */
-class FdnReverbEffect: public BaseEffect {
+template<typename BASE>
+class FdnReverbEffect: public BASE {
 	public:
 	/* Number of lines in the FDN. */
 	static constexpr unsigned int LINES = 8;
@@ -48,6 +50,8 @@ class FdnReverbEffect: public BaseEffect {
 	 * This must not be larger than mean free path + slack used to setmAX_DELAY_{SAMPLES,SECONDS}.
 	 * */
 	static constexpr unsigned int MAX_FEEDBACK_DELAY = 0.35 * config::SR;
+
+	FdnReverbEffect(const std::shared_ptr<Context> &ctx, unsigned int channels): BASE(ctx, channels) {}
 
 	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) override;
 	void resetEffect() override;
@@ -70,7 +74,8 @@ class FdnReverbEffect: public BaseEffect {
 	EXPOSE(double, late_reflections_modulation_frequency, getLateReflectionsModulationFrequency, setLateReflectionsModulationFrequency)
 	EXPOSE(double, late_reflections_delay, getLateReflectionsDelay, setLateReflectionsDelay)
 
-	protected:
+	#include "synthizer/property_methods.hpp"
+	private:
 	void recomputeModel();
 
 	/*
@@ -148,15 +153,8 @@ class FdnReverbEffect: public BaseEffect {
 	float late_reflections_delay = 0.01f;
 };
 
-class GlobalFdnReverbEffect: public GlobalEffect<FdnReverbEffect> {
-	public:
-	template<typename... ARGS>
-	GlobalFdnReverbEffect(ARGS&&... args): GlobalEffect<FdnReverbEffect>(std::forward<ARGS>(args)...) {}
-
-	#include "synthizer/property_methods.hpp"
-};
-
-void FdnReverbEffect::recomputeModel() {
+template<typename BASE>
+void FdnReverbEffect<BASE>::recomputeModel() {
 	/*
 	 * Design the input filter. It's as straightforward as it looks.
 	 * */
@@ -266,13 +264,15 @@ void FdnReverbEffect::recomputeModel() {
 	this->max_delay = std::max(this->max_delay, this->late_reflections_delay_samples);
 }
 
-void FdnReverbEffect::resetEffect() {
+template<typename BASE>
+void FdnReverbEffect<BASE>::resetEffect() {
 	this->lines.clear();
 	this->feedback_eq.reset();
 	this->input_filter.reset();
 }
 
-void FdnReverbEffect::runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) {
+template<typename BASE>
+void FdnReverbEffect<BASE>::runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) {
 	/*
 	 * Output is stereo. For surround setups, we can get 99% of the benefit just by upmixing stereo differently, which we'll do in future by hand
 	 * as a special case.

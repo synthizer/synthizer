@@ -7,6 +7,7 @@ namespace synthizer {
 
 /*
  * base class for effects, which can be used either with generators (tbd) or as global effects to which sources are connected.
+ * This cannot have properties on it.
  * 
  * An effect needs to implement this interface, then declare up to 2 versions of itself by subclassing one level further. See echo.{hpp|cpp} for a worked example.
  * 

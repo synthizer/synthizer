@@ -146,7 +146,7 @@ void Context::registerSource(const std::shared_ptr<Source> &source) {
 	});
 }
 
-void Context::registerGlobalEffect(const std::shared_ptr<GlobalEffectBase> &effect) {
+void Context::registerGlobalEffect(const std::shared_ptr<GlobalEffect> &effect) {
 	this->call([&] () {
 		this->global_effects.push_back(effect);
 	});

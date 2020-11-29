@@ -2,21 +2,18 @@
 
 #include "synthizer/c_api.hpp"
 #include "synthizer/error.hpp"
+#include "synthizer/effects/global_effect.hpp"
 
-#define PROPERTY_CLASS GlobalEchoEffect
-#define PROPERTY_LIST EFFECT_PROPERTIES
-#define PROPERTY_BASE BaseObject
-#include "synthizer/property_impl.hpp"
 
 using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
-	auto x = ctx->createObject<GlobalEchoEffect>(1);
-	*out = toC(x);
-	std::shared_ptr<GlobalEffectBase> e = x;
+	auto x = ctx->createObject<EchoEffect<GlobalEffect>>(1);
+	std::shared_ptr<GlobalEffect> e = x;
 	ctx->registerGlobalEffect(	e);
+	*out = toC(x);
 	return 0;
 	SYZ_EPILOGUE
 }
@@ -24,11 +21,11 @@ SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context)
 SYZ_CAPI syz_ErrorCode syz_echoSetTaps(syz_Handle handle, unsigned int n_taps, struct syz_EchoTapConfig *taps) {
 	SYZ_PROLOGUE
 	deferred_vector<EchoTapConfig> cfg;
-	auto echo = fromC<EchoEffect>(handle);
+	auto echo = fromC<EchoEffectCInterface>(handle);
  cfg.reserve(n_taps);
 	for (unsigned int i = 0; i < n_taps; i++) {
 		const unsigned int delay_in_samples = taps[i].delay * config::SR;
-		if (delay_in_samples > EchoEffect::MAX_DELAY) {
+		if (delay_in_samples > ECHO_MAX_DELAY) {
 			throw ERange("Delay is too long");
 		}
 		EchoTapConfig c;

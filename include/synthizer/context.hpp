@@ -26,7 +26,7 @@ namespace synthizer {
 class AudioOutput;
 class CExposable;
 class Source;
-class GlobalEffectBase;
+class GlobalEffect;
 
 /*
  * Infrastructure for deletion.
@@ -163,7 +163,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	 * 
 	 * Handles calling into the audio thread.
 	 * */
-	void registerGlobalEffect(const std::shared_ptr<GlobalEffectBase> &effect);
+	void registerGlobalEffect(const std::shared_ptr<GlobalEffect> &effect);
 
 	/*
 	 * The properties for the listener.
@@ -251,7 +251,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	std::shared_ptr<AbstractPannerBank> source_panners = nullptr;
 
 	/* Effects to run. */
-	deferred_vector<std::weak_ptr<GlobalEffectBase>> global_effects;
+	deferred_vector<std::weak_ptr<GlobalEffect>> global_effects;
 
 	/* Parameters of the 3D environment: listener orientation/position, library-wide defaults for distance models, etc. */
 	std::array<double, 3> position{ { 0, 0, 0 } };

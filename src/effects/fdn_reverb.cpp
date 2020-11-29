@@ -3,8 +3,11 @@
 #include "synthizer_properties.h"
 
 #include "synthizer/c_api.hpp"
+#include "synthizer/effects/global_effect.hpp"
 
-#define PROPERTY_CLASS GlobalFdnReverbEffect
+
+#define PROPERTY_CLASS FdnReverbEffect<GlobalEffect>
+#define PROPERTY_CLASS_IS_TEMPLATE
 #define PROPERTY_LIST FDN_REVERB_EFFECT_PROPERTIES
 #define PROPERTY_BASE BaseObject
 #include "synthizer/property_impl.hpp"
@@ -14,10 +17,10 @@ using namespace synthizer;
 SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle context) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
-	auto x = ctx->createObject<GlobalFdnReverbEffect>(1);
-	*out = toC(x);
-	std::shared_ptr<GlobalEffectBase> e = x;
+	auto x = ctx->createObject<FdnReverbEffect<GlobalEffect>>(1);
+	std::shared_ptr<GlobalEffect> e = x;
 	ctx->registerGlobalEffect(	e);
+	*out = toC(x);
 	return 0;
 	SYZ_EPILOGUE
 }

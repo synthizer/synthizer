@@ -11,36 +11,18 @@
 #include <utility>
 
 namespace synthizer {
-
-/*
- * helper shim to let us register with Context while applying the CRTP.
- * */
-class GlobalEffectBase {
-	public:
-	virtual void run(unsigned int channels, float *output) = 0;
-};
-
 /*
  * A global effect is an effect which sources route to on a one-by-one basis. To use this, apply the CRTP.
  * */
-template<typename BASE>
-class GlobalEffect: public BASE, public RouteInput, public GlobalEffectBase {
+class GlobalEffect: public BaseEffect, public RouteInput {
 	public:
-	/*
-	 * This constructor expects the fixed arguments for us,
-	 * then forwards the parameter pack to BASE. This lets us pass arguments through without having to tie effect implementations
-	 * to the object infrastructure (i.e. we can reuse them internally if we want).
-	 * */
-	#pragma clang diagnostic push
-	/* We need to suppress this because RouteInput needs the address of the buffer, which isn't initialized until the derive class finishes. */
-	#pragma clang diagnostic ignored "-Wuninitialized"
-	template<typename... ARGS>
-	GlobalEffect(const std::shared_ptr<Context> &ctx, unsigned int channels, ARGS&& ...args):
-		BASE(std::forward(args)...),
-		RouteInput(ctx, &this->input_buffer[0], channels),
-		channels(channels)
-		 {}
-	#pragma clang diagnostic pop
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wuninitialized"
+	GlobalEffect(const std::shared_ptr<Context> &ctx, unsigned int channels):
+		input_buffer(),
+		channels(channels),
+		RouteInput(ctx, &this->input_buffer[0], channels) {}
+#pragma clang diagnostic pop
 
  double getGain() {
 	 return this->gain;
