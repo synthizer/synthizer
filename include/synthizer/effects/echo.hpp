@@ -46,7 +46,7 @@ class EchoEffectCInterface {
 template<typename BASE>
 class EchoEffect: public BASE, public EchoEffectCInterface {
 	public:
-	EchoEffect(const std::shared_ptr<Context> &ctx, unsigned int channels): BASE(ctx, channels) {}
+	EchoEffect(const std::shared_ptr<Context> &ctx): BASE(ctx, 1) {}
 
 	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) override;
 	void resetEffect() override;

@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
 	CHECKED(syz_createGlobalFdnReverb(&effect, context));
-	//CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
+	CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 0));
 	while (true) {

@@ -10,7 +10,7 @@ using namespace synthizer;
 SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
-	auto x = ctx->createObject<EchoEffect<GlobalEffect>>(1);
+	auto x = ctx->createObject<EchoEffect<GlobalEffect>>();
 	std::shared_ptr<GlobalEffect> e = x;
 	ctx->registerGlobalEffect(	e);
 	*out = toC(x);
