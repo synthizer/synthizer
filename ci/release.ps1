@@ -24,7 +24,7 @@ is nonzero.
   if ($LASTEXITCODE) { Throw "$exe indicated failure (exit code $LASTEXITCODE; full command: $Args)." }
 }
 
-if $Env:APPVEYOR_REPO_TAG -ne "true" {
+if ($Env:APPVEYOR_REPO_TAG -ne "true") {
 	write-output "Not releasing"
 	exit 0
 }
