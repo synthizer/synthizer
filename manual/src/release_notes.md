@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.7.7
+
+- Identical to 0.7.5.  0.7.6 introduced a major performance regression that makes Synthizer unusable (probably issue #32, but investigations are ongoing).
+  After this is fixed, the next version will contain all the nice 0.7.6 things.
+
 ## 0.7.6
 
 - Synthizer now builds on Linux.  This is preliminary.  If you experience issues, please report them, as Linux isn't my primary platform.  That said, I have received multiple confirmations that it works.
