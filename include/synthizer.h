@@ -120,6 +120,18 @@ SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, dou
 SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out);
 
 /*
+ * Create a context which doesn't feed an audio device.
+ * Currently this is exposed for testing purposes, but will eventually become a stable and useful API.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out);
+/*
+ * get a block of audio with 2 channels. This is also 
+ * currently only exposed for testing, especially since "block" is not part of the external API and using this wrong is a good way to
+ * crash for the time being.
+ * */
+SYZ_CAPI syz_ErrorCode syz_contextGetBlock(syz_Handle context, float *block);
+
+/*
  * Create a generator that represents reading from a stream.
  * 
  * @param protocol: The protocol. You probably want file.

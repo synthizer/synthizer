@@ -28,14 +28,21 @@ namespace synthizer {
 
 Context::Context(): BaseObject(nullptr) { }
 
-void Context::initContext() {
+void Context::initContext( bool headless) {
 	std::weak_ptr<Context> ctx_weak = this->shared_from_this();
+
+	this->source_panners = createPannerBank();
+
+	this->headless = headless;
+	if (headless) {
+		this->delete_directly.store(1);
+		return;
+	}
+
 	this->audio_output = createAudioOutput([ctx_weak] (unsigned int channels, float *buffer) {
 		auto ctx_strong = ctx_weak.lock();
 		ctx_strong->generateAudio(channels, buffer);
 	});
-
-	this->source_panners = createPannerBank();
 	this->running.store(1);
 }
 
@@ -51,17 +58,19 @@ std::shared_ptr<Context> Context::getContext() {
 }
 
 void Context::shutdown() {
-	logDebug("Context shutdown");
-	this->running.store(0);
-	this->audio_output->shutdown();
-	/*
-	 * We want to make sure that the audio callback has seen our shutdown. Otherwise, it may try to run the loop.
-	 * After this, the audio callback will output 0 until such time as the context shared_ptr dies.
-	 * */
-	while (this->in_audio_callback.load()) {
-		std::this_thread::yield();
+	if (this->headless == false) {
+		logDebug("Context shutdown");
+		this->running.store(0);
+		this->audio_output->shutdown();
+		/*
+		* We want to make sure that the audio callback has seen our shutdown. Otherwise, it may try to run the loop.
+		* After this, the audio callback will output 0 until such time as the context shared_ptr dies.
+		* */
+		while (this->in_audio_callback.load()) {
+			std::this_thread::yield();
+		}
+		this->delete_directly.store(1);
 	}
-	this->delete_directly.store(1);
 	this->drainDeletionQueues();
 }
 
@@ -75,10 +84,14 @@ void Context::enqueueInvokable(Invokable *invokable) {
 }
 
 template<typename T>
-static T propertyGetter(Context *ctx, std::shared_ptr<BaseObject> &obj, int property) {
-	auto inv = WaitableInvokable([&] () {
+static T propertyGetter(Context *ctx, std::shared_ptr<BaseObject> &obj, int property, bool headless) {
+	auto cb = [&] () {
 		return std::get<T>(obj->getProperty(property));
-	});
+	};
+	if (headless) {
+		return cb();
+	}
+	auto inv = WaitableInvokable(std::move(cb));
 	ctx->enqueueInvokable(&inv);
 	return inv.wait();
 }
@@ -90,18 +103,23 @@ void Context::propertySetter(const std::shared_ptr<BaseObject> &obj, int propert
 		return;
 	}
 
-	auto inv = WaitableInvokable([&] () {
+	auto cb = [&] () {
 		/*
 		 * The context will flush, then we do the set here. Next time, the queue's empty.
 		 * */
 		obj->setProperty(property, value);
-	});
+	};
+	if (this->headless) {
+		cb();
+		return;
+	}
+ auto inv = WaitableInvokable(std::move(cb));
 	this->enqueueInvokable(&inv);
 	inv.wait();
 }
 
 int Context::getIntProperty(std::shared_ptr<BaseObject> &obj, int property) {
-	return propertyGetter<int>(this, obj, property);
+	return propertyGetter<int>(this, obj, property, this->headless);
 }
 
 void Context::setIntProperty(std::shared_ptr<BaseObject> &obj, int property, int value) {
@@ -109,7 +127,7 @@ void Context::setIntProperty(std::shared_ptr<BaseObject> &obj, int property, int
 }
 
 double Context::getDoubleProperty(std::shared_ptr<BaseObject> &obj, int property) {
-	return propertyGetter<double>(this, obj, property);
+	return propertyGetter<double>(this, obj, property, this->headless);
 }
 
 void Context::setDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, double value) {
@@ -117,7 +135,7 @@ void Context::setDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, 
 }
 
 std::shared_ptr<CExposable> Context::getObjectProperty(std::shared_ptr<BaseObject> &obj, int property) {
-	return propertyGetter<std::shared_ptr<CExposable>>(this, obj, property);
+	return propertyGetter<std::shared_ptr<CExposable>>(this, obj, property, this->headless);
 }
 
 void Context::setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<CExposable> &value) {
@@ -125,7 +143,7 @@ void Context::setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, 
 }
 
 std::array<double, 3> Context::getDouble3Property(std::shared_ptr<BaseObject> &obj, int property) {
-	return propertyGetter<std::array<double, 3>>(this, obj, property);
+	return propertyGetter<std::array<double, 3>>(this, obj, property, this->headless);
 }
 
 void Context::setDouble3Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 3> value) {
@@ -133,7 +151,7 @@ void Context::setDouble3Property(std::shared_ptr<BaseObject> &obj, int property,
 }
 
 std::array<double, 6>  Context::getDouble6Property(std::shared_ptr<BaseObject> &obj, int property) {
-	return propertyGetter<std::array<double, 6>>(this, obj, property);
+	return propertyGetter<std::array<double, 6>>(this, obj, property, this->headless);
 }
 
 void Context::setDouble6Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 6> value) {
@@ -176,7 +194,7 @@ std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_ST
 }
 
 void Context::generateAudio(unsigned int channels, float *destination) {
-	if (this->running.load() == 0) {
+	if (this->running.load() == 0 && this->headless == false) {
 		return;
 	}
 
@@ -273,6 +291,11 @@ void Context::drainDeletionQueues() {
 
 }
 
+#define PROPERTY_CLASS Context
+#define PROPERTY_LIST CONTEXT_PROPERTIES
+#define PROPERTY_BASE BaseObject
+#include "synthizer/property_impl.hpp"
+
 using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out) {
@@ -285,7 +308,21 @@ SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out) {
 	SYZ_EPILOGUE
 }
 
-#define PROPERTY_CLASS Context
-#define PROPERTY_BASE BaseObject
-#define PROPERTY_LIST CONTEXT_PROPERTIES
-#include "synthizer/property_impl.hpp"
+SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out) {
+	SYZ_PROLOGUE
+	auto *ctx = new Context();
+	std::shared_ptr<Context> ptr{ctx, deleteInBackground<Context>};
+	/* This is a headless context. */
+	ptr->initContext(true);
+	*out = toC(ptr);
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_contextGetBlock(syz_Handle context, float *block) {
+	SYZ_PROLOGUE
+	auto ctx = fromC<Context>(context);
+	ctx->generateAudio(2, block);
+	return 0;
+	SYZ_EPILOGUE
+}

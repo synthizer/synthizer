@@ -72,7 +72,7 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	 * 
 	 * Why is because it is unfortunately necessary for the audio thread from miniaudio to hold a weak_ptr, which needs us to be able to use shared_from_this.
 	 * */
-	void initContext();
+	void initContext(bool headless = false);
 
 	~Context();
 
@@ -101,9 +101,13 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	 * */
 	template<typename C, typename... ARGS>
 	auto call(C &&callable, ARGS&& ...args) {
-		auto invokable = WaitableInvokable([&]() {
+		auto cb = [&]() {
 			return callable(args...);
-		});
+		};
+		if (this->headless) {
+			return cb();
+		}
+		auto invokable = WaitableInvokable(std::move(cb));
 		this->enqueueInvokable(&invokable);
 		return invokable.wait();
 	}
@@ -190,19 +194,21 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 		return &this->router;
 	}
 
-	#include "synthizer/property_methods.hpp"
-	private:
-	/*
-	 * Flush all pending property writes.
-	 * */
-	void flushPropertyWrites();
-
 	/*
 	 * Generate a block of audio output for the specified number of channels.
 	 * 
 	 * The number of channels shouldn't change for the duration of this context in most circumstances.
 	 * */
 	void generateAudio(unsigned int channels, float *output);
+
+	#include "synthizer/property_methods.hpp"
+	private:
+	bool headless = false;
+
+	/*
+	 * Flush all pending property writes.
+	 * */
+	void flushPropertyWrites();
 
 	moodycamel::ConcurrentQueue<Invokable *> pending_invokables;
 	std::atomic<int> running;
