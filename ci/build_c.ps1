@@ -46,7 +46,7 @@ foreach ($build_type in $build_types) {
 			"-DSYNTHIZER_LIB_TYPE=$($lib_type.toUpper())"
 			"-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL"
 		invoke-utility ninja
-		invoke-utility ninja testt
+		invoke-utility ninja test
 		cd ..
 	}
 }
