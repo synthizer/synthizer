@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.7.8 (WIP)
+
+- It is no longer possible to nest `syz_initialize`/`syz_shutdown` calls. Apps may only ever call these functions once for proper functioning. Calling them more than once is undefined behavior.
+
 ## 0.7.7
 
 - Identical to 0.7.5.  0.7.6 introduced a major performance regression that makes Synthizer unusable (probably issue #32, but investigations are ongoing).

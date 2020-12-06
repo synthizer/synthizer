@@ -78,8 +78,6 @@ SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle);
 
 /*
  * Library initialization and shutdown.
- * 
- * This must be called at least once per program wishing to use synthizer. For convenience when dealing with weird binding situations, these nest; call syz_shutdown as many times as you call syz_initialize.
  * */
 SYZ_CAPI syz_ErrorCode syz_initialize();
 SYZ_CAPI syz_ErrorCode syz_shutdown();

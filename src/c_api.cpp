@@ -39,26 +39,21 @@ SYZ_CAPI syz_ErrorCode syz_configureLoggingBackend(enum SYZ_LOGGING_BACKEND back
 	SYZ_EPILOGUE
 }
 
-static std::atomic<unsigned int> initialization_count = 0;
 SYZ_CAPI syz_ErrorCode syz_initialize() {
 	SYZ_PROLOGUE
-	if (	initialization_count.fetch_add(1) == 0) {
-		initializeMemorySubsystem();
-		startBackgroundThread();
-		initializeAudioOutputDevice();
-	}
+	initializeMemorySubsystem();
+	startBackgroundThread();
+	initializeAudioOutputDevice();
 	return 0;
 	SYZ_EPILOGUE
 }
 
 SYZ_CAPI syz_ErrorCode syz_shutdown() {
 	SYZ_PROLOGUE
-	if (initialization_count.fetch_sub(1) == 1) {
-		clearAllCHandles();
-		shutdownOutputDevice();
-		stopBackgroundThread();
-		shutdownMemorySubsystem();
-	}
+	clearAllCHandles();
+	shutdownOutputDevice();
+	stopBackgroundThread();
+	shutdownMemorySubsystem();
 	logDebug("Library shutdown complete");
 	return 0;
 	SYZ_EPILOGUE
