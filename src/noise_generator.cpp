@@ -1,3 +1,4 @@
+#include "synthizer/compiler_specifics.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/filter_design.hpp"
 #include "synthizer/noise_generator.hpp"

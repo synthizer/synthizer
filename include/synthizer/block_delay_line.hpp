@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "synthizer/compiler_attributes.hpp"
+#include "synthizer/compiler_specifics.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/types.hpp"
 

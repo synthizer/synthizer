@@ -13,7 +13,6 @@ environment:
 
   matrix:
     - cI_ARCHITECTURE: 32
-      CFLAGS: -m32
       CXXFLAGS: -m32
       LDFLAGS: -machine:x86
     - CI_ARCHITECTURE: 64

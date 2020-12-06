@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * This file defines macros to apply compiler attributes.
  * 
@@ -10,6 +12,21 @@
 /*
  * This function is printf-like. Argument m (1-based) is the format string, argument n is the first argument to be used for formatting
  * 
- * Note: don't use this on class metods.
+ * Note: don't use this on class methods.
  * */
 #define PRINTF_LIKE(m, n) [[gnu::format(printf, m, n)]]
+
+
+/* For MSVC, introduce defines to the Clang builtins. */
+#ifdef _MSC_VER
+#include <intrin.h>
+
+#define __builtin_popcount(x) __popcnt(x)
+
+static inline int __builtin_ctz(unsigned x) {
+	unsigned long ret;
+	_BitScanForward(&ret, x);
+	return (int)ret;
+}
+#endif
+

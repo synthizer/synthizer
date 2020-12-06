@@ -2,7 +2,7 @@
 
 #include "synthizer.h"
 
-#include "compiler_attributes.hpp"
+#include "compiler_specifics.hpp"
 
 #include <string>
 #include <utility>

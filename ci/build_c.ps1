@@ -39,8 +39,6 @@ foreach ($build_type in $build_types) {
 		if ($lib_type -eq "static") { $ci_name += "_static" }
 		if ($lib_type -eq "dynamic" ) { $lib_type = "shared" }
 		invoke-utility cmake -G Ninja ".." `
-			"-DCMAKE_C_COMPILER=clang-cl.exe" `
-			"-DCMAKE_CXX_COMPILER=clang-cl.exe" `
 			"-DCMAKE_BUILD_TYPE=$build_type" `
 			"-DCI_SYNTHIZER_NAME=$ci_name" `
 			"-DSYNTHIZER_LIB_TYPE=$($lib_type.toUpper())"
