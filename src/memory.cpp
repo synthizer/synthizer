@@ -133,7 +133,7 @@ struct DeferredFreeEntry {
  * */
 static moodycamel::ConcurrentQueue<DeferredFreeEntry> deferred_free_queue{1000, 64, 64};
 static std::thread deferred_free_thread;
-static std::atomic<int> deferred_free_thread_running = 1;
+static std::atomic<int> deferred_free_thread_running = 0;
 thread_local static bool is_deferred_free_thread = false;
 
 static void deferredFreeWorker() {
@@ -175,6 +175,7 @@ void deferredFree(freeCallback *cb, void *value) {
 }
 
 void initializeMemorySubsystem() {
+	deferred_free_thread_running.store(1);
 	deferred_free_thread = std::thread{deferredFreeWorker};
 }
 
