@@ -18,7 +18,7 @@
 
 
 /* For MSVC, introduce defines to the Clang builtins. */
-#ifdef _MSC_VER
+#if defined(_MSC_VER ) && !(defined(__clang__) || defined(__GNUC__))
 #include <intrin.h>
 
 #define __builtin_popcount(x) __popcnt(x)
