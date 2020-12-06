@@ -160,6 +160,11 @@ static void deferredFreeWorker() {
 void deferredFree(freeCallback *cb, void *value) {
 	thread_local decltype(deferred_free_queue)::producer_token_t token{deferred_free_queue};
 
+	if (deferred_free_thread_running.load() ==0 ) {
+		cb(value);
+		return;
+	}
+
 	if (value == nullptr) {
 		return;
 	}

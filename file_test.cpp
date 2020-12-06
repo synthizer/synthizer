@@ -60,6 +60,7 @@ int main(int argc, char *argv[]) {
 		double y = cos(rad);
 		double x = sin(rad);
 		CHECKED(syz_setD3(source, SYZ_P_POSITION, x, y, 0.0));
+		break;
 	}
 
 end:

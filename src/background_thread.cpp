@@ -62,6 +62,11 @@ void stopBackgroundThread() {
 }
 
 void callInBackground(BackgroundThreadCallback cb, void *arg) {
+	if (background_thread_running.load() == 0) {
+		cb(arg);
+		return;
+	}
+
 	BackgroundThreadCommand cmd;
 	cmd.callback = cb;
 	cmd.arg = arg;

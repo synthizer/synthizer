@@ -157,6 +157,8 @@ int main() {
 		syz_Handle ctx, handle;
 		const char * objtype;
 
+	syz_initialize();
+
 	if (syz_createContextHeadless(&ctx) != 0) {
 		printf("Unable to create context: ");
 		printLastError();
@@ -201,5 +203,6 @@ int main() {
 		return 1;
 	}
 
+	syz_shutdown();
 	return 0;
 }

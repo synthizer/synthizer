@@ -147,7 +147,7 @@ std::shared_ptr<T> sharedPtrDeferred(ARGS&&... args) {
 }
 
 /*
- * Like std::allocate_shared but doesn't make us specify the allocator typ[es.
+ * Like std::allocate_shared but doesn't make us specify the allocator types.
  * */
 template<typename T, typename... ARGS>
 std::shared_ptr<T> allocateSharedDeferred(ARGS&&... args) {
