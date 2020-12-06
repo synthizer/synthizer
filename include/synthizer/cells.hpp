@@ -103,7 +103,7 @@ class LatchCell {
 		this->data[1] = default_value;
 	}
 
-	void write(const T &value) {
+	void write(const T &&value) {
 		this->writeWithCallback([&](T &destination) {
 			destination = value;
 		});
