@@ -30,7 +30,6 @@ build_script:
 - cmd: copy build_static_release\synthizer_static* artifacts\lib
 - cmd: copy include\synthizer.h artifacts\include
 - cmd: copy include\synthizer_constants.h artifacts\include
-- cmd: copy include\synthizer_properties.h artifacts\include
 - ps: './ci/release.ps1'
 
 artifacts:

@@ -1,6 +1,6 @@
 #include "synthizer/effects/fdn_reverb.hpp"
 
-#include "synthizer_properties.h"
+#include "synthizer/property_xmacros.hpp"
 
 #include "synthizer/c_api.hpp"
 #include "synthizer/effects/global_effect.hpp"

@@ -9,4 +9,3 @@ set -ex
 cd include
 autopxd synthizer.h > ../bindings/python/synthizer/synthizer.pxd
 autopxd synthizer_constants.h > ../bindings/python/synthizer/synthizer_constants.pxd
-autopxd synthizer_properties.h > ../bindings/python/synthizer/synthizer_properties.pxd

@@ -1,6 +1,6 @@
 #include "synthizer.h"
 #include "synthizer_constants.h"
-#include "synthizer_properties.h"
+#include "synthizer/property_xmacros.hpp"
 
 #include "synthizer/audio_output.hpp"
 #include "synthizer/at_scope_exit.hpp"

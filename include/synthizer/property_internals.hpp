@@ -2,7 +2,7 @@
 
 #include "synthizer.h"
 #include "synthizer_constants.h"
-#include "synthizer_properties.h"
+#include "synthizer/property_xmacros.hpp"
 
 #include "synthizer/cells.hpp"
 

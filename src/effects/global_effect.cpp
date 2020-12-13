@@ -1,6 +1,6 @@
 #include "synthizer/effects/global_effect.hpp"
 
-#include "synthizer_properties.h"
+#include "synthizer/property_xmacros.hpp"
 
 #define PROPERTY_CLASS GlobalEffect
 #define PROPERTY_BASE BaseObject

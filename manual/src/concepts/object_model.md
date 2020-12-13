@@ -39,4 +39,4 @@ Synthizer will make an effort to make Synthizer-modified properties faster to re
 
 If you got lost in the above paragraph: `syz_setX` does what you intuitively expect, `syz_getX` might or might not do what you expect.
 
-The actual links between properties and objects are specified in this manual, and also in `synthizer_properties.h` as a collection of x-macros. The names and contents of the x-macros are unstable, but will be stabilized before 1.0 in order to open up interesting use cases to C developers who might want reflection-like capabilities, i.e. generating UIs.
+The actual links between properties and objects are specified in this manual.

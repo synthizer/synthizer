@@ -85,7 +85,7 @@ SYZ_CAPI syz_ErrorCode syz_shutdown();
 /*
  * Property getters and setters.
  * 
- * See synthizer_constants.h and synthizer_properties.h for the enums and property definitions respectively.
+ * See synthizer_constants.h for the constants, and the manual for property definitions.
  * 
  * Note: getters are slow and should only be used for debugging. Synthizer doesn't guarantee that the values returned by getters are what you most
  * immediately set; they are merely some recent value. More advanced library features which introduce deferred setting and transsaction-like behavior will break even this guarantee if enabled.

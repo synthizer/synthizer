@@ -21,9 +21,7 @@ extern "C" {
  * 
  * For int properties, use P_INT_MIN and P_INT_MAX for no range; for double use P_DOUBLE_MIN and P_DOUBLE_MAX. Using these as only one of the endpoints is fine.
  * 
- * For internal usage, synthizer needs two versions of the name that aren't the constant. The first is of the form my_property and used for logging, etc. The second is of the form MyProperty (with leading capital) to link up with methods on C++ classes.
- * This header is public because it may be useful to use these in your own code, but you don't need it
- * if all you want to do is use the library.
+ * Synthizer needs two versions of the name that aren't the constant. The first is of the form my_property and used for logging, etc. The second is of the form MyProperty (with leading capital) to link up with methods on C++ classes.
  * */
 
 #define CONTEXT_PROPERTIES \

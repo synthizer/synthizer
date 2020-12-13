@@ -5,7 +5,7 @@
  * */
 
 #include "synthizer_constants.h"
-#include "synthizer_properties.h"
+#include "synthizer/property_xmacros.hpp"
 
 #include "synthizer/base_object.hpp"
 #include "synthizer/error.hpp"

@@ -3,7 +3,6 @@
 import contextlib
 import threading
 
-from synthizer_properties cimport *
 from synthizer_constants cimport *
 
 from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free

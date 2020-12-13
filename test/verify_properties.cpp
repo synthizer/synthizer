@@ -9,11 +9,11 @@
  * can't check every object because they're also "running" when we tick the context (e.g. BufferGenerator moves position).
  * 
  * Note that the below uses a lot of preprocessor black magic to read the property list from
- * synthizer_properties.h.
+ * property_xmacros.hpp.
  * */
 #include "synthizer.h"
 #include "synthizer_constants.h"
-#include "synthizer_properties.h"
+#include "synthizer/property_xmacros.hpp"
 
 #include <array>
 #include <climits>
