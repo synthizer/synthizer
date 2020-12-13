@@ -41,20 +41,15 @@ bool Source::hasGenerator(std::shared_ptr<Generator> &generator) {
 	return weak_vector::contains(this->generators, generator);
 }
 
-double Source::getGain() {
-	return this->gain;
-}
-
-void Source::setGain(double gain) {
-	float old_gain = this->gain;
-	this->gain = gain;
-	auto time = context->getBlockTime();
-	this->gain_fader = LinearFader{time, old_gain, time + 1, (float)gain};
-}
-
 void Source::fillBlock(unsigned int channels) {
 	alignas(config::ALIGNMENT) thread_local std::array<float, config::MAX_CHANNELS * config::BLOCK_SIZE> premix_array = {0.0f };
 	float *premix = &premix_array[0];
+	double gain_prop;
+	auto time = this->context->getBlockTime();
+
+	if (this->acquireGain(gain_prop)) {
+		this->gain_fader = LinearFader{time, this->gain_fader.getValue(time), time + 1, (float)gain_prop};
+	}
 
 	std::fill(&this->block[0], &this->block[0] + channels * config::BLOCK_SIZE, 0.0f);
 
@@ -75,7 +70,6 @@ void Source::fillBlock(unsigned int channels) {
 		}
 	});
 
-	auto time = this->context->getBlockTime();
 	if (this->gain_fader.isFading(time)) {
 		float gain_start = this->gain_fader.getValue(time);
 		float gain_end = this->gain_fader.getValue(time+1);
@@ -88,7 +82,7 @@ void Source::fillBlock(unsigned int channels) {
 			}
 		}
 	} else {
-		float gainf = this->gain;
+		float gainf = gain_prop;
 		for (unsigned int i = 0; i < config::BLOCK_SIZE * channels; i++) {
 			this->block[i] *= gainf;
 		}
@@ -98,11 +92,6 @@ void Source::fillBlock(unsigned int channels) {
 }
 
 }
-
-#define PROPERTY_CLASS Source
-#define PROPERTY_LIST SOURCE_PROPERTIES
-#define PROPERTY_BASE BaseObject
-#include "synthizer/property_impl.hpp"
 
 using namespace synthizer;
 

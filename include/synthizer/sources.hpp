@@ -25,7 +25,10 @@ class PannerLane;
 
 class Source: public RouteOutput {
 	public:
-	Source(std::shared_ptr<Context> ctx): RouteOutput(ctx) {}
+	Source(std::shared_ptr<Context> ctx): RouteOutput(ctx) {
+		this->setGain(1.0);
+	}
+
 	virtual ~Source() {}
 
 	/* Should write to appropriate places in the context on its own. */
@@ -36,8 +39,10 @@ class Source: public RouteOutput {
 	virtual void removeGenerator(std::shared_ptr<Generator> &gen);
 	bool hasGenerator(std::shared_ptr<Generator> &generator);
 
-	double getGain();
-	void setGain(double gain);
+	#define PROPERTY_CLASS Source
+	#define PROPERTY_BASE BaseObject
+	#define PROPERTY_LIST SOURCE_PROPERTIES
+	#include "synthizer/property_impl_new.hpp"
 
 	protected:
 	/*
@@ -53,10 +58,8 @@ class Source: public RouteOutput {
 	 * */
 	void fillBlock(unsigned int channels);
 
-	#include "synthizer/property_methods.hpp"
 	private:
 	deferred_vector<std::weak_ptr<Generator>> generators;
-	double gain = 1.0;
 	LinearFader gain_fader{1.0f};
 };
 
