@@ -15,18 +15,29 @@
 namespace synthizer {
 
 unsigned int BufferGenerator::getChannels() {
-	auto buffer = this->buffer.lock();
+	auto buf_weak = this->getBuffer();
+
+	auto buffer = buf_weak.lock();
 	if (buffer == nullptr) return 0;
-	return this->reader.getChannels();
+	return buffer->getChannels();
 }
 
 void BufferGenerator::generateBlock(float *output) {
+	std::weak_ptr<Buffer> buffer_weak;
+	std::shared_ptr<Buffer> buffer;;
+	bool buffer_changed = this->acquireBuffer(buffer_weak);
 	double pitch_bend = this->getPitchBend();
 
-	auto buffer = this->buffer.lock();
+	buffer = buffer_weak.lock();
+
 	if (buffer == nullptr || buffer->getLength() == 0) {
 		return;
-	} else if (std::fabs(1.0 - pitch_bend) > 0.001) {
+	}
+	if (buffer_changed) {
+		this->configureBufferReader(buffer);
+	}
+
+	if (std::fabs(1.0 - pitch_bend) > 0.001) {
 		return this->generatePitchBend(output, pitch_bend);
 	} else {
 		return this->generateNoPitchBend(output);
@@ -51,7 +62,7 @@ void BufferGenerator::readInterpolated(double pos, float *out) {
 
 template<bool L>
 void BufferGenerator::generatePitchBendHelper(float *output, double pitch_bend) {
-	double pos = this->position;
+	double pos = this->getPosition();
 	double delta = pitch_bend;
 	for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 		this->readInterpolated<L>(pos, &output[i*this->reader.getChannels()]);
@@ -59,11 +70,11 @@ void BufferGenerator::generatePitchBendHelper(float *output, double pitch_bend) 
 		if (L == true) pos = std::fmod(pos, this->reader.getLength());
 		if (L == false && pos > this->reader.getLength()) break;
 	}
-	this->position = std::min<double>(pos, this->reader.getLength());
+	this->setPosition(std::min<double>(pos, this->reader.getLength()));
 }
 
 void BufferGenerator::generatePitchBend(float *output, double pitch_bend) {
-	if (looping) {
+	if (this->getLooping()) {
 		return this->generatePitchBendHelper<true>(output, pitch_bend);
 	} else {
 		return this->generatePitchBendHelper<false>(output, pitch_bend);
@@ -72,9 +83,11 @@ void BufferGenerator::generatePitchBend(float *output, double pitch_bend) {
 
 void BufferGenerator::generateNoPitchBend(float *output) {
 	alignas(config::ALIGNMENT) thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> workspace = { 0.0f };
-	std::size_t pos = std::round(this->position);
+	std::size_t pos = std::round(this->getPosition());
 	float *cursor = output;
 	unsigned int remaining = config::BLOCK_SIZE;
+	bool looping = this->getLooping() != 0;
+
 	while (remaining) {
 		auto got = this->reader.readFrames(pos, remaining, &workspace[0]);
 		for (unsigned int i = 0; i < got * this->getChannels(); i++) {
@@ -84,48 +97,19 @@ void BufferGenerator::generateNoPitchBend(float *output) {
 		cursor += got * this->reader.getChannels();
 		pos += got;
 		if (remaining > 0) {
-			if (this->looping == false) break;
+			if (looping == false) break;
 			else pos = 0;
 		}
 	}
-	this->position = pos;
+	this->setPosition(pos);
 }
 
-std::shared_ptr<Buffer> BufferGenerator::getBuffer() {
-	return this->buffer.lock();
-}
-
-void BufferGenerator::setBuffer(const std::shared_ptr<Buffer> &b) {
-	this->buffer = b;
-	if (b != nullptr) {
-		this->reader.setBuffer(b.get());
-	}
-	this->position = 0.0;
-}
-
-int BufferGenerator::getLooping() {
-	return this->looping;
-}
-
-void BufferGenerator::setLooping(int l) {
-	this->looping = l;
-}
-
-double BufferGenerator::getPosition() {
-	return this->position / config::SR;
-}
-
-void BufferGenerator::setPosition(double pos) {
-	double p = pos * config::SR;
-	this->position = std::min<double>(p, this->reader.getLength());
+void BufferGenerator::configureBufferReader(const std::shared_ptr<Buffer> &b) {
+	this->reader.setBuffer(b.get());
+	this->setPosition(0.0);
 }
 
 }
-
-#define PROPERTY_CLASS BufferGenerator
-#define PROPERTY_BASE Generator
-#define PROPERTY_LIST BUFFER_GENERATOR_PROPERTIES
-#include "synthizer/property_impl.hpp"
 
 using namespace synthizer;
 

@@ -70,7 +70,7 @@ class PROPCLASS_NAME {
 	};
 	static_assert((unsigned int)Bits::COUNT <= 64, "Can only declare at most 64 properties at one level of the class hierarchy");
 
-	uint64_t changed_bitset = 0;
+	std::uint64_t changed_bitset = UINT64_MAX;
 
 	/* Mark a property as having changed. */
 	void propertyHasChanged(Bits bit) {
@@ -117,7 +117,7 @@ void set##CAMEL_NAME(int val) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
-void validate##CAMEL_NAME(int value) { \
+void validate##CAMEL_NAME(const int value) { \
 	if (value < MIN || value > MAX) { \
 		throw ERange(); \
 	} \
@@ -136,7 +136,7 @@ void set##CAMEL_NAME(double val) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
-void validate##CAMEL_NAME(double value) { \
+void validate##CAMEL_NAME(const double value) { \
 	if (value < MIN || value > MAX) { \
 		throw ERange(); \
 	} \
@@ -155,7 +155,7 @@ void set##CAMEL_NAME(std::array<double, 3> &val) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
-void validate##CAMEL_NAME(std::array<double, 3> value) { \
+void validate##CAMEL_NAME(const std::array<double, 3> &value) { \
 	(void)value; \
 /* Nothing to do. */ \
 } \
@@ -173,7 +173,7 @@ void set##CAMEL_NAME(std::array<double, 6> &val) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
-void validate##CAMEL_NAME(std::arraty<doubledouble, 6> value) { \
+void validate##CAMEL_NAME(const std::array<double, 6> &value) { \
 	(void)value; \
 /* Nothing to do. */ \
 } \
@@ -191,7 +191,7 @@ void set##CAMEL_NAME(const std::weak_ptr<CLS> &val) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
-void validate##CAMEL_NAME(std::weak_ptr<CExposable> &val) { \
+void validate##CAMEL_NAME(const std::weak_ptr<CExposable> &val) { \
 	std::shared_ptr<CExposable> obj = val.lock(); \
 	if (obj != nullptr) { \
 		if (std::dynamic_pointer_cast<CLS>(obj) == nullptr) { \
@@ -216,14 +216,17 @@ PROPERTY_LIST
 #define HAS_(P, ...) \
 case (P): return true; \
 
-#define GET_(T, P, CAMEL_NAME, ...) \
+#define GET_CONV_(T, P, CAMEL_NAME, CONV) \
 case (P): { \
 	auto tmp = this->get##CAMEL_NAME(); \
 	property_impl::PropertyValue ret; \
-	ret.emplace<T>(T(tmp)); \
+	ret.emplace<T>(CONV(tmp)); \
 	return ret; \
 } \
 break;
+
+#define GET_(T, P, CAMEL_NAME) \
+GET_CONV_(T, P, CAMEL_NAME, [](auto &x) { return x; })
 
 #define VALIDATE_(T, P, CAMEL_NAME, ...) \
 	case (P): { \
@@ -233,13 +236,16 @@ break;
 		break; \
 	}
 
-#define SET_(T, P, CAMEL_NAME, ...) \
+#define SET_CONV_(T, P, CAMEL_NAME, CONV, ...) \
 case (P): { \
 	auto ptr = std::get_if<T>(&value); \
 	if (ptr == nullptr) throw EPropertyType(); \
-	this->set##CAMEL_NAME(*ptr); \
+	this->set##CAMEL_NAME(CONV(*ptr)); \
 } \
 break;
+
+#define SET_(T, P, CAMEL_NAME) \
+SET_CONV_(T, P, CAMEL_NAME, [](auto &v) { return v; })
 
 /* Now implement the methods. */
 
@@ -263,7 +269,11 @@ bool hasProperty(int property) override {
 #define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) GET_(double, P, CAMEL_NAME)
 #define DOUBLE3_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) GET_(property_impl::arrayd3, P, CAMEL_NAME)
 #define DOUBLE6_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) GET_(property_impl::arrayd6, P, CAMEL_NAME)
-#define OBJECT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) GET(std::shared_ptr<CExposable>, P, CAMEL_NAME)
+#define OBJECT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) GET_CONV_(std::shared_ptr<CExposable>, P, CAMEL_NAME, [](auto &x) -> std::shared_ptr<CExposable> { \
+	auto strong = x.lock(); \
+	return std::static_pointer_cast<CExposable>(strong); \
+});
+
 
 property_impl::PropertyValue getProperty(int property) override {
 	switch (property) {
@@ -275,7 +285,7 @@ property_impl::PropertyValue getProperty(int property) override {
 
 #define INT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(int, P, CAMEL_NAME)
 #define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(double, P, CAMEL_NAME)
-#define OBJECT_P(P, UNDERSCORE_NAME, CAMEL_NAME) VALIDATE_(std::shared_ptr<CExposable>, P, CAMEL_NAME)
+#define OBJECT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(std::shared_ptr<CExposable>, P, CAMEL_NAME)
 #define DOUBLE3_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...)  VALIDATE_(property_impl::arrayd3, P, CAMEL_NAME)
 #define DOUBLE6_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(property_impl::arrayd6, CAMEL_NAME)
 
@@ -288,8 +298,12 @@ void validateProperty(int property, const property_impl::PropertyValue &value) o
 }
 
 #define INT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(int, P, CAMEL_NAME)
-#define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(double, P, CAMEL_NAME)
-#define OBJECT_P(p, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(std::shared_ptr<CExposable>, P, CAMEL_NAME)
+#define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(double, P, CAMEL_NAME) 
+#define OBJECT_P(P, UNDERSCORE_NAME, CAMEL_NAME, CLS) SET_CONV_(std::shared_ptr<CExposable>, P, CAMEL_NAME, ([](auto &v) -> auto { \
+	/* validated by the validator; guaranteed to be valid here. */ \
+	return std::static_pointer_cast<CLS>(v); \
+}))
+
 #define DOUBLE3_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...)  SET_(property_impl::arrayd3, P, CAMEL_NAME)
 #define DOUBLE6_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(property_impl::arrayd6, P, CAMEL_NAME)
 
@@ -311,9 +325,10 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 #undef DOUBLE6_P
 #undef HAS_
 #undef GET_
-#undef _GET_CONV_
+#undef GET_CONV_
 #undef VALIDATE_
 #undef SET_
+#undef SET_CONV_
 #undef PROPCLASS_NAME
 #undef PROPFIELD_NAME
 

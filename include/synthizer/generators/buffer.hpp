@@ -15,14 +15,12 @@ class BufferGenerator: public Generator {
 
 	unsigned int getChannels() override;
 	void generateBlock(float *output) override;
-	std::shared_ptr<Buffer> getBuffer();
-	void setBuffer(const std::shared_ptr<Buffer> &buffer);
-	int getLooping();
-	void setLooping(int l);
-	double getPosition();
-	void setPosition(double pos);
 
-	#include "synthizer/property_methods.hpp"
+	#define PROPERTY_CLASS BufferGenerator
+	#define PROPERTY_BASE Generator
+	#define PROPERTY_LIST BUFFER_GENERATOR_PROPERTIES
+	#include "synthizer/property_impl_new.hpp"
+
 	private:
 	template<bool L>
 	void readInterpolated(double pos, float *out);
@@ -31,11 +29,9 @@ class BufferGenerator: public Generator {
 	template<bool L>
 	void generatePitchBendHelper(float *out, double pitch_bend);
 	void generatePitchBend(float *out, double pitch_bend);
+	void configureBufferReader(const std::shared_ptr<Buffer> &b);
 
-	std::weak_ptr<Buffer> buffer;
 	BufferReader reader;
-	double position = 0.0;
-	bool looping = false;
 };
 
 }

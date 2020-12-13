@@ -8,6 +8,7 @@
 
 #include <array>
 #include <atomic>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <variant>
@@ -102,6 +103,7 @@ class ObjectProperty {
 	}
 
 	void lock() {
+
 		int old = 0;
 		while (this->spinlock.compare_exchange_strong(old, 1, std::memory_order_acquire, std::memory_order_relaxed) != true) {
 			old = 0;
