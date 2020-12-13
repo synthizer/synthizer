@@ -1,5 +1,9 @@
 #pragma once
 
+#include "synthizer.h"
+#include "synthizer_constants.h"
+#include "synthizer_properties.h"
+
 #include "synthizer/cells.hpp"
 
 #include <array>
@@ -53,10 +57,11 @@ const auto double_max = std::numeric_limits<double>::max();
 template<typename T>
 class AtomicProperty {
 	public:
+	AtomicProperty(): AtomicProperty(T()) {}
 	AtomicProperty(const T&& value): field(value) {}
 
 	T read() { return this->field.load(std::memory_order_acquire); }
-	void write(T value) { this->field.store(T, std::memory_order_release); }
+	void write(T value) { this->field.store(value, std::memory_order_release); }
 	private:
 	std::atomic<T> field{};
 };
@@ -66,6 +71,7 @@ using DoubleProperty = AtomicProperty<double>;
 
 template<typename T>
 class LatchProperty {
+	LatchProperty(): LatchProperty(T()) {}
 	LatchProperty(const T&& value): field(value) {}
 
 	T read() { return this->field.read(); }

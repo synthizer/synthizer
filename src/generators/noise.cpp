@@ -25,11 +25,6 @@ void ExposedNoiseGenerator::setNoiseType(int type) {
 	}
 }
 
-void ExposedNoiseGenerator::setPitchBend(double p) {
-	/* For now, do nothing. When we add a filter we can do something else, but noise dont' ahve pitch. */
-	return;
-}
-
 }
 
 #define PROPERTY_CLASS ExposedNoiseGenerator

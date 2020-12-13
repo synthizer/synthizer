@@ -54,10 +54,6 @@ void StreamingGenerator::generateBlock(float *output) {
 	}
 }
 
-void StreamingGenerator::setPitchBend(double newPitchBend) {
-	this->pitch_bend = newPitchBend;
-}
-
 int StreamingGenerator::getLooping() {
 	return this->looping.load(std::memory_order_relaxed);
 }

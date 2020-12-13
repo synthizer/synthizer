@@ -29,7 +29,6 @@ class ExposedNoiseGenerator: public Generator {
 	}
 
 	void generateBlock(float *out) override;
-	void setPitchBend(double newPitchBend) override;
 
 	int getNoiseType();
 	void setNoiseType(int type);

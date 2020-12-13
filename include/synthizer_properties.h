@@ -57,11 +57,13 @@ DOUBLE_P(SYZ_P_ROLLOFF, rolloff, Rolloff, 0.0, P_DOUBLE_MAX) \
 DOUBLE_P(SYZ_P_CLOSENESS_BOOST, closeness_boost, ClosenessBoost, P_DOUBLE_MIN, P_DOUBLE_MAX) \
 DOUBLE_P(SYZ_P_CLOSENESS_BOOST_DISTANCE, closeness_boost_distance, ClosenessBoostDistance, 0.0, P_DOUBLE_MAX)
 
+#define GENERATOR_PROPERTIES \
+DOUBLE_P(SYZ_P_PITCH_BEND, pitch_bend, PitchBend, 0.0, P_DOUBLE_MAX)
+
 #define BUFFER_GENERATOR_PROPERTIES \
 OBJECT_P(SYZ_P_BUFFER, buffer, Buffer, Buffer) \
 DOUBLE_P(SYZ_P_POSITION, position, Position, 0.0, P_DOUBLE_MAX) \
 INT_P(SYZ_P_LOOPING, looping, Looping, 0, 1) \
-DOUBLE_P(SYZ_P_PITCH_BEND, pitch_bend, PitchBend, 0.0, P_DOUBLE_MAX)
 
 #define STREAMING_GENERATOR_PROPERTIES \
 DOUBLE_P(SYZ_P_POSITION, position, Position, 0.0, P_DOUBLE_MAX) \

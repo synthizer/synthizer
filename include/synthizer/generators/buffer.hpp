@@ -15,8 +15,6 @@ class BufferGenerator: public Generator {
 
 	unsigned int getChannels() override;
 	void generateBlock(float *output) override;
-	double getPitchBend();
-	void setPitchBend(double newPitchBend) override;
 	std::shared_ptr<Buffer> getBuffer();
 	void setBuffer(const std::shared_ptr<Buffer> &buffer);
 	int getLooping();
@@ -31,12 +29,11 @@ class BufferGenerator: public Generator {
 	/* Adds to destination, per the generators API. */
 	void generateNoPitchBend(float *out);
 	template<bool L>
-	void generatePitchBendHelper(float *out);
-	void generatePitchBend(float *out);
+	void generatePitchBendHelper(float *out, double pitch_bend);
+	void generatePitchBend(float *out, double pitch_bend);
 
 	std::weak_ptr<Buffer> buffer;
 	BufferReader reader;
-	double pitch_bend = 1.0;
 	double position = 0.0;
 	bool looping = false;
 };

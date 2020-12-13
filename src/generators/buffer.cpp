@@ -21,11 +21,13 @@ unsigned int BufferGenerator::getChannels() {
 }
 
 void BufferGenerator::generateBlock(float *output) {
+	double pitch_bend = this->getPitchBend();
+
 	auto buffer = this->buffer.lock();
 	if (buffer == nullptr || buffer->getLength() == 0) {
 		return;
-	} else if (std::fabs(1.0 - this->pitch_bend) > 0.001) {
-		return this->generatePitchBend(output);
+	} else if (std::fabs(1.0 - pitch_bend) > 0.001) {
+		return this->generatePitchBend(output, pitch_bend);
 	} else {
 		return this->generateNoPitchBend(output);
 	}
@@ -48,9 +50,9 @@ void BufferGenerator::readInterpolated(double pos, float *out) {
 }
 
 template<bool L>
-void BufferGenerator::generatePitchBendHelper(float *output) {
+void BufferGenerator::generatePitchBendHelper(float *output, double pitch_bend) {
 	double pos = this->position;
-	double delta = this->pitch_bend;
+	double delta = pitch_bend;
 	for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 		this->readInterpolated<L>(pos, &output[i*this->reader.getChannels()]);
 		pos += delta;
@@ -60,11 +62,11 @@ void BufferGenerator::generatePitchBendHelper(float *output) {
 	this->position = std::min<double>(pos, this->reader.getLength());
 }
 
-void BufferGenerator::generatePitchBend(float *output) {
+void BufferGenerator::generatePitchBend(float *output, double pitch_bend) {
 	if (looping) {
-		return this->generatePitchBendHelper<true>(output);
+		return this->generatePitchBendHelper<true>(output, pitch_bend);
 	} else {
-		return this->generatePitchBendHelper<false>(output);
+		return this->generatePitchBendHelper<false>(output, pitch_bend);
 	}
 }
 
@@ -87,14 +89,6 @@ void BufferGenerator::generateNoPitchBend(float *output) {
 		}
 	}
 	this->position = pos;
-}
-
-double BufferGenerator::getPitchBend() {
-	return this->pitch_bend;
-}
-
-void BufferGenerator::setPitchBend(double newPitchBend) {
-	this->pitch_bend = newPitchBend;
 }
 
 std::shared_ptr<Buffer> BufferGenerator::getBuffer() {
@@ -129,7 +123,7 @@ void BufferGenerator::setPosition(double pos) {
 }
 
 #define PROPERTY_CLASS BufferGenerator
-#define PROPERTY_BASE BaseObject
+#define PROPERTY_BASE Generator
 #define PROPERTY_LIST BUFFER_GENERATOR_PROPERTIES
 #include "synthizer/property_impl.hpp"
 

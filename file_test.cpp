@@ -47,6 +47,8 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
+	CHECKED(syz_setD(generator, SYZ_P_PITCH_BEND, 0.5));
+
 	CHECKED(syz_createGlobalFdnReverb(&effect, context));
 	CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
 	std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -60,7 +62,6 @@ int main(int argc, char *argv[]) {
 		double y = cos(rad);
 		double x = sin(rad);
 		CHECKED(syz_setD3(source, SYZ_P_POSITION, x, y, 0.0));
-		break;
 	}
 
 end:

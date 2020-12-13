@@ -24,7 +24,6 @@ class StreamingGenerator: public Generator {
 
 	unsigned int getChannels() override;
 	void generateBlock(float *output) override;
-	void setPitchBend(double newPitchBend) override;
 	int getLooping();
 	void setLooping(int looping);
 	double getPosition();
@@ -43,7 +42,6 @@ class StreamingGenerator: public Generator {
 	std::atomic<double> position = 0.0;
 	FiniteDoubleCell next_position = 0.0;
 
-	double pitch_bend = 1.0;
 	/*
 	 * For pitch bend, the fractional offset that the last iteration used.
 	 * */
