@@ -17,25 +17,6 @@ void Source3D::initInAudioThread() {
 	setPropertiesFromDistanceParams(this, this->getContext()->getDefaultDistanceParams());
 }
 
-std::array<double, 3> Source3D::getPosition() {
-	return this->position;
-}
-
-void Source3D::setPosition(std::array<double, 3> position) {
-		this->position = position;
-}
-
-std::array<double, 6> Source3D::getOrientation() {
-	return this->orientation;
-}
-
-void Source3D::setOrientation(std::array<double, 6> orientation) {
-	Vec3d at = { orientation[0], orientation[1], orientation[2] };
-	Vec3d up = { orientation[3], orientation[4], orientation[5] };
-	throwIfParallel(at, up);
-	this->orientation = orientation;
-}
-
 void Source3D::run() {
 	auto ctx = this->getContext();
 	auto listener_pos = ctx->getPosition();
@@ -43,7 +24,8 @@ void Source3D::run() {
 	Vec3d listener_at = { listener_orient[0], listener_orient[1], listener_orient[2] };
 	Vec3d listener_up = { listener_orient[3], listener_orient[4], listener_orient[5] };
 
-	Vec3d pos = { this->position[0] - listener_pos[0], this->position[1] - listener_pos[1], this->position[2] - listener_pos[2] };
+	auto position_prop = this->getPosition();
+	Vec3d pos = { position_prop[0] - listener_pos[0], position_prop[1] - listener_pos[1], position_prop[2] - listener_pos[2] };
 	Vec3d at = normalize(listener_at);
 	Vec3d right = normalize(crossProduct(listener_at, listener_up));
 	Vec3d up = crossProduct(right, at);
@@ -73,7 +55,7 @@ void Source3D::run() {
 	this->setAzimuth(clamp(azimuth, 0.0, 360.0));
 	elevation = clamp(elevation * 180 / PI, -90.0, 90.0);
 	this->setElevation(elevation);
-	auto &dp = this->getDistanceParams();
+	auto dp = materializeDistanceParamsFromProperties(this);
 	dp.distance = dist;
 	this->setGain3D(mulFromDistanceParams(dp));
 	assert(azimuth >= 0.0);
@@ -81,11 +63,6 @@ void Source3D::run() {
 }
 
 }
-
-#define PROPERTY_CLASS Source3D
-#define PROPERTY_BASE PannedSource
-#define PROPERTY_LIST SOURCE3D_PROPERTIES
-#include "synthizer/property_impl.hpp"
 
 using namespace synthizer;
 

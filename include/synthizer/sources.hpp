@@ -93,22 +93,17 @@ class PannedSource: public Source {
 	double gain_3d = 1.0;
 };
 
-class Source3D: public PannedSource, public DistanceParamsMixin  {
+class Source3D: public PannedSource {
 	public:
 	Source3D(std::shared_ptr<Context> context);
 	void initInAudioThread() override;
 
-	std::array<double, 3> getPosition();
-	void setPosition(std::array<double, 3> position);
-	std::array<double, 6> getOrientation();
-	void setOrientation(std::array<double, 6> orientation);
-
 	void run() override;
 
-	#include "synthizer/property_methods.hpp"
-	private:
-	std::array<double, 3> position{ 0.0f, 0.0f, 0.0f };
-	std::array<double, 6> orientation{ 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f };
+	#define PROPERTY_CLASS Source3D
+	#define PROPERTY_BASE PannedSource
+	#define PROPERTY_LIST SOURCE3D_PROPERTIES
+	#include "synthizer/property_impl_new.hpp"
 };
 
 }
