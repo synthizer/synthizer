@@ -78,32 +78,19 @@ class DirectSource: public Source {
 class PannedSource: public Source {
 	public:
 	PannedSource(std::shared_ptr<Context> context);
-	void initInAudioThread() override;
-
-	double getAzimuth();
-	void setAzimuth(double azimuth);
-	double getElevation();
-	void setElevation(double elevation);
-	double getPanningScalar();
-	void setPanningScalar(double scalar);
-	int getPannerStrategy();
-	void setPannerStrategy(int strategy);
 
 	/* For 	Source3D. */
 	void setGain3D(double gain);
 
 	void run() override;
 
-	#include "synthizer/property_methods.hpp"
+	#define PROPERTY_CLASS PannedSource
+	#define PROPERTY_LIST PANNED_SOURCE_PROPERTIES
+	#define PROPERTY_BASE Source
+	#include "synthizer/property_impl_new.hpp"
 	private:
-	enum SYZ_PANNER_STRATEGY panner_strategy = SYZ_PANNER_STRATEGY_HRTF;
 	std::shared_ptr<PannerLane> panner_lane;
-	double azimuth = 0.0, elevation = 0.0, panning_scalar = 0.5, gain_3d = 1.0;
-	bool needs_panner_set = true;
-	/* If true, the last thing set was scalar and we use that; otherwise use azimuth/elevation. */
-	bool is_scalar_panning = false;
-	/* Set to false to make the audio thread reallocate the lane on strategy changes. */
-	bool valid_lane = false;
+	double gain_3d = 1.0;
 };
 
 class Source3D: public PannedSource, public DistanceParamsMixin  {
