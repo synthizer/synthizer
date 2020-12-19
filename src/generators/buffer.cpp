@@ -24,7 +24,7 @@ unsigned int BufferGenerator::getChannels() {
 
 void BufferGenerator::generateBlock(float *output) {
 	std::weak_ptr<Buffer> buffer_weak;
-	std::shared_ptr<Buffer> buffer;;
+	std::shared_ptr<Buffer> buffer;
 	bool buffer_changed = this->acquireBuffer(buffer_weak);
 	double pitch_bend = this->getPitchBend();
 
