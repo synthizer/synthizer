@@ -145,13 +145,13 @@ void verifyObj(syz_Handle ctx, syz_Handle handle, int property, const char *objt
 	}
 }
 
-#define INT_P(E, N, IGNORED, MIN, MAX) verifyInt(ctx, handle, E, MIN, MAX, objtype, #N);
-/* Need to be able to turn this oiff for BufferGenerator. */
-#define DOUBLE_P_IMPL(E, N, IGNORED, MIN, MAX) verifyDouble(ctx, handle, E, MIN, MAX, objtype, #N);
+#define INT_P(E, N, IGNORED, MIN, MAX, DV) verifyInt(ctx, handle, E, MIN, MAX, objtype, #N);
+/* Need to be able to turn this off for BufferGenerator. */
+#define DOUBLE_P_IMPL(E, N, IGNORED, MIN, MAX, DV) verifyDouble(ctx, handle, E, MIN, MAX, objtype, #N);
 #define DOUBLE_P(...) DOUBLE_P_IMPL(__VA_ARGS__)
 #define OBJECT_P(E, N, IGNORED, ...) verifyObj(ctx, handle, E, objtype, #N);
-#define DOUBLE3_P(E, N, IGNORED) verifyDouble3(ctx, handle, E, objtype, #N);
-#define DOUBLE6_P(E, N, IGNORED) verifyDouble6(ctx, handle, E, objtype, #N);
+#define DOUBLE3_P(E, N, IGNORED, DV) verifyDouble3(ctx, handle, E, objtype, #N);
+#define DOUBLE6_P(E, N, IGNORED, DV) verifyDouble6(ctx, handle, E, objtype, #N);
 
 int main() {
 		syz_Handle ctx, handle;

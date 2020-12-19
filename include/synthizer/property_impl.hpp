@@ -124,8 +124,8 @@ property_impl::PropertyValue PROPERTY_CLASS::getProperty(int property) {
 #undef DOUBLE3_P
 #undef DOUBLE6_P
 
-#define INT_P(p, name1, name2, min, max) VALIDATE_(int, [](auto x) { if(*x < min || *x > max) throw ERange(); }, p, name1, name2, min, max);
-#define DOUBLE_P(p, name1, name2, min, max) VALIDATE_(double, [](auto x) { if (*x < min || *x > max) throw ERange(); }, p, name1, name2, min, max)
+#define INT_P(p, name1, name2, min, max, ...) VALIDATE_(int, [](auto x) { if(*x < min || *x > max) throw ERange(); }, p, name1, name2, min, max);
+#define DOUBLE_P(p, name1, name2, min, max, ...) VALIDATE_(double, [](auto x) { if (*x < min || *x > max) throw ERange(); }, p, name1, name2, min, max)
 #define OBJECT_P(p, name1, name2, cls) VALIDATE_(std::shared_ptr<CExposable>, [] (auto *x) { if (*x == nullptr) return; auto &y = *x; auto z = std::dynamic_pointer_cast<cls>(y); if (z == nullptr) throw EHandleType(); }, p, name1, name2, cls)
 #define DOUBLE3_P(...)  VALIDATE_(property_impl::arrayd3, [] (auto &x) {}, __VA_ARGS__)
 #define DOUBLE6_P(...)  VALIDATE_(property_impl::arrayd6, [] (auto &x) {}, __VA_ARGS__)
@@ -145,8 +145,8 @@ void PROPERTY_CLASS::validateProperty(int property, const property_impl::Propert
 #undef DOUBLE3_P
 #undef DOUBLE6_P
 
-#define INT_P(p, name1, name2, min, max) SET_(int, [](auto x) { return *x; }, p, name1, name2, min, max);
-#define DOUBLE_P(p, name1, name2, min, max) SET_(double, [](auto x) { return *x; }, p, name1, name2, min, max)
+#define INT_P(p, name1, name2, min, max, ...) SET_(int, [](auto x) { return *x; }, p, name1, name2, min, max);
+#define DOUBLE_P(p, name1, name2, min, max, ...) SET_(double, [](auto x) { return *x; }, p, name1, name2, min, max)
 #define OBJECT_P(p, name1, name2, cls) SET_(std::shared_ptr<CExposable>, [] (auto *x) -> std::shared_ptr<cls> { return *x ? std::static_pointer_cast<cls>(*x) : nullptr ; }, p, name1, name2, cls)
 #define DOUBLE3_P(...)  SET_(property_impl::arrayd3, [] (auto &x) { return *x; }, __VA_ARGS__)
 #define DOUBLE6_P(...)  SET_(property_impl::arrayd6, [] (auto &x) { return *x; }, __VA_ARGS__)

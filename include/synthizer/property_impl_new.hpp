@@ -32,7 +32,6 @@
  * 
  * Also note that this implementation supports only 64 properties per level of the inheritance hierarchy.
  * 
- * Properties will be default initialized. Types which wish to use nonzero defaults should do so either in their constructors, or in initInAudioThread.
  * */
 
 #pragma clang diagnostic push
@@ -84,10 +83,11 @@ class PROPCLASS_NAME {
 		return changed;
 	}
 
-	#define INT_P(IGNORED, N, ...) IntProperty N;
-	#define DOUBLE_P(IGNORED, N, ...) DoubleProperty N;
-	#define DOUBLE3_P(IGNORED, N, ...) Double3Property N;
-	#define DOUBLE6_P(IGNORED, N, ...) Double6Property N;
+	/* DV is default value. */
+	#define INT_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV) IntProperty N{DV};
+	#define DOUBLE_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV) DoubleProperty N{DV};
+	#define DOUBLE3_P(IGNORED, N, IGNORED2, DV) Double3Property N{DV};
+	#define DOUBLE6_P(IGNORED, N, IGNORED2, DV) Double6Property N{DV};
 	#define OBJECT_P(IGNORED, N, IGNORED2, CLS) ObjectProperty<CLS> N;
 
 	PROPERTY_LIST
@@ -108,7 +108,7 @@ out = this->PROPFIELD_NAME.F.read(); \
 return changed;
 
 /* Now, define all the methods. */
-#define INT_P(E, UNDERSCORE_NAME, CAMEL_NAME, MIN, MAX) \
+#define INT_P(E, UNDERSCORE_NAME, CAMEL_NAME, MIN, MAX, DV) \
 int get##CAMEL_NAME() { \
 STANDARD_READ(UNDERSCORE_NAME) \
 } \
@@ -127,7 +127,7 @@ bool acquire##CAMEL_NAME(int &out) { \
 STANDARD_ACQUIRE(UNDERSCORE_NAME) \
 }
 
-#define DOUBLE_P(E, UNDERSCORE_NAME, CAMEL_NAME, MIN, MAX) \
+#define DOUBLE_P(E, UNDERSCORE_NAME, CAMEL_NAME, MIN, MAX, DV) \
 double get##CAMEL_NAME() { \
 STANDARD_READ(UNDERSCORE_NAME) \
 } \
@@ -146,7 +146,7 @@ bool acquire##CAMEL_NAME(double &out) { \
 STANDARD_ACQUIRE(UNDERSCORE_NAME) \
 }
 
-#define DOUBLE3_P(E, UNDERSCORE_NAME, CAMEL_NAME) \
+#define DOUBLE3_P(E, UNDERSCORE_NAME, CAMEL_NAME, DV) \
 std::array<double, 3> get##CAMEL_NAME() { \
 STANDARD_READ(UNDERSCORE_NAME) \
 } \
@@ -164,7 +164,7 @@ bool acquire##CAMEL_NAME(std::array<double, 3> &out) { \
 STANDARD_ACQUIRE(UNDERSCORE_NAME) \
 }
 
-#define DOUBLE6_P(E, UNDERSCORE_NAME, CAMEL_NAME, MIN, MAX) \
+#define DOUBLE6_P(E, UNDERSCORE_NAME, CAMEL_NAME, DV) \
 std::array<double, 6> get##CAMEL_NAME() { \
 STANDARD_READ(UNDERSCORE_NAME) \
 } \
@@ -273,7 +273,6 @@ bool hasProperty(int property) override {
 	auto strong = x.lock(); \
 	return std::static_pointer_cast<CExposable>(strong); \
 });
-
 
 property_impl::PropertyValue getProperty(int property) override {
 	switch (property) {

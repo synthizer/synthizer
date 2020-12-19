@@ -22,9 +22,8 @@ class Context;
  * */
 class Generator: public BaseObject {
 	public:
-	Generator(std::shared_ptr<Context> ctx): BaseObject(ctx) {
-		this->setPitchBend(1.0);
-	}
+	Generator(std::shared_ptr<Context> ctx): BaseObject(ctx) {}
+
 
 	/* Return the number of channels this generator wants to output on the next block. */
 	virtual unsigned int getChannels() = 0;
