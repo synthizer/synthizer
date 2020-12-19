@@ -14,7 +14,7 @@ Source3D::Source3D(std::shared_ptr<Context> context): PannedSource(context) {
 
 void Source3D::initInAudioThread() {
 	PannedSource::initInAudioThread();
-	this->setDistanceParams(context->getDistanceParams());
+	setPropertiesFromDistanceParams(this, this->getContext()->getDefaultDistanceParams());
 }
 
 std::array<double, 3> Source3D::getPosition() {

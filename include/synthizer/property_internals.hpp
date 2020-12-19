@@ -62,7 +62,7 @@ class AtomicProperty {
 	AtomicProperty(): AtomicProperty(T()) {}
 	AtomicProperty(const T&& value): field(value) {}
 
-	T read() { return this->field.load(std::memory_order_acquire); }
+	T read() const { return this->field.load(std::memory_order_acquire); }
 	void write(T value) { this->field.store(value, std::memory_order_release); }
 	private:
 	std::atomic<T> field{};
@@ -73,14 +73,15 @@ using DoubleProperty = AtomicProperty<double>;
 
 template<typename T>
 class LatchProperty {
+	public:
 	LatchProperty(): LatchProperty(T()) {}
 	LatchProperty(const T&& value): field(value) {}
 
-	T read() { return this->field.read(); }
-	void write(const T&& value) { this->field.write(value); }
+	T read() const { return this->field.read(); }
+	void write(const T &value) { this->field.write(value); }
 
 	private:
-	LatchCell<T> field;
+	mutable LatchCell<T> field;
 };
 
 using Double3Property = LatchProperty<std::array<double, 3>>;
@@ -89,7 +90,7 @@ using Double6Property = LatchProperty<std::array<double, 6>>;
 template<typename T>
 class ObjectProperty {
 	public:
-	std::weak_ptr<T> read() {
+	std::weak_ptr<T> read() const {
 		std::weak_ptr<T> out;
 		this->lock();
 		out = this->field;
@@ -103,8 +104,8 @@ class ObjectProperty {
 		this->unlock();
 	}
 
-	void lock() {
-
+	private:
+	void lock() const {
 		int old = 0;
 		while (this->spinlock.compare_exchange_strong(old, 1, std::memory_order_acquire, std::memory_order_relaxed) != true) {
 			old = 0;
@@ -112,12 +113,11 @@ class ObjectProperty {
 		}
 	}
 
-	void unlock() {
+	void unlock() const {
 		this->spinlock.store(0, std::memory_order_release);
 	}
 
-	private:
-	std::atomic<int> spinlock = 0;
+	mutable std::atomic<int> spinlock = 0;
 	std::weak_ptr<T> field{};
 };
 

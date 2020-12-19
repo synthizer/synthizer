@@ -16,23 +16,26 @@ extern "C" {
  * int_p(SYZ_MY_PROPERTY, name, Name, min, max, default)
  * DOUBLE_p(SYZ_MY_PROPERTY, name, Name, min, max, default)
  * object_p(SYZ_MY_PROPERTY, name, Name, ExpectedClass)
- * double3_p(SYZ_MY_PROPERTY, name, Name, default)
- * double6_p(SYZ_MY_PROPERTY, name, Name, default)
+ * double3_p(SYZ_MY_PROPERTY, name, Name, default_x, default_y, default_z)
+ * double6_p(SYZ_MY_PROPERTY, name, Name, default_x, default_y, default_z, default_x2, default_y2, default_z2)
  * 
  * For int properties, use P_INT_MIN and P_INT_MAX for no range; for double use P_DOUBLE_MIN and P_DOUBLE_MAX. Using these as only one of the endpoints is fine.
  * 
  * Synthizer needs two versions of the name that aren't the constant. The first is of the form my_property and used for logging, etc. The second is of the form MyProperty (with leading capital) to link up with methods on C++ classes.
  * */
 
+#define STANDARD_DISTANCE_MODEL_PROPERTIES \
+INT_P(SYZ_P_DISTANCE_MODEL, distance_model, DistanceModel, 0, SYZ_DISTANCE_MODEL_COUNT - 1, SYZ_DISTANCE_MODEL_LINEAR) \
+DOUBLE_P(SYZ_P_DISTANCE_REF, distance_ref, DistanceRef, 0.0, P_DOUBLE_MAX, 1.0) \
+DOUBLE_P(SYZ_P_DISTANCE_MAX, distance_max, DistanceMax, 0.0, P_DOUBLE_MAX, 50.0) \
+DOUBLE_P(SYZ_P_ROLLOFF, rolloff, Rolloff, 0.0, P_DOUBLE_MAX, 1.0) \
+DOUBLE_P(SYZ_P_CLOSENESS_BOOST, closeness_boost, ClosenessBoost, P_DOUBLE_MIN, P_DOUBLE_MAX, 0.0) \
+DOUBLE_P(SYZ_P_CLOSENESS_BOOST_DISTANCE, closeness_boost_distance, ClosenessBoostDistance, 0.0, P_DOUBLE_MAX, 0.0)
+
 #define CONTEXT_PROPERTIES \
-DOUBLE3_P(SYZ_P_POSITION, position, Position) \
-DOUBLE6_P(SYZ_P_ORIENTATION, orientation, Orientation) \
-INT_P(SYZ_P_DISTANCE_MODEL, distance_model, DistanceModel, 0, SYZ_DISTANCE_MODEL_COUNT - 1) \
-DOUBLE_P(SYZ_P_DISTANCE_REF, distance_ref, DistanceRef,  0.0, P_DOUBLE_MAX) \
-DOUBLE_P(SYZ_P_DISTANCE_MAX, distance_max, DistanceMax, 0.0, P_DOUBLE_MAX) \
-DOUBLE_P(SYZ_P_ROLLOFF, rolloff, Rolloff, 0.0, P_DOUBLE_MAX) \
-DOUBLE_P(SYZ_P_CLOSENESS_BOOST, closeness_boost, ClosenessBoost, P_DOUBLE_MIN, P_DOUBLE_MAX) \
-DOUBLE_P(SYZ_P_CLOSENESS_BOOST_DISTANCE, closeness_boost_distance, ClosenessBoostDistance, 0.0, P_DOUBLE_MAX)
+DOUBLE3_P(SYZ_P_POSITION, position, Position, 0.0, 0.0, 0.0) \
+DOUBLE6_P(SYZ_P_ORIENTATION, orientation, Orientation, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0) \
+STANDARD_DISTANCE_MODEL_PROPERTIES
 
 #define SOURCE_PROPERTIES \
 DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0) \
@@ -44,14 +47,9 @@ DOUBLE_P(SYZ_P_ELEVATION, elevation, Elevation, -90.0f, 90.0f, 0.0)\
 DOUBLE_P(SYZ_P_PANNING_SCALAR, panning_scalar, PanningScalar, -1.0, 1.0, 0.0)
 
 #define SOURCE3D_PROPERTIES \
-DOUBLE3_P(SYZ_P_POSITION, position, Position) \
-DOUBLE6_P(SYZ_P_ORIENTATION, orientation, Orientation) \
-INT_P(SYZ_P_DISTANCE_MODEL, distance_model, DistanceModel, 0, SYZ_DISTANCE_MODEL_COUNT - 1) \
-DOUBLE_P(SYZ_P_DISTANCE_REF, distance_ref, DistanceRef, 0.0, P_DOUBLE_MAX) \
-DOUBLE_P(SYZ_P_DISTANCE_MAX, distance_max, DistanceMax, 0.0, P_DOUBLE_MAX) \
-DOUBLE_P(SYZ_P_ROLLOFF, rolloff, Rolloff, 0.0, P_DOUBLE_MAX) \
-DOUBLE_P(SYZ_P_CLOSENESS_BOOST, closeness_boost, ClosenessBoost, P_DOUBLE_MIN, P_DOUBLE_MAX) \
-DOUBLE_P(SYZ_P_CLOSENESS_BOOST_DISTANCE, closeness_boost_distance, ClosenessBoostDistance, 0.0, P_DOUBLE_MAX)
+DOUBLE3_P(SYZ_P_POSITION, position, Position, 0.0, 0.0, 0.0) \
+DOUBLE6_P(SYZ_P_ORIENTATION, orientation, Orientation, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0) \
+STANDARD_DISTANCE_MODEL_PROPERTIES
 
 #define GENERATOR_PROPERTIES \
 DOUBLE_P(SYZ_P_PITCH_BEND, pitch_bend, PitchBend, 0.0, P_DOUBLE_MAX, 1.0)

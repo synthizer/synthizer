@@ -170,25 +170,6 @@ void Context::registerGlobalEffect(const std::shared_ptr<GlobalEffect> &effect) 
 	});
 }
 
-std::array<double, 3> Context::getPosition() {
-	return this->position;
-}
-
-void Context::setPosition(std::array<double, 3> pos) {
-	this->position = pos;
-}
-
-std::array<double, 6> Context::getOrientation() {
-	return this->orientation;
-}
-
-void Context::setOrientation(std::array<double, 6> orientation) {
-	Vec3d at{ orientation[0], orientation[1], orientation[2] };
-	Vec3d up{ orientation[3], orientation[4], orientation[5] };
-	throwIfParallel(at, up);
-	this->orientation = orientation;
-}
-
 std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_STRATEGY strategy) {
 	return this->source_panners->allocateLane(strategy);
 }
@@ -290,11 +271,6 @@ void Context::drainDeletionQueues() {
 }
 
 }
-
-#define PROPERTY_CLASS Context
-#define PROPERTY_LIST CONTEXT_PROPERTIES
-#define PROPERTY_BASE BaseObject
-#include "synthizer/property_impl.hpp"
 
 using namespace synthizer;
 

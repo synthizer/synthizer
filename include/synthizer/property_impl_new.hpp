@@ -60,7 +60,7 @@ class PROPCLASS_NAME {
 	#define INT_P(IGNORED, N, ...) N##_BIT,
 	#define DOUBLE_P(IGNORRED, N, ...) N##_BIT,
 	#define DOUBLE3_P(IGNORED, N, ...) N##_BIT,
-	#define DOUBLE6_P(IGNORED, N, ...), N##_BIT,
+	#define DOUBLE6_P(IGNORED, N, ...) N##_BIT,
 	#define OBJECT_P(IGNORED, N, ...) N##_BIT,
 
 	enum class Bits: unsigned int {
@@ -86,8 +86,8 @@ class PROPCLASS_NAME {
 	/* DV is default value. */
 	#define INT_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV) IntProperty N{DV};
 	#define DOUBLE_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV) DoubleProperty N{DV};
-	#define DOUBLE3_P(IGNORED, N, IGNORED2, DV) Double3Property N{DV};
-	#define DOUBLE6_P(IGNORED, N, IGNORED2, DV) Double6Property N{DV};
+	#define DOUBLE3_P(IGNORED, N, IGNORED2, DV1, DV2, DV3) Double3Property N{{DV1, DV2, DV3}};
+	#define DOUBLE6_P(IGNORED, N, IGNORED2, DV1, DV2, DV3, DV4, DV5, DV6) Double6Property N{{DV1, DV2, DV3, DV4, DV5, DV6}};
 	#define OBJECT_P(IGNORED, N, IGNORED2, CLS) ObjectProperty<CLS> N;
 
 	PROPERTY_LIST
@@ -109,7 +109,7 @@ return changed;
 
 /* Now, define all the methods. */
 #define INT_P(E, UNDERSCORE_NAME, CAMEL_NAME, MIN, MAX, DV) \
-int get##CAMEL_NAME() { \
+int get##CAMEL_NAME() const { \
 STANDARD_READ(UNDERSCORE_NAME) \
 } \
 \
@@ -117,7 +117,7 @@ void set##CAMEL_NAME(int val) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
-void validate##CAMEL_NAME(const int value) { \
+void validate##CAMEL_NAME(const int value) const { \
 	if (value < MIN || value > MAX) { \
 		throw ERange(); \
 	} \
@@ -128,7 +128,7 @@ STANDARD_ACQUIRE(UNDERSCORE_NAME) \
 }
 
 #define DOUBLE_P(E, UNDERSCORE_NAME, CAMEL_NAME, MIN, MAX, DV) \
-double get##CAMEL_NAME() { \
+double get##CAMEL_NAME() const { \
 STANDARD_READ(UNDERSCORE_NAME) \
 } \
 \
@@ -136,7 +136,7 @@ void set##CAMEL_NAME(double val) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
-void validate##CAMEL_NAME(const double value) { \
+void validate##CAMEL_NAME(const double value) const { \
 	if (value < MIN || value > MAX) { \
 		throw ERange(); \
 	} \
@@ -146,16 +146,16 @@ bool acquire##CAMEL_NAME(double &out) { \
 STANDARD_ACQUIRE(UNDERSCORE_NAME) \
 }
 
-#define DOUBLE3_P(E, UNDERSCORE_NAME, CAMEL_NAME, DV) \
-std::array<double, 3> get##CAMEL_NAME() { \
+#define DOUBLE3_P(E, UNDERSCORE_NAME, CAMEL_NAME, ...) \
+std::array<double, 3> get##CAMEL_NAME() const { \
 STANDARD_READ(UNDERSCORE_NAME) \
 } \
 \
-void set##CAMEL_NAME(std::array<double, 3> &val) { \
+void set##CAMEL_NAME(const std::array<double, 3> &val) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
-void validate##CAMEL_NAME(const std::array<double, 3> &value) { \
+void validate##CAMEL_NAME(const std::array<double, 3> &value) const { \
 	(void)value; \
 /* Nothing to do. */ \
 } \
@@ -164,16 +164,16 @@ bool acquire##CAMEL_NAME(std::array<double, 3> &out) { \
 STANDARD_ACQUIRE(UNDERSCORE_NAME) \
 }
 
-#define DOUBLE6_P(E, UNDERSCORE_NAME, CAMEL_NAME, DV) \
-std::array<double, 6> get##CAMEL_NAME() { \
+#define DOUBLE6_P(E, UNDERSCORE_NAME, CAMEL_NAME, ...) \
+std::array<double, 6> get##CAMEL_NAME() const { \
 STANDARD_READ(UNDERSCORE_NAME) \
 } \
 \
-void set##CAMEL_NAME(std::array<double, 6> &val) { \
+void set##CAMEL_NAME(const std::array<double, 6> &val) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
-void validate##CAMEL_NAME(const std::array<double, 6> &value) { \
+void validate##CAMEL_NAME(const std::array<double, 6> &value) const { \
 	(void)value; \
 /* Nothing to do. */ \
 } \
@@ -183,7 +183,7 @@ STANDARD_ACQUIRE(UNDERSCORE_NAME) \
 }
 
 #define OBJECT_P(ENUM, UNDERSCORE_NAME, CAMEL_NAME, CLS) \
-std::weak_ptr<CLS> get##CAMEL_NAME() { \
+std::weak_ptr<CLS> get##CAMEL_NAME() const { \
 STANDARD_READ(UNDERSCORE_NAME) \
 }\
 \
@@ -191,7 +191,7 @@ void set##CAMEL_NAME(const std::weak_ptr<CLS> &val) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
-void validate##CAMEL_NAME(const std::weak_ptr<CExposable> &val) { \
+void validate##CAMEL_NAME(const std::weak_ptr<CExposable> &val) const { \
 	std::shared_ptr<CExposable> obj = val.lock(); \
 	if (obj != nullptr) { \
 		if (std::dynamic_pointer_cast<CLS>(obj) == nullptr) { \
@@ -286,7 +286,7 @@ property_impl::PropertyValue getProperty(int property) override {
 #define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(double, P, CAMEL_NAME)
 #define OBJECT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(std::shared_ptr<CExposable>, P, CAMEL_NAME)
 #define DOUBLE3_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...)  VALIDATE_(property_impl::arrayd3, P, CAMEL_NAME)
-#define DOUBLE6_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(property_impl::arrayd6, CAMEL_NAME)
+#define DOUBLE6_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(property_impl::arrayd6, P, CAMEL_NAME)
 
 void validateProperty(int property, const property_impl::PropertyValue &value) override {
 	switch (property) {

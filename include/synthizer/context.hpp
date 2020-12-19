@@ -63,7 +63,7 @@ void deletionCallback(void *p) {
  * 
  * Later, if necessary, we'll extend synthizer to use atomics for some properties.
  * */
-class Context: public BaseObject, public DistanceParamsMixin, public std::enable_shared_from_this<Context> {
+class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	public:
 
 	Context();
@@ -169,14 +169,6 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	 * */
 	void registerGlobalEffect(const std::shared_ptr<GlobalEffect> &effect);
 
-	/*
-	 * The properties for the listener.
-	 * */
-	std::array<double, 3> getPosition();
-	void setPosition(std::array<double, 3> pos);
-	std::array<double, 6> getOrientation();
-	void setOrientation(std::array<double, 6> orientation);
-
 	/* Helper methods used by various pieces of synthizer to grab global resources. */
 
 	/* Get the direct buffer, which is where things write when they want to bypass panning. This includes effects and direct sources, etc.
@@ -194,6 +186,11 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 		return &this->router;
 	}
 
+	/* materialize distance params from the properties. */
+	DistanceParams getDefaultDistanceParams() {
+		return materializeDistanceParamsFromProperties(this);
+	}
+
 	/*
 	 * Generate a block of audio output for the specified number of channels.
 	 * 
@@ -201,7 +198,11 @@ class Context: public BaseObject, public DistanceParamsMixin, public std::enable
 	 * */
 	void generateAudio(unsigned int channels, float *output);
 
-	#include "synthizer/property_methods.hpp"
+	#define PROPERTY_CLASS Context
+	#define PROPERTY_BASE BaseObject
+	#define PROPERTY_LIST CONTEXT_PROPERTIES
+	#include "synthizer/property_impl_new.hpp"
+
 	private:
 	bool headless = false;
 

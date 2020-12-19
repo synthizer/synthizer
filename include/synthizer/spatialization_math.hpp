@@ -8,14 +8,51 @@
 namespace synthizer {
 
 struct DistanceParams {
-	double distance;
+	/* Distance is set by the user. */
+	double distance = 0.0;
+
 	double distance_ref = 1.0;
 	double distance_max = 50.0;
 	double rolloff = 1.0;
 	double closeness_boost = 0.0;
 	double closeness_boost_distance = 0.0;
 	enum SYZ_DISTANCE_MODEL distance_model = SYZ_DISTANCE_MODEL_LINEAR;
+
+	/* records whether or not we think that this set of parameters has changed. Used when materializing from properties. */
+	bool changed = false;
 };
+
+/*
+ * These two templates materialize and/or set properties on anything with all of the properties for distance models.
+ * 
+ * They're not instance methods because the distance model struct itself will probably become public as part of being able to configure effect sends.
+ * */
+template<typename T>
+DistanceParams materializeDistanceParamsFromProperties(T *source) {
+	DistanceParams ret;
+	int distance_model;
+
+	ret.changed = source->acquireDistanceRef(ret.distance_ref) ||
+		source->acquireDistanceMax(ret.distance_max) |
+		source->acquireRolloff(ret.rolloff) ||
+		source->acquireClosenessBoost(ret.closeness_boost) ||
+		source->acquireClosenessBoostDistance(ret.closeness_boost_distance) ||
+		/* This one needs a cast, so pull it to a different vairable first. */
+		source->acquireDistanceModel(distance_model);
+	ret.distance_model = (enum SYZ_DISTANCE_MODEL)distance_model;
+	return ret;
+}
+
+template<typename T>
+void setPropertiesFromDistanceParams(T *dest, const DistanceParams&& params) {
+	dest->setDistanceRef(params.distance_ref);
+	dest->setDistanceMax(params.distance_max);
+	dest->setRolloff(params.rolloff);
+	dest->setClosenessBoost(params.closeness_boost);
+	dest->setClosenessBoostDistance(params.closeness_boost_distance);
+	dest->setDistanceModel((int)params.distance_model);
+}
+
 
 double mulFromDistanceParams(const DistanceParams &params);
 
