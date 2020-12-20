@@ -84,16 +84,6 @@ void Context::enqueueInvokable(Invokable *invokable) {
 }
 
 template<typename T>
-static T propertyGetter(std::shared_ptr<BaseObject> &obj, int property, bool headless) {
-	auto var = obj->getProperty(property));
-	auto val = std::get_if<T>(var);
-	if (val == nullptr) {
-		throw EPropertyType();
-	}
-	return *val;
-}
-
-template<typename T>
 void Context::propertySetter(const std::shared_ptr<BaseObject> &obj, int property, T &value) {
 	obj->validateProperty(property, value);
 	if (this->property_ring.enqueue(obj, property, value)) {
