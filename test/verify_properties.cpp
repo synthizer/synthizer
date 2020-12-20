@@ -37,10 +37,16 @@ static std::array<float, 2 * 1024> tmp_buf;
 #define ERR_MSG(msg) std::printf("Error %s.%s: " msg ":", objtype, propname); printLastError(); std::exit(1)
 #define TICK_CTX if (syz_contextGetBlock(ctx, &tmp_buf[0]) != 0) {ERR_MSG("Unable to tick context"); }
 
-void verifyInt(syz_Handle ctx, syz_Handle handle, int property, int min, int max, const char *objtype, const char *propname) {
+void verifyInt(syz_Handle ctx, syz_Handle handle, int property, int min, int max, int default_value, const char *objtype, const char *propname) {
 	printf("Verifying %s.%s\n", objtype, propname);
 
 	int val;
+	if (syz_getI(&val, handle, property) != 0) {
+		ERR_MSG("Unable to read default");
+	}
+	if (val != default_value) {
+		ERR_MSG("Initial value did not match default");
+	}
 	if (syz_setI(handle, property, min) != 0) {
 		ERR_MSG("Unable to set to minimum");
 	}
@@ -69,10 +75,16 @@ void verifyInt(syz_Handle ctx, syz_Handle handle, int property, int min, int max
 	}
 }
 
-void verifyDouble(syz_Handle ctx, syz_Handle handle, int property, double min, double max, const char *objtype, const char *propname) {
+void verifyDouble(syz_Handle ctx, syz_Handle handle, int property, double min, double max, double default_value, const char *objtype, const char *propname) {
 	printf("Verifying %s.%s\n", objtype, propname);
 
 	double val;
+	if (syz_getD(&val, handle, property) != 0) {
+		ERR_MSG("Unable to read default");
+	}
+	if (val != default_value) {
+		ERR_MSG("Initial value did not match default");
+	}
 	if (syz_setD(handle, property, min) != 0) {
 		ERR_MSG("Unable to set to minimum");
 	}
@@ -101,11 +113,17 @@ void verifyDouble(syz_Handle ctx, syz_Handle handle, int property, double min, d
 	}
 }
 
-void verifyDouble3(syz_Handle ctx, syz_Handle handle, int property, const char *objtype, const char *propname) {
+void verifyDouble3(syz_Handle ctx, syz_Handle handle, int property, double dx, double dy, double dz, const char *objtype, const char *propname) {
 	printf("Verifying %s.%s\n", objtype, propname);
 
 	double x, y, z;
 
+	if (syz_getD3(&x, &y, &z, handle, property) != 0) {
+		ERR_MSG("Unable to read default");
+	}
+	if (x != dx || y != dy || z != dz) {
+		ERR_MSG("Initial value did not match default");
+	}
 	if (syz_setD3(handle, property, 2.0, 3.0, 4.0) != 0) {
 		ERR_MSG("Unable to set Double3 property");
 	}
@@ -118,11 +136,17 @@ void verifyDouble3(syz_Handle ctx, syz_Handle handle, int property, const char *
 	}
 }
 
-void verifyDouble6(syz_Handle ctx, syz_Handle handle, int property, const char *objtype, const char *propname) {
+void verifyDouble6(syz_Handle ctx, syz_Handle handle, int property, double dx, double dy, double dz, double da, double db, double dc, const char *objtype, const char *propname) {
 	printf("Verifying %s.%s\n", objtype, propname);
 
 	double x, y, z, a, b, c;
 
+	if (syz_getD6(&x, &y, &z, &a, &b, &c, handle, property) != 0) {
+		ERR_MSG("Unable to read default");
+	}
+	if (x != dx ||y != dy || z != dz || a != da || b != db || c != dc) {
+		ERR_MSG("Initial value did not match default");
+	}
 	if (syz_setD6(handle, property, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0) != 0) {
 		ERR_MSG("Unable to set Double3 property");
 	}
@@ -136,22 +160,14 @@ void verifyDouble6(syz_Handle ctx, syz_Handle handle, int property, const char *
 	}
 }
 
-void verifyObj(syz_Handle ctx, syz_Handle handle, int property, const char *objtype, const char *propname) {
-	printf("Verifying %s.%s\n", objtype, propname);
-	syz_Handle val;
-
-	if (syz_getO(&val, handle, property) != 0) {
-		ERR_MSG("Couldn't read object property");
-	}
-}
-
-#define INT_P(E, N, IGNORED, MIN, MAX, DV) verifyInt(ctx, handle, E, MIN, MAX, objtype, #N);
+#define INT_P(E, N, IGNORED, MIN, MAX, DV) verifyInt(ctx, handle, E, MIN, MAX, DV, objtype, #N);
 /* Need to be able to turn this off for BufferGenerator. */
-#define DOUBLE_P_IMPL(E, N, IGNORED, MIN, MAX, DV) verifyDouble(ctx, handle, E, MIN, MAX, objtype, #N);
+#define DOUBLE_P_IMPL(E, N, IGNORED, MIN, MAX, DV) verifyDouble(ctx, handle, E, MIN, MAX, DV, objtype, #N);
 #define DOUBLE_P(...) DOUBLE_P_IMPL(__VA_ARGS__)
-#define OBJECT_P(E, N, IGNORED, ...) verifyObj(ctx, handle, E, objtype, #N);
-#define DOUBLE3_P(E, N, IGNORED, DV) verifyDouble3(ctx, handle, E, objtype, #N);
-#define DOUBLE6_P(E, N, IGNORED, DV) verifyDouble6(ctx, handle, E, objtype, #N);
+/* We cant currently test object without dedicated paths. Leave it out for now. */
+#define OBJECT_P(...)
+#define DOUBLE3_P(E, N, IGNORED, DV1, DV2, DV3) verifyDouble3(ctx, handle, E, DV1, DV2, DV3, objtype, #N);
+#define DOUBLE6_P(E, N, IGNORED, DV1, DV2, DV3, DV4, DV5, DV6) verifyDouble6(ctx, handle, E, DV1, DV2, DV3, DV4, DV5, DV6, objtype, #N);
 
 int main() {
 		syz_Handle ctx, handle;
