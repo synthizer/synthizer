@@ -37,5 +37,5 @@
 - [FdnReverb](./object_reference/fdn_reverb.md)
 
 # Release notes
-
+- [0.8.X](./releases/0.8.x.md)
 - [0.0 to 0.7.x](./releases/pre-0.8.md)
