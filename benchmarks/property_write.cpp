@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
 		double secs = tmp.count();
 		printf("Took %f seconds total\n", secs);
 		printf("%f per write\n", secs / iterations);
+		printf("Estimated %f per second\n", iterations / secs);
 	}
 
 end:

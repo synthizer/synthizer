@@ -263,7 +263,7 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	/* Used by shutdown and the destructor only. Not safe to call elsewhere. */
 	void drainDeletionQueues();
 
-	MpscRing<Command, 1024> command_queue;
+	MpscRing<Command, 10000> command_queue;
 	template<typename T>
 	void propertySetter(const std::shared_ptr<BaseObject> &obj, int property, T &value);
 
