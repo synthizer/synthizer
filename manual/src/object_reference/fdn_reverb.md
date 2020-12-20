@@ -22,8 +22,6 @@ See remarks for a description of what these do and how to use them effectively.
 
 Enum | Type | Default | Range | Description
 --- | --- | --- | --- | ---
-SYZ_P_INPUT_FILTER_ENABLED | int | 1 | 0 or 1 | Whether or not the input filter is enabled.
-SYZ_P_INPUT_FILTER_CUTOFF | double | 2000.0 | 0.0 to 22050.0 | The cutoff of the input filter
 SYZ_P_MEAN_FREE_PATH | double | 0.02 | 0.0 to 0.5 | The mean free path of the simulated environment.
 SYZ_P_T60 | double | 1.0 | 0.0 to 100.0 | The T60 of the reverb
 SYZ_P_LATE_REFLECTIONS_LF_ROLLOFF | double | 1.0 | 0.0 to 2.0 | A multiplicative factor on T60 for the low frequency band
@@ -40,6 +38,7 @@ SYZ_P_LATE_REFLECTIONS_DELAY | double | 0.01 | 0.0 to 0.5 | The delay of the lat
 This is a reverb composed of a feedback delay network with 8 internal delay lines.  The algorithm proceeds as follows:
 
 - Audio is fed through the input filter, a lowpass.  Use this to eliminate high frequencies, which can be quite harsh when fed to reverb algorithms.
+  Currently, this filter is hardcoded, but Synthizer will be introducing a property type for filters in the near future.
 - Then, audio is fed into a series of 8 delay lines, connected with a feedback matrix.  It's essentially a set of parallel allpass filters with some additional feedbacks, but inspired by physics.
   - Each of these delay lines is modulated, to reduce periodicity.
   - On each feedback path, the audio is fed through an equalizer to precisely control the decay rate in 3 frequency bands.
@@ -69,6 +68,8 @@ In practice, this doesn't matter.  Most environments don't change reverb charact
 It is of course possible to use more than one reverb at a time as well, and to fade sources between them at different levels. Note, however, that reverbs are relatively expensive.
 
 ### The Input Filter
+
+NOTE: the following currently isn't configurable, but the comments apply after whichever 0.8.x version introduces a filter property type.
 
 Most reverb algorithms have a problem: high frequencies are emphasized.  Synthizer's is no different.  To solve this, we introduce an input lowpass filter, which can cut out the higher frequencies.
 

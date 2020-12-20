@@ -70,8 +70,6 @@ INT_P(SYZ_P_NOISE_TYPE, noise_type, NoiseType, 0, SYZ_NOISE_TYPE_COUNT - 1, SYZ_
 DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0)
 
 #define FDN_REVERB_EFFECT_PROPERTIES \
-INT_P(SYZ_P_INPUT_FILTER_ENABLED, input_filter_enabled, InputFilterEnabled, 0, 1, 1) \
-DOUBLE_P(SYZ_P_INPUT_FILTER_CUTOFF, input_filter_cutoff, InputFilterCutoff, 0.0, 22050.0, 2000.0) \
 DOUBLE_P(SYZ_P_MEAN_FREE_PATH, mean_free_path, MeanFreePath, 0.0, 0.5, 0.02) \
 DOUBLE_P(SYZ_P_T60, t60, T60, 0.0, 100.0, 1.0) \
 DOUBLE_P(SYZ_P_LATE_REFLECTIONS_LF_ROLLOFF, late_reflections_lf_rolloff, LateReflectionsLfRolloff, 0.0, 2.0, 1.0) \

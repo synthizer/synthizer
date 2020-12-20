@@ -439,8 +439,6 @@ cdef class GlobalFdnReverb(GlobalEffect):
         _checked(syz_createGlobalFdnReverb(&handle, context._get_handle_checked(Context)))
         super().__init__(handle)
 
-    input_filter_enabled = IntProperty(SYZ_P_INPUT_FILTER_ENABLED, conv_in = int, conv_out = bool)
-    input_filter_cutoff = DoubleProperty(SYZ_P_INPUT_FILTER_CUTOFF)
     mean_free_path = DoubleProperty(SYZ_P_MEAN_FREE_PATH)
     t60 = DoubleProperty(SYZ_P_T60)
     late_reflections_lf_rolloff = DoubleProperty(SYZ_P_LATE_REFLECTIONS_LF_ROLLOFF)

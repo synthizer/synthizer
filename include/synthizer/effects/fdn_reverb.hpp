@@ -93,11 +93,12 @@ void FdnReverbEffect<BASE>::maybeRecomputeModel() {
 
 	/*
 	 * The input filter is a lowpass for now. We might let this be configurable later.
+	 * 
+	 * These used to be properties, but were yanked in 0.8 in order to break compatibility all at once. For now we hardcode them, but we'll be introducing
+	 * a new property type specifically for filters and using that instead.
 	 * */
-	int input_filter_enabled;
-	double input_filter_cutoff;
-	dirty |= this->acquireInputFilterEnabled(input_filter_enabled);
-	dirty |= this->acquireInputFilterCutoff(input_filter_cutoff);
+	int input_filter_enabled = 11;
+	double input_filter_cutoff = 22050.0;
 
 	/*
 	 * The mean free path, in seconds.
