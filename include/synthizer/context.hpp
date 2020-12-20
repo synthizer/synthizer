@@ -114,7 +114,7 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	 * reasonably ensure no one ever spins for practical applications.
 	 * */
 	template<typename CB, typename... ARGS>
-	void enqueueCallableCommand(CB &callback, ARGS&& ...args) {
+	void enqueueCallableCommand(CB &&callback, ARGS&& ...args) {
 		while (this->enqueueCallableCommandNonblocking(callback, args...) == false) {
 			std::this_thread::yield();
 		}
@@ -148,9 +148,9 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 		});
 
 		/* Do the second phase of initialization. */
-		this->call([&] () {
-			obj->initInAudioThread();
-		});
+		this->enqueueCallableCommand([] (auto &o) {
+			o->initInAudioThread();
+		}, obj);
 		return ret;
 	}
 

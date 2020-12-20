@@ -27,9 +27,8 @@ class Context;
  *   in the audio thread, and may be called from any thread.
  * - Then initInAudioThread is called, which is in the context's audio thread. initInAudioThread should try to avoid allocating if at all possible.
  * 
- * Though we haven't yet, there will eventually be a custom allocator. Once this is introduced, all stl containers should use it, and all non-STL allocation
- * should also go through it or an associated function as well. This will allow all actual deallocation to happen
- * on a low-priority background thread. At this point, there will be little to no trips through the kernel on audio threads.
+ * IMPORTANT: initInAudioThread is called async, and may be called after other calls to the object via the C API. This is because
+ * blocking on the audio thread introduces a huge amount of latency and performance degradation.
  * */
 class BaseObject: public CExposable {
 	public:
