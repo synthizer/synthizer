@@ -36,6 +36,11 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmacro-redefined"
+/* For MSVC, to ignore duplicate macros. */
+#if defined(_MSC_VER ) && !(defined(__clang__) || defined(__GNUC__))
+#pragma warning(push)
+#pragma warning(disable:4005)
+#endif
 
 #ifndef PROPERTY_CLASS
 #error "When implementing properties, must define PROPERTY_CLASS to the class the properties are being added to."
@@ -332,3 +337,7 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 #undef PROPFIELD_NAME
 
 #pragma clang diagnostic pop
+
+#if defined(_MSC_VER ) && !(defined(__clang__) || defined(__GNUC__))
+#pragma warning(pop)
+#endif
