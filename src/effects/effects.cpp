@@ -12,9 +12,9 @@ SYZ_CAPI syz_ErrorCode syz_effectReset(syz_Handle effect) {
 	auto e = fromC<BaseObject>(effect);
 	auto e_as_effect = fromC<BaseEffect>(effect);
 	Context *ctx = e->getContextRaw();
-	ctx->call([&] () {
+	ctx->enqueueCallableCommand([&] (auto &e_as_effect) {
 		e_as_effect->resetEffect();
-	});
+	}, e_as_effect);
 	return 0;
 	SYZ_EPILOGUE
 }

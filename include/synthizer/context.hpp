@@ -120,24 +120,6 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 		}
 	}
 
-
-	/*
-	 * Call a callable in the audio thread.
-	 * Convenience method to not have to make invokables everywhere.
-	 * */
-	template<typename C, typename... ARGS>
-	auto call(C &&callable, ARGS&& ...args) {
-		auto cb = [&]() {
-			return callable(args...);
-		};
-		if (this->headless) {
-			return cb();
-		}
-		auto invokable = WaitableInvokable(std::move(cb));
-		this->enqueueInvokable(&invokable);
-		return invokable.wait();
-	}
-
 	template<typename T, typename... ARGS>
 	std::shared_ptr<T> createObject(ARGS&& ...args) {
 		auto obj = new T(this->shared_from_this(), args...);

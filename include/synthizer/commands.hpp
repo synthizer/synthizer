@@ -103,9 +103,7 @@ class Command {
 template<typename CB, typename... ARGS>
 class CallbackCommandPayload {
 	public:
-	/* Extra template parameters allow forwarding references here. */
-	template<typename CB2, typename... ARGS2>
-	CallbackCommandPayload(CB2 &&callback, ARGS2 ...args): callback(std::forward<CB>(callback)), args(std::forward<ARGS2>(args)...) {}
+	CallbackCommandPayload(CB callback, ARGS ...args): callback(callback), args(args...) {}
 
 	void execute() {
 		std::apply(this->callback, this->args);
@@ -118,10 +116,13 @@ class CallbackCommandPayload {
 
 /**
  * Take a pointer to a command and configure it to call a callable.
+ * 
+ * NOTE: it is very important that the following aren't references, including rvalue references. If they are, template argument deduction will infer everything as references,
+ * then the command can end up referring to things on the stack.
  * */
 template<typename CB, typename ...ARGS>
-void initCallbackCommand(Command *cmd, CB &&callback, ARGS ...args) {
-	cmd->initialize<CallbackCommandPayload<CB, ARGS...>, CB, ARGS...>(std::forward<CB>(callback), std::forward<ARGS>(args)...);
+void initCallbackCommand(Command *cmd, CB callback, ARGS ...args) {
+	cmd->initialize<CallbackCommandPayload<CB, ARGS...>, CB, ARGS...>(callback, args...);
 }
 
 }

@@ -225,11 +225,20 @@ SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle out
 		// because the user asked for crossfade, but less than a block.
 		fade_time = 1;
 	}
-	auto ctx = obj_input->getContextRaw();
-	ctx->call([&]() {
+	auto ctx = obj_input->getContext();
+	auto ctx_weak = std::weak_ptr(ctx);
+
+	ctx->enqueueCallableCommand([&](auto &ctx_weak, auto &obj_output, auto &obj_input, auto &gain, auto &fade_time) {
+		auto ctx = ctx_weak.lock();
+		if (ctx == nullptr) {
+			return;
+		}
+		auto output_handle = obj_output->getOutputHandle();
+		auto input_handle = obj_input->getInputHandle();
 		auto r = ctx->getRouter();
 		r->configureRoute(output_handle, input_handle, gain, fade_time);
-	});
+	}, ctx_weak, obj_output, obj_input, gain, fade_time);
+
 	return 0;
 	SYZ_EPILOGUE
 }
@@ -255,10 +264,19 @@ SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle out
 	if (fade_out != 0.0f && fade_out_blocks == 0) {
 		fade_out_blocks = 1;
 	}
-	auto ctx = obj_input->getContextRaw();
-	ctx->call([&]() {
+
+	auto ctx = obj_input->getContext();
+	auto ctx_weak = std::weak_ptr(ctx);
+	ctx->enqueueCallableCommand([](auto &ctx_weak, auto &obj_output, auto &obj_input, auto &fade_out_blocks) {
+		auto ctx = ctx_weak.lock();
+		if (ctx == nullptr) {
+			return;
+		}
+		auto output_handle = obj_output->getOutputHandle();
+		auto input_handle = obj_input->getInputHandle();
 		ctx->getRouter()->removeRoute(output_handle, input_handle, fade_out_blocks);
-	});
+	}, ctx_weak, obj_output, obj_input, fade_out_blocks);
+
 	return 0;
 	SYZ_EPILOGUE
 }
