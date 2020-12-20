@@ -34,18 +34,6 @@ class PropertyRing {
 	MpscRing<Command, capacity> ring{};
 };
 
-/**
- * Callable to be wrapped in a command which sets properties.
- * */
-inline void setPropertyCmd(	int property, std::weak_ptr<BaseObject> target_weak, property_impl::PropertyValue value) {
-	auto target = target_weak.lock();
-	if (target == nullptr) {
-		return;
-	}
-
-	target->setProperty(property, value);
-}
-
 template<std::size_t capacity>
 template<typename T>
 bool PropertyRing<capacity>::enqueue(const std::shared_ptr<BaseObject> &obj, int property, T&& value) {

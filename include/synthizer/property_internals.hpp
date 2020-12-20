@@ -36,6 +36,7 @@ namespace synthizer {
  * */
 
 class CExposable;
+class BaseObject;
 
 /* We hide this in a namespace because it's only for macro magic and shouldn't be used directly by anything else. */
 namespace property_impl {
@@ -131,5 +132,10 @@ class ObjectProperty {
 #define P_INT_MAX property_impl::int_max
 #define P_DOUBLE_MIN property_impl::double_min
 #define P_DOUBLE_MAX property_impl::double_max
+
+/**
+ * Callable to be wrapped in a command which sets properties.
+ * */
+void setPropertyCmd(	int property, std::weak_ptr<BaseObject> target_weak, property_impl::PropertyValue value);
 
 }

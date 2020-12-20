@@ -61,6 +61,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/noise_generator.cpp
 	src/panner_bank.cpp
 	src/prime_helpers.cpp
+	src/property_internals.cpp
 	src/routable.cpp
 	src/router.cpp
 	src/single_file_libs.c
