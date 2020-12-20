@@ -32,11 +32,11 @@ DistanceParams materializeDistanceParamsFromProperties(T *source) {
 	DistanceParams ret;
 	int distance_model;
 
-	ret.changed = source->acquireDistanceRef(ret.distance_ref) ||
+	ret.changed = source->acquireDistanceRef(ret.distance_ref) |
 		source->acquireDistanceMax(ret.distance_max) |
-		source->acquireRolloff(ret.rolloff) ||
-		source->acquireClosenessBoost(ret.closeness_boost) ||
-		source->acquireClosenessBoostDistance(ret.closeness_boost_distance) ||
+		source->acquireRolloff(ret.rolloff) |
+		source->acquireClosenessBoost(ret.closeness_boost) |
+		source->acquireClosenessBoostDistance(ret.closeness_boost_distance) |
 		/* This one needs a cast, so pull it to a different vairable first. */
 		source->acquireDistanceModel(distance_model);
 	ret.distance_model = (enum SYZ_DISTANCE_MODEL)distance_model;
