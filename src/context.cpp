@@ -206,14 +206,10 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 }
 
 void Context::flushPropertyWrites() {
-	while (1) {
-		try {
-			if (this->property_ring.applyNext() == false) {
-				break;
-			}
-		} catch(std::exception &e) {
-			logError("Got exception applying property write: %s", e.what());
-		}
+	try {
+		this->property_ring.applyAll();
+	} catch(std::exception &e) {
+		logError("Got exception applying property write: %s", e.what());
 	}
 }
 
