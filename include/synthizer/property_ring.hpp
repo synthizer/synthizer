@@ -2,6 +2,7 @@
 
 #include "synthizer/at_scope_exit.hpp"
 #include "synthizer/base_object.hpp"
+#include "synthizer/commands.hpp"
 #include "synthizer/mpsc_ring.hpp"
 #include "synthizer/property_internals.hpp"
 
@@ -13,7 +14,6 @@
 #include <variant>
 
 namespace synthizer {
-
 
 struct PropertyRingEntry {
 	int property;
@@ -31,28 +31,35 @@ class PropertyRing {
 	void applyAll();
 
 	private:
-	MpscRing<PropertyRingEntry, capacity> ring{};
+	MpscRing<Command, capacity> ring{};
 };
+
+/**
+ * Callable to be wrapped in a command which sets properties.
+ * */
+inline void setPropertyCmd(	int property, std::weak_ptr<BaseObject> target_weak, property_impl::PropertyValue value) {
+	auto target = target_weak.lock();
+	if (target == nullptr) {
+		return;
+	}
+
+	target->setProperty(property, value);
+}
 
 template<std::size_t capacity>
 template<typename T>
 bool PropertyRing<capacity>::enqueue(const std::shared_ptr<BaseObject> &obj, int property, T&& value) {
 	return this->ring.write([&](auto &entry) {
-		entry.property = property;
-		entry.target = obj;
-		entry.value = value;
+		std::weak_ptr<BaseObject> weak{obj};
+		initCallbackCommand(&entry, &setPropertyCmd, property, weak, property_impl::PropertyValue(value));
 	});
 }
 
 template<std::size_t capacity>
 void PropertyRing<capacity>::applyAll() {
 	this->ring.processAll([&](auto &entry) {
-		auto target = entry.target.lock();
-		if (target == nullptr) {
-			return;
-		}
-
-		target->setProperty(entry.property, entry.value);
+		entry.execute();
+		entry.deinitialize();
 	});
 }
 

@@ -68,5 +68,12 @@ const int PANNER_MAX_LANES = 4;
  * */
 const std::size_t BUFFER_CHUNK_SIZE = (1 << 14);
 
+/*
+ * maximum size of a command.
+ * 
+ * This is used to make the MpscRing entirely inline by using aligned_storage.
+ * */
+const std::size_t MAX_COMMAND_SIZE = 128;
+
 }
 }
