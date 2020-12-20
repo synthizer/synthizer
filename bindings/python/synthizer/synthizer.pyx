@@ -119,12 +119,7 @@ cdef class ObjectProperty(_PropertyBase):
         self.cls = cls
 
     def __get__(self, _BaseObject instance, owner):
-        cdef syz_Handle x
-        _checked(syz_getO(&x, instance.handle, self.property))
-        if x == 0:
-            return None
-        return _handle_to_object(x)
-
+            raise NotImplementedError("Can't read object properties")
     def __set__(self, _BaseObject instance, _BaseObject value):
         _checked(syz_setO(instance.handle, self.property, value.handle if value else 0))
 

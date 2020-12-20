@@ -35,8 +35,6 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_setD(syz_Handle target, int property, double value)
 
-    syz_ErrorCode syz_getO(syz_Handle* out, syz_Handle target, int property)
-
     syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle value)
 
     syz_ErrorCode syz_getD3(double* x, double* y, double* z, syz_Handle target, int property)
@@ -48,6 +46,10 @@ cdef extern from "synthizer.h":
     syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, double y1, double z1, double x2, double y2, double z2)
 
     syz_ErrorCode syz_createContext(syz_Handle* out)
+
+    syz_ErrorCode syz_createContextHeadless(syz_Handle* out)
+
+    syz_ErrorCode syz_contextGetBlock(syz_Handle context, float* block)
 
     syz_ErrorCode syz_createStreamingGenerator(syz_Handle* out, syz_Handle context, char* protocol, char* path, char* options)
 
