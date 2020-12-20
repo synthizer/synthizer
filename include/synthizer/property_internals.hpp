@@ -60,7 +60,7 @@ template<typename T>
 class AtomicProperty {
 	public:
 	AtomicProperty(): AtomicProperty(T()) {}
-	AtomicProperty(const T&& value): field(value) {}
+	explicit AtomicProperty(const T&& value): field(value) {}
 
 	T read() const { return this->field.load(std::memory_order_acquire); }
 	void write(T value) { this->field.store(value, std::memory_order_release); }

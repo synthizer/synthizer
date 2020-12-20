@@ -56,27 +56,12 @@ class FdnReverbEffect: public BASE {
 	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) override;
 	void resetEffect() override;
 
-	#define EXPOSE(TYPE, FIELD, GETTER, SETTER) \
-	TYPE GETTER() { return this->FIELD; } \
-	void SETTER(TYPE v) { this->FIELD = v; this->dirty = true; }
-
-
-	EXPOSE(int, input_filter_enabled, getInputFilterEnabled, setInputFilterEnabled)
-	EXPOSE(double, input_filter_cutoff, getInputFilterCutoff, setInputFilterCutoff)
-	EXPOSE(double, mean_free_path, getMeanFreePath, setMeanFreePath)
-	EXPOSE(double, t60, getT60, setT60)
-	EXPOSE(double, late_reflections_lf_rolloff, getLateReflectionsLfRolloff, setLateReflectionsLfRolloff)
-	EXPOSE(double, late_reflections_lf_reference, getLateReflectionsLfReference, setLateReflectionsLfReference)
-	EXPOSE(double, late_reflections_hf_rolloff, getLateReflectionsHfRolloff, setLateReflectionsHfRolloff)
-	EXPOSE(double, late_reflections_hf_reference, getLateReflectionsHfReference, setLateReflectionsHfReference)
-	EXPOSE(double, late_reflections_diffusion, getLateReflectionsDiffusion, setLateReflectionsDiffusion)
-	EXPOSE(double, late_reflections_modulation_depth, getLateReflectionsModulationDepth, setLateReflectionsModulationDepth)
-	EXPOSE(double, late_reflections_modulation_frequency, getLateReflectionsModulationFrequency, setLateReflectionsModulationFrequency)
-	EXPOSE(double, late_reflections_delay, getLateReflectionsDelay, setLateReflectionsDelay)
-
-	#include "synthizer/property_methods.hpp"
+	#define PROPERTY_CLASS FdnReverbEffect
+	#define PROPERTY_BASE BASE
+	#define PROPERTY_LIST FDN_REVERB_EFFECT_PROPERTIES
+	#include "synthizer/property_impl_new.hpp"
 	private:
-	void recomputeModel();
+	void maybeRecomputeModel();
 
 	/*
 	 * The delay, in samples, of the late reflections relative to the input.
@@ -100,68 +85,85 @@ class FdnReverbEffect: public BASE {
 	 * Random number generator for modulating the delay lines in the late reflection.
 	 * */
 	std::array<InterpolatedRandomSequence, LINES> late_modulators;
+};
 
-	/*
-	 * When a property gets set, set to true to mark that we need to recompute the model.
-	 * */
-	bool dirty = true;
+template<typename BASE>
+void FdnReverbEffect<BASE>::maybeRecomputeModel() {
+	bool dirty = false;
 
 	/*
 	 * The input filter is a lowpass for now. We might let this be configurable later.
 	 * */
-	bool input_filter_enabled = true;
-	float input_filter_cutoff = 2000.0f;
+	int input_filter_enabled;
+	double input_filter_cutoff;
+	dirty |= this->acquireInputFilterEnabled(input_filter_enabled);
+	dirty |= this->acquireInputFilterCutoff(input_filter_cutoff);
 
 	/*
 	 * The mean free path, in seconds.
 	 * This is effectively meters/ speed of sound.
 	 * 0.01 is approximately 5 meters.
 	 * */
-	float mean_free_path = 0.02f;
+	double mean_free_path;
+	dirty |= this->acquireMeanFreePath(mean_free_path);
+
 	/*
 	 * The t60 of the reverb, in seconds.
 	 * */
-	float t60 = 1.0f;
+	double t60;
+	dirty |= this->acquireT60(t60);
+
 	/*
 	 * rolloff ratios. The effective t60 for a band of the equalizer is rolloff * t60.
 	 * */
-	float late_reflections_lf_rolloff = 1.0f;
-	float late_reflections_hf_rolloff = 0.5f;
+	double late_reflections_lf_rolloff;
+	double late_reflections_hf_rolloff;
+	dirty |= this->acquireLateReflectionsLfRolloff(late_reflections_lf_rolloff);
+	dirty |= this->acquireLateReflectionsHfRolloff(late_reflections_hf_rolloff);
+
 	/*
 	 * Defines the bands of the eq filter for late reflections.
 	 * */
-	float late_reflections_lf_reference = 200.0f;
-	float late_reflections_hf_reference = 500.0f;
+	double late_reflections_lf_reference;
+	double late_reflections_hf_reference;
+	dirty |= this->acquireLateReflectionsLfReference(late_reflections_lf_reference);
+	dirty |= this->acquireLateReflectionsHfReference(late_reflections_hf_reference);
+
 	/*
 	 * Diffusion is a measure of how fast reflections spread. This can't be equated to a physical property, so we just treat it as a
 	 * percent. Internally, this feeds the algorithm which picks delay line lengths.
 	 * */
-	float late_reflections_diffusion = 1.0f;
+	double late_reflections_diffusion;
+	dirty |= this->acquireLateReflectionsDiffusion(late_reflections_diffusion);
+
 	/*
 	 * How much modulation in the delay lines? Larger values reduce periodicity, at the cost of introducing chorus-like effects.
 	 * In seconds.
 	 * */
-	float late_reflections_modulation_depth = 0.01f;
+	double late_reflections_modulation_depth;
+	dirty |= this->acquireLateReflectionsModulationDepth(late_reflections_modulation_depth);
 	/*
 	 * Frequency of modulation changes in hz.
 	 * */
-	float late_reflections_modulation_frequency = 0.5f;
-	float late_reflections_delay = 0.01f;
-};
+	double late_reflections_modulation_frequency;
+	dirty |= this->acquireLateReflectionsModulationFrequency(late_reflections_modulation_frequency);
+	double late_reflections_delay;
+	dirty |= this->acquireLateReflectionsDelay(late_reflections_delay);
 
-template<typename BASE>
-void FdnReverbEffect<BASE>::recomputeModel() {
+	if (dirty == false) {
+		return;
+	}
+
 	/*
 	 * Design the input filter. It's as straightforward as it looks.
 	 * */
-	if (this->input_filter_enabled) {
-		this->input_filter.setParameters(designAudioEqLowpass(this->input_filter_cutoff / config::SR));
+	if (input_filter_enabled) {
+		this->input_filter.setParameters(designAudioEqLowpass(input_filter_cutoff / config::SR));
 	} else {
 		this->input_filter.setParameters(designWire());
 	}
 
-
-	this->late_reflections_delay_samples = this->late_reflections_delay * config::SR;
+	this->late_reflections_delay_samples = late_reflections_delay * config::SR;
 
 	/*
 	 * The average delay line length is the mean free path. You can think about this as if delay lines in the FDN all ran to walls.
@@ -189,16 +191,16 @@ void FdnReverbEffect<BASE>::recomputeModel() {
 	 * Using significantly large numbers (on the order of 2) for the exponent makes strange things happen for large diffusions; I tuned the constants in the below
 	 * difffusion equation by ear.
 	 * */
-	unsigned int mean_free_path_samples = this->mean_free_path * config::SR;
+	unsigned int mean_free_path_samples = mean_free_path * config::SR;
 	this->delays[0] = getClosestPrime(mean_free_path_samples);
-	this->delays[1] = getClosestPrimeRestricted(mean_free_path_samples, 1, &this->delays[0]);
+	this->delays[1] = getClosestPrimeRestricted(mean_free_path_samples, 1, &delays[0]);
 
-	float diffusion_base = 1.0 + 0.4 * this->late_reflections_diffusion;
+	float diffusion_base = 1.0 + 0.4 * late_reflections_diffusion;
 	for (unsigned int i = 2; i < LINES; i+=2) {
 		unsigned int iteration = i/2 + 1;
 		float fraction = 1.0f / powf(diffusion_base, iteration);
 		delays[i] = getClosestPrimeRestricted(mean_free_path_samples * fraction, i, &this->delays[0]);
-		delays[i+1] = getClosestPrimeRestricted(mean_free_path_samples * (2.0f - fraction), i+1, &delays[0]);
+		delays[i+1] = getClosestPrimeRestricted(mean_free_path_samples * (2.0f - fraction), i+1, &this->delays[0]);
 	}
 
 	/*
@@ -228,24 +230,24 @@ void FdnReverbEffect<BASE>::recomputeModel() {
 	 * 
 	 * We control this with an equalizer, which lets the user control how "bright" the reverb is.
 	 * */
-	float decay_per_sample_db = -60.0f / this->t60 / config::SR;
+	float decay_per_sample_db = -60.0f / t60 / config::SR;
 	for (unsigned int i = 0; i < LINES; i++) {
 		unsigned int length = this->delays[i];
 		float decay_db = length * decay_per_sample_db;
 		ThreeBandEqParams params;
-		params.dbgain_lower = decay_db * this->late_reflections_lf_rolloff;
-		params.freq_lower = this->late_reflections_lf_reference;
+		params.dbgain_lower = decay_db * late_reflections_lf_rolloff;
+		params.freq_lower = late_reflections_lf_reference;
 		params.dbgain_mid = decay_db;
-		params.dbgain_upper = decay_db * this->late_reflections_hf_rolloff;
-		params.freq_upper = this->late_reflections_hf_reference;
+		params.dbgain_upper = decay_db * late_reflections_hf_rolloff;
+		params.freq_upper = late_reflections_hf_reference;
 		this->feedback_eq.setParametersForLane(i, params);
 	}
 
 	/*
 	 * The modulation depth and rate.
 	 * */
-	unsigned int mod_depth_in_samples = this->late_reflections_modulation_depth * config::SR;
-	unsigned int mod_rate_in_samples = config::SR / this->late_reflections_modulation_frequency;
+	unsigned int mod_depth_in_samples = late_reflections_modulation_depth * config::SR;
+	unsigned int mod_rate_in_samples = config::SR / late_reflections_modulation_frequency;
 	for (unsigned int i = 0; i < LINES; i++) {
 		/*
 		 * vary the frequency slightly so that they're not all switching exactly on the same sample.
@@ -271,10 +273,7 @@ void FdnReverbEffect<BASE>::runEffect(unsigned int time_in_blocks, unsigned int 
 	alignas(config::ALIGNMENT) thread_local std::array<float, config::BLOCK_SIZE * 2> output_buf{ { 0.0f } };
 	float *output_buf_ptr = &output_buf[0];
 
-	if (this->dirty) {
-		this->recomputeModel();
-		this->dirty = false;
-	}
+	this->maybeRecomputeModel();
 
 	/*
 	 * Compute the max delay. This needs to be done here because
