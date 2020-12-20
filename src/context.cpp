@@ -11,7 +11,6 @@
 #include "synthizer/effects/global_effect.hpp"
 #include "synthizer/invokable.hpp"
 #include "synthizer/logging.hpp"
-#include "synthizer/property_ring.hpp"
 #include "synthizer/sources.hpp"
 #include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
@@ -86,23 +85,7 @@ void Context::enqueueInvokable(Invokable *invokable) {
 template<typename T>
 void Context::propertySetter(const std::shared_ptr<BaseObject> &obj, int property, T &value) {
 	obj->validateProperty(property, value);
-	if (this->property_ring.enqueue(obj, property, value)) {
-		return;
-	}
-
-	auto cb = [&] () {
-		/*
-		 * The context will flush, then we do the set here. Next time, the queue's empty.
-		 * */
-		obj->setProperty(property, value);
-	};
-	if (this->headless) {
-		cb();
-		return;
-	}
- auto inv = WaitableInvokable(std::move(cb));
-	this->enqueueInvokable(&inv);
-	inv.wait();
+	this->enqueueCallableCommand(setPropertyCmd, property, obj, property_impl::PropertyValue(value));
 }
 
 void Context::setIntProperty(std::shared_ptr<BaseObject> &obj, int property, int value) {
@@ -155,11 +138,11 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 	 * no exception should ever be thrown, but if that proves not to be the case we want to know about it.
 	 * */
 	try {
-		this->flushPropertyWrites();
+		this->runCommands();
 
 		Invokable *inv;
 		while (pending_invokables.try_dequeue(inv)) {
-			this->flushPropertyWrites();
+			this->runCommands();
 			inv->invoke();
 		}
 
@@ -205,12 +188,14 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 	}
 }
 
-void Context::flushPropertyWrites() {
-	try {
-		this->property_ring.applyAll();
-	} catch(std::exception &e) {
-		logError("Got exception applying property write: %s", e.what());
-	}
+void Context::runCommands() {
+	this->command_queue.processAll([&](auto &cmd) {
+		try {
+			cmd.execute();
+		} catch(std::exception &e) {
+			logError("Got exception applying property write: %s", e.what());
+		}
+	});
 }
 
 void Context::enqueueDeletionRecord(DeletionCallback cb, void *arg) {

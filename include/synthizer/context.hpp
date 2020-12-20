@@ -1,11 +1,12 @@
 #pragma once
 
 #include "synthizer/base_object.hpp"
+#include "synthizer/commands.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/invokable.hpp"
 #include "synthizer/panner_bank.hpp"
 #include "synthizer/property_internals.hpp"
-#include "synthizer/property_ring.hpp"
+#include "synthizer/mpsc_ring.hpp"
 #include "synthizer/router.hpp"
 #include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
@@ -94,6 +95,31 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	 * Submit an invokable which will be invoked on the context thread.
 	 * */
 	void enqueueInvokable(Invokable *invokable);
+
+	/**
+	 * Call a callable in the audio thread. Doesn't wait for completion. Returns false
+	 * if there was no room in the queue.
+	 * */
+	template<typename CB, typename ...ARGS>
+	bool enqueueCallableCommandNonblocking(CB &&callback, ARGS&& ...args) {
+		return this->command_queue.write([&](auto &cmd) {
+			initCallbackCommand(&cmd, std::forward<CB>(callback), std::forward<ARGS>(args)...);
+		});
+	}
+
+	/**
+	 * Like enqueueCallableCommandNonblocking, but spins.
+	 * 
+	 * In practice, code goes through this one instead, and we rely on knowing that there's a reasonable size for the command queue that will
+	 * reasonably ensure no one ever spins for practical applications.
+	 * */
+	template<typename CB, typename... ARGS>
+	void enqueueCallableCommand(CB &callback, ARGS&& ...args) {
+		while (this->enqueueCallableCommandNonblocking(callback, args...) == false) {
+			std::this_thread::yield();
+		}
+	}
+
 
 	/*
 	 * Call a callable in the audio thread.
@@ -202,9 +228,9 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	bool headless = false;
 
 	/*
-	 * Flush all pending property writes.
+	 * run all pending commands.
 	 * */
-	void flushPropertyWrites();
+	void runCommands();
 
 	moodycamel::ConcurrentQueue<Invokable *> pending_invokables;
 	std::atomic<int> running;
@@ -237,7 +263,7 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	/* Used by shutdown and the destructor only. Not safe to call elsewhere. */
 	void drainDeletionQueues();
 
-	PropertyRing<1024> property_ring;
+	MpscRing<Command, 1024> command_queue;
 	template<typename T>
 	void propertySetter(const std::shared_ptr<BaseObject> &obj, int property, T &value);
 
