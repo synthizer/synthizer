@@ -60,8 +60,8 @@ DOUBLE_P(SYZ_P_POSITION, position, Position, 0.0, P_DOUBLE_MAX, 0.0) \
 INT_P(SYZ_P_LOOPING, looping, Looping, 0, 1, 0) \
 
 #define STREAMING_GENERATOR_PROPERTIES \
-DOUBLE_P(SYZ_P_POSITION, position, Position, 0.0, P_DOUBLE_MAX) \
-INT_P(SYZ_P_LOOPING, looping, Looping, 0, 1)
+DOUBLE_P(SYZ_P_POSITION, position, Position, 0.0, P_DOUBLE_MAX, 0.0) \
+INT_P(SYZ_P_LOOPING, looping, Looping, 0, 1, 0)
 
 #define NOISE_GENERATOR_PROPERTIES \
 INT_P(SYZ_P_NOISE_TYPE, noise_type, NoiseType, 0, SYZ_NOISE_TYPE_COUNT - 1, SYZ_NOISE_TYPE_UNIFORM)

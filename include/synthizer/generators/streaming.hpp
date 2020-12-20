@@ -24,12 +24,10 @@ class StreamingGenerator: public Generator {
 
 	unsigned int getChannels() override;
 	void generateBlock(float *output) override;
-	int getLooping();
-	void setLooping(int looping);
-	double getPosition();
-	void setPosition(double newPosition);
-	#include "synthizer/property_methods.hpp"
-
+	#define PROPERTY_CLASS StreamingGenerator
+	#define PROPERTY_LIST STREAMING_GENERATOR_PROPERTIES
+	#define PROPERTY_BASE Generator
+	#include "synthizer/property_impl_new.hpp"
 	private:
 	/* The body of the background thread. */
 	void generateBlockInBackground(std::size_t channels, float *out);
@@ -38,8 +36,7 @@ class StreamingGenerator: public Generator {
 	std::shared_ptr<AudioDecoder> decoder = nullptr;
 	std::shared_ptr<WDL_Resampler> resampler = nullptr;
 	unsigned int channels = 0;
-	std::atomic<int> looping = 0;
-	std::atomic<double> position = 0.0;
+	std::atomic<double> background_position = 0.0;
 	FiniteDoubleCell next_position = 0.0;
 
 	/*

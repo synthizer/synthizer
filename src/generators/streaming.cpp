@@ -36,7 +36,7 @@ StreamingGenerator::StreamingGenerator(const std::shared_ptr<Context> &ctx, cons
 }
 
 StreamingGenerator::~StreamingGenerator() {
-	/* We can't rely on the destructior of background_thread because it runs after ours. */
+	/* We can't rely on the destructor of background_thread because it runs after ours. */
 	this->background_thread.stop();
 }
 
@@ -48,26 +48,19 @@ void StreamingGenerator::generateBlock(float *output) {
 	thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> tmp_buf;
 	float *tmp_buf_ptr = &tmp_buf[0];
 
+	double new_pos;
+	bool pos_changed = this->acquirePosition(new_pos);
+	if (pos_changed) {
+		this->next_position.write(new_pos);
+	}
+
 	auto got = this->background_thread.read(config::BLOCK_SIZE, tmp_buf_ptr);
 	for (unsigned int i = 0; i < got * this->channels; i++) {
 		output[i] += tmp_buf_ptr[i];
 	}
-}
 
-int StreamingGenerator::getLooping() {
-	return this->looping.load(std::memory_order_relaxed);
-}
-
-void StreamingGenerator::setLooping(int looping) {
-	this->looping.store(looping ? 1 : 0, std::memory_order_release);
-}
-
-double StreamingGenerator::getPosition() {
-	return this->position.load(std::memory_order_relaxed);
-}
-
-void StreamingGenerator::setPosition(double pos) {
-	this->next_position.write(pos);
+	/* important to set this without tracking changes. Tracking changes will infinite loop. */
+	this->setPosition(this->background_position.load(std::memory_order_relaxed), false);
 }
 
 /*
@@ -106,13 +99,13 @@ static double fillBufferFromDecoder(AudioDecoder &decoder, unsigned int size, un
 
 void StreamingGenerator::generateBlockInBackground(std::size_t channels, float *out) {
 	try {
-		bool looping = this->looping.load(std::memory_order_acquire) == 1;
+		bool looping = this->getLooping() == 1;
 
 		double position;
 		if (this->next_position.read(&position)) {
 			this->decoder->seekSeconds(position);
 		} else {
-			position = this->position.load(std::memory_order_relaxed);
+			position = this->background_position.load(std::memory_order_relaxed);
 		}
 
 		if (this->resampler == nullptr) {
@@ -127,7 +120,7 @@ void StreamingGenerator::generateBlockInBackground(std::size_t channels, float *
 			}
 		}
 
-		this->position.store(position, std::memory_order_relaxed);
+		this->background_position.store(position, std::memory_order_relaxed);
 	} catch(std::exception &e) {
 		logError("Background thread for streaming generator had error: %s. Trying to recover...", e.what());
 	}
@@ -146,8 +139,3 @@ SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle 
 	return 0;
 	SYZ_EPILOGUE
 }
-
-#define PROPERTY_CLASS StreamingGenerator
-#define PROPERTY_BASE Generator
-#define PROPERTY_LIST STREAMING_GENERATOR_PROPERTIES
-#include "synthizer/property_impl.hpp"

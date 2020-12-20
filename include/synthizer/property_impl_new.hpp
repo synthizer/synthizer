@@ -100,7 +100,7 @@ return this->PROPFIELD_NAME.F.read();
 
 #define STANDARD_WRITE(F) \
 this->PROPFIELD_NAME.F.write(val); \
-this->PROPFIELD_NAME.propertyHasChanged(PROPERTY_CLASS##Props::Bits::F##_BIT);
+if (track_change) this->PROPFIELD_NAME.propertyHasChanged(PROPERTY_CLASS##Props::Bits::F##_BIT);
 
 #define STANDARD_ACQUIRE(F) \
 bool changed = this->PROPFIELD_NAME.acquireBit(PROPERTY_CLASS##Props::Bits::F##_BIT); \
@@ -113,7 +113,7 @@ int get##CAMEL_NAME() const { \
 STANDARD_READ(UNDERSCORE_NAME) \
 } \
 \
-void set##CAMEL_NAME(int val) { \
+void set##CAMEL_NAME(int val, bool track_change=true) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
@@ -132,7 +132,7 @@ double get##CAMEL_NAME() const { \
 STANDARD_READ(UNDERSCORE_NAME) \
 } \
 \
-void set##CAMEL_NAME(double val) { \
+void set##CAMEL_NAME(double val, bool track_change = true) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
@@ -151,7 +151,7 @@ std::array<double, 3> get##CAMEL_NAME() const { \
 STANDARD_READ(UNDERSCORE_NAME) \
 } \
 \
-void set##CAMEL_NAME(const std::array<double, 3> &val) { \
+void set##CAMEL_NAME(const std::array<double, 3> &val, bool track_change = true) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
@@ -169,7 +169,7 @@ std::array<double, 6> get##CAMEL_NAME() const { \
 STANDARD_READ(UNDERSCORE_NAME) \
 } \
 \
-void set##CAMEL_NAME(const std::array<double, 6> &val) { \
+void set##CAMEL_NAME(const std::array<double, 6> &val, bool track_change = true) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
@@ -187,7 +187,7 @@ std::weak_ptr<CLS> get##CAMEL_NAME() const { \
 STANDARD_READ(UNDERSCORE_NAME) \
 }\
 \
-void set##CAMEL_NAME(const std::weak_ptr<CLS> &val) { \
+void set##CAMEL_NAME(const std::weak_ptr<CLS> &val, bool track_change = true) { \
 STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \

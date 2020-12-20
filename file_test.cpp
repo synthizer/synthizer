@@ -41,10 +41,11 @@ int main(int argc, char *argv[]) {
 
 	CHECKED(syz_createContext(&context));
 	CHECKED(syz_createSource3D(&source, context));
-	CHECKED(syz_createBufferFromStream(&buffer, "file", argv[1], ""));
-	CHECKED(syz_createBufferGenerator(&generator, context));
+//	CHECKED(syz_createBufferFromStream(&buffer, "file", argv[1], ""));
+//	CHECKED(syz_createBufferGenerator(&generator, context));
+	CHECKED(syz_createStreamingGenerator(&generator, context, "file", argv[1], ""));
 	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
-	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
+//	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
 	CHECKED(syz_setD(generator, SYZ_P_PITCH_BEND, 0.5));
