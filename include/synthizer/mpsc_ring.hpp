@@ -28,8 +28,6 @@ struct MpscRingEntry {
 template<typename T, std::size_t capacity>
 class MpscRing {
 	static_assert(capacity != 0);
-	/* Must be power of 2. */
-	static_assert((capacity & (capacity - 1)) == 0);
 
 	public:
 	/* Write to the ring with a callback. Returns false if the ring is full. */
