@@ -59,7 +59,7 @@ class FdnReverbEffect: public BASE {
 	#define PROPERTY_CLASS FdnReverbEffect
 	#define PROPERTY_BASE BASE
 	#define PROPERTY_LIST FDN_REVERB_EFFECT_PROPERTIES
-	#include "synthizer/property_impl_new.hpp"
+	#include "synthizer/property_impl.hpp"
 	private:
 	void maybeRecomputeModel();
 

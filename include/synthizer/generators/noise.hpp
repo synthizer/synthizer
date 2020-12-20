@@ -33,7 +33,7 @@ class ExposedNoiseGenerator: public Generator {
 	#define PROPERTY_CLASS ExposedNoiseGenerator
 	#define PROPERTY_LIST NOISE_GENERATOR_PROPERTIES
 	#define PROPERTY_BASE Generator
-	#include "synthizer/property_impl_new.hpp"
+	#include "synthizer/property_impl.hpp"
 
 	private:
 	deferred_vector<NoiseGenerator> generators;

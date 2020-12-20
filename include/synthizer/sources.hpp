@@ -42,7 +42,7 @@ class Source: public RouteOutput {
 	#define PROPERTY_CLASS Source
 	#define PROPERTY_BASE BaseObject
 	#define PROPERTY_LIST SOURCE_PROPERTIES
-	#include "synthizer/property_impl_new.hpp"
+	#include "synthizer/property_impl.hpp"
 
 	protected:
 	/*
@@ -87,7 +87,7 @@ class PannedSource: public Source {
 	#define PROPERTY_CLASS PannedSource
 	#define PROPERTY_LIST PANNED_SOURCE_PROPERTIES
 	#define PROPERTY_BASE Source
-	#include "synthizer/property_impl_new.hpp"
+	#include "synthizer/property_impl.hpp"
 	private:
 	std::shared_ptr<PannerLane> panner_lane;
 	double gain_3d = 1.0;
@@ -103,7 +103,7 @@ class Source3D: public PannedSource {
 	#define PROPERTY_CLASS Source3D
 	#define PROPERTY_BASE PannedSource
 	#define PROPERTY_LIST SOURCE3D_PROPERTIES
-	#include "synthizer/property_impl_new.hpp"
+	#include "synthizer/property_impl.hpp"
 };
 
 }

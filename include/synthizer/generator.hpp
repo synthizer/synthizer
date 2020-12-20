@@ -33,7 +33,7 @@ class Generator: public BaseObject {
 	#define PROPERTY_CLASS Generator
 	#define PROPERTY_LIST GENERATOR_PROPERTIES
 	#define PROPERTY_BASE BaseObject
-	#include "synthizer/property_impl_new.hpp"
+	#include "synthizer/property_impl.hpp"
 };
 
 }

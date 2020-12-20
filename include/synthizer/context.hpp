@@ -201,7 +201,7 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	#define PROPERTY_CLASS Context
 	#define PROPERTY_BASE BaseObject
 	#define PROPERTY_LIST CONTEXT_PROPERTIES
-	#include "synthizer/property_impl_new.hpp"
+	#include "synthizer/property_impl.hpp"
 
 	private:
 	bool headless = false;

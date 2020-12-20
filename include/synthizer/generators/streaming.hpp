@@ -27,7 +27,7 @@ class StreamingGenerator: public Generator {
 	#define PROPERTY_CLASS StreamingGenerator
 	#define PROPERTY_LIST STREAMING_GENERATOR_PROPERTIES
 	#define PROPERTY_BASE Generator
-	#include "synthizer/property_impl_new.hpp"
+	#include "synthizer/property_impl.hpp"
 	private:
 	/* The body of the background thread. */
 	void generateBlockInBackground(std::size_t channels, float *out);

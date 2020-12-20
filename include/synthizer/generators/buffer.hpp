@@ -19,7 +19,7 @@ class BufferGenerator: public Generator {
 	#define PROPERTY_CLASS BufferGenerator
 	#define PROPERTY_BASE Generator
 	#define PROPERTY_LIST BUFFER_GENERATOR_PROPERTIES
-	#include "synthizer/property_impl_new.hpp"
+	#include "synthizer/property_impl.hpp"
 
 	private:
 	template<bool L>
