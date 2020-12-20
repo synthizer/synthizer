@@ -10,28 +10,20 @@
 namespace synthizer {
 
 void ExposedNoiseGenerator::generateBlock(float *out) {
-	for (unsigned int i = 0; i < this->channels; i++) {
+	int noise_type;
+
+	if (this->acquireNoiseType(noise_type)) {
+		for (auto &g: this->generators) {
+			g.setNoiseType(noise_type);
+		}
+	}
+
+for (unsigned int i = 0; i < this->channels; i++) {
 		this->generators[i].generateBlock(config::BLOCK_SIZE, out + i, this->channels);
 	}
 }
 
-int ExposedNoiseGenerator::getNoiseType() {
-	return this->generators[0].getNoiseType();
 }
-
-void ExposedNoiseGenerator::setNoiseType(int type) {
-	for (auto &g: this->generators) {
-		g.setNoiseType(type);
-	}
-}
-
-}
-
-#define PROPERTY_CLASS ExposedNoiseGenerator
-#define PROPERTY_BASE Generator
-#define PROPERTY_LIST NOISE_GENERATOR_PROPERTIES
-#include "synthizer/property_impl.hpp"
-
 
 using namespace synthizer;
 

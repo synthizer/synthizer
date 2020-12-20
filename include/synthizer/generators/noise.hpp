@@ -30,10 +30,11 @@ class ExposedNoiseGenerator: public Generator {
 
 	void generateBlock(float *out) override;
 
-	int getNoiseType();
-	void setNoiseType(int type);
+	#define PROPERTY_CLASS ExposedNoiseGenerator
+	#define PROPERTY_LIST NOISE_GENERATOR_PROPERTIES
+	#define PROPERTY_BASE Generator
+	#include "synthizer/property_impl_new.hpp"
 
-	#include "synthizer/property_methods.hpp"
 	private:
 	deferred_vector<NoiseGenerator> generators;
 	unsigned int channels;
