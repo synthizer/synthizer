@@ -134,8 +134,8 @@ class IIRFilter {
 			this->numerator[i].values[l] = i < nn ? params.num_coefs[i] : 0.0;
 		}
 		for(int i = 0; i < den - 1; i++) {
-			/* Recall that denominators are minus the first sample. */
-			this->denominator[i].values[l] = i < nd - 1 ? params.den_coefs[i] : 0.0;
+			/* Recall that denominators are minus the first sample. This expression is weird because nd - 1 can wrap when nd == 0. */
+			this->denominator[i].values[l] = i + 1 < nd ? params.den_coefs[i] : 0.0;
 		}
 		this->gain.values[l] = params.gain;
 	}
