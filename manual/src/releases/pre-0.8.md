@@ -1,8 +1,7 @@
-# Release Notes
+# Release Notes for 0.0.x to 0.8.x
 
-## 0.7.8 (WIP)
-
-- It is no longer possible to nest `syz_initialize`/`syz_shutdown` calls. Apps may only ever call these functions once for proper functioning. Calling them more than once is undefined behavior.
+Starting at 0.8 and later, Synthizer maintains separate pages for every incompatible release with more details on compatibility breakage and what specifically changed. The following were early development versions,
+and should no longer be used.
 
 ## 0.7.7
 
@@ -21,7 +20,7 @@
 
 ## 0.7.5
 
-- Introduce [reverb](./object_reference/fdn_reverb.md).
+- Introduce [reverb](../object_reference/fdn_reverb.md).
 - Start building Python 3.9 wheels.
 - Sources now fade gain changes to prevent clicks, especially when feeding effects.
 - Expose `syz_resetEffect` for interactive experimentation purposes, to clear the internal state of effects. In python this is `.reset()` on any effect.
@@ -32,9 +31,9 @@
 
 ## 0.7.4
 
-- Document our [versioning and stability guarantees](./concepts/stability.md).
-- Introduce [effect routing support](./concepts/effects.md).
-- Introduce an [Echo](./object_reference/echo.md) effect.
+- Document our [versioning and stability guarantees](../concepts/stability.md).
+- Introduce [effect routing support](../concepts/effects.md).
+- Introduce an [Echo](../object_reference/echo.md) effect.
 
 ## 0.7.3
 

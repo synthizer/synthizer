@@ -20,22 +20,30 @@ Synthizer objects are like classes: they have properties, methods, and (optional
 
 Property names are defined in `synthizer_constants.h` of the form `SYZ_P_FOO`.  Since some objects have common properties and in order to preserve flexibility, the property enum is shared between all objects.
 
-Properties are set through `syz_setX` and read through `syz_getX`.  `syz_setX` is fast.  `syz_getX` is slow and should only be used for debugging.  Programs are strongly discouraged from reading properties for any other purpose. See below for more explanation of `syz_getX`.
+Properties are set through `syz_setX` and read through `syz_getX` where `X` depends on the type:
+
+- `I` for integer
+- `D` for double
+- `O` for object.
+- `D3` for double3, a packed vector of 3 doubles.
+- `D6` for a packed array of 6 doubles, commonly used to represent orientations.
 
 Synthizer supports 5 property types: int, double, double3, double6, and object.
 
 Double3 is typically used for position and double6 for orientation.  Synthizer's coordinate system is right-handed, configured so that positive y is forward, positive x east, and positive z up.  Listener orientation is controlled through the context.
 
-Object properties hold handles to other objects.  This reference may be strong or weak.  Synthizer currently only uses weak references.
-If the reference is weak `syz_handleFree` will set the property internally to NULL.  If the reference is strong `syz_handleFree` will hide the object from the external world, but will keep the object alive.
-Synthizer may use strong properties for cases such as `BufferGenerator`, where it is advantageous for the library to be able to control the lifetime.
+Object properties hold handles to other objects.  This is a weak reference, so destroying
+the object will set the property to null.  Note that it's not possible to read object properties.  This is because internal machinery
+can block the audio thread because locking is required to safely manipulate handles in that case.
 
-Property writes are always ordered with respect to other property writes on the same thread, and in general work how you would expect.  Reads are different because Synthizer made the trade-off of low latency and fast writes for fast and consistent reads, and internally uses a number of lockfree ringbuffers to move writes between threads.  Synthizer reserves the right to make property reads eventually consistent.  Synthizer reserves the right to make property reads unordered with respect to their writes even in cases of only one thread doing both reads and writes.
-`syz_setX(obj, property, value)` followed by a read to the same property may or may not return the value just written.  Synthizer plans to offer some limited forms of atomicity and database-like transactions in future, which may freeze and/or rewind time with respect to external reads. Note that implicit property reads done by Synthizer itself as part of i.e. source creation are ordered with respect to writes in the expected manner.
+Property writes are always ordered with respect to other property writes on the same thread, and in general work how you would expect.  But it's important to note that reads are eventually consistent.  Specifically:
 
-In the case of properties that Synthizer itself updates, i.e. the position of a generator, and assuming that it is called from outside any future features that do things to property get/set, `syz_getX` will return some value from the recent past.  How far back is unspecified, but would be anyway because the audio thread always runs ahead of your program.
-Synthizer will make an effort to make Synthizer-modified properties faster to read in future, usually no more than the normal C API overhead and the cost of one atomic, though the infrastructure to do this does not yet exist.
+- Two writes from the same thread always happen in the order they were made in terms of audio output.
+- The ordering of writes also applies if the app uses synchronization such as mutexes.
+- But reads may not return the value just written, and in general return values at some point in the relatively recent past, usually on the order of 5 to 50MS.
 
-If you got lost in the above paragraph: `syz_setX` does what you intuitively expect, `syz_getX` might or might not do what you expect.
+It is still useful to read some properties.  An example of this is `SYZ_P_POSITION` on `BufferGenerator`.  Even though Synthizer is returning values that are slightly out of date,
+it's still good enough for UI purposes.  Additionally, even if Synthizer always returned the most recent value, audio latency introduces uncertainty as well.  For properties that Synthizer updates, additional effort is made
+to keep the latency low enough for practical use, though there is always at least some.
 
 The actual links between properties and objects are specified in this manual.

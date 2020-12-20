@@ -8,8 +8,6 @@ We support Python 3.  Python wheels for Windows X64 are published to Pypi, so to
 pip install synthizer
 ```
 
-Note that this won't currently work on 32-bit Python; this will be fixed.
-
 ## Some Basics
 
 Synthizer requires initialization and deinitialization. The best way to initialize Synthizer is to use the context manager:
@@ -53,13 +51,15 @@ As elaborated in the concepts section, the Synthizer audio graph is as follows:
 Generators are an abstract concept, which represents somewhere audio comes from. Specific kinds of generators implement the abstract interface in a concrete fashion,
 notably `BufferGenerator` (takes a buffer) and `StreamingGenerator` (takes streaming parameters).
 
-Synthizer always gets audio from a stream.  Streams are specified as pre-parsed URL-like components:
+The easiest way to get audio into Synthizer is via streams.  Streams are specified as pre-parsed URL-like components:
 
 - A protocol, `file` for example, which specifies where the audio comes from.
 - A path, which specifies where the audio is (i.e. path on disk, etc).
 - Options, of the form `key=value&key=value&...`.  At the moment, unused by anything, so just use `""`.
 
-To play back a stream, you have two choices: you can use a `StreamingGenerator`, which takes these parameters directly and will decode in realtime, or you can use a `BufferGenerator`, which takes a pre-decoded buffer.
+To play back a stream, you have two choices: you can use a `StreamingGenerator`, which takes these parameters directly and will decode in realtime, or you can use a `BufferGenerator`, which takes a pre-decoded buffer that you made previously from a strem specification.
+You use `StreamingGenerator` for things like music and `BufferGenerator` for things like short sounds. Note that
+`StreamingGenerator` is expensive and relatively high latency.
 
 Buffers are in-memory decoded assets, essentially arrays of 16-bit samples resampled to Synthizer's samplerate. Note that they aren't actually contiguous arrays and are also immutable.
 
@@ -99,26 +99,29 @@ Synthizer offers the following kinds of properties:
 - Double6, a tuple of 6 doubles. Usually used as an orientation (given a dedicated section below).
 - Object, i.e. `buffer_generator.buffer = b`.
 
-Property writing is very fast.  Property reading is incredibly slow and won't be improved.  Code like the following is a terrible idea:
-
-```python
-myobj.property += 5
-```
-
-The above hides a number of C API details elaborated on elsewhere in this document.  In addition to being slow, future changes to the library may cause it to not do what you expect.  In general, try to derive Synthizer properties from values you already have.  As a concrete example of what Synthizer reserves the right to break, code like the following may stop working in future:
+It is important to note that Synthizer properties are eventually consistent.  What this means is that code like the following doesn't do what you expect:
 
 ```python
 myobj.property = 0
 myobj.property += 5
 myobj.property += 5
-# May fail in future
+# May or may not fail, depending on timing.
 assert myobj.property == 10
+
+myobj.property = 15
+x = myobj.property
+# may or may not fail depending on timing.
+assert x == 15
 ```
 
-Most object properties are internally referenced in a weak fashion. That is to say that destroying (`.destroy()`)the object the property is set to will clear the property. In the occasional instance that this isn't the case,
-destroying the object externally will destroy your references to it, but Synthizer will keep using the value until another is set. If that happens, the property returns None.  As of this writing, no strong object properties exist.
+Property reads are primarily useful for properties like position on various generators, where Synthizer is updating the property itself.
+In general, it's best to use properties to tell Synthizer what to do, but keep the model of what's supposed to be going on in your code.
+A common mistake is to try to use Synthizer to store data, for example putting the position of your objects in a source rather than maintaing the coordinates yourself.
 
-Synthizer translates `SYZ_P_MY_PROPERTY` to `obj.my_property`. The translations of the tables in the object reference are nearly mechanical.
+Object properties are internally referenced in a weak fashion. That is to say that destroying (`.destroy()`)the object the property is set to will clear the property. 
+
+In the Python bindings, Synthizer translates `SYZ_P_MY_PROPERTY` to `obj.my_property`. The translations of the tables in the object reference are nearly mechanical, and this simple
+transformation always tells you where the property lives in Python.
 
 ## An aside: orientation formulas
 

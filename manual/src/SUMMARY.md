@@ -1,7 +1,6 @@
 # Summary
 
 - [Introduction](./introduction.md)
-- [Release Notes](./release_notes.md)
 
 # Tutorials
 
@@ -36,3 +35,7 @@
 - [GlobalEffect](./object_reference/global_effect.md)
 - [Echo](./object_reference/echo.md)
 - [FdnReverb](./object_reference/fdn_reverb.md)
+
+# Release notes
+
+- [0.0 to 0.7.x](./releases/pre-0.8.md)
