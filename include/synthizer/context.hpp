@@ -3,7 +3,6 @@
 #include "synthizer/base_object.hpp"
 #include "synthizer/commands.hpp"
 #include "synthizer/config.hpp"
-#include "synthizer/invokable.hpp"
 #include "synthizer/panner_bank.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/mpsc_ring.hpp"
@@ -59,10 +58,7 @@ void deletionCallback(void *p) {
  * 
  * Users of synthizer will typically make one context per audio device they wish to use.
  * 
- * Unless otherwise noted, the functions of this class should only be called from the context-managed thread. External callers can submit invokables to run code on that thread, but 
- * since this is audio generation, the context needs full control over the priority of commands.
- * 
- * Later, if necessary, we'll extend synthizer to use atomics for some properties.
+ * Unless otherwise noted, the functions of this class should only be called from the context-managed thread.
  * */
 class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	public:
@@ -90,11 +86,6 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	 * */
 	void shutdown();
 	void cDelete() override;
-
-	/*
-	 * Submit an invokable which will be invoked on the context thread.
-	 * */
-	void enqueueInvokable(Invokable *invokable);
 
 	/**
 	 * Call a callable in the audio thread. Doesn't wait for completion. Returns false
@@ -214,7 +205,6 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	 * */
 	void runCommands();
 
-	moodycamel::ConcurrentQueue<Invokable *> pending_invokables;
 	std::atomic<int> running;
 	std::atomic<int> in_audio_callback = 0;
 	std::shared_ptr<AudioOutput> audio_output;

@@ -9,7 +9,6 @@
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/effects/global_effect.hpp"
-#include "synthizer/invokable.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/sources.hpp"
 #include "synthizer/spatialization_math.hpp"
@@ -78,10 +77,6 @@ void Context::cDelete() {
 	if (this->running.load()) this->shutdown();
 }
 
-void Context::enqueueInvokable(Invokable *invokable) {
-	pending_invokables.enqueue(invokable);
-}
-
 template<typename T>
 void Context::propertySetter(const std::shared_ptr<BaseObject> &obj, int property, T &value) {
 	obj->validateProperty(property, value);
@@ -136,22 +131,10 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 		this->in_audio_callback.store(0);
 	});
 
-	/*
-	 * no exception should ever be thrown, but if that proves not to be the case we want to know about it.
-	 * */
+/* No exception should happen without programmer error, but if it does we want to fail loudly. */
 	try {
 		this->runCommands();
 
-		Invokable *inv;
-		while (pending_invokables.try_dequeue(inv)) {
-			this->runCommands();
-			inv->invoke();
-		}
-
-		/*
-			* This needs to be moved to a dedicated thread. eventually, but this will do for now.
-			* Unfortunately doing better is going to require migrating off shared_ptr, though it's not clear yet as to what it will be replaced with.
-			* */
 		DeletionRecord rec;
 		while (pending_deletes.try_dequeue(rec)) {
 			rec.callback(rec.arg);
