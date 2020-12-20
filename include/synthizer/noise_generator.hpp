@@ -56,8 +56,10 @@ class NoiseGenerator {
 	 * Mask to turn the counter into something safe for __builtin_ctz. By oring with the counter,
 	 * we make sure the high bits are always set, that ctz never gets 0, and that ctz never returns something
 	 * higher than the maximum array index.
+	 * 
+	 * -2 because this accounts for the always-run generator.
 	 * */
-	static const unsigned int VM_MASK = ~((1 << (VM_GENERATOR_COUNT - 1)) - 1);
+	static const unsigned int VM_MASK = ~((1 << (VM_GENERATOR_COUNT - 2)) - 1);
 	unsigned int vm_counter = 0;
 	void initVM();
 	float generateSampleVM();
