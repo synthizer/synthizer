@@ -87,6 +87,11 @@ class LatchProperty {
 using Double3Property = LatchProperty<std::array<double, 3>>;
 using Double6Property = LatchProperty<std::array<double, 6>>;
 
+/*
+ * This is threadsafe, and we have kept that functionality even though we don't expose it publicly.
+ * If uncontended, this is about 3 atomic operations for a read, and it's useful to be threadsafe because all the other properties are, but using it
+ * from multiple threads can trivially cause priority inversion issues.
+ * */
 template<typename T>
 class ObjectProperty {
 	public:
