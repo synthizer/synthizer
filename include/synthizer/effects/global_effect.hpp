@@ -2,6 +2,7 @@
 
 #include "synthizer/context.hpp"
 #include "synthizer/effects/base_effect.hpp"
+#include "synthizer/property_internals.hpp"
 #include "synthizer/routable.hpp"
 #include "synthizer/types.hpp"
 
@@ -24,16 +25,8 @@ class GlobalEffect: public BaseEffect, public RouteInput {
 		RouteInput(ctx, &this->input_buffer[0], channels) {}
 #pragma clang diagnostic pop
 
- double getGain() {
-	 return this->gain;
- }
-
-	void setGain(double g) {
-		this->gain = g;
-	}
-
 	void run(unsigned int channels, float *destination) {
-		this->runEffect(this->time_in_blocks, this->channels, &this->input_buffer[0], channels, destination, this->gain);
+		this->runEffect(this->time_in_blocks, this->channels, &this->input_buffer[0], channels, destination, (float)this->getGain());
 		/*
 		 * Reset this for the next time. This needs to live here since routers don't know about effects if
 		 * there's no routing to them.
@@ -42,12 +35,14 @@ class GlobalEffect: public BaseEffect, public RouteInput {
 		this->time_in_blocks++;
 	}
 
-	#include "synthizer/property_methods.hpp"
+	#define PROPERTY_CLASS GlobalEffect
+	#define PROPERTY_BASE BaseObject
+	#define PROPERTY_LIST EFFECT_PROPERTIES
+	#include "synthizer/property_impl_new.hpp"
 	private:
 	alignas(config::ALIGNMENT) std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> input_buffer = { 0.0f };
 	unsigned int channels = 0;
 	unsigned int time_in_blocks = 0;
-	float gain = 1.0f;
 };
 
 }
