@@ -89,7 +89,7 @@ template<typename CB>
 void MpscRing<T, capacity>::processAll(CB&& callback) {
  while(1) {
 	 auto r = this->reader_index.load(std::memory_order_relaxed);
-	 auto &cell = this->ring[r];
+	 auto &cell = this->ring[r % capacity];
 	 auto state = cell.state.load(std::memory_order_acquire);
 	 if (state != MPSC_RING_E_READY) {
 		 return;
