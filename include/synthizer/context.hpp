@@ -139,20 +139,15 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 
 
 	/*
-	 * Helpers for the C API. to get/set properties in the context's thread.
-	 * These create and manage the invokables and can be called directly.
+	 * Helpers for the C API. to set properties in the context's thread.
+	 * These handle the inter-thread synchronization and can be called directly.
 	 * 
 	 * Eventually this will be extended to handle batched/deferred things as well.
 	 * */
-	int getIntProperty(std::shared_ptr<BaseObject> &obj, int property);
 	void setIntProperty(std::shared_ptr<BaseObject> &obj, int property, int value);
-	double getDoubleProperty(std::shared_ptr<BaseObject> &obj, int property);
 	void setDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, double value);
-	std::shared_ptr<CExposable> getObjectProperty(std::shared_ptr<BaseObject> &obj, int property);
 	void setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<CExposable> &object);
-	std::array<double, 3> getDouble3Property(std::shared_ptr<BaseObject> &obj, int property);
 	void setDouble3Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 3> value);
-	std::array<double, 6>  getDouble6Property(std::shared_ptr<BaseObject> &obj, int property);
 	void setDouble6Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 6> value);
 
 	/*

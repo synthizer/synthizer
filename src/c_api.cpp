@@ -79,11 +79,21 @@ SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle) {
 	SYZ_EPILOGUE
 }
 
+
+template<typename T>
+static T propertyGetter(std::shared_ptr<BaseObject> &obj, int property) {
+	auto var = obj->getProperty(property);
+	auto val = std::get_if<T>(&var);
+	if (val == nullptr) {
+		throw EPropertyType();
+	}
+	return *val;
+}
+
 SYZ_CAPI syz_ErrorCode syz_getI(int *out, syz_Handle target, int property) {
 	SYZ_PROLOGUE
 	auto o = fromC<BaseObject>(target);
-	auto ctx = o->getContextRaw();
-	*out = ctx->getIntProperty(o, property);
+	*out = propertyGetter<int>(o, property);
 	return 0;
 	SYZ_EPILOGUE
 }
@@ -100,8 +110,7 @@ SYZ_CAPI syz_ErrorCode syz_setI(syz_Handle target, int property, int value) {
 SYZ_CAPI syz_ErrorCode syz_getD(double *out, syz_Handle target, int property) {
 	SYZ_PROLOGUE
 	auto o = fromC<BaseObject>(target);
-	auto ctx = o->getContextRaw();
-	*out = ctx->getDoubleProperty(o, property);
+	*out = propertyGetter<double>(o, property);
 	return 0;
 	SYZ_EPILOGUE
 }
@@ -131,8 +140,7 @@ SYZ_CAPI syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle valu
 SYZ_CAPI syz_ErrorCode syz_getD3(double *x, double *y, double *z, syz_Handle target, int property) {
 	SYZ_PROLOGUE
 	auto o = fromC<BaseObject>(target);
-	auto ctx = o->getContextRaw();
-	auto val = ctx->getDouble3Property(o, property);
+	auto val = propertyGetter<std::array<double, 3>>(o, property);
 	*x = val[0];
 	*y = val[1];
 	*z = val[2];
@@ -152,8 +160,7 @@ SYZ_CAPI syz_ErrorCode syz_setD3(syz_Handle target, int property, double x, doub
 SYZ_CAPI syz_ErrorCode syz_getD6(double *x1, double *y1, double *z1, double *x2, double *y2, double *z2, syz_Handle target, int property) {
 	SYZ_PROLOGUE
 	auto o = fromC<BaseObject>(target);
-	auto ctx = o->getContextRaw();
-	auto val = ctx->getDouble6Property(o, property);
+	auto val = propertyGetter<std::array<double, 6>>(o, property);
 	*x1 = val[0];
 	*y1 = val[1];
 	*z1 = val[2];

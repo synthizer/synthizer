@@ -84,16 +84,13 @@ void Context::enqueueInvokable(Invokable *invokable) {
 }
 
 template<typename T>
-static T propertyGetter(Context *ctx, std::shared_ptr<BaseObject> &obj, int property, bool headless) {
-	auto cb = [&] () {
-		return std::get<T>(obj->getProperty(property));
-	};
-	if (headless) {
-		return cb();
+static T propertyGetter(std::shared_ptr<BaseObject> &obj, int property, bool headless) {
+	auto var = obj->getProperty(property));
+	auto val = std::get_if<T>(var);
+	if (val == nullptr) {
+		throw EPropertyType();
 	}
-	auto inv = WaitableInvokable(std::move(cb));
-	ctx->enqueueInvokable(&inv);
-	return inv.wait();
+	return *val;
 }
 
 template<typename T>
@@ -118,40 +115,20 @@ void Context::propertySetter(const std::shared_ptr<BaseObject> &obj, int propert
 	inv.wait();
 }
 
-int Context::getIntProperty(std::shared_ptr<BaseObject> &obj, int property) {
-	return propertyGetter<int>(this, obj, property, this->headless);
-}
-
 void Context::setIntProperty(std::shared_ptr<BaseObject> &obj, int property, int value) {
 	this->propertySetter<int>(obj, property, value);
-}
-
-double Context::getDoubleProperty(std::shared_ptr<BaseObject> &obj, int property) {
-	return propertyGetter<double>(this, obj, property, this->headless);
 }
 
 void Context::setDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, double value) {
 	this->propertySetter<double>(obj, property, value);
 }
 
-std::shared_ptr<CExposable> Context::getObjectProperty(std::shared_ptr<BaseObject> &obj, int property) {
-	return propertyGetter<std::shared_ptr<CExposable>>(this, obj, property, this->headless);
-}
-
 void Context::setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<CExposable> &value) {
 	this->propertySetter<std::shared_ptr<CExposable>>(obj, property, value);
 }
 
-std::array<double, 3> Context::getDouble3Property(std::shared_ptr<BaseObject> &obj, int property) {
-	return propertyGetter<std::array<double, 3>>(this, obj, property, this->headless);
-}
-
 void Context::setDouble3Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 3> value) {
 	this->propertySetter<std::array<double, 3>>(obj, property, value);
-}
-
-std::array<double, 6>  Context::getDouble6Property(std::shared_ptr<BaseObject> &obj, int property) {
-	return propertyGetter<std::array<double, 6>>(this, obj, property, this->headless);
 }
 
 void Context::setDouble6Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 6> value) {
