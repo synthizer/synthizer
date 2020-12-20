@@ -29,7 +29,7 @@ void PannedSource::run() {
 	double azimuth, elevation, panning_scalar;
 
 	bool invalid_lane = this->acquirePannerStrategy(panner_strategy);
-	bool angles_changed = this->acquireAzimuth(azimuth) || this->acquireElevation(elevation);
+	bool angles_changed = this->acquireAzimuth(azimuth) | this->acquireElevation(elevation);
 	bool scalar_changed = this->acquirePanningScalar(panning_scalar);
 
 	if (invalid_lane) {
