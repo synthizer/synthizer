@@ -9,7 +9,6 @@ SYZ_CAPI syz_ErrorCode syz_getI(int *out, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setI(syz_Handle target, int property, int value);
 SYZ_CAPI syz_ErrorCode syz_getD(double *out, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setD(syz_Handle target, int property, double value);
-SYZ_CAPI syz_ErrorCode syz_getO(syz_Handle *out, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle value);
 SYZ_CAPI syz_ErrorCode syz_getD3(double *x, double *y, double *z, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setD3(syz_Handle target, int property, double x, double y, double z);

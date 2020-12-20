@@ -99,7 +99,6 @@ SYZ_CAPI syz_ErrorCode syz_setI(syz_Handle target, int property, int value);
 SYZ_CAPI syz_ErrorCode syz_getD(double *out, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setD(syz_Handle target, int property, double value);
 /* Object properties. */
-SYZ_CAPI syz_ErrorCode syz_getO(syz_Handle *out, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle value);
 /*
  * double3 and double6 are used for positions and orientations respectively.
