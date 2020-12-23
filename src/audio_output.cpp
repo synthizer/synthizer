@@ -67,7 +67,7 @@ AudioOutputDevice::AudioOutputDevice() {
 	config.sampleRate = 0;
 	config.dataCallback = miniaudioDataCallback;
 	config.pUserData = (void*) this;
-	config.performanceProfile = ma_performance_profile_conservative;
+	config.performanceProfile = ma_performance_profile_low_latency;
 
 	if (ma_device_init(NULL, &config, &this->device) != MA_SUCCESS)
 		throw EAudioDevice("Unable to initialize miniaudio.");
