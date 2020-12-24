@@ -70,6 +70,10 @@ void Context::shutdown() {
 		this->delete_directly.store(1);
 	}
 	this->drainDeletionQueues();
+	/* We're shut down, just deinitialize all of them to kill strong references. */
+	this->command_queue.processAll([] (auto &cmd) {
+		cmd.deinitialize();
+	});
 }
 
 void Context::cDelete() {
