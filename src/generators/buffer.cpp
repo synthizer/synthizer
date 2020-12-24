@@ -27,6 +27,7 @@ void BufferGenerator::generateBlock(float *output) {
 	std::shared_ptr<Buffer> buffer;
 	bool buffer_changed = this->acquireBuffer(buffer_weak);
 	double pitch_bend = this->getPitchBend();
+	double new_pos;
 
 	buffer = buffer_weak.lock();
 
@@ -37,11 +38,17 @@ void BufferGenerator::generateBlock(float *output) {
 		this->configureBufferReader(buffer);
 	}
 
-	if (std::fabs(1.0 - pitch_bend) > 0.001) {
-		return this->generatePitchBend(output, pitch_bend);
-	} else {
-		return this->generateNoPitchBend(output);
+	if (this->acquirePosition(new_pos)) {
+		this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLength());
 	}
+
+	if (std::fabs(1.0 - pitch_bend) > 0.001) {
+		this->generatePitchBend(output, pitch_bend);
+	} else {
+		this->generateNoPitchBend(output);
+	}
+
+	this->setPosition(this->position_in_samples / config::SR, false);
 }
 
 template<bool L>
@@ -62,7 +69,7 @@ void BufferGenerator::readInterpolated(double pos, float *out) {
 
 template<bool L>
 void BufferGenerator::generatePitchBendHelper(float *output, double pitch_bend) {
-	double pos = this->getPosition();
+	double pos = this->position_in_samples;
 	double delta = pitch_bend;
 	for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 		this->readInterpolated<L>(pos, &output[i*this->reader.getChannels()]);
@@ -70,7 +77,7 @@ void BufferGenerator::generatePitchBendHelper(float *output, double pitch_bend) 
 		if (L == true) pos = std::fmod(pos, this->reader.getLength());
 		if (L == false && pos > this->reader.getLength()) break;
 	}
-	this->setPosition(std::min<double>(pos, this->reader.getLength()));
+	this->position_in_samples = std::min<double>(pos, this->reader.getLength());
 }
 
 void BufferGenerator::generatePitchBend(float *output, double pitch_bend) {
@@ -83,7 +90,7 @@ void BufferGenerator::generatePitchBend(float *output, double pitch_bend) {
 
 void BufferGenerator::generateNoPitchBend(float *output) {
 	alignas(config::ALIGNMENT) thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> workspace = { 0.0f };
-	std::size_t pos = std::round(this->getPosition());
+	std::size_t pos = std::round(this->position_in_samples);
 	float *cursor = output;
 	unsigned int remaining = config::BLOCK_SIZE;
 	bool looping = this->getLooping() != 0;
@@ -101,7 +108,7 @@ void BufferGenerator::generateNoPitchBend(float *output) {
 			else pos = 0;
 		}
 	}
-	this->setPosition(pos);
+	this->position_in_samples = pos;
 }
 
 void BufferGenerator::configureBufferReader(const std::shared_ptr<Buffer> &b) {

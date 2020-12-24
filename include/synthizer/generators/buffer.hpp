@@ -32,6 +32,7 @@ class BufferGenerator: public Generator {
 	void configureBufferReader(const std::shared_ptr<Buffer> &b);
 
 	BufferReader reader;
+	double position_in_samples = 0.0;
 };
 
 }
