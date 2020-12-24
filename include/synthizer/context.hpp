@@ -92,21 +92,35 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	 * if there was no room in the queue.
 	 * */
 	template<typename CB, typename ...ARGS>
-	bool enqueueCallableCommandNonblocking(CB &&callback, ARGS&& ...args) {
+	bool enqueueCallbackCommandNonblocking(CB &&callback, ARGS&& ...args) {
 		return this->command_queue.write([&](auto &cmd) {
-			initCallbackCommand(&cmd, std::forward<CB>(callback), std::forward<ARGS>(args)...);
+			initCallbackCommand(&cmd, callback, args...);
 		});
 	}
 
 	/**
-	 * Like enqueueCallableCommandNonblocking, but spins.
+	 * Like enqueueCallbackCommandNonblocking, but spins.
 	 * 
 	 * In practice, code goes through this one instead, and we rely on knowing that there's a reasonable size for the command queue that will
 	 * reasonably ensure no one ever spins for practical applications.
 	 * */
 	template<typename CB, typename... ARGS>
-	void enqueueCallableCommand(CB &&callback, ARGS&& ...args) {
-		while (this->enqueueCallableCommandNonblocking(callback, args...) == false) {
+	void enqueueCallbackCommand(CB &&callback, ARGS&& ...args) {
+		while (this->enqueueCallbackCommandNonblocking(callback, args...) == false) {
+			std::this_thread::yield();
+		}
+	}
+
+	template<typename CB, typename ...ARGS>
+	bool enqueueReferencingCallbackCommandNonblocking(bool short_circuit, CB &&callback, ARGS&& ...args) {
+		return this->command_queue.write([&](auto &cmd) {
+			initReferencingCallbackCommand(&cmd, short_circuit, callback, args...);
+		});
+	}
+
+	template<typename CB, typename ...ARGS>
+	void enqueueReferencingCallbackCommand(bool short_circuit, CB callback, ARGS ...args) {
+		while (this->enqueueReferencingCallbackCommandNonblocking(short_circuit, callback, args...) == false) {
 			std::this_thread::yield();
 		}
 	}
@@ -121,7 +135,7 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 		});
 
 		/* Do the second phase of initialization. */
-		this->enqueueCallableCommand([] (auto &o) {
+		this->enqueueReferencingCallbackCommand(true, [] (auto &o) {
 			o->initInAudioThread();
 		}, obj);
 		return ret;

@@ -80,7 +80,7 @@ void Context::cDelete() {
 template<typename T>
 void Context::propertySetter(const std::shared_ptr<BaseObject> &obj, int property, T &value) {
 	obj->validateProperty(property, value);
-	this->enqueueCallableCommand(setPropertyCmd, property, obj, property_impl::PropertyValue(value));
+	this->enqueueReferencingCallbackCommand(true, setPropertyCmd, property, obj, property_impl::PropertyValue(value));
 }
 
 void Context::setIntProperty(std::shared_ptr<BaseObject> &obj, int property, int value) {
@@ -105,14 +105,14 @@ void Context::setDouble6Property(std::shared_ptr<BaseObject> &obj, int property,
 
 void Context::registerSource(const std::shared_ptr<Source> &source) {
 	/* We can capture this because, in order to invoke the command, we have to still have the context around. */
-	enqueueCallableCommand([this] (auto &src) {
+	this->enqueueReferencingCallbackCommand(true, [this] (auto &src) {
 		this->sources[src.get()] = src;
 	}, source);
 }
 
 void Context::registerGlobalEffect(const std::shared_ptr<GlobalEffect> &effect) {
 	/* We can capture this because, in order to invoke the command, we have to still have the context around. */
-	this->enqueueCallableCommand([this] (auto &effect) {
+	this->enqueueReferencingCallbackCommand(true, [this] (auto &effect) {
 		this->global_effects.push_back(effect);
 	}, effect);
 }

@@ -50,11 +50,9 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_createGlobalFdnReverb(&effect, context));
 	CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
 	std::this_thread::sleep_for(std::chrono::seconds(2));
-	CHECKED(syz_handleFree(buffer));
 	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 0));
 	while (true) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-		continue;
 		CHECKED(syz_setD(effect, SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH, 0.0));
 		angle += 0.01 * angle_per_second;
 		angle = fmod(angle, 360.0);

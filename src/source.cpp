@@ -99,7 +99,7 @@ SYZ_CAPI syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle gene
 	SYZ_PROLOGUE
 	auto src = fromC<Source>(source);
 	auto gen = fromC<Generator>(generator);
-	src->getContextRaw()->enqueueCallableCommand([] (auto &src, auto &gen) {
+	src->getContextRaw()->enqueueReferencingCallbackCommand(true, [] (auto &src, auto &gen) {
 		src->addGenerator(gen);
 	}, src, gen);
 	return 0;
@@ -110,7 +110,7 @@ SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle g
 	SYZ_PROLOGUE
 	auto src = fromC<Source>(source);
 	auto gen = fromC<Generator>(generator);
-	src->getContextRaw()->enqueueCallableCommand([] (auto &src, auto &gen) {
+	src->getContextRaw()->enqueueReferencingCallbackCommand(true, [] (auto &src, auto &gen) {
 		src->removeGenerator(gen);
 	}, src, gen);
 	return 0;
