@@ -29,7 +29,6 @@ int main(int argc, char *argv[]) {
 	syz_Handle context = 0, generator = 0, source = 0, buffer = 0, effect = 0;
 	int ecode = 0, ending = 0;
 	double angle = 0.0, angle_per_second = 90.0;
-	double pos;
 
 	if (argc != 2) {
 		printf("Usage: wav_test <path>\n");
@@ -63,8 +62,6 @@ int main(int argc, char *argv[]) {
 		double y = cos(rad);
 		double x = sin(rad);
 		CHECKED(syz_setD3(source, SYZ_P_POSITION, x, y, 0.0));
-		CHECKED(syz_getD(&pos, generator, SYZ_P_POSITION));
-		printf("%f\n", pos);
 	}
 
 end:
