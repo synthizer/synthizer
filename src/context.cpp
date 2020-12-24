@@ -176,6 +176,7 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 void Context::runCommands() {
 	this->command_queue.processAll([&](auto &cmd) {
 		try {
+			auto deinit = AtScopeExit([&] () { cmd.deinitialize(); });
 			cmd.execute();
 		} catch(std::exception &e) {
 			logError("Got exception applying property write: %s", e.what());
