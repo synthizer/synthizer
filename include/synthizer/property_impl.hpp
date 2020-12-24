@@ -15,8 +15,12 @@
  * - getProperty: read the property of the specified type. Can be used from any thread.
  *    makes no system calls but may block for object properties.
  *  - setProperty: Must be called from the audio thread. Sets the property.
- *    makes no system calls but may block for object properties.
- *  - verifyProperty: Verifies the property is in range. Makes no system calls.
+ *    makes no system calls but may block for object properties.  Accepts a defaulted
+ *   second parameter to disable change tracking, used from the audio
+ *   thread in order to propagate changes out without creating cycles, e.g. exposing
+ *   buffer position while also allowing it to be written without the audio therad's write
+ *   counting.
+ *  - verifyProperty: Verifies the property is in range. Makes no system calls.  
  *  - acquireProperty(proptype &out): sets out to the value of property, and returns true if it has changed since the last time
  *    this specific property was acquired. May block for object properties.
  * 
