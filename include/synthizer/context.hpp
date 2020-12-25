@@ -93,6 +93,11 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 	 * */
 	template<typename CB, typename ...ARGS>
 	bool enqueueCallbackCommandNonblocking(CB &&callback, ARGS&& ...args) {
+		if (this->headless) {
+			callback(args...);
+			return true;
+		}
+
 		/* If the context isn't running, it's shut down. Currently, contexts can't be restarted, and we don't fully support headless contexts yet. */
 		if (this->running.load(std::memory_order_relaxed) == 0) {
 			return true;
@@ -118,6 +123,11 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 
 	template<typename CB, typename ...ARGS>
 	bool enqueueReferencingCallbackCommandNonblocking(bool short_circuit, CB &&callback, ARGS&& ...args) {
+		if (this->headless) {
+			callback(args...);
+			return true;
+		}
+
 		/* If the context isn't running, it's shut down. Currently, contexts can't be restarted, and we don't fully support headless contexts yet. */
 		if (this->running.load(std::memory_order_relaxed) == 0) {
 			return true;
