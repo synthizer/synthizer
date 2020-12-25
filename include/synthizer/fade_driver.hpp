@@ -52,6 +52,18 @@ class FadeDriver {
 		}
 	}
 
+
+	/**
+	 * Returns true if the block at the specified time is either
+	 * going to have a value > that specified or if said block is crossfading.
+	 * 
+	 * This is useful primarily for things like the effect routing infrastructure and the
+	 * autodelete stuff, which wants to do something special after fadeouts.
+	 * */
+	bool isActiveAtTime(unsigned int time_in_blocks, float threshold = 0.0f) {
+		return this->fader.isFading(time_in_blocks) || this->fader.getValue(time_in_blocks) > threshold ||this->fader.getValue(time_in_blocks + 1) > threshold;
+	}
+
 	private:
 	LinearFader fader;
 	unsigned int fade_time_in_blocks;

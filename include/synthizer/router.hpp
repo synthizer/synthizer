@@ -1,6 +1,7 @@
 #pragma once
 
 #include "synthizer/config.hpp"
+#include "synthizer/fade_driver.hpp"
 #include "synthizer/faders.hpp"
 #include "synthizer/memory.hpp"
 #include "synthizer/types.hpp"
@@ -75,8 +76,7 @@ class Route {
 	public:
 	InputHandle *input = nullptr;
 	OutputHandle *output = nullptr;
-	/* Preconfigure the fader to be at 0.0. */
-	LinearFader fader{ 0, 0.0f, 0, 0.0f};
+	FadeDriver gain_driver{0.0f, 1};
 };
 
 class Router {
