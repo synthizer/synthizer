@@ -24,6 +24,19 @@ SYZ_P_ROLLOFF | double | 1.0 | value >= 0.0 | The default rolloff for new source
 SYZ_P_CLOSENESS_BOOST | double | 0.0 | any finite double | The default closeness boost for new sources in DB.
 SYZ_P_CLOSENESS_BOOST_DISTANCE | double | 0.0 | value >= 0.0 | The default closeness boost distance for new sources
 
+## Functions
+
+### `syz_pause`, `syz_play`
+
+```
+syz_ErrorCode syz_pause(syz_Handle object);
+syz_ErrorCode syz_play(syz_Handle object);
+```
+
+The standard play/pause functions, which do exactly what their name suggests.
+
+When the context is paused, nothing it manages advances and no audio is audible.
+
 ## Remarks
 
 The context is the main entrypoint to Synthizer, responsible for the following:

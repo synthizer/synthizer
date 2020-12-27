@@ -166,7 +166,7 @@ To play a source in 3D space, do the following:
 
 The following is a 3D media player, the audio library equivalent of hello world. It supports the following commands:
 
-- `pause`, `play`P: pause/play the source
+- `pause`, `play`: pause/play the source
 - `seek <seconds>`: self-explanatory.
 - `pos <x> <y> <z>`: move the source. X is right, y is forward, z is up.
 - `loop`: Toggle looping of the generator.
