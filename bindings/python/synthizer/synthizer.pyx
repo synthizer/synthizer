@@ -277,7 +277,7 @@ cdef class StreamingGenerator(Generator):
     position = DoubleProperty(SYZ_P_POSITION)
     looping = IntProperty(SYZ_P_LOOPING, conv_in = int, conv_out = bool)
 
-cdef class Source(_BaseObject):
+cdef class Source(Pausable):
     """Base class for all sources."""
 
     cpdef add_generator(self, generator):

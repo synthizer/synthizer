@@ -7,6 +7,7 @@
 #include "synthizer/fade_driver.hpp"
 #include "synthizer/faders.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/pausable.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/routable.hpp"
 #include "synthizer/spatialization_math.hpp"
@@ -24,7 +25,7 @@ class Context;
 class Generator;
 class PannerLane;
 
-class Source: public RouteOutput {
+class Source: public RouteOutput, public Pausable {
 	public:
 	Source(std::shared_ptr<Context> ctx): RouteOutput(ctx) {
 		this->setGain(1.0);

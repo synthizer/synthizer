@@ -48,11 +48,22 @@ void Source::fillBlock(unsigned int channels) {
 	double gain_prop;
 	auto time = this->context->getBlockTime();
 
-	if (this->acquireGain(gain_prop)) {
+	if (this->acquireGain(gain_prop) || this->shouldIncorporatePausableGain()) {
+		gain_prop *= this->getPausableGain();
 		this->gain_fader.setValue(time, gain_prop);
 	}
 
 	std::fill(&this->block[0], &this->block[0] + channels * config::BLOCK_SIZE, 0.0f);
+
+	/**
+	 * There is room for further optimization here, by communicating that this block is potentially zeros
+	 * to the derived source classes. We'll do that later, when we also have tracking of generator
+	 * silence and other scheduling related functionality that makes it advantageous for the other sources to drop their panners and so on.
+	 * */
+	if (this->isPaused()) {
+		return;
+	}
+	this->tickPausable();
 
 	/* iterate and remove as we go to avoid locking weak_ptr twice. */
 	weak_vector::iterate_removing(this->generators, [&] (auto &g) {
