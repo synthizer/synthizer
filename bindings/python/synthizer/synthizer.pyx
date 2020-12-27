@@ -249,7 +249,7 @@ cdef class Context(Pausable):
     cpdef remove_route(self, _BaseObject output, _BaseObject input, fade_time=0.01):
         _checked(syz_routingRemoveRoute(self.handle, output.handle, input.handle, fade_time))
 
-cdef class Generator(_BaseObject):
+cdef class Generator(Pausable):
     """Base class for all generators."""
 
     pitch_bend = DoubleProperty(SYZ_P_PITCH_BEND)
