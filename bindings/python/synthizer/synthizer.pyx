@@ -220,6 +220,7 @@ cdef class Context(_BaseObject):
         _checked(syz_createContext(&handle))
         super().__init__(handle)
 
+    gain = DoubleProperty(SYZ_P_GAIN)
     position = Double3Property(SYZ_P_POSITION)
     orientation = Double6Property(SYZ_P_ORIENTATION)
     distance_model = enum_property(SYZ_P_DISTANCE_MODEL, lambda x: DistanceModel(x))
@@ -240,7 +241,10 @@ cdef class Context(_BaseObject):
 
 cdef class Generator(_BaseObject):
     """Base class for all generators."""
-    pass
+
+    pitch_bend = DoubleProperty(SYZ_P_PITCH_BEND)
+    gain = DoubleProperty(SYZ_P_GAIN)
+
 
 cdef class StreamingGenerator(Generator):
     def __init__(self, context, protocol, path, options = ""):
@@ -371,7 +375,6 @@ cdef class BufferGenerator(Generator):
     buffer = ObjectProperty(SYZ_P_BUFFER, Buffer)
     position = DoubleProperty(SYZ_P_POSITION)
     looping = IntProperty(SYZ_P_LOOPING, conv_in = int, conv_out = bool)
-    pitch_bend = DoubleProperty(SYZ_P_PITCH_BEND)
 
 
 cpdef enum NoiseType:

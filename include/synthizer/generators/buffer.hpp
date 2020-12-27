@@ -9,12 +9,14 @@
 
 namespace synthizer {
 
+class FadeDriver;
+
 class BufferGenerator: public Generator {
 	public:
 	BufferGenerator(std::shared_ptr<Context> ctx): Generator(ctx) {}
 
 	unsigned int getChannels() override;
-	void generateBlock(float *output) override;
+	void generateBlock(float *output, FadeDriver *gain_driver) override;
 
 	#define PROPERTY_CLASS BufferGenerator
 	#define PROPERTY_BASE Generator
@@ -23,12 +25,12 @@ class BufferGenerator: public Generator {
 
 	private:
 	template<bool L>
-	void readInterpolated(double pos, float *out);
+	void readInterpolated(double pos, float *out, float gain);
 	/* Adds to destination, per the generators API. */
-	void generateNoPitchBend(float *out);
+	void generateNoPitchBend(float *out, FadeDriver *gain_driver);
 	template<bool L>
-	void generatePitchBendHelper(float *out, double pitch_bend);
-	void generatePitchBend(float *out, double pitch_bend);
+	void generatePitchBendHelper(float *out, FadeDriver *gain_driver, double pitch_bend);
+	void generatePitchBend(float *out, FadeDriver *gain_driver, double pitch_bend);
 	void configureBufferReader(const std::shared_ptr<Buffer> &b);
 
 	BufferReader reader;

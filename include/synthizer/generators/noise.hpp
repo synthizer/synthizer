@@ -12,6 +12,8 @@
 
 namespace synthizer {
 
+class FadeDriver;
+
 /*
  * The odd naming is so that NoiseGenerator can be the implementation, so we can reuse it for
  * i.e. reverb.
@@ -28,7 +30,7 @@ class ExposedNoiseGenerator: public Generator {
 		return this->channels;
 	}
 
-	void generateBlock(float *out) override;
+	void generateBlock(float *out, FadeDriver *gain_driver) override;
 
 	#define PROPERTY_CLASS ExposedNoiseGenerator
 	#define PROPERTY_LIST NOISE_GENERATOR_PROPERTIES

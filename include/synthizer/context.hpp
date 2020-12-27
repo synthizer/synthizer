@@ -3,6 +3,7 @@
 #include "synthizer/base_object.hpp"
 #include "synthizer/commands.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/fade_driver.hpp"
 #include "synthizer/panner_bank.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/mpsc_ring.hpp"
@@ -294,6 +295,8 @@ class Context: public BaseObject, public std::enable_shared_from_this<Context> {
 
 	/* Effects support. */
 	router::Router router{};
+
+	FadeDriver gain_driver{1.0f, 1};
 };
 
 }

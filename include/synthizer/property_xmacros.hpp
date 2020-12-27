@@ -33,6 +33,7 @@ DOUBLE_P(SYZ_P_CLOSENESS_BOOST, closeness_boost, ClosenessBoost, P_DOUBLE_MIN, P
 DOUBLE_P(SYZ_P_CLOSENESS_BOOST_DISTANCE, closeness_boost_distance, ClosenessBoostDistance, 0.0, P_DOUBLE_MAX, 0.0)
 
 #define CONTEXT_PROPERTIES \
+DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0) \
 DOUBLE3_P(SYZ_P_POSITION, position, Position, 0.0, 0.0, 0.0) \
 DOUBLE6_P(SYZ_P_ORIENTATION, orientation, Orientation, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0) \
 STANDARD_DISTANCE_MODEL_PROPERTIES
@@ -52,7 +53,8 @@ DOUBLE6_P(SYZ_P_ORIENTATION, orientation, Orientation, 0.0, 1.0, 0.0, 0.0, 0.0, 
 STANDARD_DISTANCE_MODEL_PROPERTIES
 
 #define GENERATOR_PROPERTIES \
-DOUBLE_P(SYZ_P_PITCH_BEND, pitch_bend, PitchBend, 0.0, P_DOUBLE_MAX, 1.0)
+DOUBLE_P(SYZ_P_PITCH_BEND, pitch_bend, PitchBend, 0.0, P_DOUBLE_MAX, 1.0) \
+DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0)
 
 #define BUFFER_GENERATOR_PROPERTIES \
 OBJECT_P(SYZ_P_BUFFER, buffer, Buffer, Buffer) \

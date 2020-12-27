@@ -63,10 +63,10 @@ void Source::fillBlock(unsigned int channels) {
 		}
 
 		if (nch == channels) {
-			g->generateBlock(&this->block[0]);
+			g->run(&this->block[0]);
 		} else {
 			std::fill(premix, premix + config::BLOCK_SIZE * nch, 0.0f);
-			g->generateBlock(premix);
+			g->run(premix);
 			mixChannels(config::BLOCK_SIZE, premix, nch, &this->block[0], channels);
 		}
 	});

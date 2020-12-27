@@ -7,6 +7,7 @@
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/decoding.hpp"
+#include "synthizer/fade_driver.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
 
@@ -44,7 +45,7 @@ unsigned int StreamingGenerator::getChannels() {
 	return channels;
 }
 
-void StreamingGenerator::generateBlock(float *output) {
+void StreamingGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
 	thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> tmp_buf;
 	float *tmp_buf_ptr = &tmp_buf[0];
 
@@ -55,9 +56,14 @@ void StreamingGenerator::generateBlock(float *output) {
 	}
 
 	auto got = this->background_thread.read(config::BLOCK_SIZE, tmp_buf_ptr);
-	for (unsigned int i = 0; i < got * this->channels; i++) {
-		output[i] += tmp_buf_ptr[i];
-	}
+	gain_driver->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
+		for (unsigned int i = 0; i < got; i++) {
+			float g = gain_cb(i);
+			for (unsigned int ch = 0; ch < this->channels; ch++) {
+				output[i* this->channels + ch] += g * tmp_buf_ptr[i * this->channels + ch];
+			}
+		}
+	});
 
 	/* important to set this without tracking changes. Tracking changes will infinite loop. */
 	this->setPosition(this->background_position.load(std::memory_order_relaxed), false);

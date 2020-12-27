@@ -171,6 +171,22 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 			destination[i] += this->direct_buffer[i];
 		}
 
+	/* Handle gain. Note that destination was zeroed and only contains audio from this invocation. */
+		double new_gain;
+		if (this->acquireGain(new_gain)) {
+			this->gain_driver.setValue(this->block_time, new_gain);
+		}
+
+		this->gain_driver.drive(this->block_time, [&](auto &gain_cb) {
+			for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
+				float g = gain_cb(i);
+				for (unsigned int ch = 0; ch < channels; ch++) {
+					unsigned int ind = i * channels + ch;
+					destination[ind] *= g;
+				}
+			}
+		});
+
 		this->block_time++;
 	} catch(...) {
 		logError("Got an exception in the audio callback");

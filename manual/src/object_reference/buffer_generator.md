@@ -19,7 +19,6 @@ Enum | Type | Default Value | Range | Description
 SYZ_P_BUFFER | Object | 0 | Any Buffer handle | The buffer to play
 SYZ_P_POSITION | double | 0.0 | value >= 0.0 | The position in the buffer.
 SYZ_P_LOOPING | int | 0 | 0 or 1 | Whether playback loops at the end of the buffer.
-SYZ_P_PITCH_BEND | double | 1.0 | value >= 0.0 | Multiplier on the rate of the buffer's playback.
 
 ## Remarks
 

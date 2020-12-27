@@ -14,6 +14,7 @@ Creates a context configured to play through the default output device.
 
 Enum | Type | Default | Range | Description
 --- | --- | --- | --- | ---
+SYZ_P_GAIN | double | 1.0 | value >= 0.0 | The gain of the context
 SYZ_P_POSITION | double3 | (0, 0, 0) | any | The position of the listener.
 SYZ_P_ORIENTATION | double6 | (0, 1, 0, 0, 0, 1) | Two packed unit vectors | The orientation of the listener as `(atx, aty, atz, upx, upy, upz)`.
 SYZ_P_DISTANCE_MODEL | int | SYZ_DISTANCE_MODEL_LINEAR | any SYZ_DISTANCE_MODEL | The default distance model for new sources.

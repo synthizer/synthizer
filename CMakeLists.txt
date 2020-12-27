@@ -55,6 +55,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/effects/effects.cpp
 	src/effects/fdn_reverb.cpp
 	src/error.cpp
+	src/generator.cpp
 	src/hrtf.cpp
 	src/logging.cpp
 	src/memory.cpp
@@ -80,6 +81,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 
 	src/filters/audio_eq_cookbook.cpp
 	src/filters/simple_filters.cpp
+
 
 	src/generators/buffer.cpp
 	src/generators/noise.cpp
