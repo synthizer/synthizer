@@ -166,7 +166,7 @@ To play a source in 3D space, do the following:
 
 The following is a 3D media player, the audio library equivalent of hello world. It supports the following commands:
 
-- `pause`, `play`: pause/play the source. Note that these are currently implemented via generator add/remove, but a better way is coming.
+- `pause`, `play`P: pause/play the source
 - `seek <seconds>`: self-explanatory.
 - `pos <x> <y> <z>`: move the source. X is right, y is forward, z is up.
 - `loop`: Toggle looping of the generator.
@@ -211,7 +211,6 @@ with synthizer.initialized():
     source = synthizer.Source3D(ctx)
     # It'll play the BufferGenerator.
     source.add_generator(generator)
-    playing = True
     # Keep track of looping, since property reads are expensive:
     looping = False
 
@@ -222,14 +221,9 @@ with synthizer.initialized():
         if len(cmd) == 0:
             continue
         if cmd[0] == "pause":
-            # We don't have proper pausing yet, but can simulate it
-            if playing:
-                source.remove_generator(generator)
-                playing = False
+            source.pause()
         elif cmd[0] == "play":
-            if not playing:
-                source.add_generator(generator)
-                playing = True
+            source.play()
         elif cmd[0] == "pos":
             if len(cmd) < 4:
                 print("Syntax: pos x y z")
@@ -269,9 +263,8 @@ with synthizer.initialized():
                 print("Unable to parse value.")
                 continue
             # Convert to scalar gain from db.
-            gain = 10**(value/20)
+            gain = 10 ** (value / 20)
             source.gain = gain
         else:
             print("Unrecognized command")
-
 ```

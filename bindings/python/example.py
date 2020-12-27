@@ -41,7 +41,7 @@ with synthizer.initialized():
         if cmd[0] == "pause":
             source.pause()
         elif cmd[0] == "play":
-                    source.play()
+            source.play()
         elif cmd[0] == "pos":
             if len(cmd) < 4:
                 print("Syntax: pos x y z")
@@ -81,7 +81,7 @@ with synthizer.initialized():
                 print("Unable to parse value.")
                 continue
             # Convert to scalar gain from db.
-            gain = 10**(value/20)
+            gain = 10 ** (value / 20)
             source.gain = gain
         else:
             print("Unrecognized command")
