@@ -12,6 +12,9 @@ namespace synthizer {
  * at the end of every audio block to drive the state machine.
  * 
  * See documentation on the member methods for more details as to what's going on.
+ * 
+ * because of the base classes for routers, which currently need to be inserted into the hierarchy between
+ * baseObject and the object in question, Pausable is used as a mixin.
  * */
 
 class Context;
@@ -33,9 +36,9 @@ enum class PauseState {
 	Unpausing,
 };
 
-class Pausable: public BaseObject {
+class Pausable {
 	public:
-	Pausable(const std::shared_ptr<Context> &ctx): BaseObject(ctx) {}
+	virtual ~Pausable() {}
 
 	/**
 	 * Update the state machine. Should be called at the end of every audio tick, after any use of

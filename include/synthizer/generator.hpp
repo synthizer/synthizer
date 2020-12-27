@@ -22,9 +22,9 @@ class Context;
  * - They output a block of samples, of up to config::MAX_CHANNELS channels (truncating if more).
  * - They adopt to pitch bends in a generator-defined fashion to participate in doppler for moving sources, and/or if asked by the user.
  * */
-class Generator: public Pausable {
+class Generator: public Pausable, public BaseObject {
 	public:
-	Generator(const std::shared_ptr<Context> &ctx): Pausable(ctx) {}
+	Generator(const std::shared_ptr<Context> &ctx): BaseObject(ctx) {}
 
 	/* Return the number of channels this generator wants to output on the next block. */
 	virtual unsigned int getChannels() = 0;

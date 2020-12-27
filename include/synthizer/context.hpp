@@ -62,7 +62,7 @@ void deletionCallback(void *p) {
  * 
  * Unless otherwise noted, the functions of this class should only be called from the context-managed thread.
  * */
-class Context: public Pausable, public std::enable_shared_from_this<Context> {
+class Context: public Pausable, public BaseObject, public std::enable_shared_from_this<Context> {
 	public:
 
 	Context();

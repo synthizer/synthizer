@@ -24,7 +24,7 @@
 
 namespace synthizer {
 
-Context::Context(): Pausable(nullptr) { }
+Context::Context(): BaseObject(nullptr) { }
 
 void Context::initContext( bool headless) {
 	std::weak_ptr<Context> ctx_weak = this->shared_from_this();

@@ -52,7 +52,8 @@ using namespace synthizer;
 syz_ErrorCode syz_pause(syz_Handle object) {
 	SYZ_PROLOGUE
 	auto p = fromC<Pausable>(object);
-	p->getContextRaw()->enqueueReferencingCallbackCommand(true, [&](auto &p) {
+	auto b = typeCheckedDynamicCast<BaseObject>(p);
+	b->getContextRaw()->enqueueReferencingCallbackCommand(true, [&](auto &p) {
 		p->pause();
 	}, p);
 	return 0;
@@ -62,7 +63,8 @@ syz_ErrorCode syz_pause(syz_Handle object) {
 syz_ErrorCode syz_play(syz_Handle object) {
 	SYZ_PROLOGUE
 	auto p = fromC<Pausable>(object);
-	p->getContextRaw()->enqueueReferencingCallbackCommand(true, [&] (auto &p) {
+	auto b = typeCheckedDynamicCast<BaseObject>(p);
+	b->getContextRaw()->enqueueReferencingCallbackCommand(true, [&] (auto &p) {
 		p->play();
 	}, p);
 	return 0;

@@ -232,6 +232,20 @@ std::shared_ptr<T> fromC(syz_Handle handle) {
 	return ret;
 }
 
+/**
+ * Does a dynamic_pointer_cast, throwing EHandleType instead of returning nullptr.
+ * 
+ * This is used for things like Pausable, where the inheritance hierarchy forces us to use mixins but we still need to sidestep to BaseObject.
+ * */
+template<typename O, typename I>
+std::shared_ptr<O> typeCheckedDynamicCast(const std::shared_ptr<I> &input) {
+	auto out = std::dynamic_pointer_cast<O>(input);
+	if (out == nullptr) {
+		throw EHandleType();
+	}
+	return out;
+}
+
 void clearAllCHandles();
 
 }
