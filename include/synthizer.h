@@ -82,6 +82,12 @@ SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle);
 SYZ_CAPI syz_ErrorCode syz_initialize();
 SYZ_CAPI syz_ErrorCode syz_shutdown();
 
+/**
+ * pause/play objects. Supported by everything that produces audio in some fashion: generators, sources, context, etc.
+ * */
+syz_ErrorCode syz_pause(syz_Handle object);
+syz_ErrorCode syz_play(syz_Handle object);
+
 /*
  * Property getters and setters.
  * 

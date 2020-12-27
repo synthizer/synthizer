@@ -208,7 +208,17 @@ cdef class _BaseObject:
             raise ValueError("Synthizer object is of an unexpected type")
         return self.handle
 
-cdef class Context(_BaseObject):
+cdef class Pausable(_BaseObject):
+    """Base class for anything which can be paused. Adds pause and play methods."""
+
+    def play(self):
+        _checked(syz_play(self.handle))
+
+    def pause(self):
+        _checked(syz_pause(self.handle))
+
+
+cdef class Context(Pausable):
     """The Synthizer context represents an open audio device and groups all Synthizer objects created with it into one unit.
 
     To use Synthizer, the first step is to create a Context, which all other library types expect in their constructors.  When the context is destroyed, all audio playback stops and calls to

@@ -27,6 +27,10 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_shutdown()
 
+    syz_ErrorCode syz_pause(syz_Handle object)
+
+    syz_ErrorCode syz_play(syz_Handle object)
+
     syz_ErrorCode syz_getI(int* out, syz_Handle target, int property)
 
     syz_ErrorCode syz_setI(syz_Handle target, int property, int value)

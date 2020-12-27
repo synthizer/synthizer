@@ -45,12 +45,17 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_createBufferGenerator(&generator, context));
 	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
+	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 0));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
 	CHECKED(syz_createGlobalFdnReverb(&effect, context));
 	CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
+
 	std::this_thread::sleep_for(std::chrono::seconds(2));
-	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 0));
+	CHECKED(syz_pause(context));
+	std::this_thread::sleep_for(std::chrono::seconds(5));
+	CHECKED(syz_play(context));
+
 	while (true) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		CHECKED(syz_setD(effect, SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH, 0.0));

@@ -24,7 +24,7 @@
 
 namespace synthizer {
 
-Context::Context(): BaseObject(nullptr) { }
+Context::Context(): Pausable(nullptr) { }
 
 void Context::initContext( bool headless) {
 	std::weak_ptr<Context> ctx_weak = this->shared_from_this();
@@ -144,7 +144,18 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 			rec.callback(rec.arg);
 		}
 
+
 		std::fill(destination, destination + channels * config::BLOCK_SIZE, 0.0f);
+
+		/**
+		 * This is the first safe place to actually pause: the output is definitely playing silence, and all commands have executed.
+		 * While we can pause the context, and pausing the context pauses everything undernneath, pausing the queues will cause unrecoverable deadlocks because it will be impossible
+		 * to unpause and the queues will eventually fill.
+		 * */
+		if (this->isPaused()) {
+			return;
+		}
+	
 		std::fill(this->getDirectBuffer(), this->getDirectBuffer() + config::BLOCK_SIZE * channels, 0.0f);
 
 		auto i = this->sources.begin();
@@ -171,11 +182,20 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 			destination[i] += this->direct_buffer[i];
 		}
 
-	/* Handle gain. Note that destination was zeroed and only contains audio from this invocation. */
+		/**
+		 * Handle gain. Note that destination was zeroed and only contains audio from this invocation, so the final step is to
+		 * 
+		 * This must come after commands, which might change the property.
+		 * */
 		double new_gain;
-		if (this->acquireGain(new_gain)) {
+		if (this->acquireGain(new_gain) || this->shouldIncorporatePausableGain()) {
+			new_gain *= this->getPausableGain();
 			this->gain_driver.setValue(this->block_time, new_gain);
 		}
+		/**
+		 * Can tick the pausable here.
+		 * */
+		this->tickPausable();
 
 		this->gain_driver.drive(this->block_time, [&](auto &gain_cb) {
 			for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {

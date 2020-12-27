@@ -5,6 +5,7 @@
 #include "synthizer/config.hpp"
 #include "synthizer/fade_driver.hpp"
 #include "synthizer/panner_bank.hpp"
+#include "synthizer/pausable.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/mpsc_ring.hpp"
 #include "synthizer/router.hpp"
@@ -61,7 +62,7 @@ void deletionCallback(void *p) {
  * 
  * Unless otherwise noted, the functions of this class should only be called from the context-managed thread.
  * */
-class Context: public BaseObject, public std::enable_shared_from_this<Context> {
+class Context: public Pausable, public std::enable_shared_from_this<Context> {
 	public:
 
 	Context();
