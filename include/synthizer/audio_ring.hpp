@@ -35,11 +35,7 @@ class AudioRingBase {
 	 * 
 	 * Note that if the user of this function always requests the same size on every call, that size is a factor of the ring size, and the user always fully commits, the second pointer is never non-NULL and the first pointer is the entire block.
 	 * 
-	 * If the writer always requests a multiple of config::ALIGNMENT and the ring's size is a multiple of config::ALIGNMENT,
-	 * the returned pointers are aligned.
-	 * 
-	 * If maxAvailable is true, return at least the size requested, but if more space is available then return all the space. If the writer has followed the above
-	 * guidelines w.r.t. alignment, maxAvailable will also return only aligned pointers and won't break the guarantee.
+	 * If maxAvailable is true, return at least the size requested, but if more space is available then return all the space.
 	 **/
 	std::tuple<std::size_t, float *, std::size_t, float *>
 	beginWrite(std::size_t requested, bool maxAvailable = false) {
@@ -158,15 +154,13 @@ class InlineAudioRingProvider {
 	}
 
 	private:
-	alignas(config::ALIGNMENT) std::array<float, n> data;
+	std::array<float, n> data;
 };
 
 /* An inline allocated audio ring. */
 template<std::size_t size>
 class InlineAudioRing: public AudioRingBase<InlineAudioRingProvider<size>> {
 	public:
-
-	static_assert(size > 0 && size % (config::ALIGNMENT / sizeof(float)) == 0, "Size must be alignable.");
 
 	InlineAudioRing() {
 	}
@@ -176,7 +170,7 @@ class AllocatedRingProvider {
 	public:
 
 	~AllocatedRingProvider() {
-		freeAligned(this->data);
+		free(this->data);
 	}
 	
 	std::size_t size() const {
@@ -184,7 +178,7 @@ class AllocatedRingProvider {
 	}
 
 	void allocate(std::size_t n) {
-		this->data = allocAligned<float>(n);
+		this->data = (float *)calloc(n, sizeof(float));
 		this->_size = n;
 		std::fill(this->data, this->data+this->_size, 0.0f);
 	}
@@ -203,7 +197,7 @@ class AllocatedRingProvider {
 class AllocatedAudioRing: public AudioRingBase<AllocatedRingProvider> {
 	public:
 	AllocatedAudioRing(std::size_t n) {
-		assert(n > 0 && n % (config::ALIGNMENT / sizeof(float)) == 0);
+		assert(n > 0);
 		this->data_provider.allocate(n);
 	}
 };

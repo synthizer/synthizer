@@ -280,7 +280,7 @@ class Context: public Pausable, public BaseObject, public std::enable_shared_fro
 	/* Collections of objects that require execution: sources, etc. all go here eventually. */
 
 	/* direct_buffer is a buffer to which we write when we want to output, bypassing panner banks. */
-	alignas(config::ALIGNMENT) std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> direct_buffer;
+	std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> direct_buffer;
 
 	/* The key is a raw pointer for easy lookup. */
 	deferred_unordered_map<void *, std::weak_ptr<Source>> sources;

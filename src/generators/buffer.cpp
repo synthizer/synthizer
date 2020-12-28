@@ -93,7 +93,7 @@ void BufferGenerator::generatePitchBend(float *output, FadeDriver *gain_driver, 
 }
 
 void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gain_driver) {
-	alignas(config::ALIGNMENT) thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> workspace = { 0.0f };
+	thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> workspace = { 0.0f };
 	std::size_t pos = std::round(this->position_in_samples);
 	float *cursor = output;
 	unsigned int remaining = config::BLOCK_SIZE;

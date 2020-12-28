@@ -92,8 +92,7 @@ class HrtfPanner: public AbstractPanner {
 	 * These are stored like: [l1, l2, l3, l4, r1, r2, r3, r4]
 	 * We do the convolution with a specialized kernel that can deal with this.
 	 * */
-	static_assert(data::hrtf::IMPULSE_LENGTH % (config::ALIGNMENT / sizeof(float)) == 0, "Hrtf dataset length must be a multiple of  alignment/sizeof(float) for SIMD purposes");
-	alignas(config::ALIGNMENT) std::array<float, data::hrtf::IMPULSE_LENGTH*CHANNELS*2*2> hrirs = { 0.0f };
+	std::array<float, data::hrtf::IMPULSE_LENGTH*CHANNELS*2*2> hrirs = { 0.0f };
 	unsigned int current_hrir = 0;
 	std::array<std::tuple<double, double>, CHANNELS> prev_itds{};
 	std::array<double, CHANNELS> azimuths = { { 0.0 } };

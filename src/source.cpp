@@ -43,7 +43,7 @@ bool Source::hasGenerator(std::shared_ptr<Generator> &generator) {
 }
 
 void Source::fillBlock(unsigned int channels) {
-	alignas(config::ALIGNMENT) thread_local std::array<float, config::MAX_CHANNELS * config::BLOCK_SIZE> premix_array = {0.0f };
+	thread_local std::array<float, config::MAX_CHANNELS * config::BLOCK_SIZE> premix_array = {0.0f };
 	float *premix = &premix_array[0];
 	double gain_prop;
 	auto time = this->context->getBlockTime();

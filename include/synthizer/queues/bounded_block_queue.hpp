@@ -12,8 +12,6 @@ namespace synthizer {
 /*
  * A bounded SPSC queue, which stores data in blocks.
  * 
- * The blocks of the queue are allocated on either config::ALIGNMENT or alignof(T), whichever is greater.
- * 
  * It is not possible to partially fill blocks, or anything along those lines.
  * */
 template<typename T>

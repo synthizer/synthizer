@@ -15,10 +15,6 @@ namespace synthizer {
  * This file implements a delay line which allows for delays of up to N blocks, and contains special helper methods to avoid modulus in some cases.
  * The data is allocated statically.
  * 
- * data is always aligned so that if you read a delay line of the appropriate width, it's possible
- * to convert it to a SIMD vector.
-
- * 
  * Primarily, this is of use to the HRTF implementation which uses BlockDelayLine<8, 2> to avoid modulus on most blocks, and
  * will probably also be used by FDN reverberation for similar reasons
  * 
@@ -39,7 +35,7 @@ namespace synthizer {
 
 template<unsigned int LANES, unsigned int SIZE_IN_BLOCKS>
 class BlockDelayLine {
-	alignas(config::ALIGNMENT) std::array<float, config::BLOCK_SIZE * SIZE_IN_BLOCKS * LANES> data = { 0.0f };
+	std::array<float, config::BLOCK_SIZE * SIZE_IN_BLOCKS * LANES> data = { 0.0f };
 
 	public:
 	BlockDelayLine() {}

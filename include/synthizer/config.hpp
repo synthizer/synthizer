@@ -38,13 +38,6 @@ const int MAX_CHANNELS = 16;
 const int CROSSFADE_SAMPLES = 64;
 
 /*
- * The fundamental alignment, in bytes, of arrays holding samples.
- * 
- * SSE2 requires 16 byte alignment. Note that a float is 4 bytes, so we don't waste much.
- * */
-const int ALIGNMENT = 16;
-
-/*
  * The maximum delay for the ITD, in samples.
  * 
  * Must be at least 2.
@@ -62,7 +55,7 @@ const int PANNER_MAX_LANES = 4;
 /*
  * When storing buffers, how big should each page be? See buffer.hpp for explanation of how buffers work.
  * 
- * Should be a multiple of ALIGNMENT, but power of 2 is best.
+ * Powers of 2 are best for performance.
  * 
  * Note: the primary trade-off here isn't memory fragmentation, it's speed at the boundaries.
  * */

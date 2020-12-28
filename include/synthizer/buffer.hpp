@@ -48,14 +48,14 @@ class BufferChunk {
  * */
 class BufferData {
 	public:
-	/* The chunks are built by a decoder or something else, then fed here. They must be allocated with allocAligned. */
+	/* The chunks are built by a decoder or something else, then fed here. */
 	BufferData(unsigned int channels, std::size_t length, deferred_vector<std::int16_t*> &&chunks): channels(channels),
 	length(length), chunks(std::move(chunks)) {
 	}
 
 	~BufferData() {
 		for (auto c: this->chunks) {
-			freeAligned(c);
+			free(c);
 		}
 	}
 
@@ -206,10 +206,10 @@ class BufferReader {
 	/*
 	 * Read frames into a float*. If the workspace and workspace_len parameters are specified, they will be used as scratch space for the intermediate conversion.
 	 * They exist to allow for more than the default stack-allocated workspace size, which can speed up the loops here significantly.
-	 * workspace must be aligned and workspace_len is in elements, not frames.
+	 * workspace_len is in elements, not frames.
 	 * */
 	std::size_t readFrames(std::size_t pos, std::size_t count, float *out, std::size_t workspace_len = 0, std::int16_t *workspace = nullptr) {
-		alignas(config::ALIGNMENT) std::array<std::int16_t, config::MAX_CHANNELS * 16> default_workspace = { 0 };
+		std::array<std::int16_t, config::MAX_CHANNELS * 16> default_workspace = { 0 };
 
 		if (workspace_len * this->channels < default_workspace.size() || workspace == nullptr) {
 			workspace = &default_workspace[0];

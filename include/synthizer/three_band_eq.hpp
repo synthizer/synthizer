@@ -48,7 +48,7 @@ class ThreeBandEq {
 	}
 
 	void tick(float *input, float *output) {
-		alignas(config::ALIGNMENT) std::array<float, LANES> intermediate = { { 0.0f } };
+		std::array<float, LANES> intermediate = { { 0.0f } };
 		this->lower.tick(input, &intermediate[0]);
 		this->upper.tick(&intermediate[0], output);
 	}

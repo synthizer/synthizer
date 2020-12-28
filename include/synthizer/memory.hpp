@@ -42,49 +42,6 @@ void shutdownMemorySubsystem();
 typedef void freeCallback(void *value);
 void deferredFree(freeCallback *cb, void *value);
 
-#ifdef _WIN32
-template<typename T>
-T* allocAligned(std::size_t elements, std::size_t alignment = config::ALIGNMENT) {
-	void *d;
-	if constexpr (std::is_same<T, void>::value) {
-		d = _aligned_malloc(elements, alignment);
-	} else {
-		d = _aligned_malloc(elements * sizeof(T), std::max(alignment, alignof(T)));
-	}
-
-	if (d == nullptr)
-		throw std::bad_alloc();
-
-	return (T*) d;
-}
-
-template<typename T>
-void freeAligned(T* ptr) {
-	deferredFree(_aligned_free, (void *)ptr);
-}
-
-#else
-
-template<typename T>
-T* allocAligned(std::size_t elements, std::size_t alignment = config::ALIGNMENT) {
-	void *d;
-
-	if constexpr (std::is_same<T, void>::value) {
-		d = std::aligned_alloc(alignment, elements);
-	} else {
-		d = std::aligned_alloc(std::max(alignment, alignof(T)), elements * sizeof(T));
-	}
-	if (d == nullptr)
-		throw std::bad_alloc();
-	return (T*) d;
-}
-
-template<typename T>
-void freeAligned(T* ptr) {
-	deferredFree(std::free, (void *)ptr);
-}
-#endif
-
 template<typename T>
 class DeferredAllocator {
 	public:
@@ -99,11 +56,7 @@ class DeferredAllocator {
 
 	value_type *allocate(std::size_t n) {
 		void *ret;
-		if (alignof(value_type) <= alignof(std::max_align_t)) {
-			ret = std::malloc(sizeof(value_type) * n);
-		} else {
-			ret = allocAligned<void *>(n, alignof(value_type));
-		}
+		ret = std::malloc(sizeof(value_type) * n);
 		if (ret == nullptr) {
 			throw std::bad_alloc();
 		}
@@ -111,11 +64,7 @@ class DeferredAllocator {
 	}
 
 	void deallocate(T *p, std::size_t n) {
-		if (alignof(value_type) <= alignof(std::max_align_t)) {
-			deferredFree(free, (void *)p);
-		} else {
-			freeAligned<void>((void *)p);
-		}
+		deferredFree(free, (void *)p);
 	}
 };
 

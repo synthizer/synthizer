@@ -153,7 +153,7 @@ class StrategyBank {
 
 	private:
 	deferred_colony<PannerBlock<T>> panners;
-	alignas(config::ALIGNMENT) std::array<float, config::BLOCK_SIZE*config::MAX_CHANNELS*config::PANNER_MAX_LANES> working_buffer;
+	std::array<float, config::BLOCK_SIZE*config::MAX_CHANNELS*config::PANNER_MAX_LANES> working_buffer;
 };
 
 class PannerBank: public AbstractPannerBank {

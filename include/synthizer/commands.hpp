@@ -62,7 +62,6 @@ class Command {
 	 * */
 	template<typename T, typename... ARGS>
 	void initialize(ARGS... args) {
-		static_assert(alignof(T) <= config::ALIGNMENT);
 		static_assert(sizeof(T) <= config::MAX_COMMAND_SIZE);
 
 		this->deinitialize();
@@ -93,7 +92,7 @@ class Command {
 	}
 
 	private:
-	std::aligned_storage<config::MAX_COMMAND_SIZE, config::ALIGNMENT>::type data;
+	std::aligned_storage<config::MAX_COMMAND_SIZE>::type data;
 	CommandVtable vtable;
 	bool initialized = false;
 };

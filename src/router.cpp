@@ -48,7 +48,7 @@ OutputHandle::~OutputHandle() {
 }
 
 void OutputHandle::routeAudio(float *buffer, unsigned int channels) {
-	alignas(config::ALIGNMENT)  thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> _working_buf;
+	thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> _working_buf;
 	auto *working_buf = &_working_buf[0];
 	auto start = this->router->findRun(this);
 	if (start == router->routes.end()) {

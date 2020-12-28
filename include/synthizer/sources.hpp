@@ -50,7 +50,7 @@ class Source: public RouteOutput, public Pausable {
 	/*
 	 * An internal buffer, which accumulates all generators.
 	 * */
-	alignas(config::ALIGNMENT) std::array<float, config::BLOCK_SIZE * config::ALIGNMENT> block;
+	std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> block;
 
 	/*
 	 * Fill the internal block, downmixing and/or upmixing generators

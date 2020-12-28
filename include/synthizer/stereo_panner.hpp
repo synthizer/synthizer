@@ -23,7 +23,7 @@ class StereoPanner: public AbstractPanner {
 	void setPanningScalar(unsigned int lane, double scalar) override;
 
 	private:
-	alignas(config::ALIGNMENT) std::array<float, LANES * config::BLOCK_SIZE> data{ 0.0 };
+	std::array<float, LANES * config::BLOCK_SIZE> data{ 0.0 };
 	/*
 	 * Store the output gains as { l1, r1, l2, r2, l3, r3, l4, r4 }
 	 *  */

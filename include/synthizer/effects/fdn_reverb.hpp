@@ -274,7 +274,7 @@ void FdnReverbEffect<BASE>::runEffect(unsigned int time_in_blocks, unsigned int 
 	 * Output is stereo. For surround setups, we can get 99% of the benefit just by upmixing stereo differently, which we'll do in future by hand
 	 * as a special case.
 	 * */
-	alignas(config::ALIGNMENT) thread_local std::array<float, config::BLOCK_SIZE * 2> output_buf{ { 0.0f } };
+	thread_local std::array<float, config::BLOCK_SIZE * 2> output_buf{ { 0.0f } };
 	float *output_buf_ptr = &output_buf[0];
 
 	this->maybeRecomputeModel();
