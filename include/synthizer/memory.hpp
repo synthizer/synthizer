@@ -40,7 +40,14 @@ void shutdownMemorySubsystem();
  * is kept to a minimum.
  * */
 typedef void freeCallback(void *value);
-void deferredFree(freeCallback *cb, void *value);
+void deferredFreeCallback(freeCallback *cb, void *value);
+
+/**
+ * Drop-in replacement for free that deferrs to a background thread.
+ * */
+static void deferredFree(void *ptr) {
+	deferredFreeCallback(free, ptr);
+}
 
 template<typename T>
 class DeferredAllocator {
@@ -64,7 +71,7 @@ class DeferredAllocator {
 	}
 
 	void deallocate(T *p, std::size_t n) {
-		deferredFree(free, (void *)p);
+		deferredFree((void *)p);
 	}
 };
 

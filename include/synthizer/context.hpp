@@ -46,7 +46,7 @@ template<typename T>
 void deletionCallback(void *p) {
 	T *y = (T*) p;
 	y->~T();
-	deferredFree(contextDeferredFreeCallback<alignof(T)>, (void *)y);
+	deferredFreeCallback(contextDeferredFreeCallback<alignof(T)>, (void *)y);
 }
 
 /*

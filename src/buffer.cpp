@@ -102,10 +102,10 @@ std::shared_ptr<BufferData> generateBufferData(unsigned int channels, unsigned i
 		return allocateSharedDeferred<BufferData>(channels, length, std::move(chunks));
 	} catch(...) {
 		for (auto x: chunks) {
-			free(x);
+			deferredFree(x);
 		}
 		delete resampler;
-		free(next_chunk);
+		deferredFree(next_chunk);
 		delete[] working_buf;
 		throw;
 	}

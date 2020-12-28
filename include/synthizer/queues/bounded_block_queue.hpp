@@ -74,7 +74,7 @@ template<typename T>
 BoundedBlockQueue<T>::~BoundedBlockQueue() {
 	T *blk;
 	while(this->ready_queue.try_dequeue(blk) || this->free_queue.try_dequeue(blk)) {
-		freeAligned(blk);
+		deferredFree(blk);
 	}
 }
 
