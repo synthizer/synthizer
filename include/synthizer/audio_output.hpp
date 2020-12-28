@@ -9,7 +9,6 @@
 #include "config.hpp"
 #include "dock.hpp"
 #include "error.hpp"
-#include "queues/bounded_block_queue.hpp"
 
 namespace synthizer {
 
