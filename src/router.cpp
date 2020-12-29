@@ -3,6 +3,7 @@
 #include "synthizer.h"
 
 #include "synthizer/base_object.hpp"
+#include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
@@ -48,8 +49,9 @@ OutputHandle::~OutputHandle() {
 }
 
 void OutputHandle::routeAudio(float *buffer, unsigned int channels) {
-	thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> _working_buf;
-	auto *working_buf = &_working_buf[0];
+	auto working_buf_guard = acquireBlockBuffer();
+	float *working_buf = working_buf_guard;
+
 	auto start = this->router->findRun(this);
 	if (start == router->routes.end()) {
 		return;

@@ -2,6 +2,7 @@
 
 #include "synthizer/generators/streaming.hpp"
 
+#include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/cells.hpp"
 #include "synthizer/config.hpp"
@@ -46,8 +47,8 @@ unsigned int StreamingGenerator::getChannels() {
 }
 
 void StreamingGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
-	thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> tmp_buf;
-	float *tmp_buf_ptr = &tmp_buf[0];
+	auto tmp_buf_guard = acquireBlockBuffer();
+	float *tmp_buf_ptr = tmp_buf_guard;
 
 	double new_pos;
 	bool pos_changed = this->acquirePosition(new_pos);

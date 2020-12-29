@@ -1,5 +1,6 @@
 #pragma once
 
+#include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/block_delay_line.hpp"
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
@@ -274,8 +275,8 @@ void FdnReverbEffect<BASE>::runEffect(unsigned int time_in_blocks, unsigned int 
 	 * Output is stereo. For surround setups, we can get 99% of the benefit just by upmixing stereo differently, which we'll do in future by hand
 	 * as a special case.
 	 * */
-	thread_local std::array<float, config::BLOCK_SIZE * 2> output_buf{ { 0.0f } };
-	float *output_buf_ptr = &output_buf[0];
+	auto output_buf_guard = acquireBlockBuffer();
+	float *const output_buf_ptr = output_buf_guard;
 
 	this->maybeRecomputeModel();
 

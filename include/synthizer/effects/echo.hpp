@@ -1,5 +1,6 @@
 #pragma once
 
+#include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/block_delay_line.hpp"
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
@@ -108,7 +109,9 @@ void EchoEffect<BASE>::runEffectInternal(float *output, float gain) {
 
 template<typename BASE>
 void EchoEffect<BASE>::runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) {
-	thread_local std::array<float, config::BLOCK_SIZE * 2> working_buf;
+	/* Always 2 channels. */
+	auto working_buf_guard = acquireBlockBuffer();
+	float *working_buf = working_buf_guard;
 
 	auto *buffer = this->line.getNextBlock();
 	std::fill(buffer, buffer + config::BLOCK_SIZE * 2, 0.0f);

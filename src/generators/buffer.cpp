@@ -1,5 +1,6 @@
 #include "synthizer/generators/buffer.hpp"
 
+#include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
@@ -93,7 +94,8 @@ void BufferGenerator::generatePitchBend(float *output, FadeDriver *gain_driver, 
 }
 
 void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gain_driver) {
-	thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> workspace = { 0.0f };
+	auto workspace_guard = acquireBlockBuffer();
+	float *workspace = workspace_guard;
 	std::size_t pos = std::round(this->position_in_samples);
 	float *cursor = output;
 	unsigned int remaining = config::BLOCK_SIZE;
@@ -102,7 +104,7 @@ void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gain_driver
 
 	gain_driver->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
 		while (remaining) {
-			auto got = this->reader.readFrames(pos, remaining, &workspace[0]);
+			auto got = this->reader.readFrames(pos, remaining, workspace);
 			for (unsigned int j = 0; j < got; i++, j++) {
 				float g = gain_cb(i);
 				for (unsigned int ch = 0; ch < this->reader.getChannels(); ch++) {

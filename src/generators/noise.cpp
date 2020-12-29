@@ -2,6 +2,7 @@
 #include "synthizer_constants.h"
 #include "synthizer/property_xmacros.hpp"
 
+#include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/error.hpp"
@@ -11,8 +12,8 @@
 namespace synthizer {
 
 void ExposedNoiseGenerator::generateBlock(float *out, FadeDriver *gain_driver) {
-	thread_local std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> working_buf;
-	float *working_buf_ptr = &working_buf[0];
+	auto working_buf_guard = acquireBlockBuffer();
+	float *working_buf_ptr = working_buf_guard;
 
 	std::fill(working_buf_ptr, working_buf_ptr + config::BLOCK_SIZE * this->channels, 0.0f);
 

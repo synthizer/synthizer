@@ -2,6 +2,7 @@
 
 #include "synthizer/sources.hpp"
 
+#include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
@@ -43,8 +44,8 @@ bool Source::hasGenerator(std::shared_ptr<Generator> &generator) {
 }
 
 void Source::fillBlock(unsigned int channels) {
-	thread_local std::array<float, config::MAX_CHANNELS * config::BLOCK_SIZE> premix_array = {0.0f };
-	float *premix = &premix_array[0];
+	auto premix_guard = acquireBlockBuffer();
+	float *premix = premix_guard;
 	double gain_prop;
 	auto time = this->context->getBlockTime();
 

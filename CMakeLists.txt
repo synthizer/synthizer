@@ -25,9 +25,6 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	)
 endif()
 
-# We must turn on VC++ extended alignment for Windows for plf::colony.
-add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE)
-
 include(cmake/wdl.txt)
 
 include_directories(
@@ -45,6 +42,7 @@ set(SYNTHIZER_LIB_TYPE STATIC CACHE STRING "The build type for Synthizer. Either
 add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/audio_output.cpp
 	src/background_thread.cpp
+	src/block_buffer_cache.cpp
 	src/buffer.cpp
 	src/byte_stream.cpp
 	src/c_api.cpp
