@@ -39,6 +39,9 @@ void Context::initContext( bool headless) {
 
 	this->audio_output = createAudioOutput([ctx_weak] (unsigned int channels, float *buffer) {
 		auto ctx_strong = ctx_weak.lock();
+		if (ctx_strong == nullptr) {
+			return;
+		}
 		ctx_strong->generateAudio(channels, buffer);
 	});
 	this->running.store(1);
