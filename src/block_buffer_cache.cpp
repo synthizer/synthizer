@@ -28,7 +28,7 @@ static TryLock<BlockBufferCache> block_buffer_cache{};
 BlockBufferGuard acquireBlockBuffer(bool should_zero) {
 	float *out = nullptr;
 
-	block_buffer_cache.with_lock([&] (auto *cache) {
+	block_buffer_cache.withLock([&] (auto *cache) {
 		if (cache->last == 0) {
 			/* Handle allocation at the end of the function, outside the lock. */
 			return;
@@ -47,7 +47,7 @@ BlockBufferGuard acquireBlockBuffer(bool should_zero) {
 }
 
 BlockBufferGuard::~BlockBufferGuard() {
-	block_buffer_cache.with_lock([&] (auto *cache) {
+	block_buffer_cache.withLock([&] (auto *cache) {
 		if (cache->last == cache->entries.size()) {
 			return;
 		}

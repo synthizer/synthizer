@@ -229,7 +229,7 @@ void *CExposable::getUserdata() {
 }
 
 void CExposable::setUserdata(void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
-	bool did_set = this->userdata.with_lock([&] (auto *u) {
+	bool did_set = this->userdata.withLock([&] (auto *u) {
 		u->set(userdata, userdata_free_callback);
 	});
 

@@ -38,7 +38,7 @@ class TryLock {
 	 * Returns true if the lock was successfully locked.
 	 * */
 	template<typename CB1, typename CB2>
-	bool with_lock(CB1 &&callback_locked, CB2 &&callback_failed) {
+	bool withLock(CB1 &&callback_locked, CB2 &&callback_failed) {
 		bool locked = this->try_lock();
 		if (locked) {
 			auto unlocker = AtScopeExit([&] () { this->unlock(); });
@@ -52,11 +52,11 @@ class TryLock {
 
 	/**
 	 * Call the callback if the lock was locked successfully, then return whether the lock was locked.
-	 * Shorthand for the two-parameter with_lock where the second callback does nothing.
+	 * Shorthand for the two-parameter withLock where the second callback does nothing.
 	 * */
 	template<typename CB>
-	bool with_lock(CB &&callback) {
-		return this->with_lock(callback, [] () {});
+	bool withLock(CB &&callback) {
+		return this->withLock(callback, [] () {});
 	}
 
 	INNER_T *unsafeGetInner() {
