@@ -49,7 +49,7 @@ void Pausable::play() {
 
 using namespace synthizer;
 
-syz_ErrorCode syz_pause(syz_Handle object) {
+SYZ_CAPI syz_ErrorCode syz_pause(syz_Handle object) {
 	SYZ_PROLOGUE
 	auto p = fromC<Pausable>(object);
 	auto b = typeCheckedDynamicCast<BaseObject>(p);
@@ -60,7 +60,7 @@ syz_ErrorCode syz_pause(syz_Handle object) {
 	SYZ_EPILOGUE
 }
 
-syz_ErrorCode syz_play(syz_Handle object) {
+SYZ_CAPI syz_ErrorCode syz_play(syz_Handle object) {
 	SYZ_PROLOGUE
 	auto p = fromC<Pausable>(object);
 	auto b = typeCheckedDynamicCast<BaseObject>(p);

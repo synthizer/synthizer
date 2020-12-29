@@ -59,6 +59,10 @@ class TryLock {
 		return this->with_lock(callback, [] () {});
 	}
 
+	INNER_T *unsafeGetInner() {
+		return &this->data;
+	}
+
 	private:
 	bool try_lock() {
 		int expected = 0;

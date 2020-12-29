@@ -170,7 +170,7 @@ class AllocatedRingProvider {
 	public:
 
 	~AllocatedRingProvider() {
-		free(this->data);
+		deferredFree(this->data);
 	}
 	
 	std::size_t size() const {

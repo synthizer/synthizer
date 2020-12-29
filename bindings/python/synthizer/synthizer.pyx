@@ -6,7 +6,7 @@ import threading
 from synthizer_constants cimport *
 
 from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
-
+from cpython.ref cimport PyObject, Py_DECREF, Py_INCREF
 
 # We want the ability to acquire and release the GIL, which means making sure it's initialized.
 # It's unclear if you need this for with nogil as well as for with gil, but let's just avoid the headache entirely.
@@ -145,7 +145,12 @@ cpdef initialize():
 
 cpdef shutdown():
     """Shut Synthizer down."""
-    _checked(syz_shutdown())
+    cdef syz_ErrorCode ecode
+    # If this isn't nogil, then userdata in the Synthizer background thread deadlocks because
+    # syz_shutdown waits for that queue to drain but this is holding the lock.
+    with nogil:
+        ecode = syz_shutdown()
+    _checked(ecode)
 
 @contextlib.contextmanager
 def initialized():
@@ -189,6 +194,9 @@ cdef _handle_to_object(handle):
     with _objects_by_handle_mutex:
         return _objects_by_handle.get(handle, None)
 
+cdef void userdataFree(void *userdata) with gil:
+    Py_DECREF(<object>userdata)
+
 cdef class _BaseObject:
     cdef syz_Handle handle
 
@@ -207,6 +215,23 @@ cdef class _BaseObject:
         if not isinstance(self, cls):
             raise ValueError("Synthizer object is of an unexpected type")
         return self.handle
+
+    cpdef object get_userdata(self):
+        cdef void *userdata
+        _checked(syz_getUserdata(&userdata, self.handle))
+        if userdata == NULL:
+            return None
+        return <object>userdata
+
+    cpdef set_userdata(self, object userdata):\
+        # Note that the following isn't bad code. It's "I discovered Cython is buggy around PyObject casts" code.
+        if userdata is None:
+            # Special case None and avoid making Synthizer do work to free a global Python object.
+            # Fun fact: None is reference counted too, at least by Cython, but never actually goes away.
+            _checked(syz_setUserdata(self.handle, NULL, NULL))
+        cdef PyObject *ud = <PyObject *>userdata
+        Py_INCREF(userdata)
+        _checked(syz_setUserdata(self.handle, <void *>ud, userdataFree))
 
 cdef class Pausable(_BaseObject):
     """Base class for anything which can be paused. Adds pause and play methods."""

@@ -156,6 +156,7 @@ unsigned int drainDeferredFreeQueue() {
 static void deferredFreeWorker() {
 	std::size_t processed = 0;
 	is_deferred_free_thread = true;
+
 	while (deferred_free_thread_running.load(std::memory_order_relaxed)) {
 			processed += drainDeferredFreeQueue();
 		/* Sleep for a bit so that we don't overload the system when we're not freeing. */
@@ -197,6 +198,45 @@ void initializeMemorySubsystem() {
 void shutdownMemorySubsystem() {
 	deferred_free_thread_running.store(0);
 	deferred_free_thread.join();
+}
+
+UserdataDef::~UserdataDef() {
+	this->maybeFreeUserdata();
+}
+
+void UserdataDef::set(void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
+	this->maybeFreeUserdata();
+	this->userdata.store(userdata, std::memory_order_relaxed);
+	this->userdata_free_callback = userdata_free_callback;
+}
+
+void *UserdataDef::getAtomic() {
+	return this->userdata.load(std::memory_order_relaxed);
+}
+
+void UserdataDef::maybeFreeUserdata() {
+	void *ud = this->userdata.load(std::memory_order_relaxed);
+	if (ud != nullptr && this->userdata_free_callback != nullptr) {
+		deferredFreeCallback(this->userdata_free_callback, ud);
+	}
+	this->userdata = nullptr;
+	this->userdata_free_callback = nullptr;
+}
+
+void *CExposable::getUserdata() {
+	auto *inner = this->userdata.unsafeGetInner();
+	return inner->getAtomic();
+}
+
+void CExposable::setUserdata(void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
+	bool did_set = this->userdata.with_lock([&] (auto *u) {
+		u->set(userdata, userdata_free_callback);
+	});
+
+	/* We lost the race. */
+	if (did_set == false && userdata != nullptr && userdata_free_callback != nullptr) {
+		deferredFreeCallback(userdata_free_callback, userdata);
+	}
 }
 
 }

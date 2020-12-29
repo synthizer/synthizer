@@ -21,11 +21,17 @@ cdef extern from "synthizer.h":
 
     char* syz_getLastErrorMessage()
 
-    syz_ErrorCode syz_handleFree(syz_Handle handle)
-
     syz_ErrorCode syz_initialize()
 
-    syz_ErrorCode syz_shutdown()
+    syz_ErrorCode syz_shutdown() nogil
+
+    syz_ErrorCode syz_handleFree(syz_Handle handle)
+
+    syz_ErrorCode syz_getUserdata(void** out, syz_Handle handle)
+
+    ctypedef void syz_UserdataFreeCallback(void*)
+
+    syz_ErrorCode syz_setUserdata(syz_Handle handle, void* userdata, syz_UserdataFreeCallback* free_callback)
 
     syz_ErrorCode syz_pause(syz_Handle object)
 

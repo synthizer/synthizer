@@ -79,6 +79,21 @@ SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle) {
 	SYZ_EPILOGUE
 }
 
+SYZ_CAPI syz_ErrorCode syz_getUserdata(void **out, syz_Handle handle) {
+	SYZ_PROLOGUE
+	auto o = fromC<CExposable>(handle);
+	*out = o->getUserdata();
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_setUserdata(syz_Handle handle, void *userdata, syz_UserdataFreeCallback *free_callback) {
+	SYZ_PROLOGUE
+	auto o = fromC<CExposable>(handle);
+	o->setUserdata(userdata, free_callback);
+	return 0;
+	SYZ_EPILOGUE
+}
 
 template<typename T>
 static T propertyGetter(std::shared_ptr<BaseObject> &obj, int property) {

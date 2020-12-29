@@ -55,7 +55,7 @@ class BufferData {
 
 	~BufferData() {
 		for (auto c: this->chunks) {
-			free(c);
+			deferredFree(c);
 		}
 	}
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "synthizer.h"
+#include "synthizer/trylock.hpp"
 
 #include "synthizer/error.hpp"
 
@@ -114,6 +115,18 @@ std::shared_ptr<T> allocateSharedDeferred(ARGS&&... args) {
  * Infrastructure for marshalling C objects to/from Synthizer.
  * */
 
+class UserdataDef {
+	public:
+	~UserdataDef();
+	void *getAtomic();
+	void set(void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+
+	private:
+	void maybeFreeUserdata();
+	std::atomic<void *> userdata = nullptr;
+	syz_UserdataFreeCallback *userdata_free_callback = nullptr;
+};
+
 class CExposable  {
 	public:
 	CExposable();
@@ -130,11 +143,19 @@ class CExposable  {
 		return this->c_handle.compare_exchange_strong(zero, handle, std::memory_order_relaxed);
 	}
 
+	void *getUserdata();
+	void setUserdata(void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+
 	bool isPermanentlyDead() {
 		return this->permanently_dead.load(std::memory_order_relaxed) == 1;
 	}
 
-	/* Returns true if the object was alive previously. Used to ensure only one caller to cDelete. */
+	/**
+	 * Called from the C API to hide this object from the C API.  Since objects can linger until the next context tick,
+	 * we want to hide the delete latency by immediately considering the object invalid.
+	 * 
+	 * Returns true if the object was alive previously. Used to ensure only one caller to cDelete.
+	 * */
 	bool becomePermanentlyDead() {
 		unsigned char zero = 0;
 		return this->permanently_dead.compare_exchange_strong(zero, 1, std::memory_order_relaxed);
@@ -150,6 +171,7 @@ class CExposable  {
 	private:
 	std::atomic<syz_Handle> c_handle;
 	std::atomic<unsigned char> permanently_dead = 0;
+	TryLock<UserdataDef> userdata{};
 };
 
 void freeCImpl(std::shared_ptr<CExposable> &obj);
