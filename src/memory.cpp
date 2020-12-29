@@ -136,23 +136,38 @@ static std::thread deferred_free_thread;
 static std::atomic<int> deferred_free_thread_running = 0;
 thread_local static bool is_deferred_free_thread = false;
 
-static void deferredFreeWorker() {
+unsigned int drainDeferredFreeQueue() {
 	decltype(deferred_free_queue)::consumer_token_t token{deferred_free_queue};
+	DeferredFreeEntry ent;
+	unsigned int processed = 0;
+
+	while (deferred_free_queue.try_dequeue(token, ent)) {
+		try {
+			ent.cb(ent.value);
+		} catch(...) {
+			logDebug("Exception on memory freeing thread. This should never happen");
+		}
+		processed++;
+	}
+
+	return processed;
+}
+
+static void deferredFreeWorker() {
 	std::size_t processed = 0;
 	is_deferred_free_thread = true;
 	while (deferred_free_thread_running.load(std::memory_order_relaxed)) {
-		DeferredFreeEntry ent;
-		while (deferred_free_queue.try_dequeue(token, ent)) {
-			try {
-				ent.cb(ent.value);
-			} catch(...) {
-				logDebug("Exception on memory freeing thread. This should never happen");
-			}
-			processed++;
-		}
+			processed += drainDeferredFreeQueue();
 		/* Sleep for a bit so that we don't overload the system when we're not freeing. */
 		std::this_thread::sleep_for(std::chrono::milliseconds(30));
 	}
+
+	/**
+	 * Always drain the queue on the way out. This ensures that if the user calls syz_shutdown
+	 * before exiting their app by enough to matter, the queue always drains. User-facing pointers are exposed via this queue, so it is
+	 * necessary to make sure that users cannot see failures of the freeing thread to free.
+	 * */
+	processed += drainDeferredFreeQueue();
 
 	logDebug("Deferred free processed %zu frees in a background thread", processed);
 }
