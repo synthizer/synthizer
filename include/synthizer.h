@@ -74,13 +74,15 @@ SYZ_CAPI syz_ErrorCode syz_getLastErrorCode();
  * */
 SYZ_CAPI const char *syz_getLastErrorMessage();
 
-SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle);
-
 /*
  * Library initialization and shutdown.
  * */
 SYZ_CAPI syz_ErrorCode syz_initialize();
 SYZ_CAPI syz_ErrorCode syz_shutdown();
+/**
+ * Free a C handle.
+ * */
+SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle);
 
 /**
  * pause/play objects. Supported by everything that produces audio in some fashion: generators, sources, context, etc.
