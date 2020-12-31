@@ -4,6 +4,7 @@ Synthizer represents references to objects with a `syz_Handle` type.  The follow
 
 ```
 SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle);
+SYZ_CAPI syz_ErrorCode syz_handleGetObjectType(int *out, syz_Handle handle);
 
 SYZ_CAPI syz_ErrorCode syz_getI(int *out, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setI(syz_Handle target, int property, int value);
@@ -17,6 +18,8 @@ SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, dou
 ```
 
 Synthizer objects are like classes: they have properties, methods, and (optionally) bases. They're created through "constructors", for example `syz_createContext`, and destroyed through `syz_handleFree`.
+`syz_handleGetObjectType` can be used to query the type of an object at runtime, returning one of the `SYZ_OTYPE` constants
+in `synthizer_constants.h`.
 
 Property names are defined in `synthizer_constants.h` of the form `SYZ_P_FOO`.  Since some objects have common properties and in order to preserve flexibility, the property enum is shared between all objects.
 
