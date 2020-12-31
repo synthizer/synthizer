@@ -1,6 +1,5 @@
 #include "synthizer.h"
 #include "synthizer_constants.h"
-#include "synthizer/property_xmacros.hpp"
 
 #include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/c_api.hpp"
@@ -10,6 +9,10 @@
 #include "synthizer/generators/noise.hpp"
 
 namespace synthizer {
+
+int ExposedNoiseGenerator::getObjectType() {
+	return SYZ_OTYPE_NOISE_GENERATOR;
+}
 
 void ExposedNoiseGenerator::generateBlock(float *out, FadeDriver *gain_driver) {
 	auto working_buf_guard = acquireBlockBuffer();

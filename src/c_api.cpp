@@ -79,6 +79,14 @@ SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle) {
 	SYZ_EPILOGUE
 }
 
+SYZ_CAPI syz_ErrorCode syz_handleGetObjectType(int *out, syz_Handle handle) {
+	SYZ_PROLOGUE
+	auto obj = fromC<CExposable>(handle);
+	*out = obj->getObjectType();
+	return 0;
+	SYZ_EPILOGUE
+}
+
 SYZ_CAPI syz_ErrorCode syz_getUserdata(void **out, syz_Handle handle) {
 	SYZ_PROLOGUE
 	auto o = fromC<CExposable>(handle);

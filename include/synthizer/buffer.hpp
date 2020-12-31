@@ -103,6 +103,8 @@ class Buffer: public CExposable {
 		return this->data->getChunk(index);
 	}
 
+	int getObjectType() override;
+
 	private:
 	std::shared_ptr<BufferData> data;
 };

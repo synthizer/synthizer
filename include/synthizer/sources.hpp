@@ -69,6 +69,7 @@ class DirectSource: public Source {
 	public:
 	DirectSource(std::shared_ptr<Context> ctx): Source(ctx) {}
 
+	int getObjectType() override;
 	void run() override;
 };
 
@@ -80,6 +81,8 @@ class DirectSource: public Source {
 class PannedSource: public Source {
 	public:
 	PannedSource(std::shared_ptr<Context> context);
+
+	int getObjectType() override;
 
 	/* For 	Source3D. */
 	void setGain3D(double gain);
@@ -100,6 +103,7 @@ class Source3D: public PannedSource {
 	Source3D(std::shared_ptr<Context> context);
 	void initInAudioThread() override;
 
+	int getObjectType() override;
 	void run() override;
 
 	#define PROPERTY_CLASS Source3D

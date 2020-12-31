@@ -1,5 +1,6 @@
 #include "synthizer.h"
 #include "synthizer_constants.h"
+
 #include "synthizer/property_xmacros.hpp"
 
 #include "synthizer/audio_output.hpp"
@@ -56,6 +57,10 @@ Context::~Context() {
 
 std::shared_ptr<Context> Context::getContext() {
 	return this->shared_from_this();
+}
+
+int Context::getObjectType() {
+	return SYZ_OTYPE_CONTEXT;
 }
 
 void Context::shutdown() {

@@ -1,3 +1,6 @@
+#include "synthizer.h"
+#include "synthizer_constants.h"
+
 #include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/logging.hpp"
@@ -15,6 +18,10 @@ Source3D::Source3D(std::shared_ptr<Context> context): PannedSource(context) {
 void Source3D::initInAudioThread() {
 	PannedSource::initInAudioThread();
 	setPropertiesFromDistanceParams(this, this->getContext()->getDefaultDistanceParams());
+}
+
+int Source3D::getObjectType() {
+	return SYZ_OTYPE_SOURCE_3D;
 }
 
 void Source3D::run() {

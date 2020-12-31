@@ -1,3 +1,6 @@
+#include "synthizer.h"
+#include "synthizer_constants.h"
+
 #include "synthizer/generators/buffer.hpp"
 
 #include "synthizer/block_buffer_cache.hpp"
@@ -15,6 +18,10 @@
 #include <memory>
 
 namespace synthizer {
+
+int BufferGenerator::getObjectType() {
+	return SYZ_OTYPE_BUFFER_GENERATOR;
+}
 
 unsigned int BufferGenerator::getChannels() {
 	auto buf_weak = this->getBuffer();

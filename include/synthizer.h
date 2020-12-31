@@ -85,6 +85,11 @@ SYZ_CAPI syz_ErrorCode syz_shutdown();
 SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle);
 
 /**
+ * Query the type of a handle. Returns one of the SYZ_OTYPE constants.
+ * */
+SYZ_CAPI syz_ErrorCode syz_handleGetObjectType(int *out, syz_Handle handle);
+
+/**
  * Userdata support. It is possible to use the following interface to associate arbitrary pointers with Synthizer objects.  If
  * the free_callback is non-NULL, Synthizer will call it on a background thread at the time of the object's death.
  * 

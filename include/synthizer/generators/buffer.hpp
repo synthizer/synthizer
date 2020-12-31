@@ -15,6 +15,7 @@ class BufferGenerator: public Generator {
 	public:
 	BufferGenerator(std::shared_ptr<Context> ctx): Generator(ctx) {}
 
+	int getObjectType() override;
 	unsigned int getChannels() override;
 	void generateBlock(float *output, FadeDriver *gain_driver) override;
 

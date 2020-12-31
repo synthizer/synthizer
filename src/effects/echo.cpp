@@ -1,16 +1,34 @@
+#include "synthizer.h"
+#include "synthizer_constants.h"
+
 #include "synthizer/effects/echo.hpp"
 
 #include "synthizer/c_api.hpp"
 #include "synthizer/error.hpp"
 #include "synthizer/effects/global_effect.hpp"
 
+#include <utility>
+
+namespace synthizer {
+
+class ExposedGlobalEcho: public EchoEffect<GlobalEffect> {
+	public:
+	template<typename... ARGS>
+	ExposedGlobalEcho(ARGS&& ...args): EchoEffect<GlobalEffect>(std::forward<ARGS>(args)...) {}
+
+	int getObjectType() override {
+		return SYZ_OTYPE_GLOBAL_ECHO;
+	}
+};
+
+}
 
 using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
-	auto x = ctx->createObject<EchoEffect<GlobalEffect>>();
+	auto x = ctx->createObject<ExposedGlobalEcho>();
 	std::shared_ptr<GlobalEffect> e = x;
 	ctx->registerGlobalEffect(	e);
 	*out = toC(x);

@@ -1,4 +1,5 @@
 #include "synthizer.h"
+#include "synthizer_constants.h"
 
 #include "synthizer/generators/streaming.hpp"
 
@@ -40,6 +41,10 @@ StreamingGenerator::StreamingGenerator(const std::shared_ptr<Context> &ctx, cons
 StreamingGenerator::~StreamingGenerator() {
 	/* We can't rely on the destructor of background_thread because it runs after ours. */
 	this->background_thread.stop();
+}
+
+int StreamingGenerator::getObjectType() {
+	return SYZ_OTYPE_STREAMING_GENERATOR;
 }
 
 unsigned int StreamingGenerator::getChannels() {

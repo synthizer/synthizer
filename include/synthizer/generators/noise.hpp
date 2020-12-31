@@ -26,6 +26,8 @@ class ExposedNoiseGenerator: public Generator {
 		}
 	}
 
+	int getObjectType() override;
+
 	unsigned int getChannels() override {
 		return this->channels;
 	}

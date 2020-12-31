@@ -1,6 +1,7 @@
 #include "synthizer.h"
 
 #include "synthizer/concurrent_slab.hpp"
+#include "synthizer/error.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
 

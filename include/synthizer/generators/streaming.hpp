@@ -23,6 +23,7 @@ class StreamingGenerator: public Generator {
 	StreamingGenerator(const std::shared_ptr<Context> &ctx, const std::shared_ptr<AudioDecoder> &decoder);
 	~StreamingGenerator();
 
+	int getObjectType() override;
 	unsigned int getChannels() override;
 	void generateBlock(float *output, FadeDriver *gain_driver) override;
 

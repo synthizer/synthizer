@@ -80,6 +80,8 @@ class Context: public Pausable, public BaseObject, public std::enable_shared_fro
 		return this;
 	}
 
+	int getObjectType() override;
+
 
 	/*
 	 * Shut the context down.

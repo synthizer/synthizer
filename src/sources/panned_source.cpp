@@ -1,4 +1,5 @@
 #include "synthizer.h"
+#include "synthizer_constants.h"
 
 #include "synthizer/sources.hpp"
 
@@ -18,6 +19,10 @@
 namespace synthizer {
 
 PannedSource::PannedSource(const std::shared_ptr<Context> context): Source(context) {
+}
+
+int PannedSource::getObjectType() {
+	return SYZ_OTYPE_PANNED_SOURCE;
 }
 
 void PannedSource::setGain3D(double gain) {

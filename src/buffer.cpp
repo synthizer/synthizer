@@ -1,5 +1,7 @@
 #include "synthizer/buffer.hpp"
 
+#include "synthizer_constants.h"
+
 #include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/decoding.hpp"
@@ -117,6 +119,10 @@ std::shared_ptr<BufferData> bufferDataFromDecoder(const std::shared_ptr<AudioDec
 	return generateBufferData(channels, sr, [&](auto frames, float *dest) {
 		return decoder->writeSamplesInterleaved(frames, dest);
 	});
+}
+
+int Buffer::getObjectType() {
+	return SYZ_OTYPE_BUFFER;
 }
 
 }

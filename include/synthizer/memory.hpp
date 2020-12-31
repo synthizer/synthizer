@@ -1,9 +1,8 @@
 #pragma once
 
 #include "synthizer.h"
-#include "synthizer/trylock.hpp"
 
-#include "synthizer/error.hpp"
+#include "synthizer/trylock.hpp"
 
 #include "plf_colony.h"
 
@@ -142,6 +141,11 @@ class CExposable  {
 		syz_Handle zero = 0;
 		return this->c_handle.compare_exchange_strong(zero, handle, std::memory_order_relaxed);
 	}
+
+	/**
+	 * Should return one of the SYZ_OTYPE_ constants.
+	 * */
+	virtual int getObjectType() = 0;
 
 	void *getUserdata();
 	void setUserdata(void *userdata, syz_UserdataFreeCallback *userdata_free_callback);

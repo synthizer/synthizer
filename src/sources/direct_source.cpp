@@ -1,4 +1,5 @@
 #include "synthizer.h"
+#include "synthizer_constants.h"
 
 #include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"
@@ -10,6 +11,10 @@
 #include <algorithm>
 
 namespace synthizer {
+
+int DirectSource::getObjectType() {
+	return SYZ_OTYPE_DIRECT_SOURCE;
+}
 
 void DirectSource::run() {
 	/*
