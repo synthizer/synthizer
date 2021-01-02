@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <type_traits>
 #include <utility>
 
@@ -94,8 +95,15 @@ class ConcreteEdgeTrigger: public EdgeTriggerBase {
  * */
 class EdgeTrigger {
 	public:
+	EdgeTrigger(): trigger(nullptr) {}
+
 	template<typename CONDITION_CB, typename TRIGGER_CB>
 	EdgeTrigger(EdgeTriggerType tuype, const CONDITION_CB &&condition_callback, const TRIGGER_CB &&trigger_callback) {
+		this->configureEdgeTrigger(type, std::forward(condition_callback), std::forward(trigger_callback));
+	}
+
+	template<typename CONDITION_CB, typename TRIGGER_CB>
+	void configureEdgeTrigger(EdgeTriggerType tuype, const CONDITION_CB &&condition_callback, const TRIGGER_CB &&trigger_callback) {
 		this->trigger = new ConcreteEdgeTrigger<std::remove_reference_t<CONDITION_CB>, std::remove_reference_t<FIRE_CB>>(
 			type,
 			std::forward<CONDITION_CB>(condition_callback),
@@ -107,6 +115,7 @@ class EdgeTrigger {
 	}
 
 	void evaluate() {
+		assert(this->trigger != nullptr && "EdgeTrigger not properly initialized");
 		this->trigger->evaluate();
 	}
 
