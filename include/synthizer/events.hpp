@@ -66,6 +66,8 @@ class EventSender {
 	EventSender();
 
 	void setEnabled(bool val);
+	bool isEnabled();
+
 	/**
 	 * Get an event from the queue and fire it if possible.
 	 * 

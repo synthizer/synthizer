@@ -43,6 +43,10 @@ void EventSender::setEnabled(bool val) {
 	this->enabled = val;
 }
 
+bool EventSender::isEnabled() {
+	return this->enabled;
+}
+
 void EventSender::getNextEvent(syz_Event *out) {
 	PendingEvent maybe_event;
 
