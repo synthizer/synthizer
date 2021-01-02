@@ -21,7 +21,6 @@ class CExposable;
 const std::size_t EVENT_HANDLE_CAPACITY = 4;
 using EventHandleVec = SmallVec<std::weak_ptr<CExposable>, EVENT_HANDLE_CAPACITY>;
 
-
 /**
  * An event which is ready to be fired.
  * 
@@ -43,10 +42,10 @@ class PendingEvent {
 	PendingEvent(syz_Event &&event, EventHandleVec &&referenced_handles);
 
 	/**
-	 * The method called by the C API: writes the payload to the out pointer, and returns whether or not
-	 * the event fired.  The out pointer will be zero-initialized if the event didn't fire.
+	 * The method called by the C API: writes the payload to the out pointer.
+	 * The out pointer will be zero-initialized if the event didn't fire, which sets the event type to SYZ_EVENT_TYPE_INVALID.
 	 * */
-	bool extract(syz_Event *out);
+	void extract(syz_Event *out);
 
 	void enqueue(syz_Event &&event, EventHandleVec &&handles);
 	private:
@@ -72,7 +71,7 @@ class EventSender {
 	 * 
 	 * Called by syz_contextGetNextEvent.
 	 * */
-	bool getNextEvent(syz_Event *out);
+	void getNextEvent(syz_Event *out);
 
 	void enqueue(syz_Event &&event, EventHandleVec &&handles);
 

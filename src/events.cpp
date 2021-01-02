@@ -25,17 +25,16 @@ PendingEvent::PendingEvent() {}
 
 PendingEvent::PendingEvent(syz_Event &&event, EventHandleVec &&referenced_handles): event(event), referenced_handles(referenced_handles), valid(true) {}
 
-bool PendingEvent::extract(syz_Event *out) {
+void PendingEvent::extract(syz_Event *out) {
 	*out = syz_Event{};
 
 	for (auto &o: this->referenced_handles) {
 		if (hasValidCHandle(o) == false) {
-			return false;
+			return;
 		}
 	}
 
 	*out = this->event;
-	return true;
 }
 
 EventSender::EventSender(): pending_events(), producer_token(pending_events) {}
@@ -44,16 +43,16 @@ void EventSender::setEnabled(bool val) {
 	this->enabled = val;
 }
 
-bool EventSender::getNextEvent(syz_Event *out) {
+void EventSender::getNextEvent(syz_Event *out) {
 	PendingEvent maybe_event;
 
 	*out = syz_Event{};
 
 	if (this->pending_events.try_dequeue(maybe_event)) {
-		return false;
+		return;
 	}
 
-	return maybe_event.extract(out);
+	maybe_event.extract(out);
 }
 
 void EventSender::enqueue(syz_Event &&event, EventHandleVec &&handles) {
