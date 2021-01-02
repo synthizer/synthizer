@@ -156,6 +156,25 @@ SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out);
  * */
 SYZ_CAPI syz_ErrorCode syz_contextGetBlock(syz_Handle context, float *block);
 
+/**
+ * Event support. The actual definition of syz_Event is in synthizer_events.h
+ * */
+struct syz_Event;
+
+/**
+ * Enable events for a context. Once enabled, failure to drain the event queue is effectively a memory leak as the
+ * queue will continue to fill forever.
+ * 
+ * Once enabled, it is not possible to disable events.
+ * */
+SYZ_CAPI syz_ErrorCode syz_contextEnableEvents(syz_Handle context);
+
+/**
+ * Get an event from the queue. If the queue is empty, the event type
+ * is SYZ_EVENT_TYPE_INVALID.
+ * */
+SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle context);
+
 /*
  * Create a generator that represents reading from a stream.
  * 

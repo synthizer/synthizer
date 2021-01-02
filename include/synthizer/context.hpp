@@ -3,6 +3,7 @@
 #include "synthizer/base_object.hpp"
 #include "synthizer/commands.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/events.hpp"
 #include "synthizer/fade_driver.hpp"
 #include "synthizer/panner_bank.hpp"
 #include "synthizer/pausable.hpp"
@@ -22,6 +23,7 @@
 #include <mutex>
 #include <thread>
 #include <utility>
+struct syz_Event;
 
 namespace synthizer {
 
@@ -230,6 +232,30 @@ class Context: public Pausable, public BaseObject, public std::enable_shared_fro
 	 * */
 	void generateAudio(unsigned int channels, float *output);
 
+	/**
+	 * Potentially send an event.
+	 * 
+	 * How this works is you pass it a callback which takes a pointer to an EventBuilder, you build your event, then the context dispatches it on your behalf.
+	 * The point of this function is that the callback/event building can be entirely avoided if events are disabled; in that cse, your callback will not be called.
+	 * */
+	template<typename CB>
+	void sendEvent(CB &&callback) {
+		if (this->event_sender.isEnabled() == false) {
+			return;
+		}
+
+		EventBuilder builder;
+		callback(&builder);
+		builder.dispatch(&this->event_sender);
+	}
+
+	/**
+	 * Used by the C API for events:
+	 * */
+	void enableEvents();
+	void getNextEvent(syz_Event *out);
+	/* May be called from any thread as it is backed by a MPMC queue. */
+
 	#define PROPERTY_CLASS Context
 	#define PROPERTY_BASE BaseObject
 	#define PROPERTY_LIST CONTEXT_PROPERTIES
@@ -298,6 +324,9 @@ class Context: public Pausable, public BaseObject, public std::enable_shared_fro
 
 	/* Effects support. */
 	router::Router router{};
+
+	/* Events support. */
+	EventSender event_sender;
 
 	FadeDriver gain_driver{1.0f, 1};
 };

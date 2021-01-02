@@ -252,6 +252,14 @@ void Context::drainDeletionQueues() {
 	}
 }
 
+void Context::enableEvents() {
+	this->event_sender.setEnabled(true);
+}
+
+void Context::getNextEvent(syz_Event *out) {
+	this->event_sender.getNextEvent(out);
+}
+
 }
 
 using namespace synthizer;
@@ -281,6 +289,24 @@ SYZ_CAPI syz_ErrorCode syz_contextGetBlock(syz_Handle context, float *block) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
 	ctx->generateAudio(2, block);
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_contextEnableEvents(syz_Handle context) {
+	SYZ_PROLOGUE
+	std::shared_ptr<Context> ctx = fromC<Context>(context);
+	ctx->enqueueReferencingCallbackCommand(true, [](auto &ctx) {
+		ctx->enableEvents();
+	}, ctx);
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle context) {
+	SYZ_PROLOGUE
+	std::shared_ptr<Context> ctx = fromC<Context>(context);
+	ctx->getNextEvent(out);
 	return 0;
 	SYZ_EPILOGUE
 }
