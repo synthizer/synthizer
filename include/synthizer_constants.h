@@ -77,6 +77,11 @@ enum SYZ_PROPERTIES {
 	SYZ_P_LATE_REFLECTIONS_DELAY,
 };
 
+enum SYZ_EVENT_TYPES {
+	SYZ_EVENT_TYPE_LOOPED = 1,
+	SYZ_EVENT_TYPE_FINISHED,
+};
+
 #ifdef __cplusplus
 }
 #endif
