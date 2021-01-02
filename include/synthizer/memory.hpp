@@ -127,7 +127,7 @@ class UserdataDef {
 	syz_UserdataFreeCallback *userdata_free_callback = nullptr;
 };
 
-class CExposable  {
+class CExposable: public std::enable_shared_from_this<CExposable> {
 	public:
 	CExposable();
 	virtual ~CExposable() {}

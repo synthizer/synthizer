@@ -64,7 +64,7 @@ void deletionCallback(void *p) {
  * 
  * Unless otherwise noted, the functions of this class should only be called from the context-managed thread.
  * */
-class Context: public Pausable, public BaseObject, public std::enable_shared_from_this<Context> {
+class Context: public Pausable, public BaseObject {
 	public:
 
 	Context();
@@ -153,7 +153,7 @@ class Context: public Pausable, public BaseObject, public std::enable_shared_fro
 
 	template<typename T, typename... ARGS>
 	std::shared_ptr<T> createObject(ARGS&& ...args) {
-		auto obj = new T(this->shared_from_this(), args...);
+		auto obj = new T(this->getContext(), args...);
 		auto ret = sharedPtrDeferred<T>(obj, [] (T *ptr) {
 			auto ctx = ptr->getContextRaw();
 			if (ctx->delete_directly.load(std::memory_order_relaxed) == 0) ctx->enqueueDeletionRecord(&deletionCallback<T>, (void *)ptr);

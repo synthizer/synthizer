@@ -28,7 +28,7 @@ namespace synthizer {
 Context::Context(): BaseObject(nullptr) { }
 
 void Context::initContext( bool headless) {
-	std::weak_ptr<Context> ctx_weak = this->shared_from_this();
+	std::weak_ptr<Context> ctx_weak = this->getContext();
 
 	this->source_panners = createPannerBank();
 
@@ -56,7 +56,7 @@ Context::~Context() {
 }
 
 std::shared_ptr<Context> Context::getContext() {
-	return this->shared_from_this();
+	return std::static_pointer_cast<Context>(this->shared_from_this());
 }
 
 int Context::getObjectType() {
