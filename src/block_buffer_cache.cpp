@@ -12,15 +12,15 @@ namespace synthizer {
 class BlockBufferCache {
 	public:
 	BlockBufferCache() {
-		this->last = 3;
-		for (std::size_t i = 0; i < this->last; i++) {
+		this->count = 3;
+		for (std::size_t i = 0; i < this->count; i++) {
 			this->entries[i] = (float *)std::calloc(config::BLOCK_SIZE * config::MAX_CHANNELS, sizeof(float));
 		}
 	}
 
 	/* It's internally a stack. */
 	std::array<float *, MAX_BLOCK_BUFFER_CACHE_ENTRIES> entries={{ nullptr }};
-	std::size_t last = 0;
+	std::size_t count = 0;
 };
 
 static TryLock<BlockBufferCache> block_buffer_cache{};
@@ -29,12 +29,12 @@ BlockBufferGuard acquireBlockBuffer(bool should_zero) {
 	float *out = nullptr;
 
 	block_buffer_cache.withLock([&] (auto *cache) {
-		if (cache->last == 0) {
+		if (cache->count == 0) {
 			/* Handle allocation at the end of the function, outside the lock. */
 			return;
 		}
-		out = cache->entries[cache->last];
-		cache->last -= 1;
+		cache->count -= 1;
+		out = cache->entries[cache->count];
 	});
 
 	if (out == nullptr) {
@@ -48,11 +48,12 @@ BlockBufferGuard acquireBlockBuffer(bool should_zero) {
 
 BlockBufferGuard::~BlockBufferGuard() {
 	block_buffer_cache.withLock([&] (auto *cache) {
-		if (cache->last == cache->entries.size()) {
+		if (cache->count == cache->entries.size()) {
 			return;
 		}
-		cache->entries[cache->last] = this->data;
-		cache->last++;
+		cache->entries[cache->count] = this->data;
+		cache->count++;
+		/* Give the cache ownership. */
 		this->data = nullptr;
 	});
 	if (this->data != nullptr) {
