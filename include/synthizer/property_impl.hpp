@@ -38,14 +38,6 @@
  * 
  * */
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmacro-redefined"
-/* For MSVC, to ignore duplicate macros. */
-#if defined(_MSC_VER ) && !(defined(__clang__) || defined(__GNUC__))
-#pragma warning(push)
-#pragma warning(disable:4005)
-#endif
-
 #ifndef PROPERTY_CLASS
 #error "When implementing properties, must define PROPERTY_CLASS to the class the properties are being added to."
 #endif
@@ -78,6 +70,12 @@ class PROPCLASS_NAME {
 	};
 	static_assert((unsigned int)Bits::COUNT <= 64, "Can only declare at most 64 properties at one level of the class hierarchy");
 
+	#undef INT_P
+	#undef DOUBLE_P
+	#undef DOUBLE3_P
+	#undef DOUBLE6_P
+	#undef OBJECT_P
+
 	std::uint64_t changed_bitset = UINT64_MAX;
 
 	/* Mark a property as having changed. */
@@ -101,6 +99,13 @@ class PROPCLASS_NAME {
 
 	PROPERTY_LIST
 };
+
+
+#undef INT_P
+#undef DOUBLE_P
+#undef DOUBLE3_P
+#undef DOUBLE6_P
+#undef OBJECT_P
 
 PROPCLASS_NAME PROPFIELD_NAME {};
 
@@ -218,6 +223,11 @@ PROPERTY_LIST
 #undef STANDARD_READ
 #undef STANDARD_WRITE
 #undef STANDARD_ACQUIRE
+#undef INT_P
+#undef DOUBLE_P
+#undef DOUBLE3_P
+#undef DOUBLE6_P
+#undef OBJECT_P
 
 /*
  * Now that we have all that, we have to define the methods that the C API uses.
@@ -274,6 +284,13 @@ bool hasProperty(int property) override {
 	return false;
 }
 
+
+#undef INT_P
+#undef DOUBLE_P
+#undef DOUBLE3_P
+#undef DOUBLE6_P
+#undef OBJECT_P
+
 #define INT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) GET_(int, P, CAMEL_NAME)
 #define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) GET_(double, P, CAMEL_NAME)
 #define DOUBLE3_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) GET_(property_impl::arrayd3, P, CAMEL_NAME)
@@ -291,6 +308,12 @@ property_impl::PropertyValue getProperty(int property) override {
 	}
 }
 
+#undef INT_P
+#undef DOUBLE_P
+#undef DOUBLE3_P
+#undef DOUBLE6_P
+#undef OBJECT_P
+
 #define INT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(int, P, CAMEL_NAME)
 #define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(double, P, CAMEL_NAME)
 #define OBJECT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(std::shared_ptr<CExposable>, P, CAMEL_NAME)
@@ -305,13 +328,19 @@ void validateProperty(int property, const property_impl::PropertyValue &value) o
 	}
 }
 
+
+#undef INT_P
+#undef DOUBLE_P
+#undef DOUBLE3_P
+#undef DOUBLE6_P
+#undef OBJECT_P
+
 #define INT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(int, P, CAMEL_NAME)
 #define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(double, P, CAMEL_NAME) 
 #define OBJECT_P(P, UNDERSCORE_NAME, CAMEL_NAME, CLS) SET_CONV_(std::shared_ptr<CExposable>, P, CAMEL_NAME, ([](auto &v) -> auto { \
 	/* validated by the validator; guaranteed to be valid here. */ \
 	return std::static_pointer_cast<CLS>(v); \
 }))
-
 #define DOUBLE3_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...)  SET_(property_impl::arrayd3, P, CAMEL_NAME)
 #define DOUBLE6_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(property_impl::arrayd6, P, CAMEL_NAME)
 
@@ -339,9 +368,6 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 #undef SET_CONV_
 #undef PROPCLASS_NAME
 #undef PROPFIELD_NAME
-
-#pragma clang diagnostic pop
-
-#if defined(_MSC_VER ) && !(defined(__clang__) || defined(__GNUC__))
-#pragma warning(pop)
-#endif
+#undef PROPERTY_CLASS
+#undef PROPERTY_LIST
+#undef PROPERTY_BASE

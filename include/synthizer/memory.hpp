@@ -2,6 +2,7 @@
 
 #include "synthizer.h"
 
+#include "synthizer/error.hpp"
 #include "synthizer/trylock.hpp"
 
 #include "plf_colony.h"

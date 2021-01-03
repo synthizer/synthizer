@@ -105,10 +105,10 @@ void verifyDouble(syz_Handle ctx, syz_Handle handle, int property, double min, d
 	if (val != max) {
 		ERR_MSG("Value != max");
 	}
-	if (isinf(min) != true  && syz_setD(handle, property, -INFINITY) == 0) {
-		ERR_MSG("SHouldn't be able to set below minimum");
+	if (std::isinf(min) != true  && syz_setD(handle, property, -INFINITY) == 0) {
+		ERR_MSG("Shouldn't be able to set below minimum");
 	}
-	if (isinf(max) != true && syz_setI(handle, property, INFINITY) == 0) {
+	if (std::isinf(max) != true && syz_setI(handle, property, INFINITY) == 0) {
 		ERR_MSG("Was able to set above maximum");
 	}
 }
