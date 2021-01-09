@@ -19,7 +19,8 @@ SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, dou
 
 Synthizer objects are like classes: they have properties, methods, and (optionally) bases. They're created through "constructors", for example `syz_createContext`, and destroyed through `syz_handleFree`.
 `syz_handleGetObjectType` can be used to query the type of an object at runtime, returning one of the `SYZ_OTYPE` constants
-in `synthizer_constants.h`.
+in `synthizer_constants.h`.  As with C's `malloc` and `free`, calling `syz_HandleFree`
+with `handle = 0` is a no-op.
 
 Property names are defined in `synthizer_constants.h` of the form `SYZ_P_FOO`.  Since some objects have common properties and in order to preserve flexibility, the property enum is shared between all objects.
 

@@ -73,6 +73,9 @@ SYZ_CAPI const char *syz_getLastErrorMessage() {
  * */
 SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle) {
 	SYZ_PROLOGUE
+	if (handle == 0) {
+		return 0;
+	}
 	auto h = fromC<CExposable>(handle);
 	freeC(h);
 	return 0;
