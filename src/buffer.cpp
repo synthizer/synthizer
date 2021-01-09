@@ -8,6 +8,7 @@
 #include "synthizer/error.hpp"
 #include "synthizer/math.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/random_generator.hpp"
 
 #include "WDL/resample.h"
 
@@ -15,7 +16,6 @@
 #include <cassert>
 #include <cstdint>
 #include <memory>
-#include <random>
 #include <utility>
 #include <vector>
 
@@ -24,14 +24,18 @@ namespace synthizer {
 class DitherGenerator {
 	public:
 	float generate() {
-		float r1 = this->distribution(this->engine);
-		float r2 = this->distribution(this->engine);
+		float r1 = this->gen01();
+		float r2 = this->gen01();
 		return 1.0f -r1 -r2;
 	}
 
+	float gen01() {
+		float o = gen.generateFloat();
+		return (1.0 + 1.0f) * 0.5f;
+	}
+
 	private:
-	std::mt19937 engine{10};
-	std::uniform_real_distribution<float> distribution{0.0f, 1.0f };
+	RandomGenerator gen{};
 };
 
 /*
