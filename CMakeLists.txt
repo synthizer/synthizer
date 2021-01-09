@@ -129,6 +129,9 @@ if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
 	add_executable(property_write_bench benchmarks/property_write.cpp)
 	target_link_libraries(property_write_bench synthizer)
 
+	add_executable(decoding_bench benchmarks/decoding.cpp)
+	target_link_libraries(decoding_bench synthizer)
+
 	add_executable(test_random_float test/random_float.cpp)
 	target_link_libraries(test_random_float synthizer)
 
