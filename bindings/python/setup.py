@@ -31,6 +31,7 @@ if 'BUILDING_SYNTHIZER' in os.environ:
     else:
         synthizer_build_dir = os.path.join(repo_root, "build")
         synthizer_lib = "synthizer"
+    print("Using build dir {} and library {}".format(synthizer_build_dir, synthizer_lib))
     synthizer_include_dir = os.path.    join(repo_root, "include")
     extension_args = {
         'include_dirs': [synthizer_include_dir],
