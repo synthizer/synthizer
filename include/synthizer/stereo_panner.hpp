@@ -18,7 +18,7 @@ class StereoPanner: public AbstractPanner {
 	unsigned int getLaneCount() override;
 	void run(float *output) override;
 	std::tuple<float *, unsigned  int> getLane(unsigned int lane) override;
-	void recycleLane(unsigned int lane) override;
+	void releaseLane(unsigned int lane) override;
 	void setPanningAngles(unsigned int lane, double azimuth, double elevation) override;
 	void setPanningScalar(unsigned int lane, double scalar) override;
 

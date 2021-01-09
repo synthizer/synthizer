@@ -67,7 +67,7 @@ class HrtfPanner: public AbstractPanner {
 	unsigned int getOutputChannelCount();
 	unsigned int getLaneCount();
 	std::tuple<float *, unsigned int> getLane(unsigned int channel);
-	void recycleLane(unsigned int channel);
+	void releaseLane(unsigned int channel);
 	void run(float *output);
 	void setPanningAngles(unsigned int lane, double azimuth, double elevation);
 	void setPanningScalar(unsigned int lane, double scalar);

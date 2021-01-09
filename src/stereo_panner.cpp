@@ -32,7 +32,7 @@ std::tuple<float *, unsigned int> StereoPanner::getLane(unsigned int lane) {
 	return {&this->data[lane], LANES};
 }
 
-void StereoPanner::recycleLane(unsigned int lane) {
+void StereoPanner::releaseLane(unsigned int lane) {
 	assert(lane < LANES);
 
 	for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {

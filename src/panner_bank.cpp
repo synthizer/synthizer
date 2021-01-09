@@ -34,6 +34,7 @@ template<typename T>
 class ConcretePannerLane: public PannerLane {
 	public:
 	~ConcretePannerLane() {
+		this->block->panner.releaseLane(this->lane);
 		this->block->allocated_lanes.set(lane, false);
 		this->block->reference_count--;
 	}
@@ -81,7 +82,6 @@ static std::shared_ptr<PannerLane> allocateLaneHelper(deferred_colony<PannerBloc
 	ret->lane = lane;
 	ret->block = found;
 	std::tie(ret->destination, ret->stride) = found->panner.getLane(lane);
-	found->panner.recycleLane(lane);
 	return ret;
 }
 

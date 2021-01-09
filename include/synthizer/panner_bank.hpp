@@ -44,7 +44,7 @@ class AbstractPanner {
 	/* (destination, stride). Allocation and freeing is handled elsewhere. */
 	virtual std::tuple<float *, unsigned int> getLane(unsigned int lane) = 0;
 	/* Called when we're going to reuse a lane. */
-	virtual void recycleLane(unsigned int lane) = 0;
+	virtual void releaseLane(unsigned int lane) = 0;
 
 	/*
 	 * These set panning, either as azimuth and elevation, or as -1 to 1.

@@ -198,7 +198,7 @@ HrtfPanner::getLane(unsigned int channel) {
 	return { ptr + channel, CHANNELS };
 }
 
-void HrtfPanner::recycleLane(unsigned int lane) {
+void HrtfPanner::releaseLane(unsigned int lane) {
 	assert(lane < CHANNELS);
 
 	this->input_line.clearChannel(lane);
