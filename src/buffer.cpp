@@ -55,7 +55,7 @@ std::shared_ptr<BufferData> generateBufferData(unsigned int channels, unsigned i
 	if (sr != config::SR) {
 		resampler = new WDL_Resampler();
 		/* Sync interpolation. */
-		resampler->SetMode(false, 0, true);
+		resampler->SetMode(false, 0, true, 20);
 		resampler->SetRates(sr, config::SR);
 		/* We're output driven. */
 		resampler->SetFeedMode(false);
