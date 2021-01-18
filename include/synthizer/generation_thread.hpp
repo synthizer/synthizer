@@ -60,7 +60,6 @@ class GenerationThread {
 	 * */
 	std::size_t skip(std::size_t amount);
 
-
 	template<typename CALLABLE>
 	void backgroundThread(CALLABLE&& callable);
 
@@ -97,6 +96,15 @@ std::size_t GenerationThread::read(std::size_t amount, float *dest) {
 	}
 
 	auto [size1, ptr1, size2, ptr2] = this->ring.beginRead(amount * this->channels);
+	/*
+	 * Since we request a whole block, size1 == 0 means none was ready
+	 * We could request partial blocks, but doing so would just make underruns worse.
+	 * */
+	if (size1 == 0) {
+		this->ring.endRead();
+		return 0;
+	}
+
 	assert(size1 % this->channels == 0);
 	assert(size2 % this->channels == 0);
 	assert(size1 + size2 == amount * this->channels);
@@ -131,6 +139,5 @@ void GenerationThread::backgroundThread(CALLABLE &&callable) {
 		}
 	}
 }
-
 
 }
