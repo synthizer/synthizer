@@ -8,7 +8,7 @@
 			"name": "(Windows) Launch",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/file_test.exe",
+			"program": "${workspaceFolder}/build/test_effect_connection.exe",
 			"args": ["corpus/test2.wav"],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",

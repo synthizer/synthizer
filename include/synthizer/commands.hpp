@@ -147,25 +147,29 @@ namespace referencing_cmd_details {
 
 	/*
 	 * The first parameter is a boolean, written to if the template
-	 * successfully promoted to shared_ptr.
+	 * successfully promoted to shared_ptr.  This is done as:
+	 * 
+	 * *success = *sucess && new_success
+	 * 
+	 * So that the higher level template can tell if *any* of these failed, not just the current one.
 	 * */
 	template<typename T>
-	T strengthen(bool *success, T &&v) {
-		*success = true;
+	T strengthen(bool *success, T v) {
+		*success = *success && true;
 		return v;
 	}
 
 	template<typename T>
 	std::shared_ptr<T> strengthen(bool *success, std::weak_ptr<T> v) {
 		auto strengthened = v.lock();
-		*success = strengthened != nullptr;
+		*success = *success && strengthened != nullptr;
 		return strengthened;
 	}
 
 	template<typename CB, typename ...ARGS>
 	void initReferencingCallbackCommandAlreadyWeakened(Command *cmd, bool short_circuit, CB callback, ARGS ...args) {
 		initCallbackCommand(cmd, [=](auto &cb_arg) mutable {
-			bool did_strengthen = false;
+			bool did_strengthen = true;
 			auto strong_tuple = std::make_tuple(referencing_cmd_details::strengthen(&did_strengthen, args)...);
 			if (did_strengthen == false && short_circuit == true) {
 				return;

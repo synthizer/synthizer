@@ -144,6 +144,10 @@ if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
 	add_executable(test_verify_properties test/verify_properties.cpp)
 	target_link_libraries(test_verify_properties synthizer)
 
+	# can't be an actual unit test until we have silent contexts.
+	add_executable(test_effect_connection test/effect_connection.cpp)
+	target_link_libraries(test_effect_connection synthizer)
+
 	add_test(NAME delay_line COMMAND delay_line_test)
 	add_test(NAME latch COMMAND test_latch)
 	add_test(NAME verify_properties COMMAND test_verify_properties)
