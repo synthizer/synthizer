@@ -81,6 +81,7 @@ class DirectSource: public Source {
 class PannedSource: public Source {
 	public:
 	PannedSource(std::shared_ptr<Context> context);
+	void initInAudioThread() override;
 
 	int getObjectType() override;
 
