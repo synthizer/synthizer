@@ -110,10 +110,10 @@ std::size_t GenerationThread::read(std::size_t amount, float *dest) {
 	assert(size1 + size2 == amount * this->channels);
 	std::copy(ptr1, ptr1 + size1, dest);
 	if (ptr2) {
-		std::copy(ptr2, ptr2 + size2, dest + size1 * this->channels);
+		std::copy(ptr2, ptr2 + size2, dest + size1);
 	}
 	this->ring.endRead();
-	return size1 + size2;
+	return (size1 + size2) / this->channels;
 }
 
 std::size_t GenerationThread::skip(std::size_t amount) {

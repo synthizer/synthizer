@@ -21,6 +21,7 @@ class FadeDriver;
 class StreamingGenerator: public Generator {
 	public:
 	StreamingGenerator(const std::shared_ptr<Context> &ctx, const std::shared_ptr<AudioDecoder> &decoder);
+	void initInAudioThread() override;
 	~StreamingGenerator();
 
 	int getObjectType() override;

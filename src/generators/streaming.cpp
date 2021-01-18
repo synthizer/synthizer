@@ -38,6 +38,17 @@ StreamingGenerator::StreamingGenerator(const std::shared_ptr<Context> &ctx, cons
 	});
 }
 
+void StreamingGenerator::initInAudioThread() {
+	Generator::initInAudioThread();
+	/**
+	 * Like with PannedSource, it's important that we not see this property as initialized.
+	 * 
+	 * See issue #53 for tracking the long term solution.
+	 * */
+	double v;
+	this->acquirePosition(v);
+}
+
 StreamingGenerator::~StreamingGenerator() {
 	/* We can't rely on the destructor of background_thread because it runs after ours. */
 	this->background_thread.stop();
@@ -121,6 +132,7 @@ void StreamingGenerator::generateBlockInBackground(std::size_t channels, float *
 		}
 
 		if (this->resampler == nullptr) {
+			std::fill(out, out + config::BLOCK_SIZE * this->getChannels(), 0.0f);
 			position = fillBufferFromDecoder(*this->decoder, config::BLOCK_SIZE, this->getChannels(), out, looping, position);
 		} else {
 			float *rs_buf;
