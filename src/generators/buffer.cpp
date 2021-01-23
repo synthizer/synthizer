@@ -7,6 +7,7 @@
 #include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
+#include "synthizer/events.hpp"
 #include "synthizer/fade_driver.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/types.hpp"
@@ -18,6 +19,12 @@
 #include <memory>
 
 namespace synthizer {
+
+BufferGenerator::BufferGenerator(std::shared_ptr<Context> ctx): Generator(ctx) {
+	this->end_trigger.configureEdgeTrigger(EdgeTriggerType::Up,
+		[&]() { return this->end_count != this->prev_end_count; },
+		[&]() { this->handleEndEvent(); });
+}
 
 int BufferGenerator::getObjectType() {
 	return SYZ_OTYPE_BUFFER_GENERATOR;
@@ -84,9 +91,19 @@ void BufferGenerator::generatePitchBendHelper(float *output, FadeDriver *gain_dr
 		for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 			float g = gain_cb(i);
 			this->readInterpolated<L>(pos, &output[i*this->reader.getChannels()], g);
-			pos += delta;
-			if (L == true) pos = std::fmod(pos, this->reader.getLength());
-			if (L == false && pos > this->reader.getLength()) break;
+			double new_pos = pos + delta;
+			if (L == true) {
+				new_pos = std::fmod(new_pos, this->reader.getLength());
+				if (new_pos < pos) {
+					this->end_count += 1;
+				}
+			} else {
+				if (pos > this->reader.getLength()) {
+					this->end_count += 1;
+				}
+				break;
+			}
+			pos = new_pos;
 		}
 	});
 	this->position_in_samples = std::min<double>(pos, this->reader.getLength());
@@ -122,6 +139,7 @@ void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gain_driver
 			cursor += got * this->reader.getChannels();
 			pos += got;
 			if (remaining > 0) {
+				this->end_count += 1;
 				if (looping == false) break;
 				else pos = 0;
 			}
@@ -129,12 +147,27 @@ void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gain_driver
 	});
 	assert(i <= config::BLOCK_SIZE);
 
+	/**
+	 *  Maybe send some events.
+	 * */
+	this->end_trigger.evaluate();
+	this->prev_end_count = this->end_count;
+
 	this->position_in_samples = pos;
 }
 
 void BufferGenerator::configureBufferReader(const std::shared_ptr<Buffer> &b) {
 	this->reader.setBuffer(b.get());
 	this->setPosition(0.0);
+}
+
+void BufferGenerator::handleEndEvent() {
+	auto ctx = this->getContext();
+	if (this->getLooping() == 1) {
+		sendLoopedEvent(ctx, this->shared_from_this());
+	} else {
+		sendFinishedEvent(ctx, this->shared_from_this());
+	}
 }
 
 }

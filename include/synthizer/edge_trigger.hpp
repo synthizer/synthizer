@@ -74,7 +74,7 @@ template<typename CONDITION_CB, typename TRIGGER_CB>
 class ConcreteEdgeTrigger: public EdgeTriggerBase {
 	public:
 	template<typename CB1, typename CB2>
-	ConcreteEdgeTrigger(EdgeTriggerType type, const CB1 &&condition, const CB2 &&trigger): EdgeTriggerBase(type, condition()), condition_callback(std::forward<CB1>(condition)), trigger_callback(std::forward<CB2>(trigger)) {}
+	ConcreteEdgeTrigger(EdgeTriggerType type, const CB1 &&condition, const CB2 &&trigger): EdgeTriggerBase(type, condition()), condition_callback(std::forward<const CB1>(condition)), trigger_callback(std::forward<const CB2>(trigger)) {}
 
 	bool evaluateCondition() override {
 		return this->condition_callback();
@@ -103,11 +103,11 @@ class EdgeTrigger {
 	}
 
 	template<typename CONDITION_CB, typename TRIGGER_CB>
-	void configureEdgeTrigger(EdgeTriggerType tuype, const CONDITION_CB &&condition_callback, const TRIGGER_CB &&trigger_callback) {
-		this->trigger = new ConcreteEdgeTrigger<std::remove_reference_t<CONDITION_CB>, std::remove_reference_t<FIRE_CB>>(
+	void configureEdgeTrigger(EdgeTriggerType type, const CONDITION_CB &&condition_callback, const TRIGGER_CB &&trigger_callback) {
+		this->trigger = new ConcreteEdgeTrigger<std::remove_reference_t<CONDITION_CB>, std::remove_reference_t<TRIGGER_CB>>(
 			type,
-			std::forward<CONDITION_CB>(condition_callback),
-			std::forward<TRIGGER_CB>(trigger_callback));
+			std::forward<const CONDITION_CB>(condition_callback),
+			std::forward<const TRIGGER_CB>(trigger_callback));
 	}
 
 	~EdgeTrigger() {

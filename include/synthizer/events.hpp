@@ -13,6 +13,7 @@
 namespace synthizer {
 
 class CExposable;
+class Context;
 
 /**
  * Event system internals.  See the comments on each of these classes, which explain how everything works.
@@ -88,6 +89,7 @@ class EventSender {
  * as safe as C++ allows.  To use it:
  * 
  * - call setSource to set the source.
+ * - Maybe call setContext to set the context.
  * - call translateHandle for every object that needs to be a handle in the event struct. This may return
  *   0 if the object doesn't have a handle, but will short-circuit event sending in that case.
  * - Build one of the payload event structs.
@@ -101,6 +103,7 @@ class EventBuilder {
 	public:
 
 	void setSource(const std::shared_ptr<CExposable> &source);
+	void setContext(const std::shared_ptr<Context> &ctx);
 
 	syz_Handle translateHandle(const std::shared_ptr<CExposable> &object);
 	syz_Handle translateHandle(const std::weak_ptr<CExposable> &object);
@@ -122,5 +125,11 @@ class EventBuilder {
 	bool has_payload = false;
 	bool has_source = false;
 };
+
+/**
+ * senders for a couple common cases.
+ * */
+void sendFinishedEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<CExposable> &source);
+void sendLoopedEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<CExposable> &source);
 
 }

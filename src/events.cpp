@@ -1,8 +1,8 @@
 #include "synthizer_constants.h"
 #include "synthizer_events.h"
 
+#include "synthizer/context.hpp"
 #include "synthizer/events.hpp"
-
 #include "synthizer/memory.hpp"
 
 #include "concurrentqueue.h"
@@ -52,7 +52,7 @@ void EventSender::getNextEvent(syz_Event *out) {
 
 	*out = syz_Event{};
 
-	if (this->pending_events.try_dequeue(maybe_event)) {
+	if (this->pending_events.try_dequeue(maybe_event) == false) {
 		return;
 	}
 
@@ -65,7 +65,7 @@ void EventSender::enqueue(syz_Event &&event, EventHandleVec &&handles) {
 	}
 
 	PendingEvent pending{std::move(event), std::move(handles)};
-	assert(this->pending_events.enqueue(this->producer_token, std::move(pending)) == true);
+	this->pending_events.enqueue(this->producer_token, pending);
 }
 
 void EventBuilder::setSource(const std::shared_ptr<CExposable> &source) {
@@ -74,6 +74,11 @@ void EventBuilder::setSource(const std::shared_ptr<CExposable> &source) {
 		this->event.userdata = source->getUserdata();
 		this->has_source = true;
 	}
+}
+
+void EventBuilder::setContext(const std::shared_ptr<Context> &ctx) {
+	auto base = std::static_pointer_cast<CExposable>(ctx);
+	this->event.context = this->translateHandle(base);
 }
 
 syz_Handle EventBuilder::translateHandle(const std::shared_ptr<CExposable> &object) {
@@ -123,4 +128,21 @@ bool EventBuilder::associateObject(const std::shared_ptr<CExposable> &obj) {
 	return true;
 }
 
+void sendFinishedEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<CExposable> &source) {
+	ctx->sendEvent([&](auto *builder) {
+		builder->setSource(std::static_pointer_cast<CExposable>(source));
+		builder->setContext(ctx);
+		builder->setPayload(syz_EventFinished{});
+	});
 }
+
+void sendLoopedEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<CExposable> &source) {
+	ctx->sendEvent([&](auto *builder) {
+		builder->setSource(std::static_pointer_cast<CExposable>(source));
+		builder->setContext(ctx);
+		builder->setPayload(syz_EventLooped{});
+	});
+}
+
+}
+

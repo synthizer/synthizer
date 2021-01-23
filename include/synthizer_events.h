@@ -17,6 +17,10 @@ struct syz_EventLooped {
 struct syz_Event {
 	int type;
 	syz_Handle source;
+	/**
+	 *  * Can be 0. EThe context of the event, if any.
+	 * */
+	syz_Handle context;
 	void *userdata;
 	union {
 	 struct syz_EventLooped looped;

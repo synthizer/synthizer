@@ -1,6 +1,7 @@
 #pragma once
 
 #include "synthizer/buffer.hpp"
+#include "synthizer/edge_trigger.hpp"
 #include "synthizer/generator.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/types.hpp"
@@ -13,7 +14,7 @@ class FadeDriver;
 
 class BufferGenerator: public Generator {
 	public:
-	BufferGenerator(std::shared_ptr<Context> ctx): Generator(ctx) {}
+	BufferGenerator(std::shared_ptr<Context> ctx);
 
 	int getObjectType() override;
 	unsigned int getChannels() override;
@@ -33,9 +34,21 @@ class BufferGenerator: public Generator {
 	void generatePitchBendHelper(float *out, FadeDriver *gain_driver, double pitch_bend);
 	void generatePitchBend(float *out, FadeDriver *gain_driver, double pitch_bend);
 	void configureBufferReader(const std::shared_ptr<Buffer> &b);
+	/**
+	 * Either sends finished or looped, depending.
+	 * */
+	void handleEndEvent();
 
 	BufferReader reader;
+	/**
+	 * Counts the number of times this BufferGenerator has reached the end of a buffer.
+	 * */
+	unsigned int end_count = 0, prev_end_count = 0;
 	double position_in_samples = 0.0;
+	/**
+	 * Helps send events for looping/finished BufferGenerator.
+	 * */
+	EdgeTrigger end_trigger;
 };
 
 }
