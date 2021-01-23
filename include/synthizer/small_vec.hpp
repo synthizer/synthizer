@@ -30,7 +30,7 @@ class SmallVec {
  	* Returns whether the element was pushed.
  	* */
 	bool pushBack(T &&element) {
-		T *dest = this->preparePush():
+		T *dest = this->preparePush();
 		if (dest == nullptr) {
 			return false;
 		}
