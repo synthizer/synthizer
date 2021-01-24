@@ -66,7 +66,7 @@ class GenerationThread {
 	private:
 	std::size_t channels;
 	std::size_t leadin_latency = 0;
-	AllocatedAudioRing ring;
+	AllocatedAudioRing<float> ring;
 	std::atomic<int> running = 0, leadin_complete = 0;
 	std::thread thread;
 };

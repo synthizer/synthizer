@@ -24,7 +24,7 @@ static_assert(std::atomic<std::size_t>::is_always_lock_free, "Unable to use mute
  * This is SPSC, and used for things like the streaming generator which need to run part of their logic in a background thread.
  * */
 
-template<typename data_provider_t>
+template<typename ELEM_T, typename data_provider_t>
 class AudioRingBase {
 	public:
 
@@ -37,7 +37,7 @@ class AudioRingBase {
 	 * 
 	 * If maxAvailable is true, return at least the size requested, but if more space is available then return all the space.
 	 **/
-	std::tuple<std::size_t, float *, std::size_t, float *>
+	std::tuple<std::size_t, ELEM_T *, std::size_t, ELEM_T *>
 	beginWrite(std::size_t requested, bool maxAvailable = false) {
 		assert(maxAvailable == true || requested != 0);
 		/* What if we requested a size that's bigger than the buffer? */
@@ -87,7 +87,7 @@ class AudioRingBase {
 	 * If maxAvailable = false and there isn't enough data in the buffer, returns null pointers and 0 sizes.
 	 * Otherwise returns what's available even if it's less than the amount requested.
 	 * */
-	std::tuple<std::size_t, float *, std::size_t, float *>
+	std::tuple<std::size_t, ELEM_T *, std::size_t, ELEM_T *>
 	beginRead(std::size_t requested, bool maxAvailable = false) {
 		assert(maxAvailable == true || requested != 0);
 		/* What if we requested a size that's bigger than the buffer? */
@@ -100,12 +100,12 @@ class AudioRingBase {
 		std::size_t allocating = maxAvailable ? available : requested;
 		this->pending_read_size = allocating;
 		std::size_t size1 = std::min(allocating, this->size() - read_pointer);
-		float *ptr1 = &this->data_provider[0] + read_pointer;
+		ELEM_T *ptr1 = &this->data_provider[0] + read_pointer;
 		if (size1 == allocating)
 			return {size1, ptr1, 0, nullptr};
 
 		std::size_t size2 = allocating - size1;
-		float *ptr2 = &this->data_provider[0];
+		ELEM_T *ptr2 = &this->data_provider[0];
 		return {size1, ptr1, size2, ptr2};
 	}
 
@@ -137,40 +137,49 @@ class AudioRingBase {
 	AutoResetEvent read_end_event;
 };
 
-template<std::size_t n>
+template<typename ELEM_T, std::size_t n>
 class InlineAudioRingProvider {
 	public:
-	InlineAudioRingProvider() {
-		this->data.fill(0.0f);
-	}
+	InlineAudioRingProvider(): data() {}
 
 	constexpr std::size_t size() const {
 		return this->data.size();
 	}
 
-	float &
+	ELEM_T &
 	operator[](std::size_t x) {
 		return this->data[x];
 	}
 
 	private:
-	std::array<float, n> data;
+	std::array<ELEM_T, n> data;
 };
 
-/* An inline allocated audio ring. */
-template<std::size_t size>
-class InlineAudioRing: public AudioRingBase<InlineAudioRingProvider<size>> {
+/**
+ * An inline allocated audio ring.
+ * 
+ * ELEM_T is second so it can be defaulted.
+ * */
+template<std::size_t size, typename ELEM_T = float>
+class InlineAudioRing: public AudioRingBase<ELEM_T, InlineAudioRingProvider<ELEM_T, size>> {
 	public:
 
 	InlineAudioRing() {
 	}
 };
 
+template<typename ELEM_T>
+void audioRingDeleteArray(void *e) {
+	ELEM_T *ptr = (ELEM_T *)e;
+	delete[] ptr;
+}
+
+template<typename ELEM_T>
 class AllocatedRingProvider {
 	public:
 
 	~AllocatedRingProvider() {
-		deferredFree(this->data);
+		deferredFreeCallback(audioRingDeleteArray<ELEM_T>, this->data);
 	}
 	
 	std::size_t size() const {
@@ -178,23 +187,23 @@ class AllocatedRingProvider {
 	}
 
 	void allocate(std::size_t n) {
-		this->data = (float *)calloc(n, sizeof(float));
+		this->data  = new ELEM_T[n]();
 		this->_size = n;
-		std::fill(this->data, this->data+this->_size, 0.0f);
 	}
 
-	float&
+	ELEM_T&
 	operator[](std::size_t x) {
 		return *(this->data+x);
 	}
 
 	private:
 	std::size_t _size = 0;
-	float *data = nullptr;
+	ELEM_T *data = nullptr;
 };
 
 /* An allocated (heap) ring. */
-class AllocatedAudioRing: public AudioRingBase<AllocatedRingProvider> {
+template<typename ELEM_T = float>
+class AllocatedAudioRing: public AudioRingBase<ELEM_T, AllocatedRingProvider<ELEM_T>> {
 	public:
 	AllocatedAudioRing(std::size_t n) {
 		assert(n > 0);
