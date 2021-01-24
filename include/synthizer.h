@@ -35,6 +35,33 @@ typedef unsigned long long syz_Handle;
 typedef int syz_ErrorCode;
 
 /*
+ * Event payloads.
+ *
+ * Note to maintainers: pulling these out to a separate header breaks at least autopxd, and possibly other bindings generators.
+ * */
+struct syz_EventFinished {
+	char unused; // gives the struct a size in C, lets C->C++ not die horribly.
+};
+
+struct syz_EventLooped {
+	unsigned long long loop_counter;
+};
+
+struct syz_Event {
+	int type;
+	syz_Handle source;
+	/**
+	 *  * Can be 0. EThe context of the event, if any.
+	 * */
+	syz_Handle context;
+	void *userdata;
+	union {
+	 struct syz_EventLooped looped;
+	 struct syz_EventFinished finished;
+	} payload;
+};
+
+/*
 * Configure logging.  Do this before your program calls anything else for reliability.
 *
 * It is possible to change the level at any time.
@@ -157,9 +184,8 @@ SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out);
 SYZ_CAPI syz_ErrorCode syz_contextGetBlock(syz_Handle context, float *block);
 
 /**
- * Event support. The actual definition of syz_Event is in synthizer_events.h
+ * Event support.
  * */
-struct syz_Event;
 
 /**
  * Enable events for a context. Once enabled, failure to drain the event queue is effectively a memory leak as the

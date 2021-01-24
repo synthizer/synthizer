@@ -1,7 +1,5 @@
 #pragma once
 
-#include "synthizer_events.h"
-
 #include "synthizer/small_vec.hpp"
 
 #include "concurrentqueue.h"

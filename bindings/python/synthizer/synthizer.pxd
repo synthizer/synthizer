@@ -4,6 +4,23 @@ cdef extern from "synthizer.h":
 
     ctypedef int syz_ErrorCode
 
+    cdef struct syz_EventFinished:
+        char unused
+
+    cdef struct syz_EventLooped:
+        unsigned long long loop_counter
+
+    cdef union _syz_Event_payload_u:
+        syz_EventLooped looped
+        syz_EventFinished finished
+
+    cdef struct syz_Event:
+        int type
+        syz_Handle source
+        syz_Handle context
+        void* userdata
+        _syz_Event_payload_u payload
+
     cdef enum SYZ_LOGGING_BACKEND:
         SYZ_LOGGING_BACKEND_STDERR
 
@@ -26,6 +43,8 @@ cdef extern from "synthizer.h":
     syz_ErrorCode syz_shutdown() nogil
 
     syz_ErrorCode syz_handleFree(syz_Handle handle)
+
+    syz_ErrorCode syz_handleGetObjectType(int* out, syz_Handle handle)
 
     syz_ErrorCode syz_getUserdata(void** out, syz_Handle handle)
 
@@ -60,6 +79,10 @@ cdef extern from "synthizer.h":
     syz_ErrorCode syz_createContextHeadless(syz_Handle* out)
 
     syz_ErrorCode syz_contextGetBlock(syz_Handle context, float* block)
+
+    syz_ErrorCode syz_contextEnableEvents(syz_Handle context)
+
+    syz_ErrorCode syz_contextGetNextEvent(syz_Event* out, syz_Handle context)
 
     syz_ErrorCode syz_createStreamingGenerator(syz_Handle* out, syz_Handle context, char* protocol, char* path, char* options)
 

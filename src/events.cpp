@@ -1,5 +1,5 @@
+#include "synthizer.h"
 #include "synthizer_constants.h"
-#include "synthizer_events.h"
 
 #include "synthizer/context.hpp"
 #include "synthizer/events.hpp"

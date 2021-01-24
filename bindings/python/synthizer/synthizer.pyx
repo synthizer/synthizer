@@ -5,6 +5,7 @@ import threading
 
 from synthizer_constants cimport *
 
+
 from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
 from cpython.ref cimport PyObject, Py_DECREF, Py_INCREF
 
@@ -242,6 +243,27 @@ cdef class Pausable(_BaseObject):
     def pause(self):
         _checked(syz_pause(self.handle))
 
+cdef class FinishedEvent:
+    cpdef public Context context
+    cpdef public object source
+
+    def __init__(self, context, source):
+        self.context = context
+        self.source = source
+
+cdef class LoopedEvent:
+    cpdef public Context context
+    cpdef public object source
+
+    def __init__(self, context, source):
+        self.context = context
+        self.source = source
+
+cdef _convert_event(syz_Event event):
+    if event.type == SYZ_EVENT_TYPE_FINISHED:
+        return FinishedEvent(_handle_to_object(event.context), _handle_to_object(event.source))
+    elif event.type == SYZ_EVENT_TYPE_LOOPED:
+        return LoopedEvent(_handle_to_object(event.context), _handle_to_object(event.source))
 
 cdef class Context(Pausable):
     """The Synthizer context represents an open audio device and groups all Synthizer objects created with it into one unit.
@@ -250,10 +272,12 @@ cdef class Context(Pausable):
     methods on other objects in Synthizer will generally not have an effect.  Once the context is gone, the only operation that makes sense for other object types
     is to destroy them.  Put another way, keep the Context alive for the duration of your application."""
 
-    def __init__(self):
+    def __init__(self, enable_events=False):
         cdef syz_Handle handle
         _checked(syz_createContext(&handle))
         super().__init__(handle)
+        if enable_events:
+            self.enable_events()
 
     gain = DoubleProperty(SYZ_P_GAIN)
     position = Double3Property(SYZ_P_POSITION)
@@ -273,6 +297,32 @@ cdef class Context(Pausable):
 
     cpdef remove_route(self, _BaseObject output, _BaseObject input, fade_time=0.01):
         _checked(syz_routingRemoveRoute(self.handle, output.handle, input.handle, fade_time))
+
+    cpdef enable_events(self):
+        _checked(syz_contextEnableEvents(self.handle))
+
+    def get_events(self, limit=0):
+        """Returns an iterator over events. Said iterator will
+        drive Synthizer's syz_contextGetNextEvent interface, yielding the next event on every iteration. This allows for
+        normal Python loops to consume events.
+
+        Stopping iteration early is permitted: any events not drained from this iterator will show up in the next one.
+
+        If limit is a non-zero value, at most limit events will be yielded. Otherwise, this iterator wil continue
+        until the queue is drained."""
+        cdef syz_Event event
+        cdef unsigned int drained_so_far
+        if limit < 0:
+            raise RuntimeError("Limit may not be negative")
+        while True:
+            _checked(syz_contextGetNextEvent(&event, self.handle))
+            if event.type == SYZ_EVENT_TYPE_INVALID:
+                break
+            yield _convert_event(event)
+            drained_so_far += 1
+            if limit != 0 and drained_so_far == limit:
+                break
+
 
 cdef class Generator(Pausable):
     """Base class for all generators."""

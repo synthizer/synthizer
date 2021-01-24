@@ -20,7 +20,7 @@ synthizer.configure_logging_backend(synthizer.LoggingBackend.STDERR)
 synthizer.set_log_level(synthizer.LogLevel.DEBUG)
 
 synthizer.initialize()
-ctx = synthizer.Context()
+ctx = synthizer.Context(enable_events=True)
 gen = synthizer.BufferGenerator(ctx)
 buffer = synthizer.Buffer.from_stream("file", sys.argv[1], "")
 gen.buffer = buffer

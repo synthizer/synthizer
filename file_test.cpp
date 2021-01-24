@@ -11,7 +11,6 @@
 
 #include "synthizer.h"
 #include "synthizer_constants.h"
-#include "synthizer_events.h"
 
 #define PI 3.1415926535
 #define CHECKED(x) do { \
