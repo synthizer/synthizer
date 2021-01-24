@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <cassert>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -30,7 +31,7 @@ namespace synthizer {
  * 
  * Docks are currently MPSC: only one thread should be walking the dock at a time,.
  *
- * Any changes made in the walker need to synchronize out via another mechanism. AudioRing for instance  has its own semaphore and atomics.
+ * Any changes made in the walker need to synchronize out via another mechanism. SpscRing for instance  has its own semaphore and atomics.
  * 
  * It is important to note that eventual consistency is the only API-level guarantee: specifically, when all consumers stop calling dock/undock on the same object, the latest operation eventually wins. Walkers may not see all changes, or see the changes in the same order.
  * That said, the current implementation provides stronger guarantees. Don't rely on this. We might have to optimize later, and it will be a pain if something does.

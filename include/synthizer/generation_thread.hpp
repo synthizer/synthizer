@@ -1,6 +1,6 @@
 #pragma once
 
-#include "synthizer/audio_ring.hpp"
+#include "synthizer/spsc_ring.hpp"
 #include "synthizer/config.hpp"
 
 #include "autoresetevent.h"
@@ -66,7 +66,7 @@ class GenerationThread {
 	private:
 	std::size_t channels;
 	std::size_t leadin_latency = 0;
-	AllocatedAudioRing<float> ring;
+	AllocatedSpscRing<float> ring;
 	std::atomic<int> running = 0, leadin_complete = 0;
 	std::thread thread;
 };

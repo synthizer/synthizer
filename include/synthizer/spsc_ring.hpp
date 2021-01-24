@@ -15,17 +15,15 @@
 #include "types.hpp"
 
 namespace synthizer {
-static_assert(std::atomic<std::size_t>::is_always_lock_free, "Unable to use mutex in size_t atomic inside AudioRing due to kernel calls.");
+static_assert(std::atomic<std::size_t>::is_always_lock_free, "Unable to use mutex in size_t atomic inside SpscRing due to kernel calls.");
 
 /*
- * An audio ring is a ringbuffer modelled after the DirectSound API. You tell it how many samples you want,
+ * An SpscRing is a ringbuffer modelled after the DirectSound API. You tell it how many samples you want,
  * and it gives you a pair of pointers and lengths. You write to both lengths, then tell it you're done.
- * 
- * This is SPSC, and used for things like the streaming generator which need to run part of their logic in a background thread.
  * */
 
 template<typename ELEM_T, typename data_provider_t>
-class AudioRingBase {
+class SpscRingBase {
 	public:
 
 	/*
@@ -43,9 +41,6 @@ class AudioRingBase {
 		/* What if we requested a size that's bigger than the buffer? */
 		assert(requested <= this->size());
 
-		/*
-		 * Explanation: the write pointer is always "behind" the read pointer, such that if write == read, then there is no data in the buffer.
-		 * */
 		std::size_t available;
 		do {
 			/* Get the number of bytes left, subtract from the size of the ring. */
@@ -127,7 +122,7 @@ class AudioRingBase {
 	}
 
 	protected:
-	AudioRingBase() = default;
+	SpscRingBase() = default;
 	data_provider_t data_provider;
 
 	private:
@@ -138,9 +133,9 @@ class AudioRingBase {
 };
 
 template<typename ELEM_T, std::size_t n>
-class InlineAudioRingProvider {
+class InlineSpscRingProvider {
 	public:
-	InlineAudioRingProvider(): data() {}
+	InlineSpscRingProvider(): data() {}
 
 	constexpr std::size_t size() const {
 		return this->data.size();
@@ -156,15 +151,13 @@ class InlineAudioRingProvider {
 };
 
 /**
- * An inline allocated audio ring.
- * 
- * ELEM_T is second so it can be defaulted.
+ * An inline allocated SPSC ring.
  * */
-template<std::size_t size, typename ELEM_T = float>
-class InlineAudioRing: public AudioRingBase<ELEM_T, InlineAudioRingProvider<ELEM_T, size>> {
+template<typename ELEM_T, std::size_t size>
+class InlineSpscRing: public SpscRingBase<ELEM_T, InlineSpscRingProvider<ELEM_T, size>> {
 	public:
 
-	InlineAudioRing() {
+	InlineSpscRing() {
 	}
 };
 
@@ -203,9 +196,9 @@ class AllocatedRingProvider {
 
 /* An allocated (heap) ring. */
 template<typename ELEM_T = float>
-class AllocatedAudioRing: public AudioRingBase<ELEM_T, AllocatedRingProvider<ELEM_T>> {
+class AllocatedSpscRing: public SpscRingBase<ELEM_T, AllocatedRingProvider<ELEM_T>> {
 	public:
-	AllocatedAudioRing(std::size_t n) {
+	AllocatedSpscRing(std::size_t n) {
 		assert(n > 0);
 		this->data_provider.allocate(n);
 	}

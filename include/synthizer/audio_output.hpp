@@ -5,7 +5,6 @@
 #include <functional>
 #include <memory>
 
-#include "audio_ring.hpp"
 #include "config.hpp"
 #include "dock.hpp"
 #include "error.hpp"
