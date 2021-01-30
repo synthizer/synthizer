@@ -27,7 +27,9 @@ class StreamingGeneratorCommand {
 	/* If set, seek before doing anything else. */
 	std::optional<double> seek;
 	/* Final position of the block. */
-	double final_position;
+	double final_position = 0.0;
+	/* Used to send events from the main thread. */
+	unsigned int finished_count = 0, looped_count = 0;
 };
 
 class StreamingGenerator: public Generator {
@@ -56,7 +58,10 @@ class StreamingGenerator: public Generator {
 	deferred_vector<StreamingGeneratorCommand> commands;
 	/* Allocates the buffers for the commands contiguously. */
 	deferred_vector<float> buffer;
+	/* Everything below here is owned by the background thread. */
 	double background_position = 0.0;
+	/* Used to guard against spamming finished events. */
+	bool sent_finished = false;
 };
 
 }

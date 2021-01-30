@@ -9,6 +9,7 @@
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/decoding.hpp"
+#include "synthizer/events.hpp"
 #include "synthizer/fade_driver.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
@@ -90,6 +91,14 @@ void StreamingGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
 	});
 
 	cmd->seek.reset();
+	while (cmd->looped_count > 0) {
+		cmd->looped_count--;
+		sendLoopedEvent(this->getContext(), this->shared_from_this());
+	}
+	while (cmd->finished_count > 0) {
+		cmd->finished_count--;
+		sendFinishedEvent(this->getContext(), this->shared_from_this());
+	}
 	if (this->acquirePosition(new_pos) == true) {
 		cmd->seek.emplace(new_pos);
 	}
@@ -97,64 +106,89 @@ void StreamingGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
 	this->background_thread.send(cmd);
 }
 
+struct FillBufferRet {
+	double position = 0.0;
+	unsigned int looped_count = 0;
+	unsigned int finished_count = 0;
+};
+
 /*
  * Returns the new position, given the old one.
  * 
  * Decoders intentionally don't know how to give us this info, so we have to book keep it ourselves.
  * */
-static double fillBufferFromDecoder(AudioDecoder &decoder, unsigned int size, unsigned int channels, float *dest, bool looping, double position_in) {
+static FillBufferRet fillBufferFromDecoder(AudioDecoder &decoder, unsigned int size, unsigned int channels, float *dest, bool looping, double position_in) {
+	FillBufferRet ret{};
 	auto sr = decoder.getSr();
 	unsigned int needed = size;
 	bool justLooped = false;
 
 	float *cursor = dest;
-	while (needed) {
+	ret.position = position_in;
+	while (needed > 0) {
 		unsigned int got = decoder.writeSamplesInterleaved(needed, cursor);
 		cursor += channels*got;
 		needed -= got;
-		position_in += got / (double)sr;
+		ret.position += got / (double)sr;
 		/*
 		 * justLooped stops us from seeking to the beginning, getting no data, and then looping forever.
 		 * If we got data, we didn't just loop.
 		 * 	 */
 		justLooped = justLooped && got > 0;
 		if (needed > 0 && justLooped == false && looping && decoder.supportsSeek()) {
+			ret.looped_count++;
 			decoder.seekSeconds(0.0);
 			/* We just looped. Keep this set until we get data. */
 			justLooped = true;
-			position_in = 0.0;
-		} else {
+			ret.position = 0.0;
+		} else if (needed > 0) {
+			ret.finished_count++;
 			break;
 		}
 	}
 	std::fill(cursor, cursor + needed*channels, 0.0f);
-	return position_in;
+	return ret;
 }
 
 void StreamingGenerator::generateBlockInBackground(StreamingGeneratorCommand *cmd) {
 	float *out = cmd->buffer;
 	bool looping = this->getLooping();
+	FillBufferRet fill_info;
 
 	try {
 		if (cmd->seek && this->decoder->supportsSeek()) {
 			this->background_position = cmd->seek.value();
 			this->decoder->seekSeconds(this->background_position);
 		}
+		if (cmd->seek) {
+			this->sent_finished = false;
+		}
 
 		if (this->resampler == nullptr) {
 			std::fill(out, out + config::BLOCK_SIZE * this->getChannels(), 0.0f);
-			this->background_position = fillBufferFromDecoder(*this->decoder, config::BLOCK_SIZE, this->getChannels(), out, looping, this->background_position);
+			fill_info = fillBufferFromDecoder(*this->decoder, config::BLOCK_SIZE, this->getChannels(), out, looping, this->background_position);
 		} else {
 			float *rs_buf;
 			int needed = this->resampler->ResamplePrepare(config::BLOCK_SIZE, this->getChannels(), &rs_buf);
-			this->background_position = fillBufferFromDecoder(*this->decoder, needed, this->getChannels(), rs_buf, looping, this->background_position);
+			fill_info = fillBufferFromDecoder(*this->decoder, needed, this->getChannels(), rs_buf, looping, this->background_position);
 			unsigned int resampled = this->resampler->ResampleOut(out, needed, config::BLOCK_SIZE, this->getChannels());
 			if(resampled < config::BLOCK_SIZE) {
 				std::fill(out + resampled * this->getChannels(), out + config::BLOCK_SIZE * this->getChannels(), 0.0f);
 			}
 		}
 
+		this->background_position = fill_info.position;
+		cmd->looped_count = fill_info.looped_count;
+		cmd->finished_count = fill_info.finished_count;
 		cmd->final_position = this->background_position;
+		/*
+		 * Guard against flooding the event queue.
+		 * */
+		if (this->sent_finished == true) {
+			cmd->finished_count = 0;
+		} else if (cmd->finished_count > 0) {
+			this->sent_finished = true;
+		}
 	} catch(std::exception &e) {
 		logError("Background thread for streaming generator had error: %s. Trying to recover...", e.what());
 	}
