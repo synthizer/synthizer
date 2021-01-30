@@ -16,31 +16,33 @@ using namespace synthizer;
 
 int main() {
 	std::array<float, config::BLOCK_SIZE> tmp_buf;
-	GenerationThread gt{1, config::BLOCK_SIZE * 10};
-	float gen_float = 0.0f, expected_float = 0.0f;
+	std::vector<int> ints;
+	GenerationThread<int *> gt{5};
 	std::size_t read_so_far = 0;
-	const std::size_t iterations = 30000;
+	const std::size_t iterations = 100;
+	int gen_int = 0;
 
-	gt.start([&](unsigned int ch, float *out) {
-		for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-		 out[i] = gen_float;
-		 gen_float++;
-		}
+	ints.resize(10);
+	for (auto &i: ints) {
+		gt.send(&i);
+	}
+
+	gt.start([&](int **item) {
+		**item = gen_int;
+		gen_int++;
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));
 	});
 
-	while (read_so_far < iterations) {
-		std::size_t got = gt.read(std::min<std::size_t>(config::BLOCK_SIZE, (iterations - read_so_far)), &tmp_buf[0]);
-		for (std::size_t i = 0; i < got; i++) {
-			if (tmp_buf[i] != expected_float) {
-				std::printf("%f != %f", tmp_buf[i], expected_float);
-				return 1;
-			}
-			expected_float++;
+	for (int i = 0; i < iterations; i++) {
+		int *got;
+		if (gt.receive(&got) == false) {
+			continue;
 		}
-		read_so_far += got;
+		if (*got != i) {
+			return 1;
+		}
+		gt.send(got);
 	}
-
 
 	return 0;
 }

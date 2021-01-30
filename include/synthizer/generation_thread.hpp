@@ -4,6 +4,7 @@
 #include "synthizer/config.hpp"
 
 #include "autoresetevent.h"
+#include "concurrentqueue.h"
 
 #include <algorithm>
 #include <atomic>
@@ -18,29 +19,22 @@ namespace synthizer {
 /*
  * Some things need to be able to generate audio in a background thread as fast as possible because they're expensive or would block or etc.
  * 
- * This wraps a closure and an audio ring to make that happen.
- * 
- * CALLABLE is called as (channels, buffer) and should output config::BLOCK_SIZE worth of data.
- * Channels is always as specified in the constructor, but passed for convenience.
- * 
+ * The GenerationThread is fed by calling send, and read from by calling receive.
+ * To use it, call start with a closure taking a T*, process the T*, and return.
+ * Pass Ts to the thread with send, and get them back with receive. Receive returns false
+ * if no item could be dequeued. Configure leadin if you need to make sure a specific number of items have been processed
+ * before returning any.
+ *
  * start/stop shouldn't be called concurrently by different threads or from the callable.
  * */
+template<typename T>
 class GenerationThread {
 	public:
-	/*
-	 * max_latency must be > 0 and a multiple of config::BLOCK_SIZE.
-	 * 
-	 * To actually start the thread, call start with your closure.
-	 * 
-	 * leadin_latency is how much needs to be computed before the first time we start returning data. This is used to allow buffers to fill enough that there won't be drop-outs.
+	/**
+	 * if leadin is non-zero, the GenerationThread won't return any data until at least leadin items are processed. This is used by e.g. StreamingGenerator
+	 * to make sure that there's enough audio to prevent underruns.
 	 * */
-	GenerationThread(std::size_t channels, std::size_t max_latency): GenerationThread(channels, max_latency, max_latency) {}
-	GenerationThread(std::size_t channels, std::size_t max_latency, std::size_t leadin_latency): channels(channels), leadin_latency(leadin_latency),
-		ring(max_latency * channels) {
-		assert(max_latency > 0);
-		assert(max_latency % config::BLOCK_SIZE == 0);
-		assert(leadin_latency <= max_latency);
-	}
+	GenerationThread(unsigned int leadin = 0): leadin(leadin) {}
 
 	~GenerationThread() {
 		this->stop();
@@ -49,93 +43,68 @@ class GenerationThread {
 	template<typename CALLABLE>
 	void start(CALLABLE &&callable);
 	void stop();
-
-	/*
-	 * Reads frames. Returns the amount actually read.
+	void send(const T &item);
+	/**
+	 * Returns true if an item was received.
 	 * */
-	std::size_t read(std::size_t amount, float *dest);
+	bool receive(T *item);
 
-	/*
-	 * used for pitch bend, etc. Skips frames in the buffer.
-	 * */
-	std::size_t skip(std::size_t amount);
-
+	private:
 	template<typename CALLABLE>
 	void backgroundThread(CALLABLE&& callable);
 
-	private:
-	std::size_t channels;
-	std::size_t leadin_latency = 0;
-	AllocatedSpscRing<float> ring;
-	std::atomic<int> running = 0, leadin_complete = 0;
+	moodycamel::ConcurrentQueue<T> incoming_queue, outgoing_queue;
+	std::atomic<int> running = 0, leadin = 0;
+	AutoResetEvent incoming_event;
 	std::thread thread;
 };
 
+template<typename T>
 template<typename CALLABLE>
-void GenerationThread::start(CALLABLE &&callable) {
-	this->leadin_complete.store(0);
+void GenerationThread<T>::start(CALLABLE &&callable) {
 	this->running.store(1);
 	this->thread = std::thread([=] () {
 		this->backgroundThread(callable);
 	});
 }
 
-void GenerationThread::stop() {
+template<typename T>
+void GenerationThread<T>::stop() {
 	auto expected = this->running.load();
 	if (expected && this->running.compare_exchange_strong(	expected, 0)) {
-		/* Drain the ring, which will wake up the background thread and let it know that it's time to stop. */
-		this->ring.beginRead(0, true);
-		this->ring.endRead();
+		this->incoming_event.signal();
 		this->thread.join();
 	}
 }
 
-std::size_t GenerationThread::read(std::size_t amount, float *dest) {
-	if (this->leadin_complete.load(std::memory_order_relaxed) == 0) {
-		return 0;
-	}
-
-	auto [size1, ptr1, size2, ptr2] = this->ring.beginRead(amount * this->channels);
-	/*
-	 * Since we request a whole block, size1 == 0 means none was ready
-	 * We could request partial blocks, but doing so would just make underruns worse.
-	 * */
-	if (size1 == 0) {
-		this->ring.endRead();
-		return 0;
-	}
-
-	assert(size1 % this->channels == 0);
-	assert(size2 % this->channels == 0);
-	assert(size1 + size2 == amount * this->channels);
-	std::copy(ptr1, ptr1 + size1, dest);
-	if (ptr2) {
-		std::copy(ptr2, ptr2 + size2, dest + size1);
-	}
-	this->ring.endRead();
-	return (size1 + size2) / this->channels;
+template<typename T>
+void GenerationThread<T>::send(const T &item) {
+	this->incoming_queue.enqueue(item);
+	this->incoming_event.signal();
 }
 
-std::size_t GenerationThread::skip(std::size_t amount) {
-	auto [size1, ptr1, size2, ptr2] = this->ring.beginRead(amount * this->channels, true);
-	this->ring.endRead();
-	assert(size1 % channels == 0);
-	assert(size2 % channels == 0);
-	return size1 + size2;
+template<typename T>
+bool GenerationThread<T>::receive(T *item) {
+	if (this->leadin.load(std::memory_order_relaxed) != 0) {
+		return false;
+	}
+	return this->outgoing_queue.try_dequeue(*item);
 }
 
+template<typename T>
 template<typename CALLABLE>
-void GenerationThread::backgroundThread(CALLABLE &&callable) {
-	std::size_t frames_generated = 0;
+void GenerationThread<T>::backgroundThread(CALLABLE &&callable) {
 	while (this->running.load(std::memory_order_relaxed)) {
-		auto [size1, ptr1, size2, ptr2] = this->ring.beginWrite(config::BLOCK_SIZE * this->channels);
-		assert(size2 == 0 && ptr2 == nullptr);
-		assert(size1 == config::BLOCK_SIZE * this->channels);
-		callable(this->channels, ptr1);
-		this->ring.endWrite();
-		frames_generated += config::BLOCK_SIZE;
-		if (frames_generated >= this->leadin_latency) {
-			this->leadin_complete.store(1, std::memory_order_relaxed);
+		T item;
+
+		if (this->incoming_queue.try_dequeue(item)) {
+			callable(&item);
+			this->outgoing_queue.enqueue(item);
+			if (this->leadin.load(std::memory_order_relaxed) > 0) {
+				this->leadin.fetch_sub(1, std::memory_order_relaxed);
+			}
+		} else {
+			this->incoming_event.wait();
 		}
 	}
 }

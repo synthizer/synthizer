@@ -20,9 +20,11 @@
 
 namespace synthizer {
 
-StreamingGenerator::StreamingGenerator(const std::shared_ptr<Context> &ctx, const std::shared_ptr<AudioDecoder> &decoder): Generator(ctx),
-	/* 100 MS latency. */
-	background_thread(decoder->getChannels(), nextMultipleOf(0.1 * config::SR, config::BLOCK_SIZE)),
+constexpr std::size_t STREAMING_GENERATOR_BLOCKS = (std::size_t)(nextMultipleOf(0.1 * config::SR, config::BLOCK_SIZE)) / config::BLOCK_SIZE;
+
+StreamingGenerator::StreamingGenerator(const std::shared_ptr<Context> &ctx, const std::shared_ptr<AudioDecoder> &decoder):
+Generator(ctx),
+	background_thread(STREAMING_GENERATOR_BLOCKS),
 	decoder(decoder) {
 	this->channels = decoder->getChannels();
 	double old_sr = decoder->getSr();
@@ -33,8 +35,16 @@ StreamingGenerator::StreamingGenerator(const std::shared_ptr<Context> &ctx, cons
 		this->resampler->SetRates(old_sr, config::SR);
 	}
 
-	background_thread.start([this] (std::size_t channels, float *dest) {
-		this->generateBlockInBackground(channels, dest);
+	this->commands.resize(STREAMING_GENERATOR_BLOCKS);
+	this->buffer.resize(config::BLOCK_SIZE * STREAMING_GENERATOR_BLOCKS * this->channels, 0.0f);
+	for (std::size_t i = 0; i < commands.size(); i++) {
+		auto &c = commands[i];
+		c.buffer = &this->buffer[config::BLOCK_SIZE * this->channels * i];
+		this->background_thread.send(&c);
+	}
+
+	background_thread.start([this] (StreamingGeneratorCommand **item) {
+		this->generateBlockInBackground(*item);
 	});
 }
 
@@ -63,27 +73,28 @@ unsigned int StreamingGenerator::getChannels() {
 }
 
 void StreamingGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
-	auto tmp_buf_guard = acquireBlockBuffer();
-	float *tmp_buf_ptr = tmp_buf_guard;
-
+	StreamingGeneratorCommand *cmd;
 	double new_pos;
-	bool pos_changed = this->acquirePosition(new_pos);
-	if (pos_changed) {
-		this->next_position.write(new_pos);
+
+	if (this->background_thread.receive(&cmd) == false) {
+		return;
 	}
 
-	auto got = this->background_thread.read(config::BLOCK_SIZE, tmp_buf_ptr);
 	gain_driver->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
-		for (unsigned int i = 0; i < got; i++) {
+		for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 			float g = gain_cb(i);
 			for (unsigned int ch = 0; ch < this->channels; ch++) {
-				output[i* this->channels + ch] += g * tmp_buf_ptr[i * this->channels + ch];
+				output[i* this->channels + ch] += g * cmd->buffer[i * this->channels + ch];
 			}
 		}
 	});
 
-	/* important to set this without tracking changes. Tracking changes will infinite loop. */
-	this->setPosition(this->background_position.load(std::memory_order_relaxed), false);
+	cmd->seek.reset();
+	if (this->acquirePosition(new_pos) == true) {
+		cmd->seek.emplace(new_pos);
+	}
+	this->setPosition(cmd->final_position, false);
+	this->background_thread.send(cmd);
 }
 
 /*
@@ -120,31 +131,30 @@ static double fillBufferFromDecoder(AudioDecoder &decoder, unsigned int size, un
 	return position_in;
 }
 
-void StreamingGenerator::generateBlockInBackground(std::size_t channels, float *out) {
-	try {
-		bool looping = this->getLooping() == 1;
+void StreamingGenerator::generateBlockInBackground(StreamingGeneratorCommand *cmd) {
+	float *out = cmd->buffer;
+	bool looping = this->getLooping();
 
-		double position;
-		if (this->next_position.read(&position)) {
-			this->decoder->seekSeconds(position);
-		} else {
-			position = this->background_position.load(std::memory_order_relaxed);
+	try {
+		if (cmd->seek && this->decoder->supportsSeek()) {
+			this->background_position = cmd->seek.value();
+			this->decoder->seekSeconds(this->background_position);
 		}
 
 		if (this->resampler == nullptr) {
 			std::fill(out, out + config::BLOCK_SIZE * this->getChannels(), 0.0f);
-			position = fillBufferFromDecoder(*this->decoder, config::BLOCK_SIZE, this->getChannels(), out, looping, position);
+			this->background_position = fillBufferFromDecoder(*this->decoder, config::BLOCK_SIZE, this->getChannels(), out, looping, this->background_position);
 		} else {
 			float *rs_buf;
 			int needed = this->resampler->ResamplePrepare(config::BLOCK_SIZE, this->getChannels(), &rs_buf);
-			position = fillBufferFromDecoder(*this->decoder, needed, this->getChannels(), rs_buf, looping, position);
+			this->background_position = fillBufferFromDecoder(*this->decoder, needed, this->getChannels(), rs_buf, looping, this->background_position);
 			unsigned int resampled = this->resampler->ResampleOut(out, needed, config::BLOCK_SIZE, this->getChannels());
 			if(resampled < config::BLOCK_SIZE) {
 				std::fill(out + resampled * this->getChannels(), out + config::BLOCK_SIZE * this->getChannels(), 0.0f);
 			}
 		}
 
-		this->background_position.store(position, std::memory_order_relaxed);
+		cmd->final_position = this->background_position;
 	} catch(std::exception &e) {
 		logError("Background thread for streaming generator had error: %s. Trying to recover...", e.what());
 	}
