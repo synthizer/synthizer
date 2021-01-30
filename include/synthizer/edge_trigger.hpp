@@ -98,7 +98,7 @@ class EdgeTrigger {
 	EdgeTrigger(): trigger(nullptr) {}
 
 	template<typename CONDITION_CB, typename TRIGGER_CB>
-	EdgeTrigger(EdgeTriggerType tuype, const CONDITION_CB &&condition_callback, const TRIGGER_CB &&trigger_callback) {
+	EdgeTrigger(EdgeTriggerType type, const CONDITION_CB &&condition_callback, const TRIGGER_CB &&trigger_callback) {
 		this->configureEdgeTrigger(type, std::forward(condition_callback), std::forward(trigger_callback));
 	}
 

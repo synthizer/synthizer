@@ -19,7 +19,7 @@ class SmallVec {
 	 * */
 	bool pushBack(const T &element) {
 		T *dest = this->preparePush();
-		if (t == nullptr) {
+		if (dest == nullptr) {
 			return false;
 		}
 		*dest = element;
