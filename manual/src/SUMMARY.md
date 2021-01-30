@@ -5,6 +5,7 @@
 # Tutorials
 
 - [A Basic Python Tutorial](./tutorials/python.md)
+- [Events (alpha)](./tutorials/events.md)
 
 # Concepts
 
