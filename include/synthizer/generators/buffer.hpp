@@ -41,14 +41,11 @@ class BufferGenerator: public Generator {
 
 	BufferReader reader;
 	/**
-	 * Counts the number of times this BufferGenerator has reached the end of a buffer.
+	 * Counters for events.
 	 * */
-	unsigned int end_count = 0, prev_end_count = 0;
+	unsigned int finished_count = 0, looped_count = 0;
+	bool sent_finished = false;
 	double position_in_samples = 0.0;
-	/**
-	 * Helps send events for looping/finished BufferGenerator.
-	 * */
-	EdgeTrigger end_trigger;
 };
 
 }

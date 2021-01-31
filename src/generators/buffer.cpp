@@ -21,9 +21,6 @@
 namespace synthizer {
 
 BufferGenerator::BufferGenerator(std::shared_ptr<Context> ctx): Generator(ctx) {
-	this->end_trigger.configureEdgeTrigger(EdgeTriggerType::Up,
-		[&]() { return this->end_count != this->prev_end_count; },
-		[&]() { this->handleEndEvent(); });
 }
 
 int BufferGenerator::getObjectType() {
@@ -56,6 +53,7 @@ void BufferGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
 
 	if (this->acquirePosition(new_pos)) {
 		this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLength());
+		this->sent_finished = false;
 	}
 
 	if (std::fabs(1.0 - pitch_bend) > 0.001) {
@@ -65,6 +63,15 @@ void BufferGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
 	}
 
 	this->setPosition(this->position_in_samples / config::SR, false);
+
+	while (this->looped_count > 0) {
+		sendLoopedEvent(this->getContext(), this->shared_from_this());
+		this->looped_count--;
+	}
+	while (this->finished_count > 0) {
+		sendFinishedEvent(this->getContext(), this->shared_from_this());
+		this->finished_count--;
+	}
 }
 
 template<bool L>
@@ -95,11 +102,13 @@ void BufferGenerator::generatePitchBendHelper(float *output, FadeDriver *gain_dr
 			if (L == true) {
 				new_pos = std::fmod(new_pos, this->reader.getLength());
 				if (new_pos < pos) {
-					this->end_count += 1;
+					this->looped_count += 1;
 				}
 			} else {
-				if (pos > this->reader.getLength()) {
-					this->end_count += 1;
+				if (pos >= this->reader.getLength() && this->sent_finished == false) {
+					/* Don't forget to guard against sending this multiple times. */
+					this->finished_count += 1;
+					this->sent_finished = true;
 				}
 				break;
 			}
@@ -139,19 +148,21 @@ void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gain_driver
 			cursor += got * this->reader.getChannels();
 			pos += got;
 			if (remaining > 0) {
-				this->end_count += 1;
-				if (looping == false) break;
-				else pos = 0;
+				if (looping == false) {
+					if (this->sent_finished == false) {
+						this->finished_count += 1;
+						this->sent_finished = true;
+					}
+					break;
+				}
+				else {
+					pos = 0;
+					this->looped_count += 1;
+				}
 			}
 		}
 	});
 	assert(i <= config::BLOCK_SIZE);
-
-	/**
-	 *  Maybe send some events.
-	 * */
-	this->end_trigger.evaluate();
-	this->prev_end_count = this->end_count;
 
 	this->position_in_samples = pos;
 }
