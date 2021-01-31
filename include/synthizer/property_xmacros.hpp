@@ -36,6 +36,7 @@ DOUBLE_P(SYZ_P_CLOSENESS_BOOST_DISTANCE, closeness_boost_distance, ClosenessBoos
 DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0) \
 DOUBLE3_P(SYZ_P_POSITION, position, Position, 0.0, 0.0, 0.0) \
 DOUBLE6_P(SYZ_P_ORIENTATION, orientation, Orientation, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0) \
+INT_P(SYZ_P_PANNER_STRATEGY, panner_strategy, PannerStrategy, 0, SYZ_PANNER_STRATEGY_COUNT - 1, SYZ_PANNER_STRATEGY_STEREO) \
 STANDARD_DISTANCE_MODEL_PROPERTIES
 
 #define SOURCE_PROPERTIES \

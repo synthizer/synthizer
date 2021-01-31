@@ -23,6 +23,7 @@ SYZ_P_DISTANCE_MAX | double | 50.0 | value >= 0.0 | The default max distance for
 SYZ_P_ROLLOFF | double | 1.0 | value >= 0.0 | The default rolloff for new sources.
 SYZ_P_CLOSENESS_BOOST | double | 0.0 | any finite double | The default closeness boost for new sources in DB.
 SYZ_P_CLOSENESS_BOOST_DISTANCE | double | 0.0 | value >= 0.0 | The default closeness boost distance for new sources
+SYZ_P_PANNER_STRATEGY | int | SYZ_PANNER_STRATEGY_STEREO | any SYZ_PANNER_STRATEGY | The default panner strategy for new sources.
 
 ## Functions
 

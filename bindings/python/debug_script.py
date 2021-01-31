@@ -24,6 +24,7 @@ ctx = synthizer.Context(enable_events=True)
 gen = synthizer.StreamingGenerator(ctx, "file", sys.argv[1], "")
 #buffer = synthizer.Buffer.from_stream("file", sys.argv[1], "")
 #gen.buffer = buffer
+#ctx.panner_strategy = synthizer.PannerStrategy.HRTF    
 src = synthizer.Source3D(ctx)
 src.add_generator(gen)
 

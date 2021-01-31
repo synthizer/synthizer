@@ -23,7 +23,8 @@ PannedSource::PannedSource(const std::shared_ptr<Context> context): Source(conte
 
 void PannedSource::initInAudioThread() {
 	Source::initInAudioThread();
-
+	/* Copy the default in fro the context. */
+	this->setPannerStrategy(this->getContextRaw()->getPannerStrategy());
 	/**
 	 * This is a hack to fix panning_scalar if set in the same tick as creation of the source. See issue #52.
 	 * 

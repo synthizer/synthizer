@@ -288,6 +288,7 @@ cdef class Context(Pausable):
     rolloff = DoubleProperty(SYZ_P_ROLLOFF)
     closeness_boost = DoubleProperty(SYZ_P_CLOSENESS_BOOST)
     closeness_boost_distance = DoubleProperty(SYZ_P_CLOSENESS_BOOST_DISTANCE)
+    panner_strategy = enum_property(SYZ_P_PANNER_STRATEGY, lambda x: PannerStrategy(x))
 
     cpdef config_route(self, _BaseObject output, _BaseObject input, gain = 1.0, fade_time = 0.01):
         cdef syz_RouteConfig config
