@@ -7,7 +7,7 @@ as part of the general pre-1.0 documentation project.
 ## Introduction
 
 Synthizer supports sending events.  Currently, it can send finished and looped events for both
-BufferGenerator and StreamingGenerator.  This will be extended to other objects and concepts in futue,
+BufferGenerator and StreamingGenerator.  This will be extended to other objects and concepts in future,
 as appropriate.  The events have the following meanings:
 
 - Finished: the generator isn't configured to loop and has reached the end.
@@ -41,3 +41,8 @@ for event in ctx.get_events():
 `get_events` takes an optional argument to limit the number of events returned in one iteration.  By default, it's unlimited.
 
 As shown above, you detect event types with `isinstance`.  Each event has a `source` and `context` property indicating the source (e.g. generator) and context associated with it, as Synthizer objects.
+In future, other event types may include more information.
+
+## Notes
+
+Events are currently alpha, as stated above.  Expect bugs.  In particular, there may be pathological cases in which 
