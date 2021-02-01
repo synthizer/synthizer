@@ -42,7 +42,3 @@ for event in ctx.get_events():
 
 As shown above, you detect event types with `isinstance`.  Each event has a `source` and `context` property indicating the source (e.g. generator) and context associated with it, as Synthizer objects.
 In future, other event types may include more information.
-
-## Notes
-
-Events are currently alpha, as stated above.  Expect bugs.  In particular, there may be pathological cases in which 
