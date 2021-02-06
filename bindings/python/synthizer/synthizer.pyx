@@ -243,7 +243,8 @@ cdef class Pausable(_BaseObject):
     def pause(self):
         _checked(syz_pause(self.handle))
 
-cdef class FinishedEvent:
+cdef class Event:
+    """Base class for all Synthizer events"""
     cpdef public Context context
     cpdef public object source
 
@@ -251,13 +252,12 @@ cdef class FinishedEvent:
         self.context = context
         self.source = source
 
-cdef class LoopedEvent:
-    cpdef public Context context
-    cpdef public object source
 
-    def __init__(self, context, source):
-        self.context = context
-        self.source = source
+cdef class FinishedEvent(Event):
+    pass
+
+cdef class LoopedEvent(Event):
+    pass
 
 cdef _convert_event(syz_Event event):
     if event.type == SYZ_EVENT_TYPE_FINISHED:
