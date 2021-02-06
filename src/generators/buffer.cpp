@@ -104,8 +104,8 @@ void BufferGenerator::generatePitchBendHelper(float *output, FadeDriver *gain_dr
 				if (new_pos < pos) {
 					this->looped_count += 1;
 				}
-			} else {
-				if (pos >= this->reader.getLength() && this->sent_finished == false) {
+			} else if (pos > this->reader.getLength()) {
+				if ( this->sent_finished == false) {
 					/* Don't forget to guard against sending this multiple times. */
 					this->finished_count += 1;
 					this->sent_finished = true;
