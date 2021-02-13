@@ -23,7 +23,7 @@ PannedSource::PannedSource(const std::shared_ptr<Context> context): Source(conte
 
 void PannedSource::initInAudioThread() {
 	Source::initInAudioThread();
-	/* Copy the default in fro the context. */
+	/* Copy the default in from the context. */
 	this->setPannerStrategy(this->getContextRaw()->getPannerStrategy());
 	/**
 	 * This is a hack to fix panning_scalar if set in the same tick as creation of the source. See issue #52.
@@ -64,7 +64,7 @@ void PannedSource::run() {
 		this->panner_lane = this->context->allocateSourcePannerLane((enum SYZ_PANNER_STRATEGY)panner_strategy);
 	}
 
-	if (angles_changed) {
+	if (angles_changed || invalid_lane) {
 		this->panner_lane->setPanningAngles(azimuth, elevation);
 	} else if (scalar_changed) {
 		this->panner_lane->setPanningScalar(panning_scalar);

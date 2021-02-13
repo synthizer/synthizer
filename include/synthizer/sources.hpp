@@ -95,7 +95,7 @@ class PannedSource: public Source {
 	#define PROPERTY_BASE Source
 	#include "synthizer/property_impl.hpp"
 	private:
-	std::shared_ptr<PannerLane> panner_lane;
+	std::shared_ptr<PannerLane> panner_lane = nullptr;
 	double gain_3d = 1.0;
 };
 

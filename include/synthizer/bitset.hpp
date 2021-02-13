@@ -53,7 +53,7 @@ class Bitset {
 	}
 
 	void setAll(bool value) {
-		unsigned char x = value ? 0 : ~(unsigned char)0;
+		unsigned char x = value ? ~(unsigned char)0 : 0;
 		std::fill(this->data.begin(), this->data.end(), x);
 	}
 
