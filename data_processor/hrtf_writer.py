@@ -12,7 +12,9 @@ GEN_COMMENT = """
 
 """
 
-HRTF_HEADER_TEMPLATE = GEN_COMMENT + """
+HRTF_HEADER_TEMPLATE = (
+    GEN_COMMENT
+    + """
 #pragma once
 
 #include <array>
@@ -37,8 +39,11 @@ extern const std::array<ElevationDef, {{ data.num_elevs }}> ELEVATIONS;
 
 }
 """
+)
 
-HRTF_SOURCE_TEMPLATE = GEN_COMMENT + """
+HRTF_SOURCE_TEMPLATE = (
+    GEN_COMMENT
+    + """
 #include <array>
 #include <cstddef>
 #include "synthizer/data/hrtf.hpp"
@@ -61,29 +66,37 @@ const std::array<ElevationDef, {{ data.num_elevs }}> ELEVATIONS{ {
 
 }
 """
+)
+
 
 def write_hrtf_data(data):
     elevation_defs = []
     total_impulses = 0
     for i, a in enumerate(data.azimuths):
         d = {
-            "angle": data.elev_min + data.elev_increment *i,
+            "angle": data.elev_min + data.elev_increment * i,
             "azimuth_start": total_impulses,
             "azimuth_count": len(a),
         }
         total_impulses += len(a)
         elevation_defs.append(d)
 
-    header = jinja2.Template(HRTF_HEADER_TEMPLATE, undefined = jinja2.StrictUndefined)
-    source = jinja2.Template(HRTF_SOURCE_TEMPLATE, undefined = jinja2.StrictUndefined)
-    header = header.render(data = data, elevation_defs = elevation_defs, total_impulses = total_impulses)
-    source = source.render(data = data, elevation_defs = elevation_defs, total_impulses = total_impulses)
+    header = jinja2.Template(HRTF_HEADER_TEMPLATE, undefined=jinja2.StrictUndefined)
+    source = jinja2.Template(HRTF_SOURCE_TEMPLATE, undefined=jinja2.StrictUndefined)
+    header = header.render(
+        data=data, elevation_defs=elevation_defs, total_impulses=total_impulses
+    )
+    source = source.render(
+        data=data, elevation_defs=elevation_defs, total_impulses=total_impulses
+    )
 
-    header_path = os.path.join(paths.repo_path, "include", "synthizer", "data", "hrtf.hpp")
+    header_path = os.path.join(
+        paths.repo_path, "include", "synthizer", "data", "hrtf.hpp"
+    )
     source_path = os.path.join(paths.repo_path, "src", "data", "hrtf.cpp")
 
     for i in [header_path, source_path]:
-        pathlib.Path(os.path.split(i)[0]).mkdir(parents = True, exist_ok = True)
+        pathlib.Path(os.path.split(i)[0]).mkdir(parents=True, exist_ok=True)
 
     for p, c in [(source_path, source), (header_path, header)]:
         with open(p, "wb") as f:

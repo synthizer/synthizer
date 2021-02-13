@@ -12,7 +12,9 @@ GEN_COMMENT = """
  */
 """
 
-HEADER_TEMPLATE = GEN_COMMENT + """
+HEADER_TEMPLATE = (
+    GEN_COMMENT
+    + """
 #pragma once
 
 #include <array>
@@ -24,6 +26,7 @@ extern std::array<{{ a.type }}, {{ a.values | length }}> {{ a.name }};
 {% endfor %}
 }
 """
+)
 
 SOURCE_TEMPLATE = """
 #include "synthizer/data/arrays.hpp"
@@ -41,31 +44,30 @@ std::array<{{ a.type }}, {{ a.values | length }}> {{ a.name }} { {
 
 ArrayDef = namedtuple("ArrayDef", "name type values")
 
+
 class ArrayWriter:
     def __init__(self):
         self.arrays = []
 
     def add_array(self, name, type, values):
         vals = [str(i) for i in values]
-        self.arrays.append(ArrayDef(
-            type=type,
-            name=name,
-            values=vals
-        ))
+        self.arrays.append(ArrayDef(type=type, name=name, values=vals))
         print("Added array", name, "type", type, "with", len(vals), "elements")
 
     def write_arrays(self):
         print("Writing arrays to disk")
-        header = jinja2.Template(HEADER_TEMPLATE, undefined = jinja2.StrictUndefined)
-        source = jinja2.Template(SOURCE_TEMPLATE, undefined = jinja2.StrictUndefined)
+        header = jinja2.Template(HEADER_TEMPLATE, undefined=jinja2.StrictUndefined)
+        source = jinja2.Template(SOURCE_TEMPLATE, undefined=jinja2.StrictUndefined)
         header = header.render(arrays=self.arrays)
         source = source.render(arrays=self.arrays)
 
-        header_path = os.path.join(paths.repo_path, "include", "synthizer", "data", "arrays.hpp")
+        header_path = os.path.join(
+            paths.repo_path, "include", "synthizer", "data", "arrays.hpp"
+        )
         source_path = os.path.join(paths.repo_path, "src", "data", "arrays.cpp")
 
         for i in [header_path, source_path]:
-            pathlib.Path(os.path.split(i)[0]).mkdir(parents = True, exist_ok = True)
+            pathlib.Path(os.path.split(i)[0]).mkdir(parents=True, exist_ok=True)
 
         for p, c in [(source_path, source), (header_path, header)]:
             with open(p, "wb") as f:
