@@ -25,7 +25,9 @@ if 'BUILDING_SYNTHIZER' in os.environ:
     print("Building Synthizer from repository. Adding additional directories.")
     repo_root = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0], "../.."))
     print("Repository root is", repo_root)
-    if "SYNTHIZER_CI" in os.environ:
+    # If doing Windows CI, we have to account for the different
+    # release types.
+    if "CI_WINDOWS" in os.environ:
         synthizer_build_dir = os.path.join(repo_root, "build_static_release")
         synthizer_lib = "synthizer_static"
     else:

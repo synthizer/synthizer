@@ -24,24 +24,11 @@ is nonzero.
   if ($LASTEXITCODE) { Throw "$exe indicated failure (exit code $LASTEXITCODE; full command: $Args)." }
 }
 
-$pyversions = "python39", "python38", "python37", "python36"
+$pyversions = "3.9", "3.8", "3.7", "3.6"
 
-cd bindings\python
-
-$pysuffix = ""
-if ($Env:CI_ARCHITECTURE -eq "64") {
-	$pysuffix = "-x64"
-}
+set-location bindings\python
 
 foreach ($pyversion in $pyversions) {
-	$pycommand = "c:\$pyversion$pysuffix\python.exe"
-	invoke-utility $pycommand -m pip install cython setuptools wheel
-	invoke-utility $pycommand setup.py bdist_wheel
+	invoke-utility py -$pyversion-$ENv:CI_ARCH -m pip install cython setuptools wheel
+	invoke-utility py -$pyversion-$Env:CI_ARCH setup.py bdist_wheel
 }
-
-# Hack for Python sdist before we move to GitHub actions and can do this properly.
-if ($Env:PYTHON_SDIST -eq "true") {
-	invoke-utility "c:\python39$pysuffix\python.exe" setup.py sdist
-}
-
-cd ..\..

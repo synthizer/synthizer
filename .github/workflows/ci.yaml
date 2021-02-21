@@ -6,6 +6,7 @@ on:
 
 jobs:
   latest_ubuntu:
+    if: ${{ false }}
     runs-on: ubuntu-20.04
     env:
       PYVERSIONS: "python3.8 python3.9"
@@ -19,5 +20,38 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: python-wheels
+        name: python-wheels-linux
         path: bindings/python/dist/*
+  windows:
+    runs-on: windows-2019
+    env:
+      CI_ARCH: ${{matrix.CI_ARCH}}
+      BUILDING_SYNTHIZER: "1"
+      CI_WINDOWS: "1"
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Configure MSVC Environment Variables
+      shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\enterprise\VC\Auxiliary\Build\vcvars%CI_ARCH%.bat"
+        set > %GITHUB_ENV%
+    - name: Build C Libraries
+      shell: powershell
+      run: |
+        set-location $Env:GITHUB_WORKSPACE
+        ./ci/build_c.ps1
+    - name: Build python Wheels
+      shell: powershell
+      run: |
+        set-location $Env:GITHUB_WORKSPACE
+        ./ci/build_python.ps1
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: python-wheels-win${{matrix.CI_ARCH}}
+        path: bindings/python/dist/*
+    strategy:
+      fail-fast: true
+      matrix:
+        CI_ARCH: ['32']
