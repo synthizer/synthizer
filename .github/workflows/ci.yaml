@@ -24,6 +24,7 @@ jobs:
         path: bindings/python/dist/*
   windows:
     runs-on: windows-2019
+    if: ${{ false }}
     env:
       CI_ARCH: ${{matrix.CI_ARCH}}
       BUILDING_SYNTHIZER: "1"
@@ -31,6 +32,13 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+    - name: Cache Pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{matrix.CI_ARCH}}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{matrix.CI_ARCH}}
     - name: Configure MSVC Environment Variables
       shell: cmd
       run: |
@@ -54,4 +62,30 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        CI_ARCH: ['32']
+        CI_ARCH: ['32', '64']
+  build_docs:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Cache Cargo
+      uses: actions/cache@v2
+      with:
+        key: ${{ runner.os }}-cargo-mdbook
+        restore-keys: |
+          ${{ runner.os }}-cargo-mdbook
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          ~/.cargo/
+          ~/mdbook-build
+    - name: Install mdbook
+      run: CARGO_TARGET_DIR=~/mdbook-build cargo install mdbook mdbook-linkcheck
+    - name: Build Manual
+      run: |
+        cd $GITHUB_WORKSPACE/manual
+        mdbook build
+    - uses: actions/upload-artifact@v2
+      with:
+        name: manual
+        path: manual/book/html/**
