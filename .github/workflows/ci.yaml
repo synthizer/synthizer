@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+    - actions
+  pull_request: {}
+
+jobs:
+  latest_ubuntu:
+    runs-on: ubuntu-20.04
+    env:
+      PYVERSIONS: "python3.8 python3.9"
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: 'Build CI'
+      run: |
+        cd $GITHUB_WORKSPACE
+        ./ci/build_linux.sh
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: python-wheels
+        path: bindings/python/dist/*

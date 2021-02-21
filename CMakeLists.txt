@@ -105,7 +105,7 @@ target_compile_definitions(synthizer PRIVATE BUILDING_SYNTHIZER)
 if("${SYNTHIZER_LIB_TYPE}" STREQUAL "SHARED")
 	target_compile_definitions(synthizer PRIVATE SYNTHIZER_SHARED)
 endif()
-
+set_property(TARGET synthizer PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # For CI artifacts:
 if(DEFINED CI_SYNTHIZER_NAME)
