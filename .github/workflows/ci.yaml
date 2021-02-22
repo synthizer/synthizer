@@ -1,7 +1,5 @@
 on:
-  push:
-    branches:
-    - actions
+  push: {}
   pull_request: {}
 
 jobs:
@@ -89,3 +87,33 @@ jobs:
       with:
         name: manual
         path: manual/book/html/**
+
+  deploy_docs:
+    if: startsWith('refs/tags', github.ref) && !github.base_ref
+    runs-on: ubuntu-20.04
+    needs: 'build_docs'
+    env:
+      DOCS_DEPLOY_KEY: ${{secrets.docs_deploy_key}}
+      DOCS_DEPLOY_KEY_PUB: ${{secrets.docs_deploy_key_pub}}
+    steps:
+    - name: Install SSH Deploy Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "$DOCS_DEPLOY_KEY" > ~/.ssh/id_rsa
+        echo "$DOCS_DEPLOY_KEY_PUB" > ~/.ssh/id_rsa.pub
+        chmod 400 ~/.ssh/id_rsa
+    - name: Clone Repository
+      run: |
+        cd $GITHUB_WORKSPACE
+        git clone git@github.com:synthizer/synthizer.github.io .
+    - name: Download Docs
+      uses: actions/download-artifact@v2
+      with:
+        name: manual
+    - name: Commmit and Push Docs
+      run: |
+        git config --global user.name "Synthizer CI"
+        git config --global user.email "ahicks@ahicks.io"
+        git add -A
+        git commit -m "Docs deployed at $(date)"
+
