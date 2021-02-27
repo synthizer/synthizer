@@ -3,7 +3,7 @@ on:
   pull_request: {}
 
 jobs:
-  latest_ubuntu:
+  ubuntu20:
     if: ${{ false }}
     runs-on: ubuntu-20.04
     env:
@@ -22,6 +22,7 @@ jobs:
         path: bindings/python/dist/*
 
   windows:
+    if: ${{false}}
     runs-on: windows-2019
     env:
       CI_ARCH: ${{matrix.CI_ARCH}}
@@ -62,12 +63,32 @@ jobs:
       matrix:
         CI_ARCH: ['32', '64']
 
+  python_sdist:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Build Python sdist
+      run: |
+        cd $GITHUB_WORKSPACE/bindings/python
+        sudo apt-fast install -y virtualenv python3.9
+        virtualenv -p python3.9 ./venvs/python3.9
+        source venvs/python3.9/bin/activate
+        pip install -U cython wheel
+        BUILDING_SYNTHIZER=1 python setup.py sdist
+        deactivate
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: python-sdist
+        path: bindings/python/dist/*
+
   build_docs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Cache lok
+    - name: Cache mdbook
       id: cache_mdbook
       uses: actions/cache@v2
       with:
@@ -120,7 +141,6 @@ jobs:
         git add -A
         git commit -m "Docs deployed at $(date)"
 
-
   github_release:
     needs: [ "build_docs", "windows" ]
     if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request'
@@ -146,6 +166,11 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: python-wheels-win64
+        path: ~/artifacts
+    - name: Download Python sdist
+      uses: actions/download-artifact@v2
+      with:
+        name: python-sdist
         path: ~/artifacts
     - name: Create Release
       uses: actions/create-release@v1
