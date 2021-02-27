@@ -8,7 +8,7 @@ from setuptools import Extension, setup
 from Cython.Build import cythonize
 from Cython.Compiler import Options
 
-VERSION = "0.8.10"
+VERSION = "0.8.13"
 
 # A helper for rmtree. On Windows, read-only files can't be deleted by rmtree, so we make them not readonly.
 def handle_remove_readonly(func, path, exc):
@@ -25,7 +25,9 @@ if 'BUILDING_SYNTHIZER' in os.environ:
     print("Building Synthizer from repository. Adding additional directories.")
     repo_root = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0], "../.."))
     print("Repository root is", repo_root)
-    if "SYNTHIZER_CI" in os.environ:
+    # If doing Windows CI, we have to account for the different
+    # release types.
+    if "CI_WINDOWS" in os.environ:
         synthizer_build_dir = os.path.join(repo_root, "build_static_release")
         synthizer_lib = "synthizer_static"
     else:

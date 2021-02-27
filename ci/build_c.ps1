@@ -33,7 +33,7 @@ foreach ($build_type in $build_types) {
 		if (-not $(test-path $directory)) {
 			mkdir $directory 
 		}
-		cd $directory
+		set-location $directory
 		$ci_name = "synthizer"
 		if ($build_type -eq "Debug") { $ci_name += "d" }
 		if ($lib_type -eq "static") { $ci_name += "_static" }
@@ -45,6 +45,6 @@ foreach ($build_type in $build_types) {
 			"-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL"
 		invoke-utility ninja
 		invoke-utility ninja test
-		cd ..
+		set-location ..
 	}
 }
