@@ -142,8 +142,8 @@ jobs:
         git commit -m "Docs deployed at $(date)"
 
   github_release:
-    needs: [ "build_docs", "windows" ]
-    if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request'
+    needs: [ "build_docs", "windows", "python_sdist" ]
+    if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request' && false
     runs-on: ubuntu-20.04
     steps:
     - name: Download Docs
@@ -184,3 +184,31 @@ jobs:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       with:
         asset_paths: '[ "/home/runner/artifacts/*" ]'
+
+  deploy_pypi:
+    if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request'
+    needs: [ "build_docs", "windows", "python_sdist" ]
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Download Windows Wheels 32-bit
+      uses: actions/download-artifact@v2
+      with:
+        name: python-wheels-win32
+        path: ~/artifacts
+    - name: Download Windows Wheels 64-bit
+      uses: actions/download-artifact@v2
+      with:
+        name: python-wheels-win64
+        path: ~/artifacts
+    - name: Download Python sdist
+      uses: actions/download-artifact@v2
+      with:
+        name: python-sdist
+        path: ~/artifacts
+    - name: Upload to Pypi
+      env:
+        TWINE_USERNAME: camlorn
+        TWINE_PASSWORD: ${{secrets.TWINE_PASSWORD}}
+      run: |
+        sudo pip3 install twine
+        twine upload ./*

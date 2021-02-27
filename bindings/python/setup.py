@@ -8,7 +8,7 @@ from setuptools import Extension, setup
 from Cython.Build import cythonize
 from Cython.Compiler import Options
 
-VERSION = "0.8.10"
+VERSION = "0.8.11"
 
 # A helper for rmtree. On Windows, read-only files can't be deleted by rmtree, so we make them not readonly.
 def handle_remove_readonly(func, path, exc):
