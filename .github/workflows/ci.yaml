@@ -138,6 +138,7 @@ jobs:
         git config --global user.email "ahicks@ahicks.io"
         git add -A
         git commit -m "Docs deployed at $(date)"
+        git push
 
   github_release:
     needs: [ "build_docs", "windows", "python_sdist", "ubuntu20" ]
