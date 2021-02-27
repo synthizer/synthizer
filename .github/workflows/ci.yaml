@@ -20,9 +20,9 @@ jobs:
       with:
         name: python-wheels-linux
         path: bindings/python/dist/*
+
   windows:
     runs-on: windows-2019
-    if: ${{ false }}
     env:
       CI_ARCH: ${{matrix.CI_ARCH}}
       BUILDING_SYNTHIZER: "1"
@@ -61,25 +61,30 @@ jobs:
       fail-fast: true
       matrix:
         CI_ARCH: ['32', '64']
+
   build_docs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Cache Mdbook
+    - name: Cache lok
       id: cache_mdbook
       uses: actions/cache@v2
       with:
-        key: ${{ runner.os }}-cargo-mdbook
+        key: ${{ runner.os }}-mdbook
         path: |
-          ~/.cargo/bin/mdbook
-          ~/.cargo/bin/mdbook-linkcheck
+          ~/mdbook
     - name: Install mdbook
       if: steps.cache_mdbook.outputs.cache-hit != 'true'
-      run: CARGO_TARGET_DIR=~/mdbook-build cargo install mdbook mdbook-linkcheck
+      run: |
+        mkdir -p ~/mdbook
+        curl -H "Accept-Encoding: gzip" https://files.ahicks.io/synthizer_ci/mdbook/mdbook | gunzip - > ~/mdbook/mdbook
+        curl -H "Accept-Encoding: gzip" https://files.ahicks.io/synthizer_ci/mdbook/mdbook-linkcheck | gunzip - > ~/mdbook/mdbook-linkcheck
+        chmod +x ~/mdbook/*
     - name: Build Manual
       run: |
         cd $GITHUB_WORKSPACE/manual
+        export PATH=~/mdbook:$PATH
         mdbook build
     - uses: actions/upload-artifact@v2
       with:
@@ -87,7 +92,7 @@ jobs:
         path: manual/book/html/**
 
   deploy_docs:
-    if: startsWith(github.ref, 'refs/tags') && !github.base_ref
+    if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request' && false
     runs-on: ubuntu-20.04
     needs: 'build_docs'
     env:
@@ -108,10 +113,49 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: manual
-    - name: Commmit and Push Docs
+    - name: Commit and Push Docs
       run: |
         git config --global user.name "Synthizer CI"
         git config --global user.email "ahicks@ahicks.io"
         git add -A
         git commit -m "Docs deployed at $(date)"
 
+
+  github_release:
+    needs: [ "build_docs", "windows" ]
+    if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request'
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Download Docs
+      uses: actions/download-artifact@v2
+      with:
+        name: manual
+        path: ~/artifacts/manual
+    - name: Zip Docs
+      run: |
+        zip -r ~/artifacts/manual.zip ~/artifacts/manual
+        # get it out of the way so that the uploads don't freak out.
+        rm -rf ~/artifacts/manual
+        ls ~/artifacts
+    - name: Download Windows Wheels 32-bit
+      uses: actions/download-artifact@v2
+      with:
+        name: python-wheels-win32
+        path: ~/artifacts
+    - name: Download Windows Wheels 64-bit
+      uses: actions/download-artifact@v2
+      with:
+        name: python-wheels-win64
+        path: ~/artifacts
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      with:
+        tag_name: ${{github.ref}}
+    - name: Upload Artifacts
+      uses: alexellis/upload-assets@0.2.2
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      with:
+        asset_paths: '[ "/home/runner/artifacts/*" ]'
