@@ -80,6 +80,6 @@ setup(
     ext_modules = cythonize(extensions, language_level=3),
     zip_safe = False,
     package_data = {
-        'synthizer': ['*.pyx', '*.pxd'],
+        'synthizer': ['*.pyx', '*.pxd', 'synthizer.pyi'],
     }
 )
