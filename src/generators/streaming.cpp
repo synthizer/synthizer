@@ -51,13 +51,11 @@ Generator(ctx),
 
 void StreamingGenerator::initInAudioThread() {
 	Generator::initInAudioThread();
-	/**
-	 * Like with PannedSource, it's important that we not see this property as initialized.
-	 * 
-	 * See issue #53 for tracking the long term solution.
+	/*
+	 * If position starts as changed, StreamingGenerator improperly tries to do an initial seek. This is audible
+	 * because the background thread runs ahead, and results in an initial audio artifact.
 	 * */
-	double v;
-	this->acquirePosition(v);
+	this->markPositionUnchanged();
 }
 
 StreamingGenerator::~StreamingGenerator() {

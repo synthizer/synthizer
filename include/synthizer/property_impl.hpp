@@ -18,11 +18,13 @@
  *    makes no system calls but may block for object properties.  Accepts a defaulted
  *   second parameter to disable change tracking, used from the audio
  *   thread in order to propagate changes out without creating cycles, e.g. exposing
- *   buffer position while also allowing it to be written without the audio therad's write
+ *   buffer position while also allowing it to be written without the audio thread's write
  *   counting.
  *  - verifyProperty: Verifies the property is in range. Makes no system calls.  
  *  - acquireProperty(proptype &out): sets out to the value of property, and returns true if it has changed since the last time
  *    this specific property was acquired. May block for object properties.
+ * - markPropertyUnchanged: clear the changed status of a propperty. used primarily from initInAudioThread for objects which
+ *   need to see properties as not having been changed on their first tick.
  * 
  * Note that blocking on object properties is required because we need to safely copy std::shared_ptr. We do so with a simple spinlock, under the assumption that readers are rare.
  * 
@@ -36,6 +38,7 @@
  * 
  * Also note that this implementation supports only 64 properties per level of the inheritance hierarchy.
  * 
+ * Finally, note that properties count as changed on the first tick, unless markPropertyUnchanged is called.
  * */
 
 #ifndef PROPERTY_CLASS
@@ -100,7 +103,6 @@ class PROPCLASS_NAME {
 	PROPERTY_LIST
 };
 
-
 #undef INT_P
 #undef DOUBLE_P
 #undef DOUBLE3_P
@@ -121,6 +123,9 @@ bool changed = this->PROPFIELD_NAME.acquireBit(PROPERTY_CLASS##Props::Bits::F##_
 out = this->PROPFIELD_NAME.F.read(); \
 return changed;
 
+#define STANDARD_UNCHANGED(F) \
+this->PROPFIELD_NAME.changed_bitset &= ~(decltype(this->PROPFIELD_NAME.changed_bitset))(1 << (unsigned int)PROPERTY_CLASS##Props::Bits::F##_BIT);
+
 /* Now, define all the methods. */
 #define INT_P(E, UNDERSCORE_NAME, CAMEL_NAME, MIN, MAX, DV) \
 int get##CAMEL_NAME() const { \
@@ -139,7 +144,12 @@ void validate##CAMEL_NAME(const int value) const { \
 \
 bool acquire##CAMEL_NAME(int &out) { \
 STANDARD_ACQUIRE(UNDERSCORE_NAME) \
+} \
+\
+void mark##CAMEL_NAME##Unchanged() { \
+STANDARD_UNCHANGED(UNDERSCORE_NAME); \
 }
+
 
 #define DOUBLE_P(E, UNDERSCORE_NAME, CAMEL_NAME, MIN, MAX, DV) \
 double get##CAMEL_NAME() const { \
@@ -158,6 +168,10 @@ void validate##CAMEL_NAME(const double value) const { \
 \
 bool acquire##CAMEL_NAME(double &out) { \
 STANDARD_ACQUIRE(UNDERSCORE_NAME) \
+} \
+\
+void mark##CAMEL_NAME##Unchanged() { \
+STANDARD_UNCHANGED(UNDERSCORE_NAME); \
 }
 
 #define DOUBLE3_P(E, UNDERSCORE_NAME, CAMEL_NAME, ...) \
@@ -176,6 +190,10 @@ void validate##CAMEL_NAME(const std::array<double, 3> &value) const { \
 \
 bool acquire##CAMEL_NAME(std::array<double, 3> &out) { \
 STANDARD_ACQUIRE(UNDERSCORE_NAME) \
+} \
+\
+void mark##CAMEL_NAME##Unchanged() { \
+STANDARD_UNCHANGED(UNDERSCORE_NAME); \
 }
 
 #define DOUBLE6_P(E, UNDERSCORE_NAME, CAMEL_NAME, ...) \
@@ -194,6 +212,10 @@ void validate##CAMEL_NAME(const std::array<double, 6> &value) const { \
 \
 bool acquire##CAMEL_NAME(std::array<double, 6> &out) { \
 STANDARD_ACQUIRE(UNDERSCORE_NAME) \
+} \
+\
+void mark##CAMEL_NAME##Unchanged() { \
+STANDARD_UNCHANGED(UNDERSCORE_NAME); \
 }
 
 #define OBJECT_P(ENUM, UNDERSCORE_NAME, CAMEL_NAME, CLS) \
@@ -216,6 +238,10 @@ void validate##CAMEL_NAME(const std::weak_ptr<CExposable> &val) const { \
 \
 bool acquire##CAMEL_NAME(std::weak_ptr<CLS> &out) { \
 STANDARD_ACQUIRE(UNDERSCORE_NAME) \
+} \
+\
+void mark##CAMEL_NAME##Unchanged() { \
+STANDARD_UNCHANGED(UNDERSCORE_NAME); \
 }
 
 PROPERTY_LIST

@@ -25,23 +25,15 @@ void PannedSource::initInAudioThread() {
 	Source::initInAudioThread();
 	/* Copy the default in from the context. */
 	this->setPannerStrategy(this->getContextRaw()->getPannerStrategy());
-	/**
-	 * This is a hack to fix panning_scalar if set in the same tick as creation of the source. See issue #52.
-	 * 
-	 * The underlying problem is that all properties start off marked as changed. This greatly simplifies the case in which objects
-	 * have entirely orthogonal properties by avoiding the need for an explicit initialization step.  Unfortunately, PannedSource controls whether or not
-	 * to use azimuth/elevation or panning_scalar based on which was set last.  This is in part because such an arrrangement is convenient for the user
-	 * and in part because the old property infrastructure called explicit methods on the class.  Because explicit methods could be used to flip some booleans, this used to not be a problem.
-	 * 
-	 * Fortunately, there is a total order on all operations on objects, and users can't set properties until after they've fully initialized.  We can abuse this: by clearing the 3 specific properties here and relying
-	 * on the fact that everything in panning already defaults to match the defaults of PannedSource as it is, we can then detect any writes that happen in the first tick.
-	 * 
-	 * If we continue having issues like this, Synthizer will need to adopt a more wholistic solution, but this is good enough for now.
+
+	/*
+	 * PannedSource uses the changed status of properties to determine whether or not the user
+	 * is using azimuth/elevation or the panning scalar. Since the panner's default config is okay, mark them all unchanged and wait
+	 * for the user to set one.
 	 * */
-	double v;
-	acquireAzimuth(v);
-	acquireElevation(v);
-	acquirePanningScalar(v);
+	this->markAzimuthUnchanged();
+	this->markElevationUnchanged();
+	this->markPanningScalarUnchanged();
 }
 
 int PannedSource::getObjectType() {
