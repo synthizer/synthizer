@@ -167,6 +167,42 @@ SYZ_CAPI syz_ErrorCode syz_getD6(double *x1, double *y1, double *z1, double *x2,
 SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, double y1, double z1, double x2, double y2, double z2);
 
 /*
+ * Biquad properties are biquad filters from the audio eq cookbook.
+ * 
+ * Note to maintainers: the C API is in src/filter_properties.cpp (except for syz_setBiquad, in c_api.cpp with the other property setters).
+ * */
+
+/*
+ * Configuration for a filter. Currently this struct should be treated as opaque. It's exposed here
+ * in order to allow allocating them on the stack.  Changes to the layout and fields may occur without warning.
+ * 
+ * To initialize this struct, use one of the syz_designBiquadXXX functions, below.
+ * */
+struct syz_BiquadConfig {
+	double b0, b1, b2;
+	double a1, a2;
+	double gain;
+};
+
+SYZ_CAPI syz_ErrorCode syz_setBiquad(syz_Handle handle, int property, const struct syz_BiquadConfig *filter);
+
+/*
+ * Biquad filter design functions.  See the audio eq cookbook in the manual's appendices for the specific mathematical formulas.
+ *
+ * q is a measure of resonance.  Generally q = 0.5 is a filter that doesn't resonate and q at or above 1 resonates too much to be useful.
+ * q = 0.7071135624381276 gives second-order Butterworth lowpass and highpass filters, and is the suggested default.
+ * 
+ * Synthizer's Nyquist is 22050 HZ.
+ * */
+SYZ_CAPI syz_ErrorCode syz_designBiquadLowpass(struct syz_BiquadConfig *filter, double frequency, double q);
+SYZ_CAPI syz_ErrorCode syz_designBiquadHighpass(struct syz_BiquadConfig *filter, double frequency, double q);
+
+/*
+ * bw is the bandwidth between -3 db frequencies.
+ * */
+SYZ_CAPI syz_ErrorCode syz_designBiquadBandpass(struct syz_BiquadConfig *filter, double frequency, double bw);
+
+/*
  * Create a context. This represents the audio device itself, and all other Synthizer objects need one.
  * */
 SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out);

@@ -33,7 +33,7 @@ class IIRFilterDef<num, den, typename std::enable_if<(num > 0)>::type> {
 	double gain;
 };
 
-/*]
+/*
  * A wire is the identity filter.
  * */
 IIRFilterDef<1, 0> designWire();

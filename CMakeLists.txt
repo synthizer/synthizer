@@ -54,6 +54,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/effects/fdn_reverb.cpp
 	src/error.cpp
 	src/events.cpp
+	src/filter_properties.cpp
 	src/generator.cpp
 	src/hrtf.cpp
 	src/logging.cpp

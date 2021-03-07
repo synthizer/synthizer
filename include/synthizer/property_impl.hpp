@@ -23,7 +23,7 @@
  *  - verifyProperty: Verifies the property is in range. Makes no system calls.  
  *  - acquireProperty(proptype &out): sets out to the value of property, and returns true if it has changed since the last time
  *    this specific property was acquired. May block for object properties.
- * - markPropertyUnchanged: clear the changed status of a propperty. used primarily from initInAudioThread for objects which
+ * - markPropertyUnchanged: clear the changed status of a propperty. Used primarily from initInAudioThread for objects which
  *   need to see properties as not having been changed on their first tick.
  * 
  * Note that blocking on object properties is required because we need to safely copy std::shared_ptr. We do so with a simple spinlock, under the assumption that readers are rare.
@@ -66,6 +66,7 @@ class PROPCLASS_NAME {
 	#define DOUBLE3_P(IGNORED, N, ...) N##_BIT,
 	#define DOUBLE6_P(IGNORED, N, ...) N##_BIT,
 	#define OBJECT_P(IGNORED, N, ...) N##_BIT,
+	#define BIQUAD_P(IGNORED, N, ...) N##_BIT,
 
 	enum class Bits: unsigned int {
 		PROPERTY_LIST
@@ -78,6 +79,7 @@ class PROPCLASS_NAME {
 	#undef DOUBLE3_P
 	#undef DOUBLE6_P
 	#undef OBJECT_P
+	#undef BIQUAD_P
 
 	std::uint64_t changed_bitset = UINT64_MAX;
 
@@ -99,6 +101,7 @@ class PROPCLASS_NAME {
 	#define DOUBLE3_P(IGNORED, N, IGNORED2, DV1, DV2, DV3) Double3Property N{{DV1, DV2, DV3}};
 	#define DOUBLE6_P(IGNORED, N, IGNORED2, DV1, DV2, DV3, DV4, DV5, DV6) Double6Property N{{DV1, DV2, DV3, DV4, DV5, DV6}};
 	#define OBJECT_P(IGNORED, N, IGNORED2, CLS) ObjectProperty<CLS> N;
+	#define BIQUAD_P(IGNORED, N, ...) BiquadProperty N{};
 
 	PROPERTY_LIST
 };
@@ -108,6 +111,7 @@ class PROPCLASS_NAME {
 #undef DOUBLE3_P
 #undef DOUBLE6_P
 #undef OBJECT_P
+#undef BIQUAD_P
 
 PROPCLASS_NAME PROPFIELD_NAME {};
 
@@ -244,6 +248,27 @@ void mark##CAMEL_NAME##Unchanged() { \
 STANDARD_UNCHANGED(UNDERSCORE_NAME); \
 }
 
+#define BIQUAD_P(E, UNDERSCORE_NAME, CAMEL_NAME) \
+struct syz_BiquadConfig get##CAMEL_NAME() const { \
+STANDARD_READ(UNDERSCORE_NAME) \
+} \
+\
+void set##CAMEL_NAME(const struct syz_BiquadConfig &val, bool track_change=true) { \
+STANDARD_WRITE(UNDERSCORE_NAME) \
+} \
+\
+void validate##CAMEL_NAME(const struct syz_BiquadConfig &value) const { \
+	return; \
+} \
+\
+bool acquire##CAMEL_NAME(struct syz_BiquadConfig &out) { \
+STANDARD_ACQUIRE(UNDERSCORE_NAME) \
+} \
+\
+void mark##CAMEL_NAME##Unchanged() { \
+STANDARD_UNCHANGED(UNDERSCORE_NAME); \
+}
+
 PROPERTY_LIST
 
 #undef STANDARD_READ
@@ -254,6 +279,7 @@ PROPERTY_LIST
 #undef DOUBLE3_P
 #undef DOUBLE6_P
 #undef OBJECT_P
+#undef BIQUAD_P
 
 /*
  * Now that we have all that, we have to define the methods that the C API uses.
@@ -299,6 +325,7 @@ SET_CONV_(T, P, CAMEL_NAME, [](auto &v) { return v; })
 #define OBJECT_P(...) HAS_(__VA_ARGS__)
 #define DOUBLE3_P(...) HAS_(__VA_ARGS__)
 #define DOUBLE6_P(...) HAS_(__VA_ARGS__)
+#define BIQUAD_P(...) HAS_(__VA_ARGS__)
 
 bool hasProperty(int property) override {
 	switch (property) {
@@ -310,12 +337,12 @@ bool hasProperty(int property) override {
 	return false;
 }
 
-
 #undef INT_P
 #undef DOUBLE_P
 #undef DOUBLE3_P
 #undef DOUBLE6_P
 #undef OBJECT_P
+#undef BIQUAD_P
 
 #define INT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) GET_(int, P, CAMEL_NAME)
 #define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) GET_(double, P, CAMEL_NAME)
@@ -325,6 +352,7 @@ bool hasProperty(int property) override {
 	auto strong = x.lock(); \
 	return std::static_pointer_cast<CExposable>(strong); \
 });
+#define BIQUAD_P(P, UNDERSCORE_NAME, CAMEL_NAME) GET_(struct syz_BiquadConfig, P, CAMEL_NAME)
 
 property_impl::PropertyValue getProperty(int property) override {
 	switch (property) {
@@ -339,12 +367,14 @@ property_impl::PropertyValue getProperty(int property) override {
 #undef DOUBLE3_P
 #undef DOUBLE6_P
 #undef OBJECT_P
+#undef BIQUAD_P
 
 #define INT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(int, P, CAMEL_NAME)
 #define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(double, P, CAMEL_NAME)
 #define OBJECT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(std::shared_ptr<CExposable>, P, CAMEL_NAME)
 #define DOUBLE3_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...)  VALIDATE_(property_impl::arrayd3, P, CAMEL_NAME)
 #define DOUBLE6_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) VALIDATE_(property_impl::arrayd6, P, CAMEL_NAME)
+#define BIQUAD_P(P, UNDERSCORE_NAME, CAMEL_NAME) VALIDATE_(struct syz_BiquadConfig, P, CAMEL_NAME)
 
 void validateProperty(int property, const property_impl::PropertyValue &value) override {
 	switch (property) {
@@ -354,12 +384,12 @@ void validateProperty(int property, const property_impl::PropertyValue &value) o
 	}
 }
 
-
 #undef INT_P
 #undef DOUBLE_P
 #undef DOUBLE3_P
 #undef DOUBLE6_P
 #undef OBJECT_P
+#undef BIQUAD_P
 
 #define INT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(int, P, CAMEL_NAME)
 #define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(double, P, CAMEL_NAME) 
@@ -369,6 +399,7 @@ void validateProperty(int property, const property_impl::PropertyValue &value) o
 }))
 #define DOUBLE3_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...)  SET_(property_impl::arrayd3, P, CAMEL_NAME)
 #define DOUBLE6_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(property_impl::arrayd6, P, CAMEL_NAME)
+#define BIQUAD_P(P, UNDERSCORE_NAME, CAMEL_NAME) SET_(struct syz_BiquadConfig, P, CAMEL_NAME)
 
 void setProperty(int property, const property_impl::PropertyValue &value) override {
 	switch (property) {
@@ -386,6 +417,7 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 #undef OBJECT_P
 #undef DOUBLE3_P
 #undef DOUBLE6_P
+#undef BIQUAD_P
 #undef HAS_
 #undef GET_
 #undef GET_CONV_

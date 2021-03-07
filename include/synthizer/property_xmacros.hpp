@@ -18,6 +18,7 @@ extern "C" {
  * object_p(SYZ_MY_PROPERTY, name, Name, ExpectedClass)
  * double3_p(SYZ_MY_PROPERTY, name, Name, default_x, default_y, default_z)
  * double6_p(SYZ_MY_PROPERTY, name, Name, default_x, default_y, default_z, default_x2, default_y2, default_z2)
+ * BIQUAD_P(SYZ_P_MY_PROPERTY, name, Name)
  * 
  * For int properties, use P_INT_MIN and P_INT_MAX for no range; for double use P_DOUBLE_MIN and P_DOUBLE_MAX. Using these as only one of the endpoints is fine.
  * 
@@ -41,6 +42,7 @@ STANDARD_DISTANCE_MODEL_PROPERTIES
 
 #define SOURCE_PROPERTIES \
 DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0) \
+BIQUAD_P(SYZ_P_FILTER, filter, Filter) \
 
 #define PANNED_SOURCE_PROPERTIES \
 INT_P(SYZ_P_PANNER_STRATEGY, panner_strategy, PannerStrategy, 0, SYZ_PANNER_STRATEGY_COUNT - 1, SYZ_PANNER_STRATEGY_STEREO) \
