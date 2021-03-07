@@ -127,43 +127,7 @@ class ObjectProperty {
 	std::weak_ptr<T> field{};
 };
 
-class BiquadProperty {
-	public:
-
-	BiquadProperty() {
-		/* All BiquadProperty start configured as identity. */
-		this->field.b0 = 1.0;
-		this->field.gain = 1.0;
-	}
-
-	struct syz_BiquadConfig read() const {
-		this->lock();
-		return this->field;
-		this->unlock();
-	}
-
-	void write(const struct syz_BiquadConfig &value) {
-		this->lock();
-		this->field = value;
-		this->unlock();
-	}
-
-	private:
-	void lock() const {
-		int old = 0;
-		while (this->spinlock.compare_exchange_strong(old, 1, std::memory_order_acquire, std::memory_order_relaxed) != true) {
-			old = 0;
-			/* Don't yield because this may be the audio thread. */
-		}
-	}
-
-	void unlock() const {
-		this->spinlock.store(0, std::memory_order_release);
-	}
-
-	mutable std::atomic<int> spinlock = 0;
-	struct syz_BiquadConfig field{};
-};
+using BiquadProperty = LatchProperty<syz_BiquadConfig>;
 
 /* Used when expanding the X-lists. */
 #define P_INT_MIN property_impl::int_min
