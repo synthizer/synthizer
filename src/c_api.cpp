@@ -205,3 +205,22 @@ SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle target, int property, double x1, dou
 	return 0;
 	SYZ_EPILOGUE
 }
+
+SYZ_CAPI syz_ErrorCode syz_getBiquad(struct syz_BiquadConfig *filter, syz_Handle target, int property) {
+	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto val = propertyGetter<syz_BiquadConfig>(o, property);
+	*filter = val;
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_setBiquad(syz_Handle target, int property, const struct syz_BiquadConfig *filter) {
+	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto ctx = o->getContextRaw();
+	ctx->setBiquadProperty(o, property, *filter);
+	return 0;
+	SYZ_EPILOGUE
+}
+

@@ -188,6 +188,7 @@ class Context: public Pausable, public BaseObject {
 	void setObjectProperty(std::shared_ptr<BaseObject> &obj, int property, std::shared_ptr<CExposable> &object);
 	void setDouble3Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 3> value);
 	void setDouble6Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 6> value);
+	void setBiquadProperty(std::shared_ptr<BaseObject> &obj, int property, const struct syz_BiquadConfig &value);
 
 	/*
 	 * Ad a weak reference to the specified source.
@@ -301,7 +302,7 @@ class Context: public Pausable, public BaseObject {
 
 	MpscRing<Command, 10000> command_queue;
 	template<typename T>
-	void propertySetter(const std::shared_ptr<BaseObject> &obj, int property, T &value);
+	void propertySetter(const std::shared_ptr<BaseObject> &obj, int property, const T &value);
 
 	unsigned int block_time = 0;
 

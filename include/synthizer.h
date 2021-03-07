@@ -184,7 +184,8 @@ struct syz_BiquadConfig {
 	double gain;
 };
 
-SYZ_CAPI syz_ErrorCode syz_setBiquad(syz_Handle handle, int property, const struct syz_BiquadConfig *filter);
+SYZ_CAPI syz_ErrorCode syz_getBiquad(struct syz_BiquadConfig *filter, syz_Handle target, int property);
+SYZ_CAPI syz_ErrorCode syz_setBiquad(syz_Handle target, int property, const struct syz_BiquadConfig *filter);
 
 /*
  * Biquad filter design functions.  See the audio eq cookbook in the manual's appendices for the specific mathematical formulas.
