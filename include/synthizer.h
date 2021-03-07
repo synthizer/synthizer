@@ -194,6 +194,7 @@ SYZ_CAPI syz_ErrorCode syz_setBiquad(syz_Handle handle, int property, const stru
  * 
  * Synthizer's Nyquist is 22050 HZ.
  * */
+SYZ_CAPI syz_ErrorCode syz_designBiquadIdentity(struct syz_BiquadConfig *filter);
 SYZ_CAPI syz_ErrorCode syz_designBiquadLowpass(struct syz_BiquadConfig *filter, double frequency, double q);
 SYZ_CAPI syz_ErrorCode syz_designBiquadHighpass(struct syz_BiquadConfig *filter, double frequency, double q);
 

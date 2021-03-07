@@ -27,6 +27,15 @@ syz_BiquadConfig convertBiquadDef(const BiquadFilterDef &def) {
 	return out;
 }
 
+SYZ_CAPI syz_ErrorCode syz_designBiquadIdentity(struct syz_BiquadConfig *filter) {
+	SYZ_PROLOGUE
+	*filter = syz_BiquadConfig();
+	filter->b0 = 1.0;
+	filter->gain = 1.0;
+	return 0;
+	SYZ_EPILOGUE
+}
+
 SYZ_CAPI syz_ErrorCode syz_designBiquadLowpass(struct syz_BiquadConfig *filter, double frequency, double q) {
 	SYZ_PROLOGUE
 	*filter = convertBiquadDef(designAudioEqLowpass(frequency / config::SR, q));
