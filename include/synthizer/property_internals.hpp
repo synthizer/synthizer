@@ -127,7 +127,15 @@ class ObjectProperty {
 	std::weak_ptr<T> field{};
 };
 
-using BiquadProperty = LatchProperty<syz_BiquadConfig>;
+class BiquadProperty: public LatchProperty<syz_BiquadConfig> {
+	public:
+	BiquadProperty(): LatchProperty() {
+		syz_BiquadConfig default_value{};
+		/* Internal detail: wire never fails. */
+		syz_designBiquadIdentity(&default_value);
+		this->write(default_value);
+	}
+};
 
 /* Used when expanding the X-lists. */
 #define P_INT_MIN property_impl::int_min

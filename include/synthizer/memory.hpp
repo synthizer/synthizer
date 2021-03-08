@@ -51,6 +51,20 @@ static void deferredFree(void *ptr) {
 }
 
 template<typename T>
+void _deferredDeleteImpl(void *obj) {
+	delete static_cast<T *>(obj);
+}
+
+/*
+ * Drop-in replacement for delete obj, but deferred to a background thread.
+ * */
+template<typename T>
+void deferredDelete(T *obj) {
+	deferredFreeCallback(_deferredDeleteImpl<T>, (void *)obj);
+}
+
+
+template<typename T>
 class DeferredAllocator {
 	public:
 	typedef T value_type;
