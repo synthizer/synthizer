@@ -176,7 +176,7 @@ SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, dou
  * Configuration for a filter. Currently this struct should be treated as opaque. It's exposed here
  * in order to allow allocating them on the stack.  Changes to the layout and fields may occur without warning.
  * 
- * To initialize this struct, use one of the syz_designBiquadXXX functions, below.
+ * To initialize this struct, use one of the syz_BiquadDesignXXX functions, below.
  * */
 struct syz_BiquadConfig {
 	double b0, b1, b2;
@@ -195,14 +195,14 @@ SYZ_CAPI syz_ErrorCode syz_setBiquad(syz_Handle target, int property, const stru
  * 
  * Synthizer's Nyquist is 22050 HZ.
  * */
-SYZ_CAPI syz_ErrorCode syz_designBiquadIdentity(struct syz_BiquadConfig *filter);
-SYZ_CAPI syz_ErrorCode syz_designBiquadLowpass(struct syz_BiquadConfig *filter, double frequency, double q);
-SYZ_CAPI syz_ErrorCode syz_designBiquadHighpass(struct syz_BiquadConfig *filter, double frequency, double q);
+SYZ_CAPI syz_ErrorCode syz_biquadDesignIdentity(struct syz_BiquadConfig *filter);
+SYZ_CAPI syz_ErrorCode syz_biquadDesignLowpass(struct syz_BiquadConfig *filter, double frequency, double q);
+SYZ_CAPI syz_ErrorCode syz_biquadDesignHighpass(struct syz_BiquadConfig *filter, double frequency, double q);
 
 /*
  * bw is the bandwidth between -3 db frequencies.
  * */
-SYZ_CAPI syz_ErrorCode syz_designBiquadBandpass(struct syz_BiquadConfig *filter, double frequency, double bw);
+SYZ_CAPI syz_ErrorCode syz_biquadDesignBandpass(struct syz_BiquadConfig *filter, double frequency, double bw);
 
 /*
  * Create a context. This represents the audio device itself, and all other Synthizer objects need one.

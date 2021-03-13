@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 	//CHECKED(syz_setD(generator, SYZ_P_PITCH_BEND, 2.0));
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
-	CHECKED(syz_designBiquadLowpass(&filter, 1500, 0.7));
+	CHECKED(syz_biquadDesignLowpass(&filter, 1500, 0.7));
 	CHECKED(syz_setBiquad(source, SYZ_P_FILTER, &filter));
 
 	CHECKED(syz_createGlobalFdnReverb(&effect, context));

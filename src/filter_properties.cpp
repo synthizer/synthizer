@@ -27,7 +27,7 @@ syz_BiquadConfig convertBiquadDef(const BiquadFilterDef &def) {
 	return out;
 }
 
-SYZ_CAPI syz_ErrorCode syz_designBiquadIdentity(struct syz_BiquadConfig *filter) {
+SYZ_CAPI syz_ErrorCode syz_biquadDesignIdentity(struct syz_BiquadConfig *filter) {
 	SYZ_PROLOGUE
 	*filter = syz_BiquadConfig();
 	filter->b0 = 1.0;
@@ -36,21 +36,21 @@ SYZ_CAPI syz_ErrorCode syz_designBiquadIdentity(struct syz_BiquadConfig *filter)
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_designBiquadLowpass(struct syz_BiquadConfig *filter, double frequency, double q) {
+SYZ_CAPI syz_ErrorCode syz_biquadDesignLowpass(struct syz_BiquadConfig *filter, double frequency, double q) {
 	SYZ_PROLOGUE
 	*filter = convertBiquadDef(designAudioEqLowpass(frequency / config::SR, q));
 	return 0;
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_designBiquadHighpass(struct syz_BiquadConfig *filter, double frequency, double q) {
+SYZ_CAPI syz_ErrorCode syz_biquadDesignHighpass(struct syz_BiquadConfig *filter, double frequency, double q) {
 	SYZ_PROLOGUE
 	*filter = convertBiquadDef(designAudioEqHighpass(frequency / config::SR, q));
 	return 0;
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_designBiquadBandpass(struct syz_BiquadConfig *filter, double frequency, double bw) {
+SYZ_CAPI syz_ErrorCode syz_biquadDesignBandpass(struct syz_BiquadConfig *filter, double frequency, double bw) {
 	SYZ_PROLOGUE
 	*filter = convertBiquadDef(designAudioEqBandpass(frequency / config::SR, bw));
 	return 0;

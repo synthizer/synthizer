@@ -132,7 +132,7 @@ class BiquadProperty: public LatchProperty<syz_BiquadConfig> {
 	BiquadProperty(): LatchProperty() {
 		syz_BiquadConfig default_value{};
 		/* Internal detail: wire never fails. */
-		syz_designBiquadIdentity(&default_value);
+		syz_biquadDesignIdentity(&default_value);
 		this->write(default_value);
 	}
 };
