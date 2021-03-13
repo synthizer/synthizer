@@ -305,6 +305,7 @@ SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle cont
 struct syz_RouteConfig {
 	float gain;
 	float fade_time;
+	syz_BiquadConfig filter;
 };
 
 /*

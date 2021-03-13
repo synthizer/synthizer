@@ -28,8 +28,9 @@ int main(int argc, char *argv[]) {
 	syz_Handle context = 0, generator = 0, source = 0, buffer = 0, effect = 0;
 	int ecode = 0, ending = 0;
 	double angle = 0.0, angle_per_second = 45.0;
-	struct syz_BiquadConfig filter;
 	struct syz_RouteConfig route_config;
+	struct syz_BiquadConfig filter;
+
 
 	if (argc != 2) {
 		printf("Usage: wav_test <path>\n");
@@ -52,7 +53,7 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 	CHECKED(syz_biquadDesignLowpass(&filter, 500, 0.7));
-	CHECKED(syz_setBiquad(source, SYZ_P_FILTER_DIRECT, &filter));
+	CHECKED(syz_setBiquad(source, SYZ_P_FILTER_EFFECTS, &filter));
 
 	CHECKED(syz_initRouteConfig(&route_config));
 	CHECKED(syz_createGlobalFdnReverb(&effect, context));

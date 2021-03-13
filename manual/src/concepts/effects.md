@@ -11,6 +11,7 @@ users of the Synthizer API can route any number of sources to any number of glob
 struct syz_RouteConfig {
 	float gain;
 	float fade_time;
+	syz_BiquadConfig filter;
 };
 
 SYZ_CAPI syz_ErrorCode syz_initRouteConfig(struct syz_RouteConfig *cfg);
@@ -28,6 +29,9 @@ It is necessary to initialize `syz_RouteConfig` with `syz_initRouteConfig` befor
 
 Gains are per route and apply after the gain of the source.
 For example, you might feed 70% of a source's output to something (gain = 0.7).
+
+Filters are also per route and apply after any filters on sources.  For example, this can be used to change the filter on a per-reverb basis for a reverb zone algorithm
+that feeds sources to more than one reverb at a time.
 
 In order to remove a route, use `syz_routingRemoveRoute`.
 

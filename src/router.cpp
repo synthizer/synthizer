@@ -3,6 +3,7 @@
 #include "synthizer.h"
 
 #include "synthizer/base_object.hpp"
+#include "synthizer/biquad.hpp"
 #include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/channel_mixing.hpp"
@@ -71,6 +72,23 @@ void OutputHandle::routeAudio(float *buffer, unsigned int channels) {
 				}
 			}
 		});
+
+		if (route->filter == nullptr || route->last_channels != channels) {
+			/*
+			 * Unfortunately, we only know the number of channels were working with late.  It's more overhead to try to synchronize this with the user's thread.  Fortunately, this only
+			 * happens once per route in practice, unless the user does something which changes the channel count of the input.
+			 * */
+			route->filter = createBiquadFilter(channels);
+			route->last_channels = channels;
+		}
+		/* filters optimize for this case, such that config changes which do nothing no-op. */
+		route->filter->configure(route->external_filter_config);
+
+		/*
+		 * Process in place, then mix to the input.  If this is done the other way around, it's necessary to grab
+		 * a second buffer from the buffer cache and introduce another level of copies, which is pretty bad for performance.
+		 * */
+		route->filter->processBlock(working_buf, working_buf, false);
 		mixChannels(config::BLOCK_SIZE, working_buf, channels, route->input->buffer, route->input->channels);
 	}
 }
@@ -86,13 +104,13 @@ Router::~Router() {
 	}
 }
 
-void Router::configureRoute(OutputHandle *output, InputHandle *input, float gain, unsigned int fade_blocks) {
+void Router::configureRoute(OutputHandle *output, InputHandle *input, float gain, unsigned int fade_blocks, syz_BiquadConfig filter_cfg) {
 	auto configured_iter = this->findRouteForPair(output, input);
 	Route *to_configure;
 	if (configured_iter != this->routes.end()) {
 		to_configure = &*configured_iter;
 	} else {
-			Route key;
+		Route key;
 		key.output = output;
 		key.input = input;
 		auto insert_at = std::lower_bound(this->routes.begin(), this->routes.end(), key, [](const Route &x, const Route &y) {
@@ -104,19 +122,27 @@ void Router::configureRoute(OutputHandle *output, InputHandle *input, float gain
 	to_configure->output = output;
 	to_configure->input = input;
 	to_configure->gain_driver.setValue(this->time, gain);
+	to_configure->external_filter_config = filter_cfg;
+
+	/**
+	 * If the route has already been used, make sure to also configure the filter. If the route hasn't been used yet, it hasn't allocated a filter for itself.
+	 * */
+	if (to_configure->filter) {
+		to_configure->filter->configure(to_configure->external_filter_config);
+	}
 }
 
 void Router::removeRoute(OutputHandle *output, InputHandle *input, unsigned int fade_out) {
 	auto iter = this->findRouteForPair(output, input);
 	if (iter != this->routes.end()) {
-		this->configureRoute(output, input, 0.0, fade_out);
+		this->configureRoute(output, input, 0.0, fade_out, iter->external_filter_config);
 	}
 }
 
 void Router::removeAllRoutes(OutputHandle *output, unsigned int fade_out) {
 	auto i = this->findRun(output);
 	while (i != this->routes.end() && i->output == output) {
-		this->configureRoute(i->output, i->input, 0.0f, fade_out);
+		this->configureRoute(i->output, i->input, 0.0f, fade_out, i->external_filter_config);
 		i++;
 	}
 }
@@ -177,7 +203,6 @@ deferred_vector<Route>::iterator Router::findRun(OutputHandle *output) {
 
 }
 
-
 using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_initRouteConfig(struct syz_RouteConfig *cfg) {
@@ -185,6 +210,7 @@ SYZ_CAPI syz_ErrorCode syz_initRouteConfig(struct syz_RouteConfig *cfg) {
 	*cfg = syz_RouteConfig{};
 	cfg->gain = 1.0;
 	cfg->fade_time = 0.03;
+	syz_biquadDesignIdentity(&cfg->filter);
 	return 0;
 	SYZ_EPILOGUE
 }
@@ -193,6 +219,7 @@ SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle out
 	(void)context;
 
 	SYZ_PROLOGUE
+	auto filter_cfg = config->filter;
 	auto obj_output = fromC<BaseObject>(output);
 	auto obj_input = fromC<BaseObject>(input);
 	if (obj_output->getContextRaw() != obj_input->getContextRaw()) {
@@ -214,15 +241,15 @@ SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle out
 	}
 
 	auto ctx = obj_input->getContext();
-	ctx->enqueueReferencingCallbackCommand(true, [](auto &ctx, auto &obj_output, auto &obj_input, auto &gain, auto &fade_time) {
+	ctx->enqueueReferencingCallbackCommand(true, [](auto &ctx, auto &obj_output, auto &obj_input, auto &gain, auto &fade_time, auto &filter_cfg) {
 		if (ctx == nullptr) {
 			return;
 		}
 		auto output_handle = obj_output->getOutputHandle();
 		auto input_handle = obj_input->getInputHandle();
 		auto r = ctx->getRouter();
-		r->configureRoute(output_handle, input_handle, gain, fade_time);
-	}, ctx, obj_output, obj_input, gain, fade_time);
+		r->configureRoute(output_handle, input_handle, gain, fade_time, filter_cfg);
+	}, ctx, obj_output, obj_input, gain, fade_time, filter_cfg);
 
 	return 0;
 	SYZ_EPILOGUE
