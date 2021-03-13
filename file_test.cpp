@@ -23,13 +23,13 @@ auto ret = x; \
 	} \
 } while(0)
 
-struct syz_RouteConfig route_config = { 1.0, 0.01, };
 
 int main(int argc, char *argv[]) {
 	syz_Handle context = 0, generator = 0, source = 0, buffer = 0, effect = 0;
 	int ecode = 0, ending = 0;
 	double angle = 0.0, angle_per_second = 45.0;
 	struct syz_BiquadConfig filter;
+	struct syz_RouteConfig route_config;
 
 	if (argc != 2) {
 		printf("Usage: wav_test <path>\n");
@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_biquadDesignLowpass(&filter, 500, 0.7));
 	CHECKED(syz_setBiquad(source, SYZ_P_FILTER_DIRECT, &filter));
 
+	CHECKED(syz_initRouteConfig(&route_config));
 	CHECKED(syz_createGlobalFdnReverb(&effect, context));
 	CHECKED(syz_setD(effect, SYZ_P_LATE_REFLECTIONS_DELAY, 0.03));
 	CHECKED(syz_setD(effect, SYZ_P_MEAN_FREE_PATH, 0.1));

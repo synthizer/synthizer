@@ -13,6 +13,7 @@ struct syz_RouteConfig {
 	float fade_time;
 };
 
+SYZ_CAPI syz_ErrorCode syz_initRouteConfig(struct syz_RouteConfig *cfg);
 SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct syz_RouteConfig *config);
 SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle output, syz_Handle input, float fade_out);
 ```
@@ -22,6 +23,8 @@ type, nor is it possible to form duplicate routes.
 
 In order to establish or update the parameters of a route, use `syz_routingConfigRoute`.  This will form a route if there wasn't already one, and update the parameters
 as necessary.
+
+It is necessary to initialize `syz_RouteConfig` with `syz_initRouteConfig` before using it, but this need only be done once.  After that, reusing the same `syz_RouteConfig` for a route without reinitializing it is encouraged.
 
 Gains are per route and apply after the gain of the source.
 For example, you might feed 70% of a source's output to something (gain = 0.7).

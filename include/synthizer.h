@@ -301,10 +301,22 @@ SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context);
 
 SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels);
 
+/* Initialize with syz_initRouteConfig before using. */
 struct syz_RouteConfig {
 	float gain;
 	float fade_time;
 };
+
+/*
+ * Initialize a syz_routeConfig with default values.
+ * 
+ * Should be called before using syz_RouteConfig for the first time.  Afterwords, it's fine to just reuse the already-initialized
+ * config and change values in it, but some values in the struct need to be nonzero unless explicitly set to 0 by the user.
+ * Though the struct is currently simple, it will shortly contain filters which must be properly initialized if audio is to play at all.
+ * 
+ * The defaults configure a gain of 1 and a fade_time of 0.03 seconds.
+ * */
+SYZ_CAPI syz_ErrorCode syz_initRouteConfig(struct syz_RouteConfig *cfg);
 
 SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct syz_RouteConfig *config);
 SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle output, syz_Handle input, float fade_out);

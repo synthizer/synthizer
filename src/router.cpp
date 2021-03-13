@@ -180,6 +180,15 @@ deferred_vector<Route>::iterator Router::findRun(OutputHandle *output) {
 
 using namespace synthizer;
 
+SYZ_CAPI syz_ErrorCode syz_initRouteConfig(struct syz_RouteConfig *cfg) {
+	SYZ_PROLOGUE
+	*cfg = syz_RouteConfig{};
+	cfg->gain = 1.0;
+	cfg->fade_time = 0.03;
+	return 0;
+	SYZ_EPILOGUE
+}
+
 SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct syz_RouteConfig *config) {
 	(void)context;
 
