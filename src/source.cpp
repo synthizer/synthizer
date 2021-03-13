@@ -52,7 +52,11 @@ void Source::fillBlock(unsigned int channels) {
 
 	if (channels != this->last_channels) {
 		this->filter = createBiquadFilter(channels);
+		this->filter_direct = createBiquadFilter(channels);
+		this->filter_effects = createBiquadFilter(channels);
 		this->filter->configure(this->getFilter());
+		this->filter_direct->configure(this->getFilterDirect());
+		this->filter_effects->configure(this->getFilterEffects());
 		this->last_channels = channels;
 	}
 
@@ -99,17 +103,33 @@ void Source::fillBlock(unsigned int channels) {
 		}
 	});
 
-	/*
-	 * For now, always processs the filter to both paths.
-	 * */
+
 	struct syz_BiquadConfig filter_cfg;
 	if (this->acquireFilter(filter_cfg)) {
 		this->filter->configure(filter_cfg);
 	}
+	if (this->acquireFilterDirect(filter_cfg)) {
+		this->filter_direct->configure(filter_cfg);
+	}
+	if (this->acquireFilterEffects(filter_cfg)) {
+		this->filter_effects->configure(filter_cfg);
+	}
 
+	/*
+	 * Filter goes to both paths, so run it first.
+	 * */
 	this->filter->processBlock(&this->block[0], &this->block[0], false);
 
-	this->getOutputHandle()->routeAudio(&this->block[0], channels);
+	{
+		auto buf_guard = acquireBlockBuffer(false);
+		this->filter_effects->processBlock(&this->block[0], buf_guard, false);
+		this->getOutputHandle()->routeAudio(buf_guard, channels);
+	}
+
+	/*
+	 * And now the direct filter, which applies only to the source's local block.
+	 * */
+	this->filter_direct->processBlock(&this->block[0], &this->block[0], false);
 }
 
 }

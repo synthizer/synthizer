@@ -66,7 +66,7 @@ class Source: public RouteOutput, public Pausable {
 	FadeDriver gain_fader = {1.0f, 1};
 	/* Used to detect channel changes in fillBlock. */
 	unsigned int last_channels = 0;
-	std::shared_ptr<BiquadFilter> filter = nullptr;
+	std::shared_ptr<BiquadFilter> filter = nullptr, filter_direct = nullptr, filter_effects = nullptr;
 };
 
 class DirectSource: public Source {
