@@ -47,6 +47,38 @@ class IIRFilterDef<num, den, typename std::enable_if<(num > 0)>::type> {
 
 		this->gain = other.gain;
 	}
+
+	template<std::size_t NN, std::size_t ND>
+	bool operator==(const IIRFilterDef<NN, ND> &other) {
+		if (NN > num || ND > den) {
+			return false;
+		}
+
+		if (this->gain != other.gain) {
+			return false;
+		}
+
+		for (std::size_t i = 0; i < num; i++) {
+			double nv = i >= NN ? 0.0 : other.num_coefs[i];
+			if (this->num_coefs[i] != nv) {
+				return false;
+			}
+		}
+
+		for (std::size_t i = 0; i < den; i++) {
+			double nv = i >= ND ? 0.0 : other.den_coefs[i];
+			if (this->den_coefs[i] != nv) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	template<std::size_t NN, std::size_t ND>
+	bool operator!=(const IIRFilterDef<NN, ND> &other) {
+		return !(*this == other);
+	}
 };
 
 /*
