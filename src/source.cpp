@@ -2,6 +2,7 @@
 
 #include "synthizer/sources.hpp"
 
+#include "synthizer/biquad.hpp"
 #include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/channel_mixing.hpp"
@@ -49,6 +50,12 @@ void Source::fillBlock(unsigned int channels) {
 	double gain_prop;
 	auto time = this->context->getBlockTime();
 
+	if (channels != this->last_channels) {
+		this->filter = createBiquadFilter(channels);
+		this->filter->configure(this->getFilter());
+		this->last_channels = channels;
+	}
+
 	if (this->acquireGain(gain_prop) || this->shouldIncorporatePausableGain()) {
 		gain_prop *= this->getPausableGain();
 		this->gain_fader.setValue(time, gain_prop);
@@ -91,6 +98,16 @@ void Source::fillBlock(unsigned int channels) {
 			}
 		}
 	});
+
+	/*
+	 * For now, always processs the filter to both paths.
+	 * */
+	struct syz_BiquadConfig filter_cfg;
+	if (this->acquireFilter(filter_cfg)) {
+		this->filter->configure(filter_cfg);
+	}
+
+	this->filter->processBlock(&this->block[0], &this->block[0], false);
 
 	this->getOutputHandle()->routeAudio(&this->block[0], channels);
 }
