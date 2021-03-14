@@ -52,15 +52,15 @@ int main(int argc, char *argv[]) {
 	//CHECKED(syz_setD(generator, SYZ_P_PITCH_BEND, 2.0));
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_sourceAddGenerator(source, generator));
-	CHECKED(syz_biquadDesignLowpass(&filter, 500, 0.7));
-	CHECKED(syz_setBiquad(source, SYZ_P_FILTER_EFFECTS, &filter));
 
 	CHECKED(syz_initRouteConfig(&route_config));
 	CHECKED(syz_createGlobalFdnReverb(&effect, context));
 	CHECKED(syz_setD(effect, SYZ_P_LATE_REFLECTIONS_DELAY, 0.03));
 	CHECKED(syz_setD(effect, SYZ_P_MEAN_FREE_PATH, 0.1));
-	CHECKED(syz_setD(effect, SYZ_P_T60, 10.0));
+	CHECKED(syz_setD(effect, SYZ_P_T60, 0.3));
 	CHECKED(syz_setD(effect, SYZ_P_GAIN, 1.0));
+	CHECKED(syz_biquadDesignLowpass(&filter, 1500, 0.7));
+	CHECKED(syz_setBiquad(effect, SYZ_P_FILTER, &filter));
 	CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
 
 	//std::this_thread::sleep_for(std::chrono::seconds(2));

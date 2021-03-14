@@ -37,12 +37,16 @@ class IIRFilterDef<num, den, typename std::enable_if<(num > 0)>::type> {
 		this->num_coefs.fill(0.0);
 		this->den_coefs.fill(0.0);
 
-		for (std::size_t i = 0; i < NN; i++) {
-			this->num_coefs[i] = other.num_coefs[i];
+		if (num != 0) {
+			for (std::size_t i = 0; i < NN; i++) {
+				this->num_coefs[i] = other.num_coefs[i];
+			}
 		}
 
-		for (std::size_t i = 0; i < ND; i++) {
-			this->den_coefs[i] = other.den_coefs[i];
+		if (den != 0) {
+			for (std::size_t i = 0; i < ND; i++) {
+				this->den_coefs[i] = other.den_coefs[i];
+			}
 		}
 
 		this->gain = other.gain;
@@ -65,8 +69,9 @@ class IIRFilterDef<num, den, typename std::enable_if<(num > 0)>::type> {
 			}
 		}
 
-		for (std::size_t i = 0; i < den; i++) {
-			double nv = i >= ND ? 0.0 : other.den_coefs[i];
+		/* For this loop, remember that the leading coefficients are implicit. */
+		for (std::size_t i = 0; i < den - 1; i++) {
+			double nv = i >= ND - 1 ? 0.0 : other.den_coefs[i];
 			if (this->den_coefs[i] != nv) {
 				return false;
 			}
