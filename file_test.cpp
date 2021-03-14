@@ -57,10 +57,10 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_createGlobalFdnReverb(&effect, context));
 	CHECKED(syz_setD(effect, SYZ_P_LATE_REFLECTIONS_DELAY, 0.03));
 	CHECKED(syz_setD(effect, SYZ_P_MEAN_FREE_PATH, 0.1));
-	CHECKED(syz_setD(effect, SYZ_P_T60, 0.3));
+	CHECKED(syz_setD(effect, SYZ_P_T60, 1.0));
 	CHECKED(syz_setD(effect, SYZ_P_GAIN, 1.0));
-	CHECKED(syz_biquadDesignLowpass(&filter, 1500, 0.7));
-	CHECKED(syz_setBiquad(effect, SYZ_P_FILTER, &filter));
+	CHECKED(syz_biquadDesignLowpass(&filter, 15, 0.7));
+	//CHECKED(syz_setBiquad(effect, SYZ_P_FILTER, &filter));
 	CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
 
 	//std::this_thread::sleep_for(std::chrono::seconds(2));
