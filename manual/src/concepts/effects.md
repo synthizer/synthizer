@@ -47,7 +47,6 @@ if blocks == 0 and fade != 0:
 This manual doesn't document global effects as distinct entities because Synthizer is internally designed to allow for object reuse in future when we support
 per-generator effects.  Specifically, an object like [Echo](../object_reference/echo.md) will often be able to be used in both positions.
 
-
 Many effects involve feedback and/or other long-running audio as part of their intended function. But while in development, it is often useful to reset an effect.  Synthizer exposes a function for this purpose:
 
 ```
@@ -55,4 +54,3 @@ SYZ_CAPI syz_ErrorCode syz_effectReset(syz_Handle effect);
 ```
 
 Which will work on any effect (at most, it does nothing).  As with things like property access this is slow, and it's also not going to sound good, but it can do things like clear out the feedback paths of a reverb at the Python shell for interactive experimentation purposes.
-If there's enough demand to make resetting a normal operation, it would be possible to extend it to become one, but not without significant pending work for other things being in place first.

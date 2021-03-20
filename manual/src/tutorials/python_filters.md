@@ -1,5 +1,7 @@
 # Filters in Python
 
+NOTE: C API users and bindings developers should se [here](../concepts/filters.md).
+
 Synthizer offers the ability to set filters in many places, in order to allow for precise control over
 audio effects.  By far the most useful of these is on all sources, which can be used to simulate occlusion.  At the moment, filters may be found on:
 
@@ -30,6 +32,9 @@ context.config_route(output, input, filter = synthizer.BiquadConfig.design_lowpa
 
 In the above, `q` is an advanced parameter that defaults to a value which yields a butterworth filter, which is almost always what you want.  You shouldn't need to change it from the default, and can usually just omit it.  `q` controls resonance.
 higher values of `q` produce filters that ring, which may or may not be beneficial for designing audio effects.
+
+To clear a filter, set it to `synthizer.BiquadConfig.design_identity()`, which is how you get the filter which does nothing to the audio (internally Synthizer will
+avoid running it, but filters do not have a concept of NULL).
 
 Note that not all filter configurations are stable.  Synthizer cannot validate this case in any meaningful fashion.  All normal usage should work as expected, but extreme values
 may produce unstable filters.  For example: lowpasses with absurdly high frequencies, bandpasses with a bandwidth of 1 HZ, and/or very low and very high `q` values.

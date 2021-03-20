@@ -7,6 +7,7 @@
 - [A Basic Python Tutorial](./tutorials/python.md)
 - [Events (alpha)](./tutorials/events.md)
 - [Filters in Python](./tutorials/python_filters.md)
+
 # Concepts
 
 - [Introduction](./concepts/introduction.md)
@@ -15,6 +16,7 @@
 - [C API Conventions](./concepts/conventions.md)
 - [Logging, Initialization, and Shutdown](./concepts/initialization.md)
 - [Objects, Handles, and Properties](./concepts/object_model.md)
+- [Filters](./concepts/filters.md)
 - [Streams](./concepts/streams.md)
 - [ 3D Panning ](./concepts/3d_panning.md)
 - [Channel Upmixing and Downmixing ](./concepts/channel_mixing.md)
