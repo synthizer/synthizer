@@ -34,7 +34,7 @@ class GlobalEffect: public BaseEffect, public RouteInput {
 			this->biquad_filter = createBiquadFilter(this->channels);
 		}
 		if (this->biquad_filter != nullptr) {
-			if (this->acquireInputFilter(biquad_cfg)) {
+			if (this->acquireFilterInput(biquad_cfg)) {
 				this->biquad_filter->configure(biquad_cfg);
 			}
 			this->biquad_filter->processBlock(&this->input_buffer[0], &this->input_buffer[0], false);

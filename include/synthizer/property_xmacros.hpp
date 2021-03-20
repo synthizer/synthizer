@@ -76,7 +76,7 @@ INT_P(SYZ_P_NOISE_TYPE, noise_type, NoiseType, 0, SYZ_NOISE_TYPE_COUNT - 1, SYZ_
 
 #define EFFECT_PROPERTIES \
 DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0) \
-BIQUAD_P(SYZ_P_INPUT_FILTER, input_filter, InputFilter)
+BIQUAD_P(SYZ_P_FILTER_INPUT, filter_input, FilterInput)
 
 #define FDN_REVERB_EFFECT_PROPERTIES \
 DOUBLE_P(SYZ_P_MEAN_FREE_PATH, mean_free_path, MeanFreePath, 0.0, 0.5, 0.02) \

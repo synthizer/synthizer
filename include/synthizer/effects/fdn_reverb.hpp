@@ -57,7 +57,7 @@ class FdnReverbEffect: public BASE {
 	FdnReverbEffect(const std::shared_ptr<Context> &ctx): BASE(ctx, 1) {
 		syz_BiquadConfig filter_cfg;
 		syz_biquadDesignLowpass(&filter_cfg, 1500, 0.7071135624381276);
-		this->setInputFilter(filter_cfg);
+		this->setFilterInput(filter_cfg);
 	}
 
 	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) override;

@@ -525,7 +525,7 @@ cdef class GlobalEffect(_BaseObject):
         _checked(syz_effectReset(self.handle))
 
     gain = DoubleProperty(SYZ_P_GAIN)
-    input_filter = BiquadProperty(SYZ_P_INPUT_FILTER)
+    filter_input = BiquadProperty(SYZ_P_FILTER_INPUT)
 
 
 cdef class EchoTapConfig:
