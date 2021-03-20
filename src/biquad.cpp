@@ -26,6 +26,8 @@ class ConcreteBiquadFilter: public BiquadFilter {
 	bool crossfade = false;
 	/* If there's a configuration before the first block, apply it to both filters. Prevents crossfading the first block from a wire. */
 	bool first_block = true;
+	/* The filter is currently configured as a wire, e.g.  copy and/or add. */
+	bool is_wire = true;
 	/* Points to the index of the active filter in the array. */
 	unsigned char active = 0;
 };
@@ -51,6 +53,7 @@ void ConcreteBiquadFilter<CHANNELS>::configure(const syz_BiquadConfig &config) {
 		/* Filter is the same. Crossfading would produce artifacts for no reason since inactive has to reach steady state, so stop now. */
 		return;
 	}
+	this->is_wire = config.is_wire != 0;
 	this->filter_def = def;
 	this->filters[this->active ^ 1].setParameters(this->filter_def);
 	if (this->first_block) {
@@ -95,6 +98,17 @@ void ConcreteBiquadFilter<CHANNELS>::processBlockImpl(float *in, float *out) {
 	const float gain_inv = 1.0f / config::BLOCK_SIZE;
 	IIRFilter<CHANNELS, 3, 3> *active = &this->filters[this->active];
 	IIRFilter<CHANNELS, 3, 3> *inactive = &this->filters[this->active ^ 1];
+
+	/*
+	 * The wire case is either a copy or add depending on ADD.
+	 * But we can only optimize it if we aren't crossfading, or there will be artifacts.
+	 * */
+	if (CROSSFADE == false && this->is_wire) {
+		for (unsigned int i = 0; i < config::BLOCK_SIZE * CHANNELS; i++) {
+			out[i] = ADD ? out[i] + in[i] : in[i];
+		}
+		return;
+	}
 
 	for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 		float tmp[CHANNELS] = { 0.0f };

@@ -182,6 +182,7 @@ struct syz_BiquadConfig {
 	double b0, b1, b2;
 	double a1, a2;
 	double gain;
+	unsigned char is_wire;
 };
 
 SYZ_CAPI syz_ErrorCode syz_getBiquad(struct syz_BiquadConfig *filter, syz_Handle target, int property);
