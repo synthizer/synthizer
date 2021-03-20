@@ -63,6 +63,7 @@ cdef extern from "synthizer_constants.h":
         SYZ_P_FILTER
         SYZ_P_FILTER_DIRECT
         SYZ_P_FILTER_EFFECTS
+        SYZ_P_INPUT_FILTER
 
     cdef enum SYZ_EVENT_TYPES:
         SYZ_EVENT_TYPE_INVALID

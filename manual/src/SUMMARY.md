@@ -6,7 +6,7 @@
 
 - [A Basic Python Tutorial](./tutorials/python.md)
 - [Events (alpha)](./tutorials/events.md)
-
+- [Filters in Python](./tutorials/python_filters.md)
 # Concepts
 
 - [Introduction](./concepts/introduction.md)
