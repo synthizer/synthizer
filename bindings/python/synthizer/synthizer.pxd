@@ -81,6 +81,7 @@ cdef extern from "synthizer.h":
         double a1
         double a2
         double gain
+        unsigned char is_wire
 
     syz_ErrorCode syz_getBiquad(syz_BiquadConfig* filter, syz_Handle target, int property)
 
@@ -131,6 +132,7 @@ cdef extern from "synthizer.h":
     cdef struct syz_RouteConfig:
         float gain
         float fade_time
+        syz_BiquadConfig filter
 
     syz_ErrorCode syz_initRouteConfig(syz_RouteConfig* cfg)
 
