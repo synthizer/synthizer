@@ -29,7 +29,6 @@ jobs:
 
   windows:
     runs-on: windows-2019
-    if: "false"
     env:
       CI_ARCH: ${{matrix.CI_ARCH}}
       BUILDING_SYNTHIZER: "1"
