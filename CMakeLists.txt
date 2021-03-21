@@ -42,6 +42,7 @@ set(SYNTHIZER_LIB_TYPE STATIC CACHE STRING "The build type for Synthizer. Either
 add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/audio_output.cpp
 	src/background_thread.cpp
+	src/biquad.cpp
 	src/block_buffer_cache.cpp
 	src/buffer.cpp
 	src/byte_stream.cpp
@@ -54,6 +55,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/effects/fdn_reverb.cpp
 	src/error.cpp
 	src/events.cpp
+	src/filter_properties.cpp
 	src/generator.cpp
 	src/hrtf.cpp
 	src/logging.cpp

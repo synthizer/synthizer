@@ -22,7 +22,7 @@ class IIRFilterDef<num, den, typename std::enable_if<(num > 0)>::type> {
 	std::array<double, num> num_coefs;
 	/*
 	 * Denominator of the filter (a_x in audio EQ cookbook).
-	 * First coefficient is always 1.
+	 * First coefficient is implicit and always 1.
 	 * */
 	std::array<double, den == 0 ? 0 : den-1> den_coefs;
 	/*
@@ -31,9 +31,62 @@ class IIRFilterDef<num, den, typename std::enable_if<(num > 0)>::type> {
 	 * This is the missing gain factor that needs to be added back in.
 	 * */
 	double gain;
+
+	template<std::size_t NN, std::size_t ND, typename RES = typename std::enable_if_t<NN <= num && ND <= den, void>>
+	auto operator=(const IIRFilterDef<NN, ND> &other) -> RES {
+		this->num_coefs.fill(0.0);
+		this->den_coefs.fill(0.0);
+
+		if (num != 0) {
+			for (std::size_t i = 0; i < NN; i++) {
+				this->num_coefs[i] = other.num_coefs[i];
+			}
+		}
+
+		if (den != 0) {
+			for (std::size_t i = 0; i < ND; i++) {
+				this->den_coefs[i] = other.den_coefs[i];
+			}
+		}
+
+		this->gain = other.gain;
+	}
+
+	template<std::size_t NN, std::size_t ND>
+	bool operator==(const IIRFilterDef<NN, ND> &other) {
+		if (NN > num || ND > den) {
+			return false;
+		}
+
+		if (this->gain != other.gain) {
+			return false;
+		}
+
+		for (std::size_t i = 0; i < num; i++) {
+			double nv = i >= NN ? 0.0 : other.num_coefs[i];
+			if (this->num_coefs[i] != nv) {
+				return false;
+			}
+		}
+
+		/* For this loop, remember that the leading coefficients are implicit. */
+		for (std::size_t i = 0; i < den - 1; i++) {
+			double nv = i >= ND - 1 ? 0.0 : other.den_coefs[i];
+			if (this->den_coefs[i] != nv) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	template<std::size_t NN, std::size_t ND>
+	bool operator!=(const IIRFilterDef<NN, ND> &other) {
+		return !(*this == other);
+	}
 };
 
-/*]
+/*
  * A wire is the identity filter.
  * */
 IIRFilterDef<1, 0> designWire();

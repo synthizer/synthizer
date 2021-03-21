@@ -33,12 +33,13 @@ SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH | double | 0.01 | 0.0 to 0.3 | The depth
 SYZ_P_LATE_REFLECTIONS_MODULATION_FREQUENCY | double | 0.5 | 0.01 to 100.0 | The frequency of the modulation of the delay lines inthe feedback paths.
 SYZ_P_LATE_REFLECTIONS_DELAY | double | 0.01 | 0.0 to 0.5 | The delay of the late reflections relative to the input in seconds.
 
+Note that `SYZ_P_INPUT_FILTER` defaults to a lowpass Butterworth with a cutoff frequency of 1500 HZ.
+
 ## Remarks
 
 This is a reverb composed of a feedback delay network with 8 internal delay lines.  The algorithm proceeds as follows:
 
 - Audio is fed through the input filter, a lowpass.  Use this to eliminate high frequencies, which can be quite harsh when fed to reverb algorithms.
-  Currently, this filter is hardcoded, but Synthizer will be introducing a property type for filters in the near future.
 - Then, audio is fed into a series of 8 delay lines, connected with a feedback matrix.  It's essentially a set of parallel allpass filters with some additional feedbacks, but inspired by physics.
   - Each of these delay lines is modulated, to reduce periodicity.
   - On each feedback path, the audio is fed through an equalizer to precisely control the decay rate in 3 frequency bands.
@@ -69,12 +70,15 @@ It is of course possible to use more than one reverb at a time as well, and to f
 
 ### The Input Filter
 
-NOTE: the following currently isn't configurable, but the comments apply after whichever 0.8.x version introduces a filter property type.
-
 Most reverb algorithms have a problem: high frequencies are emphasized.  Synthizer's is no different.  To solve this, we introduce an input lowpass filter, which can cut out the higher frequencies.
+This is `SYZ_P_FILTER_INPUT`, available on all effects, but defaulted by the reverb to a lowpass at 1500 HZ because most of the negative
+characteristics of reverbs occur when high frequencies are overemphasized.
 
 Changing this cutoff filter is the strongest tool available for coloring the reverb.  Low cutoffs are great for rooms with sound dampening, high cutoffs for concrete walls.
 It can be disabled, but doing so will typically cause metallic and periodic artifacts to be noticeable.
+
+It's also possible to swap it with other filter types.  Lowpass filters are effectively the only filter type that aligns with the real world
+in the context of a reverb, but other filter types can produce interesting effects.
 
 ### Choosing the mean free path and late reflections delay
 

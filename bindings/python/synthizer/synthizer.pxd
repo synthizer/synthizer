@@ -74,6 +74,27 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, double y1, double z1, double x2, double y2, double z2)
 
+    cdef struct syz_BiquadConfig:
+        double b0
+        double b1
+        double b2
+        double a1
+        double a2
+        double gain
+        unsigned char is_wire
+
+    syz_ErrorCode syz_getBiquad(syz_BiquadConfig* filter, syz_Handle target, int property)
+
+    syz_ErrorCode syz_setBiquad(syz_Handle target, int property, syz_BiquadConfig* filter)
+
+    syz_ErrorCode syz_biquadDesignIdentity(syz_BiquadConfig* filter)
+
+    syz_ErrorCode syz_biquadDesignLowpass(syz_BiquadConfig* filter, double frequency, double q)
+
+    syz_ErrorCode syz_biquadDesignHighpass(syz_BiquadConfig* filter, double frequency, double q)
+
+    syz_ErrorCode syz_biquadDesignBandpass(syz_BiquadConfig* filter, double frequency, double bw)
+
     syz_ErrorCode syz_createContext(syz_Handle* out)
 
     syz_ErrorCode syz_createContextHeadless(syz_Handle* out)
@@ -111,6 +132,9 @@ cdef extern from "synthizer.h":
     cdef struct syz_RouteConfig:
         float gain
         float fade_time
+        syz_BiquadConfig filter
+
+    syz_ErrorCode syz_initRouteConfig(syz_RouteConfig* cfg)
 
     syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, syz_RouteConfig* config)
 

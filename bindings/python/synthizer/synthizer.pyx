@@ -111,6 +111,18 @@ cdef class Double6Property(_PropertyBase):
     def __set__(self, _BaseObject instance, value):
         _checked(syz_setD6(instance.handle, self.property, value[0], value[1], value[2], value[3], value[4], value[5]))
 
+cdef class BiquadProperty(_PropertyBase):
+    cdef int property
+
+    def __init__(self, int property):
+        self.property = property
+
+    def __get__(self, _BaseObject instance, owner):
+            raise NotImplementedError("Filter properties cannot be read")
+
+    def __set__(self, _BaseObject instance, BiquadConfig value):
+        _checked(syz_setBiquad(instance.handle, self.property, &value.config))
+
 cdef class ObjectProperty(_PropertyBase):
     cdef int property
     cdef object cls
@@ -265,6 +277,32 @@ cdef _convert_event(syz_Event event):
     elif event.type == SYZ_EVENT_TYPE_LOOPED:
         return LoopedEvent(_handle_to_object(event.context), _handle_to_object(event.source))
 
+cdef class BiquadConfig:
+    cdef syz_BiquadConfig config
+
+    def __init__(self):
+        """Initializes the BiquadConfig as an identity filter.
+        Use one of the design_XXX staticmethods to get a useful filter."""
+        _checked(syz_biquadDesignIdentity(&self.config))
+
+    @staticmethod
+    def design_lowpass(frequency, q = 0.7071135624381276):
+        cdef BiquadConfig out = BiquadConfig()
+        _checked(syz_biquadDesignLowpass(&out.config, frequency, q))
+        return out
+
+    @staticmethod
+    def design_highpass(frequency, q=0.7071135624381276):
+        cdef BiquadConfig out = BiquadConfig()
+        _checked(syz_biquadDesignHighpass(&out.config, frequency, q))
+        return out
+
+    @staticmethod
+    def design_bandpass(frequency, bandwidth):
+        cdef BiquadConfig out = BiquadConfig()
+        _checked(syz_biquadDesignBandpass(&out.config, frequency, bandwidth))
+        return out
+
 cdef class Context(Pausable):
     """The Synthizer context represents an open audio device and groups all Synthizer objects created with it into one unit.
 
@@ -290,8 +328,13 @@ cdef class Context(Pausable):
     closeness_boost_distance = DoubleProperty(SYZ_P_CLOSENESS_BOOST_DISTANCE)
     panner_strategy = enum_property(SYZ_P_PANNER_STRATEGY, lambda x: PannerStrategy(x))
 
-    cpdef config_route(self, _BaseObject output, _BaseObject input, gain = 1.0, fade_time = 0.01):
+    cpdef config_route(self, _BaseObject output, _BaseObject input, gain = 1.0, fade_time = 0.01, BiquadConfig filter = None):
         cdef syz_RouteConfig config
+        syz_initRouteConfig(&config)
+        if filter:
+            config.filter = filter.config
+        else:
+            _checked(syz_initRouteConfig(&config));
         config.gain = gain
         config.fade_time = fade_time
         _checked(syz_routingConfigRoute(self.handle, output.handle, input.handle, &config))
@@ -367,6 +410,7 @@ cdef class Source(Pausable):
         _checked(syz_sourceRemoveGenerator(self.handle, h))
 
     gain = DoubleProperty(SYZ_P_GAIN)
+    filter = BiquadProperty(SYZ_P_FILTER)
 
 cdef class DirectSource(Source) :
     def __init__(self, context):
@@ -481,6 +525,8 @@ cdef class GlobalEffect(_BaseObject):
         _checked(syz_effectReset(self.handle))
 
     gain = DoubleProperty(SYZ_P_GAIN)
+    filter_input = BiquadProperty(SYZ_P_FILTER_INPUT)
+
 
 cdef class EchoTapConfig:
     """An echo tap. Passed to GlobalEcho.set_taps."""
@@ -538,4 +584,3 @@ cdef class GlobalFdnReverb(GlobalEffect):
     late_reflections_modulation_depth = DoubleProperty(SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH)
     late_reflections_modulation_frequency = DoubleProperty(SYZ_P_LATE_REFLECTIONS_MODULATION_FREQUENCY)
     late_reflections_delay = DoubleProperty(SYZ_P_LATE_REFLECTIONS_DELAY)
-

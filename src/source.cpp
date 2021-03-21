@@ -2,6 +2,7 @@
 
 #include "synthizer/sources.hpp"
 
+#include "synthizer/biquad.hpp"
 #include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/channel_mixing.hpp"
@@ -49,6 +50,16 @@ void Source::fillBlock(unsigned int channels) {
 	double gain_prop;
 	auto time = this->context->getBlockTime();
 
+	if (channels != this->last_channels) {
+		this->filter = createBiquadFilter(channels);
+		this->filter_direct = createBiquadFilter(channels);
+		this->filter_effects = createBiquadFilter(channels);
+		this->filter->configure(this->getFilter());
+		this->filter_direct->configure(this->getFilterDirect());
+		this->filter_effects->configure(this->getFilterEffects());
+		this->last_channels = channels;
+	}
+
 	if (this->acquireGain(gain_prop) || this->shouldIncorporatePausableGain()) {
 		gain_prop *= this->getPausableGain();
 		this->gain_fader.setValue(time, gain_prop);
@@ -92,7 +103,33 @@ void Source::fillBlock(unsigned int channels) {
 		}
 	});
 
-	this->getOutputHandle()->routeAudio(&this->block[0], channels);
+
+	struct syz_BiquadConfig filter_cfg;
+	if (this->acquireFilter(filter_cfg)) {
+		this->filter->configure(filter_cfg);
+	}
+	if (this->acquireFilterDirect(filter_cfg)) {
+		this->filter_direct->configure(filter_cfg);
+	}
+	if (this->acquireFilterEffects(filter_cfg)) {
+		this->filter_effects->configure(filter_cfg);
+	}
+
+	/*
+	 * Filter goes to both paths, so run it first.
+	 * */
+	this->filter->processBlock(&this->block[0], &this->block[0], false);
+
+	{
+		auto buf_guard = acquireBlockBuffer(false);
+		this->filter_effects->processBlock(&this->block[0], buf_guard, false);
+		this->getOutputHandle()->routeAudio(buf_guard, channels);
+	}
+
+	/*
+	 * And now the direct filter, which applies only to the source's local block.
+	 * */
+	this->filter_direct->processBlock(&this->block[0], &this->block[0], false);
 }
 
 }

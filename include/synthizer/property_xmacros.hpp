@@ -18,6 +18,7 @@ extern "C" {
  * object_p(SYZ_MY_PROPERTY, name, Name, ExpectedClass)
  * double3_p(SYZ_MY_PROPERTY, name, Name, default_x, default_y, default_z)
  * double6_p(SYZ_MY_PROPERTY, name, Name, default_x, default_y, default_z, default_x2, default_y2, default_z2)
+ * BIQUAD_P(SYZ_P_MY_PROPERTY, name, Name)
  * 
  * For int properties, use P_INT_MIN and P_INT_MAX for no range; for double use P_DOUBLE_MIN and P_DOUBLE_MAX. Using these as only one of the endpoints is fine.
  * 
@@ -41,6 +42,10 @@ STANDARD_DISTANCE_MODEL_PROPERTIES
 
 #define SOURCE_PROPERTIES \
 DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0) \
+BIQUAD_P(SYZ_P_FILTER, filter, Filter) \
+BIQUAD_P(SYZ_P_FILTER_DIRECT, filter_direct, FilterDirect) \
+BIQUAD_P(SYZ_P_FILTER_EFFECTS, filter_effects, FilterEffects) \
+
 
 #define PANNED_SOURCE_PROPERTIES \
 INT_P(SYZ_P_PANNER_STRATEGY, panner_strategy, PannerStrategy, 0, SYZ_PANNER_STRATEGY_COUNT - 1, SYZ_PANNER_STRATEGY_STEREO) \
@@ -70,7 +75,8 @@ INT_P(SYZ_P_LOOPING, looping, Looping, 0, 1, 0)
 INT_P(SYZ_P_NOISE_TYPE, noise_type, NoiseType, 0, SYZ_NOISE_TYPE_COUNT - 1, SYZ_NOISE_TYPE_UNIFORM)
 
 #define EFFECT_PROPERTIES \
-DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0)
+DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0) \
+BIQUAD_P(SYZ_P_FILTER_INPUT, filter_input, FilterInput)
 
 #define FDN_REVERB_EFFECT_PROPERTIES \
 DOUBLE_P(SYZ_P_MEAN_FREE_PATH, mean_free_path, MeanFreePath, 0.0, 0.5, 0.02) \

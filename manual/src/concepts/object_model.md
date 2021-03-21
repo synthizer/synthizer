@@ -31,14 +31,17 @@ Properties are set through `syz_setX` and read through `syz_getX` where `X` depe
 - `O` for object.
 - `D3` for double3, a packed vector of 3 doubles.
 - `D6` for a packed array of 6 doubles, commonly used to represent orientations.
+- `Biquad` for a biquad filter property (see [filters](./filters.md))
 
-Synthizer supports 5 property types: int, double, double3, double6, and object.
+Synthizer supports 6 property types: int, double, double3, double6, object, and [biquad filters](./filters.md).
 
 Double3 is typically used for position and double6 for orientation.  Synthizer's coordinate system is right-handed, configured so that positive y is forward, positive x east, and positive z up.  Listener orientation is controlled through the context.
 
 Object properties hold handles to other objects.  This is a weak reference, so destroying
 the object will set the property to null.  Note that it's not possible to read object properties.  This is because internal machinery
 can block the audio thread because locking is required to safely manipulate handles in that case.
+
+Biquad filter properties are documented in [a dedicated section](./filters.md).
 
 Property writes are always ordered with respect to other property writes on the same thread, and in general work how you would expect.  But it's important to note that reads are eventually consistent.  Specifically:
 

@@ -90,7 +90,7 @@ void Context::cDelete() {
 }
 
 template<typename T>
-void Context::propertySetter(const std::shared_ptr<BaseObject> &obj, int property, T &value) {
+void Context::propertySetter(const std::shared_ptr<BaseObject> &obj, int property, const T &value) {
 	obj->validateProperty(property, value);
 	this->enqueueReferencingCallbackCommand(true, setPropertyCmd, property, obj, property_impl::PropertyValue(value));
 }
@@ -113,6 +113,10 @@ void Context::setDouble3Property(std::shared_ptr<BaseObject> &obj, int property,
 
 void Context::setDouble6Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 6> value) {
 	this->propertySetter<std::array<double, 6>>(obj, property, value);
+}
+
+void Context::setBiquadProperty(std::shared_ptr<BaseObject> &obj, int property, const struct syz_BiquadConfig &value) {
+	this->propertySetter<syz_BiquadConfig>(obj, property, value);
 }
 
 void Context::registerSource(const std::shared_ptr<Source> &source) {

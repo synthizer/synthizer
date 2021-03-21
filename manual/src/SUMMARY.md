@@ -6,6 +6,7 @@
 
 - [A Basic Python Tutorial](./tutorials/python.md)
 - [Events (alpha)](./tutorials/events.md)
+- [Filters in Python](./tutorials/python_filters.md)
 
 # Concepts
 
@@ -15,6 +16,7 @@
 - [C API Conventions](./concepts/conventions.md)
 - [Logging, Initialization, and Shutdown](./concepts/initialization.md)
 - [Objects, Handles, and Properties](./concepts/object_model.md)
+- [Filters](./concepts/filters.md)
 - [Streams](./concepts/streams.md)
 - [ 3D Panning ](./concepts/3d_panning.md)
 - [Channel Upmixing and Downmixing ](./concepts/channel_mixing.md)
@@ -37,6 +39,11 @@
 - [Echo](./object_reference/echo.md)
 - [FdnReverb](./object_reference/fdn_reverb.md)
 
+# Appendecies
+
+- [Audio EQ Cookbook](./appendices/audio_eq_cookbook.md)
+
 # Release notes
+
 - [0.8.X](./releases/0.8.x.md)
 - [0.0 to 0.7.x](./releases/pre-0.8.md)

@@ -41,7 +41,7 @@ class BaseObject;
 /* We hide this in a namespace because it's only for macro magic and shouldn't be used directly by anything else. */
 namespace property_impl {
 
-using PropertyValue = std::variant<int, double, std::shared_ptr<CExposable>, std::array<double, 3>, std::array<double, 6>>;
+using PropertyValue = std::variant<int, double, std::shared_ptr<CExposable>, std::array<double, 3>, std::array<double, 6>, struct syz_BiquadConfig>;
 
 /* array<double, 3. doesn't work in macros because of the comma. */
 using arrayd3 = std::array<double, 3>;
@@ -125,6 +125,16 @@ class ObjectProperty {
 
 	mutable std::atomic<int> spinlock = 0;
 	std::weak_ptr<T> field{};
+};
+
+class BiquadProperty: public LatchProperty<syz_BiquadConfig> {
+	public:
+	BiquadProperty(): LatchProperty() {
+		syz_BiquadConfig default_value{};
+		/* Internal detail: wire never fails. */
+		syz_biquadDesignIdentity(&default_value);
+		this->write(default_value);
+	}
 };
 
 /* Used when expanding the X-lists. */

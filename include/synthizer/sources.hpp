@@ -21,6 +21,7 @@ namespace synthizer {
 
 /* Implementation of a variety of sources. */
 
+class BiquadFilter;
 class Context;
 class Generator;
 class PannerLane;
@@ -63,6 +64,9 @@ class Source: public RouteOutput, public Pausable {
 	private:
 	deferred_vector<std::weak_ptr<Generator>> generators;
 	FadeDriver gain_fader = {1.0f, 1};
+	/* Used to detect channel changes in fillBlock. */
+	unsigned int last_channels = 0;
+	std::shared_ptr<BiquadFilter> filter = nullptr, filter_direct = nullptr, filter_effects = nullptr;
 };
 
 class DirectSource: public Source {

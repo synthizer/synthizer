@@ -1,5 +1,7 @@
 #pragma once
 
+#include "synthizer.h"
+
 #include "synthizer/config.hpp"
 #include "synthizer/fade_driver.hpp"
 #include "synthizer/faders.hpp"
@@ -7,6 +9,7 @@
 #include "synthizer/types.hpp"
 
 namespace synthizer {
+class BiquadFilter;
 
 namespace router {
 
@@ -43,7 +46,7 @@ class InputHandle {
 	private:
 	friend class Router;
 	friend class OutputHandle;
-	/* NOTE: Routers set the routers in their handles to NULL on shutdown to avoid the overhead of deling with weak_ptr/shared_ptr. */
+	/* NOTE: Routers set the routers in their handles to NULL on shutdown to avoid the overhead of dealing with weak_ptr/shared_ptr. */
 	Router *router = nullptr;
 	float *buffer = nullptr;
 	unsigned int channels = 0;
@@ -77,6 +80,15 @@ class Route {
 	InputHandle *input = nullptr;
 	OutputHandle *output = nullptr;
 	FadeDriver gain_driver{0.0f, 1};
+
+	/*
+	 * Filters get created when the route is first used, with the number of channels as the number of channels of the output.
+	 * The implementation filters at the width of the output, then mixes to the input.
+	 * For details, see OutputHandle::routeAudio
+	 * */
+	unsigned int last_channels = 0 ;
+	std::shared_ptr<BiquadFilter> filter = nullptr;
+	syz_BiquadConfig external_filter_config;
 };
 
 class Router {
@@ -92,7 +104,7 @@ class Router {
 	 * Internal detail: removing a route is equivalent to setting the gain to 0. This is an optimization, which may be removed and
 	 * is consequently not exposed in the public API this way.
 	 * */
-	void configureRoute(OutputHandle *output, InputHandle *input, float gain = 1.0, unsigned int fade_blocks_in = 1);
+	void configureRoute(OutputHandle *output, InputHandle *input, float gain, unsigned int fade_blocks_in, syz_BiquadConfig filter_cfg);
 	/* Remove a route. If it doesn't exist, do nothing. */
 	void removeRoute(OutputHandle *output, InputHandle *input, unsigned int fade_out = 1);
 	/* Remove all routes for a specified WriteHandle. */

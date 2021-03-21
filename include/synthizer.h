@@ -167,6 +167,45 @@ SYZ_CAPI syz_ErrorCode syz_getD6(double *x1, double *y1, double *z1, double *x2,
 SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, double y1, double z1, double x2, double y2, double z2);
 
 /*
+ * Biquad properties are biquad filters from the audio eq cookbook.
+ * 
+ * Note to maintainers: the C API is in src/filter_properties.cpp (except for syz_setBiquad, in c_api.cpp with the other property setters).
+ * */
+
+/*
+ * Configuration for a filter. Currently this struct should be treated as opaque. It's exposed here
+ * in order to allow allocating them on the stack.  Changes to the layout and fields may occur without warning.
+ * 
+ * To initialize this struct, use one of the syz_BiquadDesignXXX functions, below.
+ * */
+struct syz_BiquadConfig {
+	double b0, b1, b2;
+	double a1, a2;
+	double gain;
+	unsigned char is_wire;
+};
+
+SYZ_CAPI syz_ErrorCode syz_getBiquad(struct syz_BiquadConfig *filter, syz_Handle target, int property);
+SYZ_CAPI syz_ErrorCode syz_setBiquad(syz_Handle target, int property, const struct syz_BiquadConfig *filter);
+
+/*
+ * Biquad filter design functions.  See the audio eq cookbook in the manual's appendices for the specific mathematical formulas.
+ *
+ * q is a measure of resonance.  Generally q = 0.5 is a filter that doesn't resonate and q at or above 1 resonates too much to be useful.
+ * q = 0.7071135624381276 gives second-order Butterworth lowpass and highpass filters, and is the suggested default.
+ * 
+ * Synthizer's Nyquist is 22050 HZ.
+ * */
+SYZ_CAPI syz_ErrorCode syz_biquadDesignIdentity(struct syz_BiquadConfig *filter);
+SYZ_CAPI syz_ErrorCode syz_biquadDesignLowpass(struct syz_BiquadConfig *filter, double frequency, double q);
+SYZ_CAPI syz_ErrorCode syz_biquadDesignHighpass(struct syz_BiquadConfig *filter, double frequency, double q);
+
+/*
+ * bw is the bandwidth between -3 db frequencies.
+ * */
+SYZ_CAPI syz_ErrorCode syz_biquadDesignBandpass(struct syz_BiquadConfig *filter, double frequency, double bw);
+
+/*
  * Create a context. This represents the audio device itself, and all other Synthizer objects need one.
  * */
 SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out);
@@ -263,10 +302,23 @@ SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context);
 
 SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels);
 
+/* Initialize with syz_initRouteConfig before using. */
 struct syz_RouteConfig {
 	float gain;
 	float fade_time;
+	struct syz_BiquadConfig filter;
 };
+
+/*
+ * Initialize a syz_routeConfig with default values.
+ * 
+ * Should be called before using syz_RouteConfig for the first time.  Afterwords, it's fine to just reuse the already-initialized
+ * config and change values in it, but some values in the struct need to be nonzero unless explicitly set to 0 by the user.
+ * Though the struct is currently simple, it will shortly contain filters which must be properly initialized if audio is to play at all.
+ * 
+ * The defaults configure a gain of 1 and a fade_time of 0.03 seconds.
+ * */
+SYZ_CAPI syz_ErrorCode syz_initRouteConfig(struct syz_RouteConfig *cfg);
 
 SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct syz_RouteConfig *config);
 SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle output, syz_Handle input, float fade_out);

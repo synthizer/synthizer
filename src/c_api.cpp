@@ -106,20 +106,27 @@ SYZ_CAPI syz_ErrorCode syz_setUserdata(syz_Handle handle, void *userdata, syz_Us
 	SYZ_EPILOGUE
 }
 
+/*
+ * This function cannot return T directly because this somehow triggers C1001 on MSVC 16.8 and 16.9 when compiling
+ * only in release mode for X86.  C1001 is an internal compiler error (read: the compiler crashes), so there's nothing we can do but
+ * be inconvenient.
+ * 
+ * This doesn't have an issue because in practice we can't fix it unless this version of MSVC somehow becomes irrelevant, which is highly unlikely for the mid-to-long-term future.  I encourage maintainers to try not to touch this function at all.
+ * */
 template<typename T>
-static T propertyGetter(std::shared_ptr<BaseObject> &obj, int property) {
-	auto var = obj->getProperty(property);
-	auto val = std::get_if<T>(&var);
+static void propertyGetter(T *out, std::shared_ptr<BaseObject> &obj, int property) {
+	property_impl::PropertyValue var = obj->getProperty(property);
+	T *val = std::get_if<T>(&var);
 	if (val == nullptr) {
 		throw EPropertyType();
 	}
-	return *val;
+	*out = *val;
 }
 
 SYZ_CAPI syz_ErrorCode syz_getI(int *out, syz_Handle target, int property) {
 	SYZ_PROLOGUE
 	auto o = fromC<BaseObject>(target);
-	*out = propertyGetter<int>(o, property);
+	propertyGetter<int>(out, o, property);
 	return 0;
 	SYZ_EPILOGUE
 }
@@ -136,7 +143,7 @@ SYZ_CAPI syz_ErrorCode syz_setI(syz_Handle target, int property, int value) {
 SYZ_CAPI syz_ErrorCode syz_getD(double *out, syz_Handle target, int property) {
 	SYZ_PROLOGUE
 	auto o = fromC<BaseObject>(target);
-	*out = propertyGetter<double>(o, property);
+	propertyGetter<double>(out, o, property);
 	return 0;
 	SYZ_EPILOGUE
 }
@@ -166,7 +173,8 @@ SYZ_CAPI syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle valu
 SYZ_CAPI syz_ErrorCode syz_getD3(double *x, double *y, double *z, syz_Handle target, int property) {
 	SYZ_PROLOGUE
 	auto o = fromC<BaseObject>(target);
-	auto val = propertyGetter<std::array<double, 3>>(o, property);
+	std::array<double, 3> val;
+	propertyGetter<std::array<double, 3>>(&val, o, property);
 	*x = val[0];
 	*y = val[1];
 	*z = val[2];
@@ -186,7 +194,8 @@ SYZ_CAPI syz_ErrorCode syz_setD3(syz_Handle target, int property, double x, doub
 SYZ_CAPI syz_ErrorCode syz_getD6(double *x1, double *y1, double *z1, double *x2, double *y2, double *z2, syz_Handle target, int property) {
 	SYZ_PROLOGUE
 	auto o = fromC<BaseObject>(target);
-	auto val = propertyGetter<std::array<double, 6>>(o, property);
+	std::array<double, 6> val;
+	propertyGetter<std::array<double, 6>>(&val, o, property);
 	*x1 = val[0];
 	*y1 = val[1];
 	*z1 = val[2];
@@ -205,3 +214,21 @@ SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle target, int property, double x1, dou
 	return 0;
 	SYZ_EPILOGUE
 }
+
+SYZ_CAPI syz_ErrorCode syz_getBiquad(struct syz_BiquadConfig *filter, syz_Handle target, int property) {
+	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	propertyGetter<syz_BiquadConfig>(filter, o, property);
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_setBiquad(syz_Handle target, int property, const struct syz_BiquadConfig *filter) {
+	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(target);
+	auto ctx = o->getContextRaw();
+	ctx->setBiquadProperty(o, property, *filter);
+	return 0;
+	SYZ_EPILOGUE
+}
+
