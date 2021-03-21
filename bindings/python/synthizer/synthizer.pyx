@@ -286,6 +286,12 @@ cdef class BiquadConfig:
         _checked(syz_biquadDesignIdentity(&self.config))
 
     @staticmethod
+    def design_identity():
+        cdef BiquadConfig out = BiquadConfig()
+        _checked(syz_biquadDesignIdentity(&out.config))
+        return out
+
+    @staticmethod
     def design_lowpass(frequency, q = 0.7071135624381276):
         cdef BiquadConfig out = BiquadConfig()
         _checked(syz_biquadDesignLowpass(&out.config, frequency, q))
