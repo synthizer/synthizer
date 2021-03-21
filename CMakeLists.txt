@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.15.0)
 project(synthizer VERSION 0.1.0 LANGUAGES C CXX)
 
-find_package(Threads)
+# Do this first; some things will quietly pick it up and it's
+# really hard to tell which.
+set(CMAKE_CXX_STANDARD 17)
 
 include(CTest)
+include(CheckCXXSourceRuns)
 enable_testing()
+
+find_package(Threads)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	add_compile_options(-Xclang -fno-caret-diagnostics
@@ -23,6 +28,30 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		# And now we need to silence a winbase.h warning because it's got a macro expanding to undefined somehow. Noe that this isn't our code:
 		/wd5105
 	)
+endif()
+
+# Inspired by the module in https://github.com/vector-of-bool/CMakeCM/
+# Determine whether or not filesystem is non-experimental and doesn't need -lstdc++fs
+#
+# This makes things work on GCC < 9.0
+#
+# This is one of the places which requires the global CXX_STANDARD be set.
+check_cxx_source_runs([[
+	#include <cstdio>
+	#include <cstdlib>
+	#include <filesystem>
+
+	int main() {
+		auto cwd = std::filesystem::current_path();
+		std::printf("%s", cwd.c_str());
+		return 0;
+	}
+]] FILESYSTEM_OK)
+
+if(NOT FILESYSTEM_OK)
+	message(WARNING "C++17 filesystem not found or not functional on this platform")
+else()
+	message(STATUS "Found C++17 filesystem support")
 endif()
 
 include(cmake/wdl.txt)
@@ -101,12 +130,17 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 )
 target_compile_features(synthizer PUBLIC cxx_std_17)
 target_link_libraries(synthizer wdl Threads::Threads ${CMAKE_DL_LIBS})
+
 target_compile_definitions(synthizer PRIVATE BUILDING_SYNTHIZER)
 # tells synthizer.h to define SYZ_CAPI for exporting shared object/dll symbols.
 # On windows this is dllexport.
 if("${SYNTHIZER_LIB_TYPE}" STREQUAL "SHARED")
 	target_compile_definitions(synthizer PRIVATE SYNTHIZER_SHARED)
 endif()
+if(${FILESYSTEM_OK})
+	target_compile_definitions(synthizer PRIVATE SYZ_USE_FILESYSTEM)
+endif()
+
 set_property(TARGET synthizer PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # For CI artifacts:
