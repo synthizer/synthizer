@@ -11,13 +11,24 @@ namespace synthizer {
  * The common Synthizer pattern is to reconfigure a fader on every movement of a property of interest, then decide whether or not to run
  * a loop that does the fade or not by asking the faders if they're fading.  Using C++ templates, we can get this down to about 2 lines of code.
  * see source.cpp'sfillBlock  for a concrete example.
+ * 
+ * In order to support setting values before an object is first audible, the FadeDriver will ignore crossfades which are
+ * due to value changes before the first time it ticks.  If an object is silent, it is possible to restore this behavior by calling outputIsSilent, so that value changes
+ * will again not crossfade until the next time it's ticked.
  * */
 class FadeDriver {
 	public:
 	FadeDriver(float start_value, unsigned int fade_time_in_blocks): fade_time_in_blocks(fade_time_in_blocks), fader(start_value) {}
 
+	/*
+	 * Will update instantaneously if this driver is aware that the output is silent.
+	 * */
 	void setValue(unsigned int time_in_blocks, float new_value) {
-		this->fader = LinearFader{time_in_blocks, this->fader.getValue(time_in_blocks), time_in_blocks + this->fade_time_in_blocks, new_value};
+		if (this->was_silent) {
+			this->fader = LinearFader(new_value);
+		} else {
+			this->fader = LinearFader{time_in_blocks, this->fader.getValue(time_in_blocks), time_in_blocks + this->fade_time_in_blocks, new_value};
+		}
 	}
 
 	/*
@@ -34,6 +45,7 @@ class FadeDriver {
 	 * */
 	template<typename CB>
 	void drive(unsigned int time_in_blocks, CB &&callback) {
+		this->was_silent = false;
 		if (this->fader.isFading(time_in_blocks)) {
 			float start = this->fader.getValue(time_in_blocks);
 			float end = this->fader.getValue(time_in_blocks + 1);
@@ -52,7 +64,6 @@ class FadeDriver {
 		}
 	}
 
-
 	/**
 	 * Returns true if the block at the specified time is either
 	 * going to have a value > that specified or if said block is crossfading.
@@ -64,9 +75,20 @@ class FadeDriver {
 		return this->fader.isFading(time_in_blocks) || this->fader.getValue(time_in_blocks) > threshold ||this->fader.getValue(time_in_blocks + 1) > threshold;
 	}
 
+	/**
+	 * Inform the fader that output is silent, and we once again desire instantaneous changes.
+	 * 
+	 * Will also update the current value to not crossfade if necessary.
+	 * */
+	void outputIsSilent() {
+		this->was_silent = true;
+		this->fader = LinearFader(this->fader.getFinalValue());
+	}
+
 	private:
 	LinearFader fader;
 	unsigned int fade_time_in_blocks;
+	bool was_silent = true;
 };
 
 }

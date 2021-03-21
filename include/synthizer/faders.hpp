@@ -36,6 +36,10 @@ class LinearFader {
 		return block_time >= end_time ? this->end_value : this->start_value + slope * (block_time - start_time);
 	}
 
+	float getFinalValue() {
+		return this->end_value;
+	}
+
 	bool isFading(unsigned int block_time) {
 		assert(block_time >= this->start_time);
 		return block_time < this->end_time;
