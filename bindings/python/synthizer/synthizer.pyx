@@ -2,6 +2,7 @@
 # distutils: language = c++
 import contextlib
 import threading
+from enum import Enum
 
 from synthizer_constants cimport *
 
@@ -63,11 +64,11 @@ cdef class IntProperty(_PropertyBase):
         _checked(syz_getI(&val, instance.handle, self.property))
         return self.conv_out(val)
 
-    def __set__(self, _BaseObject instance, int value):
+    def __set__(self, _BaseObject instance, value):
         _checked(syz_setI(instance.handle, self.property, self.conv_in(value)))
 
 def enum_property(v, e):
-    return IntProperty(v, conv_in = lambda x: int(x), conv_out = lambda x: e(x))
+    return IntProperty(v, conv_in = lambda x: x.value, conv_out = lambda x: e(x))
 
 cdef class DoubleProperty(_PropertyBase):
     cdef int property
@@ -136,21 +137,20 @@ cdef class ObjectProperty(_PropertyBase):
     def __set__(self, _BaseObject instance, _BaseObject value):
         _checked(syz_setO(instance.handle, self.property, value.handle if value else 0))
 
-cpdef enum LogLevel:
+class LogLevel(Enum):
     ERROR = SYZ_LOG_LEVEL_ERROR
     WARN = SYZ_LOG_LEVEL_WARN
     INFO = SYZ_LOG_LEVEL_INFO
     DEBUG = SYZ_LOG_LEVEL_DEBUG
 
-cpdef enum LoggingBackend:
+class LoggingBackend(Enum):
     STDERR = 0
 
-cpdef configure_logging_backend(LoggingBackend backend):
-    _checked(syz_configureLoggingBackend(<SYZ_LOGGING_BACKEND>backend, NULL))
+cpdef configure_logging_backend(backend):
+    _checked(syz_configureLoggingBackend(backend.value, NULL))
 
-cpdef set_log_level(LogLevel level):
-    syz_setLogLevel(<SYZ_LOG_LEVEL>level)
-
+cpdef set_log_level(level):
+    syz_setLogLevel(level.value)
 
 cpdef initialize():
     """Initialize Synthizer.  Try synthizer.Initialized for a context manager that will shut things down on exceptions. """
@@ -182,11 +182,11 @@ def initialized():
     finally:
         shutdown()
 
-cpdef enum PannerStrategy:
+class PannerStrategy(Enum):
     HRTF = SYZ_PANNER_STRATEGY_HRTF
     STEREO = SYZ_PANNER_STRATEGY_STEREO
 
-cpdef enum DistanceModel:
+class DistanceModel(Enum):
     NONE = SYZ_DISTANCE_MODEL_NONE
     LINEAR = SYZ_DISTANCE_MODEL_LINEAR
     EXPONENTIAL = SYZ_DISTANCE_MODEL_EXPONENTIAL
@@ -513,7 +513,7 @@ cdef class BufferGenerator(Generator):
     looping = IntProperty(SYZ_P_LOOPING, conv_in = int, conv_out = bool)
 
 
-cpdef enum NoiseType:
+class NoiseType(Enum):
     UNIFORM = SYZ_NOISE_TYPE_UNIFORM
     VM = SYZ_NOISE_TYPE_VM
     FILTERED_BROWN = SYZ_NOISE_TYPE_FILTERED_BROWN
