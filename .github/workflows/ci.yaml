@@ -3,10 +3,10 @@ on:
   pull_request: {}
 
 jobs:
-  ubuntu20:
-    runs-on: ubuntu-20.04
+  ubuntu:
+    runs-on: ${{matrix.os}}
     env:
-      PYVERSIONS: "python3.8 python3.9"
+      PYVERSIONS: ${{matrix.pyversions}}
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -19,9 +19,17 @@ jobs:
       with:
         name: python-wheels-linux
         path: bindings/python/dist/*
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            pyversions: "python3.8 python3.9"
+          - os: ubuntu-18.04
+            pyversions: "python3.8"
 
   windows:
     runs-on: windows-2019
+    if: "false"
     env:
       CI_ARCH: ${{matrix.CI_ARCH}}
       BUILDING_SYNTHIZER: "1"
