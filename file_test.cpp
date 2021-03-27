@@ -85,9 +85,9 @@ int main(int argc, char *argv[]) {
 
 end:
 	ending = 1;
-	CHECKED(syz_handleFree(source));
-	CHECKED(syz_handleFree(generator));
-	CHECKED(syz_handleFree(context));
+	CHECKED(syz_handleDecRef(source));
+	CHECKED(syz_handleDecRef(generator));
+	CHECKED(syz_handleDecRef(context));
 end2:
 	CHECKED(syz_shutdown());
 	return ecode;

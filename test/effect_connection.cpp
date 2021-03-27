@@ -72,12 +72,12 @@ int main() {
 	TICK_CTX();
 
 	for(auto s: sources) {
-		CHECKED(syz_handleFree(s));
+		CHECKED(syz_handleDecRef(s));
 		TICK_CTX();
 	}
 
 	for (auto r: reverbs) {
-		CHECKED(syz_handleFree(r));
+		CHECKED(syz_handleDecRef(r));
 		TICK_CTX();
 	}
 

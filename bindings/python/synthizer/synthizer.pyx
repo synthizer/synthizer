@@ -218,8 +218,10 @@ cdef class _BaseObject:
         _register_object(self)
 
     def destroy(self):
-        """Destroy this object. Must be called in order to not leak Syntizer objects."""
-        _checked(syz_handleFree(self.handle))
+        """Destroy this object. Must be called in order to not leak Synthizer objects.
+
+        Internally this maps to decrementing the reference count of the object in question, but in Python this detail is hidden from you and all returned objects are the same object."""
+        _checked(syz_handleDecRef(self.handle))
         _unregister_object(self)
         self.handle = 0
 

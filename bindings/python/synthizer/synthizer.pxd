@@ -42,7 +42,7 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_shutdown() nogil
 
-    syz_ErrorCode syz_handleFree(syz_Handle handle)
+    syz_ErrorCode syz_handleDecRef(syz_Handle handle)
 
     syz_ErrorCode syz_handleGetObjectType(int* out, syz_Handle handle)
 

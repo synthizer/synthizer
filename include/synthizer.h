@@ -107,9 +107,9 @@ SYZ_CAPI const char *syz_getLastErrorMessage();
 SYZ_CAPI syz_ErrorCode syz_initialize();
 SYZ_CAPI syz_ErrorCode syz_shutdown();
 /**
- * Free a C handle.
+ * Decrement the reference count on a C handle.
  * */
-SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle);
+SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle);
 
 /**
  * Query the type of a handle. Returns one of the SYZ_OTYPE constants.

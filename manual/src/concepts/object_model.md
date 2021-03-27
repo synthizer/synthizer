@@ -3,7 +3,7 @@
 Synthizer represents references to objects with a `syz_Handle` type.  The following excerpts from `synthizer.h` are available on every object type:
 
 ```
-SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle);
+SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle);
 SYZ_CAPI syz_ErrorCode syz_handleGetObjectType(int *out, syz_Handle handle);
 
 SYZ_CAPI syz_ErrorCode syz_getI(int *out, syz_Handle target, int property);
@@ -17,9 +17,15 @@ SYZ_CAPI syz_ErrorCode syz_getD6(double *x1, double *y1, double *z1, double *x2,
 SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, double y1, double z1, double x2, double y2, double z2);
 ```
 
-Synthizer objects are like classes: they have properties, methods, and (optionally) bases. They're created through "constructors", for example `syz_createContext`, and destroyed through `syz_handleFree`.
+Synthizer handles are opaque reference-counted pointers to Synthizer objects and are created through constructor functions.  To decrement the reference count, use `syz_handleDecRef`.
+
+
+Objects are like classes: they have constructors, properties, and methods.  These elements of a given object are documented in the object reference.
+Objects also effectively have base classes, for example functionality common to all sources.  This manual pulls that information out
+into a separate page that doesn't refer to a concrete object type.
+
 `syz_handleGetObjectType` can be used to query the type of an object at runtime, returning one of the `SYZ_OTYPE` constants
-in `synthizer_constants.h`.  As with C's `malloc` and `free`, calling `syz_HandleFree`
+in `synthizer_constants.h`.  As with C's `malloc` and `free`, calling `syz_handleDecRef`
 with `handle = 0` is a no-op.
 
 Property names are defined in `synthizer_constants.h` of the form `SYZ_P_FOO`.  Since some objects have common properties and in order to preserve flexibility, the property enum is shared between all objects.

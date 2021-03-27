@@ -71,7 +71,7 @@ SYZ_CAPI const char *syz_getLastErrorMessage() {
 /*
  * Memory management.
  * */
-SYZ_CAPI syz_ErrorCode syz_handleFree(syz_Handle handle) {
+SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle) {
 	SYZ_PROLOGUE
 	if (handle == 0) {
 		return 0;

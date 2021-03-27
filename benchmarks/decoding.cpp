@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 		CHECKED(syz_createBufferFromStream(&buffer, "file", argv[1], ""));
 		CHECKED(syz_bufferGetLengthInSamples(&frames_tmp, buffer));
 		total_frames += frames_tmp;
-		CHECKED(syz_handleFree(buffer));
+		CHECKED(syz_handleDecRef(buffer));
 		/* if we fail to create the new one, let's no-op the free at the bottom. */
 		buffer = 0;
 	}
@@ -64,8 +64,8 @@ int main(int argc, char *argv[]) {
 
 end:
 	ending = 1;
-	CHECKED(syz_handleFree(buffer));
-	CHECKED(syz_handleFree(context));
+	CHECKED(syz_handleDecRef(buffer));
+	CHECKED(syz_handleDecRef(context));
 end2:
 	CHECKED(syz_shutdown());
 	return ecode;
