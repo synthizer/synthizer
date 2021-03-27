@@ -77,7 +77,7 @@ SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle) {
 		return 0;
 	}
 	auto h = fromC<CExposable>(handle);
-	freeC(h);
+	h->decRef();
 	return 0;
 	SYZ_EPILOGUE
 }

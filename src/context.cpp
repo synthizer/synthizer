@@ -273,6 +273,8 @@ SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out) {
 	auto *ctx = new Context();
 	std::shared_ptr<Context> ptr{ctx, deleteInBackground<Context>};
 	ptr->initContext();
+	auto ce = std::static_pointer_cast<CExposable>(ptr);
+	ce->stashInternalReference(ce);
 	*out = toC(ptr);
 	return 0;
 	SYZ_EPILOGUE

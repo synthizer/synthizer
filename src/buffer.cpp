@@ -139,6 +139,8 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, const char *p
 	auto dec = getDecoderForProtocol(protocol, path, options);
 	auto data = bufferDataFromDecoder(dec);
 	auto buf = allocateSharedDeferred<Buffer>(data);
+	auto ce = std::static_pointer_cast<CExposable>(buf);
+	ce->stashInternalReference(ce);
 	*out = toC(buf);
 	return 0;
 	SYZ_EPILOGUE

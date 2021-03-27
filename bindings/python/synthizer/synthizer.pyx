@@ -213,7 +213,7 @@ cdef void userdataFree(void *userdata) with gil:
 cdef class _BaseObject:
     cdef syz_Handle handle
 
-    def __init__(self, int handle):
+    def __init__(self, syz_Handle handle):
         self.handle = handle
         _register_object(self)
 

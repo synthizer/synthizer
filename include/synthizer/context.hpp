@@ -164,6 +164,10 @@ class Context: public Pausable, public BaseObject {
 		this->enqueueReferencingCallbackCommand(true, [] (auto &o) {
 			o->initInAudioThread();
 		}, obj);
+
+		auto ce = std::static_pointer_cast<CExposable>(ret);
+		ce->stashInternalReference(ce);
+
 		return ret;
 	}
 

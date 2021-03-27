@@ -141,20 +141,20 @@ class UserdataDef {
 	syz_UserdataFreeCallback *userdata_free_callback = nullptr;
 };
 
+/**
+ * A reference-counted external reference to C.
+ * 
+ * Supports:
+ * - Stashing userdata, with a free callback.
+ * - Reference counting operations.
+ * */
 class CExposable: public std::enable_shared_from_this<CExposable> {
 	public:
 	CExposable();
 	virtual ~CExposable() {}
 
-	/* May be zero. You shouldn't use this directly. */
 	syz_Handle getCHandle() {
-		return this->c_handle.load(std::memory_order_relaxed);
-	}
-
-	/* Returns false if the handle is already set. */
-	bool  setCHandle(syz_Handle handle) {
-		syz_Handle zero = 0;
-		return this->c_handle.compare_exchange_strong(zero, handle, std::memory_order_relaxed);
+		return (syz_Handle)this;
 	}
 
 	/**
@@ -165,19 +165,13 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	void *getUserdata();
 	void setUserdata(void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
-	bool isPermanentlyDead() {
-		return this->permanently_dead.load(std::memory_order_relaxed) == 1;
-	}
-
-	/**
-	 * Called from the C API to hide this object from the C API.  Since objects can linger until the next context tick,
-	 * we want to hide the delete latency by immediately considering the object invalid.
-	 * 
-	 * Returns true if the object was alive previously. Used to ensure only one caller to cDelete.
+	/*
+	 * Though objects are reference counted, it is possible for them to stay alive slightly past their destruction if the
+	 * audio threads or the object itself is holding a reference; to detect this case and prevent users from accessing them, this function
+	 * detects whether the object should be considered alive.
 	 * */
-	bool becomePermanentlyDead() {
-		unsigned char zero = 0;
-		return this->permanently_dead.compare_exchange_strong(zero, 1, std::memory_order_relaxed);
+	bool isPermanentlyDead() {
+		return this->reference_count.load(std::memory_order_relaxed) == 0;
 	}
 
 	/*
@@ -187,34 +181,81 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	 * */
 	virtual void cDelete() {}
 
+	/*
+	 * These 3 functions are used to expose an object to the external world.
+	 * They work as follows:
+	 * 
+	 * - stashInternalReference stashes a shared_ptr to this object in this object and sets the reference count to 1.
+	 * - incRef increments the reference count of this object if it is nonzero, and ignores increments if it is zero.
+	 * - decRef decrements the reference count of this object to (but not below) 0.
+	 * - users of the object detect that the reference count is zero using isPermanentlyDead; once this happens,
+	 *   no increments are allowed to happen.
+	 * 
+	 * The object should never have these functions accessed save through a shared_ptr to the object, since doing so can decrement the reference count.  What actually keeps the object alive
+	 * from the internal perspective is whether a shared_ptr exists, and these functions just manage an internal reference.  If no shared_ptr exists and the object reaches a reference count of 0, it immediately dies.
+	 * */
+	void stashInternalReference(const std::shared_ptr<CExposable> &reference) {
+		this->internal_reference = reference;
+		this->reference_count.store(1, std::memory_order_relaxed);
+	}
+
+	void incRef() {
+		unsigned int cur = this->reference_count.load(std::memory_order_relaxed);
+		while (cur != 0) {
+			this->reference_count.compare_exchange_strong(cur, cur + 1, std::memory_order_acquire, std::memory_order_relaxed);
+		}
+	}
+
+	void decRef() {
+		unsigned int cur = this->reference_count.load(std::memory_order_relaxed);
+		while (cur != 0) {
+			this->reference_count.compare_exchange_strong(cur, cur - 1, std::memory_order_release, std::memory_order_relaxed);
+		}
+		if (cur == 0) {
+			this->internal_reference = nullptr;
+		}
+	}
+
+	std::shared_ptr<CExposable> getInternalReference() {
+		return this->internal_reference;
+	}
+
+	/*
+	 * At library shutdown, it is necessary to be able to kill all objects. This function accomplishes that and should not be used
+	 * for any other purpose.
+	 * */
+	void dieNow() {
+		this->internal_reference = nullptr;
+	}
+
 	private:
-	std::atomic<syz_Handle> c_handle;
+	/*
+	 * Reference counts start at 0 because if this object is internal to the library,then the object won't be
+	 * accessible to the user and is kept alive by shared_ptr and weak_ptr.
+	 * 
+	 * See the comments on incRef and decRef for how this works.
+	 * */
+	std::atomic<unsigned int> reference_count = 0;
+	/*
+	 * keeps this object alive until set to nullptr.
+	 * */
+	std::shared_ptr<CExposable> internal_reference = nullptr;
+
 	std::atomic<unsigned char> permanently_dead = 0;
 	TryLock<UserdataDef> userdata{};
 };
 
-void freeCImpl(std::shared_ptr<CExposable> &obj);
-
-template<typename T>
-void freeC(std::shared_ptr<T> &obj) {
-	std::shared_ptr<CExposable> b = std::static_pointer_cast<CExposable>(obj);
-	freeCImpl(obj);
-}
-
-syz_Handle getCHandleImpl(std::shared_ptr<CExposable> &&obj);
-
 /*
- * Safely convert an object into a C handle which can be passed to the external world.
+ * Convert an object into a C handle which can be passed to the external world.
  * 
- * Returns 0 if the object can't be exposed, since this is 99% used to pass handles out.
+ * Returns 0 if the object is nullptr.
  * */
 template<typename T>
-syz_Handle toC(T&& obj) {
-	if (obj) {
-		return getCHandleImpl(std::move(std::static_pointer_cast<CExposable>(obj)));
-	} else {
+syz_Handle toC(const std::shared_ptr<T> &obj) {
+	if (obj == nullptr) {
 		return 0;
 	}
+	return obj->getCHandle();
 }
 
 /* Throws EInvalidHandle. */
@@ -242,6 +283,19 @@ std::shared_ptr<O> typeCheckedDynamicCast(const std::shared_ptr<I> &input) {
 	}
 	return out;
 }
+
+/*
+ * Register an object for deletion at Synthizer shutdown.
+ * 
+ * NOTE: uses a lock; shouldn't be called from the audio thread.
+ * */
+void registerObjectForShutdownImpl(const std::shared_ptr<CExposable> &obj);
+template<typename T>
+void registerObjectForShutdown(const std::shared_ptr<T> &obj) {
+	auto ce = std::static_pointer_cast<CExposable>(obj);
+	registerObjectForShutdownImpl(ce);
+}
+
 
 void clearAllCHandles();
 
