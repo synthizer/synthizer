@@ -4,10 +4,18 @@ Inherits from [Generator](./generator.md).
 
 ## Constructors
 
-### `syz_createStreamingGenerator`
+### `syz_createStreamingGeneratorFromFile`
 
 ```
-SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options);
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path);
+```
+
+Create a StreamingGenerator from an UTF-8 encoded path.
+
+### `syz_createStreamingGeneratorFromStreamParams`
+
+```
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, void *param);
 ```
 
 Creates a StreamingGenerator from the standard [stream parameters](../concepts/streams.md).

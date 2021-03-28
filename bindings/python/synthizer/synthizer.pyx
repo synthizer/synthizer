@@ -394,6 +394,8 @@ cdef class StreamingGenerator(Generator):
     def from_stream_params(context, protocol, path):
         """Initialize a StreamingGenerator from the stream parameters.
 
+        While this can be used to read files, users are encouraged to use StreamingGenerator.from_file instead.
+
         For example:
         StreamingGenerator.from_stream_params(protocol = "file", path = "bla.wav")
         """
@@ -403,6 +405,16 @@ cdef class StreamingGenerator(Generator):
         protocol = _to_bytes(protocol)
         ctx = context._get_handle_checked(Context)
         _checked(syz_createStreamingGeneratorFromStreamParams(&out, ctx, protocol, path, NULL))
+        return StreamingGenerator(out)
+
+    @staticmethod
+    def from_file(context, path):
+        """Initialize a StreamingGenerator from a file."""
+        cdef syz_Handle ctx
+        cdef syz_Handle out
+        path = _to_bytes(path)
+        ctx = context._get_handle_checked(Context)
+        _checked(syz_createStreamingGeneratorFromFile(&out, ctx, path))
         return StreamingGenerator(out)
 
     position = DoubleProperty(SYZ_P_POSITION)
@@ -478,7 +490,9 @@ cdef class Buffer(_BaseObject):
 
     @staticmethod
     def from_stream_params(protocol, path):
-        """Create a buffer from a stream."""
+        """Create a buffer from a stream.
+
+        While this function can create buffers from files, users are encouraged to use Buffer.from_file instead."""
         cdef syz_Handle handle
         protocol_b = _to_bytes(protocol)
         path_b = _to_bytes(path)
@@ -487,8 +501,20 @@ cdef class Buffer(_BaseObject):
         cdef syz_ErrorCode result
         with nogil:
             result = syz_createBufferFromStreamParams(&handle, protocol_c, path_c, NULL)
-        if result != 0:
-            raise SynthizerError()
+        _checked(result)
+        return Buffer(_handle=handle)
+
+    @staticmethod
+    def from_file(path):
+        """Create a buffer from a file."""
+        cdef syz_Handle handle
+        path_b = _to_bytes(path)
+        cdef char *path_c = path_b
+        cdef syz_ErrorCode result
+        with nogil:
+            result = syz_createBufferFromFile(&handle, path_c)
+        # This handles a bunch of stuff to do with converting errors.
+        _checked(result)
         return Buffer(_handle=handle)
 
     cpdef get_channels(self):

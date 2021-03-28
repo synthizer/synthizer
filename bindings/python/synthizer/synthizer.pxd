@@ -107,7 +107,11 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle* out, syz_Handle context, char* protocol, char* path, void* param)
 
+    syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle* out, syz_Handle context, char* path)
+
     syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle* out, char* protocol, char* path, void* param) nogil
+
+    syz_ErrorCode syz_createBufferFromFile(syz_Handle* out, char* path) nogil
 
     syz_ErrorCode syz_bufferGetChannels(unsigned int* out, syz_Handle buffer)
 

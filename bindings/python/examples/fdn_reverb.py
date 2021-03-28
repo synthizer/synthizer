@@ -18,7 +18,7 @@ with synthizer.initialized():
     # Normal source setup from a CLI arg.
     ctx = synthizer.Context()
     gen = synthizer.BufferGenerator(ctx)
-    buffer = synthizer.Buffer.from_stream_params("file", sys.argv[1])
+    buffer = synthizer.Buffer.from_file(sys.argv[1])
     gen.buffer = buffer
     src = synthizer.Source3D(ctx)
     src.add_generator(gen)

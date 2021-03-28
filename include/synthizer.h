@@ -242,10 +242,11 @@ SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle
 
 /*
  * Create a generator that represents reading from a stream.
+ * users who wish to read from files should call syz_createStreamingGeneratorFromFile, which is more future-proof than this API and should not break between major releases.
  * 
  * @param protocol: The protocol. You probably want file.
  * @param path: The path.
- * @param options: Options. You probably want the empty string.
+ * @param param: an opaque void parameter for the underlying implementation; NULL for built-in protocols.
  * 
  * This will be documented better when there's a manual and more than one type of protocol.
  * 
@@ -256,11 +257,24 @@ SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, void *param);
 
 /*
+ * Same as calling syz_createStreamingGeneratorFromStreamParams with the file protocol. Exists to future-proof the API.
+ */
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path);
+
+/*
  * A Buffer is decoded audio data.
  * 
  * This creates one from the 3 streaming parameters.
  * */
 SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param);
+
+/**
+ * Create a buffer from a file. Currently equivalent to:
+ * syz_createBufferFromStreamParams(&out, "file", "the_path", NULL);
+ *
+ * Exists to future-proof the API.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createBufferFromFile(syz_Handle *out, const char *path);
 
 SYZ_CAPI syz_ErrorCode syz_bufferGetChannels(unsigned int *out, syz_Handle buffer);
 SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSamples(unsigned int *out, syz_Handle buffer);

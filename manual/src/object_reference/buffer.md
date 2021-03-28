@@ -2,6 +2,14 @@
 
 ## Constructors
 
+### `syz_createBufferFromFile`
+
+```
+SYZ_CAPI syz_ErrorCode syz_createBufferFromFile(syz_Handle *out, const char *path);
+```
+
+Create a buffer from a file using an UTF-8 encoded path.
+
 ### `syz_createBufferFromStreamParams`
 
 ```

@@ -205,3 +205,7 @@ SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *
 	return 0;
 	SYZ_EPILOGUE
 }
+
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path) {
+	return syz_createStreamingGeneratorFromStreamParams(out, context, "file", path, NULL);
+}

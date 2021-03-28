@@ -146,6 +146,10 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const c
 	SYZ_EPILOGUE
 }
 
+SYZ_CAPI syz_ErrorCode syz_createBufferFromFile(syz_Handle *out, const char *path) {
+	return syz_createBufferFromStreamParams(out, "file", path, NULL);
+}
+
 SYZ_CAPI syz_ErrorCode syz_bufferGetChannels(unsigned int *out, syz_Handle buffer) {
 	SYZ_PROLOGUE
 	auto b = fromC<Buffer>(buffer);
