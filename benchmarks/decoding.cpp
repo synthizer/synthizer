@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 
 	t_start = clock.now();
 	for(unsigned int i = 0; i < iterations; i++) {
-		CHECKED(syz_createBufferFromStream(&buffer, "file", argv[1], NULL));
+		CHECKED(syz_createBufferFromStreamParams(&buffer, "file", argv[1], NULL));
 		CHECKED(syz_bufferGetLengthInSamples(&frames_tmp, buffer));
 		total_frames += frames_tmp;
 		CHECKED(syz_handleDecRef(buffer));

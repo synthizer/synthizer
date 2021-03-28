@@ -63,8 +63,9 @@ class Pausable(_BaseObject):
 
 class Buffer(_BaseObject):
     @staticmethod
-    def from_stream(
-        protocol: StringOrBytes, path: StringOrBytes, options: StringOrBytes = ...
+    def from_stream_params(
+        protocol: StringOrBytes,
+        path: StringOrBytes,
     ) -> "Buffer": ...
     def get_channels(self) -> int: ...
     def get_length_in_samples(self) -> int: ...
@@ -181,7 +182,9 @@ class NoiseGenerator(Generator):
 class StreamingGenerator(Generator):
     looping: bool = ...
     position: float = ...
-    def __init__(
+
+    # staticmethod
+    def from_stream_params(
         self,
         context: Context,
         protocol: StringOrBytes,

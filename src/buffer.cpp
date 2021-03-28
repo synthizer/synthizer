@@ -134,7 +134,7 @@ int Buffer::getObjectType() {
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, const char *protocol, const char *path, void *param) {
+SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param) {
 	SYZ_PROLOGUE
 	auto dec = getDecoderForProtocol(protocol, path, param);
 	auto data = bufferDataFromDecoder(dec);

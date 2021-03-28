@@ -384,19 +384,26 @@ cdef class Generator(Pausable):
 
 
 cdef class StreamingGenerator(Generator):
-    def __init__(self, context, protocol, path):
-        """Initialize a StreamingGenerator.
+    def __init__(self, _handle = None):
+        if _handle is None:
+            raise RuntimeError("Use one of the staticmethods to initialize StreamingGenerator in order to specify where the data comes from.")
+        super().__init__(_handle)
+
+
+    @staticmethod
+    def from_stream_params(context, protocol, path):
+        """Initialize a StreamingGenerator from the stream parameters.
 
         For example:
-        StreamingGenerator(protocol = "file", path = "bla.wav")
+        StreamingGenerator.from_stream_params(protocol = "file", path = "bla.wav")
         """
         cdef syz_Handle ctx
         cdef syz_Handle out
         path = _to_bytes(path)
         protocol = _to_bytes(protocol)
         ctx = context._get_handle_checked(Context)
-        _checked(syz_createStreamingGenerator(&out, ctx, protocol, path, NULL))
-        super().__init__(out)
+        _checked(syz_createStreamingGeneratorFromStreamParams(&out, ctx, protocol, path, NULL))
+        return StreamingGenerator(out)
 
     position = DoubleProperty(SYZ_P_POSITION)
     looping = IntProperty(SYZ_P_LOOPING, conv_in = int, conv_out = bool)
@@ -462,7 +469,7 @@ cdef class Source3D(PannedSourceCommon):
     orientation = Double6Property(SYZ_P_ORIENTATION)
 
 cdef class Buffer(_BaseObject):
-    """Use Buffer.from_stream(protocol, path, options) to initialize."""
+    """Use Buffer.from_stream_params(protocol, path) to initialize."""
 
     def __init__(self, _handle = None):
         if _handle is None:
@@ -470,7 +477,7 @@ cdef class Buffer(_BaseObject):
         super().__init__(_handle)
 
     @staticmethod
-    def from_stream(protocol, path):
+    def from_stream_params(protocol, path):
         """Create a buffer from a stream."""
         cdef syz_Handle handle
         protocol_b = _to_bytes(protocol)
@@ -479,7 +486,7 @@ cdef class Buffer(_BaseObject):
         cdef char* path_c = path_b
         cdef syz_ErrorCode result
         with nogil:
-            result = syz_createBufferFromStream(&handle, protocol_c, path_c, NULL)
+            result = syz_createBufferFromStreamParams(&handle, protocol_c, path_c, NULL)
         if result != 0:
             raise SynthizerError()
         return Buffer(_handle=handle)
