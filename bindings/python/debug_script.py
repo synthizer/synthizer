@@ -21,7 +21,7 @@ synthizer.set_log_level(synthizer.LogLevel.DEBUG)
 
 synthizer.initialize()
 ctx = synthizer.Context(enable_events=True)
-gen = synthizer.StreamingGenerator(ctx, "file", sys.argv[1], "")
+gen = synthizer.StreamingGenerator(ctx, "file", sys.argv[1])
 #buffer = synthizer.Buffer.from_stream("file", sys.argv[1], "")
 #gen.buffer = buffer
 #ctx.panner_strategy = synthizer.PannerStrategy.HRTF    

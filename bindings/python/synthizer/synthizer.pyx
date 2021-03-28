@@ -384,21 +384,18 @@ cdef class Generator(Pausable):
 
 
 cdef class StreamingGenerator(Generator):
-    def __init__(self, context, protocol, path, options = ""):
+    def __init__(self, context, protocol, path):
         """Initialize a StreamingGenerator.
 
         For example:
         StreamingGenerator(protocol = "file", path = "bla.wav")
-
-        Options is currently unused and will be better documented once it is.
         """
         cdef syz_Handle ctx
         cdef syz_Handle out
         path = _to_bytes(path)
         protocol = _to_bytes(protocol)
-        options = _to_bytes(options)
         ctx = context._get_handle_checked(Context)
-        _checked(syz_createStreamingGenerator(&out, ctx, protocol, path, options))
+        _checked(syz_createStreamingGenerator(&out, ctx, protocol, path, NULL))
         super().__init__(out)
 
     position = DoubleProperty(SYZ_P_POSITION)
@@ -473,18 +470,16 @@ cdef class Buffer(_BaseObject):
         super().__init__(_handle)
 
     @staticmethod
-    def from_stream(protocol, path, options=""):
+    def from_stream(protocol, path):
         """Create a buffer from a stream."""
         cdef syz_Handle handle
         protocol_b = _to_bytes(protocol)
         path_b = _to_bytes(path)
-        options_b = _to_bytes(options)
         cdef char* protocol_c = protocol_b
         cdef char* path_c = path_b
-        cdef char* options_c = options_b
         cdef syz_ErrorCode result
         with nogil:
-            result = syz_createBufferFromStream(&handle, protocol_c, path_c, options_c)
+            result = syz_createBufferFromStream(&handle, protocol_c, path_c, NULL)
         if result != 0:
             raise SynthizerError()
         return Buffer(_handle=handle)

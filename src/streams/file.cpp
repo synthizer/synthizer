@@ -80,7 +80,7 @@ std::size_t FileByteStream::getLength() {
 	return this->length;
 }
 
-std::shared_ptr<ByteStream> fileStream(const std::string &path, const std::vector<std::tuple<std::string, std::string>> &options) {
+std::shared_ptr<ByteStream> fileStream(const char *path, void *param) {
 	std::fstream stream;
 
 #ifdef SYZ_USE_FILESYSTEM

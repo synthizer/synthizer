@@ -82,9 +82,9 @@ class LookaheadByteStream: public ByteStream {
  * 
  * Protocol: the protocol, which must be registered.
  * Path: A protocol-specific path, i.e. a file, etc.
- * Options: space-separated string of key-value pairs specific to a given protocol.
+ * param: NULL for built-in streams. Reserved for user-defined streams.
  * */
-std::shared_ptr<ByteStream> getStreamForProtocol(const std::string &protocol, const std::string &path, const std::string &options);
+std::shared_ptr<ByteStream> getStreamForProtocol(const std::string &protocol, const std::string &path, void *param);
 
 /*
  * Register a protocol handler, a factory function for getting a protocol.
@@ -93,7 +93,8 @@ std::shared_ptr<ByteStream> getStreamForProtocol(const std::string &protocol, co
  * 
  * Throws EByteStreamUnsupportedOperation in the event of duplicate registration.
  * */
-void registerByteStreamProtocol(std::string &name, std::function<std::shared_ptr<ByteStream>(const std::string &, std::vector<std::tuple<std::string, std::string>>)> factory);
+typedef std::shared_ptr<ByteStream> ByteStreamFactory(const char *path, void *param);
+void registerByteStreamProtocol(std::string &name, ByteStreamFactory *factory);
 
 std::shared_ptr<LookaheadByteStream> getLookaheadByteStream(std::shared_ptr<ByteStream> stream);
 
@@ -117,6 +118,6 @@ char *byteStreamToBuffer(std::shared_ptr<ByteStream> stream);
 std::shared_ptr<ByteStream> memoryStream(std::size_t size, const char *data);
 
 /* file stream. Throws EByteStreamNotFound. */
-std::shared_ptr<ByteStream> fileStream(const std::string &name, const std::vector<std::tuple<std::string, std::string>> &options);
+std::shared_ptr<ByteStream> fileStream(const char *path, void *param);
 
 }

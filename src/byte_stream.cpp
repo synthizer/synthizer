@@ -22,11 +22,11 @@ namespace synthizer {
  * Infrastructure for the registry.
  * */
 static std::shared_mutex byte_stream_registry_lock{};
-static std::map<std::string, std::function<std::shared_ptr<ByteStream> (const std::string &, std::vector<std::tuple<std::string, std::string>> &)>> byte_stream_registry {
+static std::map<std::string, ByteStreamFactory *> byte_stream_registry{
 	{ "file", fileStream },
 };
 
-void registerByteStreamProtocol(std::string &name, std::function<std::shared_ptr<ByteStream> (const std::string &, std::vector<std::tuple<std::string, std::string>>)> factory) {
+void registerByteStreamProtocol(std::string &name, ByteStreamFactory *factory) {
 	auto guard = std::lock_guard(byte_stream_registry_lock);
 	if (byte_stream_registry.count(name))
 		throw EByteStreamUnsupportedOperation("Attempted duplicate registry of protocol "+name);
@@ -34,31 +34,12 @@ void registerByteStreamProtocol(std::string &name, std::function<std::shared_ptr
 	byte_stream_registry[name] = factory;
 }
 
-static std::vector<std::tuple<std::string, std::string>> parseOptions(const std::string & options) {
-	std::istringstream opts_stream{options};
-	std::vector<std::tuple<std::string, std::string>> parsed;
-	std::string current_opt;
-	while (std::getline(opts_stream, current_opt, '&')) {
-		std::istringstream inner{current_opt};
-		std::string k;
-		std::getline(inner, k, '=');
-		if (k.size() ==  0)
-			continue;
-		std::istream_iterator<char> begin {inner};
-		std::istream_iterator<char> end{};
-		std::string v{begin, end};
-		parsed.emplace_back(k, v);
-	}
-	return parsed;
-}
-
-std::shared_ptr<ByteStream> getStreamForProtocol(const std::string &protocol, const std::string &path, const std::string &options) {
-	auto parsed = parseOptions(options);
+std::shared_ptr<ByteStream> getStreamForProtocol(const std::string &protocol, const std::string &path, void *param) {
 	auto l = std::shared_lock{byte_stream_registry_lock};
 	if (byte_stream_registry.count(protocol) == 0)
 		throw EByteStreamUnsupportedOperation("Unregistered protocol " + protocol);
 	auto &f = byte_stream_registry[protocol];
-	auto o = f(path, parsed);
+	auto o = f(path.c_str(), param);
 	if (o == nullptr)
 		throw EByteStream("Protocol " + protocol + " returned nullptr. No further information available.");
 	return o;

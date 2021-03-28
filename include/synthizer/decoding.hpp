@@ -17,8 +17,8 @@ class LookaheadByteStream;
 /* An unsupported format. */
 class UnsupportedFormatError: public Error {
 	public:
-	UnsupportedFormatError(std::string protocol = "", std::string path = "", std::string options = ""): Error("Unsupported audio format."), protocol(protocol), path(path), options(options) {}
-	std::string protocol, path, options;
+	UnsupportedFormatError(std::string protocol = "", std::string path = ""): Error("Unsupported audio format."), protocol(protocol), path(path) {}
+	std::string protocol, path;
 };
 
 /* The audio formats we support. */
@@ -74,7 +74,7 @@ class AudioDecoder {
  * 
  * The underlying stream will only be opened once. Internal machinery caches the bytes at the head of the stream.
  * */
-std::shared_ptr<AudioDecoder> getDecoderForProtocol(std::string protocol, std::string path, std::string options);
+std::shared_ptr<AudioDecoder> getDecoderForProtocol(const char *protocol, const char *path, void *param);
 
 /*
  * Decode an audio asset, converting it into an in-memory representation.

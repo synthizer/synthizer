@@ -196,10 +196,10 @@ void StreamingGenerator::generateBlockInBackground(StreamingGeneratorCommand *cm
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options) {
+SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, void *param) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
-	auto decoder = getDecoderForProtocol(protocol, path, options);
+	auto decoder = getDecoderForProtocol(protocol, path, param);
 	auto generator = ctx->createObject<StreamingGenerator>(decoder);
 	*out = toC(generator);
 	return 0;
