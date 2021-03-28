@@ -26,6 +26,8 @@
 
 namespace synthizer {
 
+class CExposable;
+
 void initializeMemorySubsystem();
 void shutdownMemorySubsystem();
 
@@ -141,6 +143,20 @@ class UserdataDef {
 	syz_UserdataFreeCallback *userdata_free_callback = nullptr;
 };
 
+/*
+ * Register an object for deletion at Synthizer shutdown.
+ * 
+ * NOTE: uses a lock; shouldn't be called from the audio thread.
+ * */
+void registerObjectForShutdownImpl(const std::shared_ptr<CExposable> &obj);
+template<typename T>
+void registerObjectForShutdown(const std::shared_ptr<T> &obj) {
+	auto ce = std::static_pointer_cast<CExposable>(obj);
+	registerObjectForShutdownImpl(ce);
+}
+
+void clearAllCHandles();
+
 /**
  * A reference-counted external reference to C.
  * 
@@ -181,11 +197,13 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	 * */
 	virtual void cDelete() {}
 
-	/*
+	/**
 	 * These 3 functions are used to expose an object to the external world.
 	 * They work as follows:
 	 * 
-	 * - stashInternalReference stashes a shared_ptr to this object in this object and sets the reference count to 1.
+	 * - stashInternalReference stashes a shared_ptr to this object in this object and sets the reference count to 1.  It also
+	 *   registeres that reference in the global registry as an object which should be deleted. This is done here because
+	 *   there are too many custom ways to make objects for us to abhstract that generally, but they all must pass through this function.
 	 * - incRef increments the reference count of this object if it is nonzero, and ignores increments if it is zero.
 	 * - decRef decrements the reference count of this object to (but not below) 0.
 	 * - users of the object detect that the reference count is zero using isPermanentlyDead; once this happens,
@@ -197,6 +215,7 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	void stashInternalReference(const std::shared_ptr<CExposable> &reference) {
 		this->internal_reference = reference;
 		this->reference_count.store(1, std::memory_order_relaxed);
+		registerObjectForShutdown(reference);
 	}
 
 	void incRef() {
@@ -283,20 +302,5 @@ std::shared_ptr<O> typeCheckedDynamicCast(const std::shared_ptr<I> &input) {
 	}
 	return out;
 }
-
-/*
- * Register an object for deletion at Synthizer shutdown.
- * 
- * NOTE: uses a lock; shouldn't be called from the audio thread.
- * */
-void registerObjectForShutdownImpl(const std::shared_ptr<CExposable> &obj);
-template<typename T>
-void registerObjectForShutdown(const std::shared_ptr<T> &obj) {
-	auto ce = std::static_pointer_cast<CExposable>(obj);
-	registerObjectForShutdownImpl(ce);
-}
-
-
-void clearAllCHandles();
 
 }

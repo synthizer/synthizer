@@ -286,6 +286,8 @@ SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out) {
 	std::shared_ptr<Context> ptr{ctx, deleteInBackground<Context>};
 	/* This is a headless context. */
 	ptr->initContext(true);
+	auto ce = std::static_pointer_cast<CExposable>(ptr);
+	ce->stashInternalReference(ce);
 	*out = toC(ptr);
 	return 0;
 	SYZ_EPILOGUE
