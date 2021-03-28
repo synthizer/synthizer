@@ -360,14 +360,14 @@ cdef class Context(Pausable):
 
         Stopping iteration early is permitted: any events not drained from this iterator will show up in the next one.
 
-        If limit is a non-zero value, at most limit events will be yielded. Otherwise, this iterator wil continue
+        If limit is a non-zero value, at most limit events will be yielded. Otherwise, this iterator will continue
         until the queue is drained."""
         cdef syz_Event event
         cdef unsigned int drained_so_far
         if limit < 0:
             raise RuntimeError("Limit may not be negative")
         while True:
-            _checked(syz_contextGetNextEvent(&event, self.handle))
+            _checked(syz_contextGetNextEvent(&event, self.handle, 0))
             if event.type == SYZ_EVENT_TYPE_INVALID:
                 break
             yield _convert_event(event)

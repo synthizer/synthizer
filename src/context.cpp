@@ -311,7 +311,7 @@ SYZ_CAPI syz_ErrorCode syz_contextEnableEvents(syz_Handle context) {
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle context) {
+SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle context, int flags) {
 	SYZ_PROLOGUE
 	std::shared_ptr<Context> ctx = fromC<Context>(context);
 	ctx->getNextEvent(out);

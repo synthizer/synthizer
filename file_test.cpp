@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 		double x = sin(rad);
 		CHECKED(syz_setD3(source, SYZ_P_POSITION, x, y, 0.0));
 
-		CHECKED(syz_contextGetNextEvent(&event, context));
+		CHECKED(syz_contextGetNextEvent(&event, context, 0));
 	}
 
 end:

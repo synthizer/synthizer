@@ -103,7 +103,7 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_contextEnableEvents(syz_Handle context)
 
-    syz_ErrorCode syz_contextGetNextEvent(syz_Event* out, syz_Handle context)
+    syz_ErrorCode syz_contextGetNextEvent(syz_Event* out, syz_Handle context, int flags)
 
     syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle* out, syz_Handle context, char* protocol, char* path, void* param)
 

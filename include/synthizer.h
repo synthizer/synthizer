@@ -237,8 +237,10 @@ SYZ_CAPI syz_ErrorCode syz_contextEnableEvents(syz_Handle context);
 /**
  * Get an event from the queue. If the queue is empty, the event type
  * is SYZ_EVENT_TYPE_INVALID.
+ *
+ * Flags is reserved and must be 0.
  * */
-SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle context);
+SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle context, int flags);
 
 /*
  * Create a generator that represents reading from a stream.
