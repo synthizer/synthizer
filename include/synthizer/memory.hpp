@@ -238,7 +238,6 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 		}
 		/* Be careful: compare_exchange_strong doesn't set cur when it succeeds. */
 		if (cur == 1) {
-			printf("hi\n");
 			this->internal_reference = nullptr;
 		}
 	}
