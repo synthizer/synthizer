@@ -112,8 +112,12 @@ SYZ_CAPI const char *syz_getLastErrorMessage();
 SYZ_CAPI syz_ErrorCode syz_initialize();
 SYZ_CAPI syz_ErrorCode syz_shutdown();
 /**
- * Decrement the reference count on a C handle.
+ * Increment and decrement the reference count on a C handle.
+ * 
+ * Handles are no longer valid when the reference count reaches 0.  All handles returned from a create function
+ * have a reference count of 1.
  * */
+SYZ_CAPI syz_ErrorCode syz_handleIncRef(syz_Handle handle);
 SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle);
 
 /**

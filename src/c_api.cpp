@@ -71,6 +71,14 @@ SYZ_CAPI const char *syz_getLastErrorMessage() {
 /*
  * Memory management.
  * */
+SYZ_CAPI syz_ErrorCode syz_handleIncRef(syz_Handle handle) {
+	SYZ_PROLOGUE
+	auto h = fromC<CExposable>(handle);
+	h->incRef();
+	return 0;
+	SYZ_EPILOGUE
+}
+
 SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle) {
 	SYZ_PROLOGUE
 	if (handle == 0) {

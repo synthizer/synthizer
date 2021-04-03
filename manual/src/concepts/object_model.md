@@ -3,7 +3,9 @@
 Synthizer represents references to objects with a `syz_Handle` type.  The following excerpts from `synthizer.h` are available on every object type:
 
 ```
+SYZ_CAPI syz_handleIncRef(syz_Handle handle);
 SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle);
+
 SYZ_CAPI syz_ErrorCode syz_handleGetObjectType(int *out, syz_Handle handle);
 
 SYZ_CAPI syz_ErrorCode syz_getI(int *out, syz_Handle target, int property);
@@ -18,7 +20,8 @@ SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, dou
 ```
 
 Synthizer handles are opaque reference-counted pointers to Synthizer objects and are created through constructor functions.  To decrement the reference count, use `syz_handleDecRef`.
-
+It is possible to increment the reference count with `syz_handleIncRef` which is useful for languages which wish to use Synthizer behind a "smart pointer" abstraction, or to interfaec
+with the event system, which can function in a borrow-only mode which requires incrementing reference counts on handles that the app wiishes to store elsewhere.
 
 Objects are like classes: they have constructors, properties, and methods.  These elements of a given object are documented in the object reference.
 Objects also effectively have base classes, for example functionality common to all sources.  This manual pulls that information out
