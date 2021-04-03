@@ -89,10 +89,8 @@ std::shared_ptr<ByteStream> fileStream(const char *path, void *param) {
 
 	if (std::filesystem::exists(p) == false)
 		throw EByteStreamNotFound();
-
-	stream.open(p, std::ios::in|std::ios::binary);
 #else
-	stream.open(path.c_str(), std::ios::in|std::ios::binary);
+	stream.open(path, std::ios::in|std::ios::binary);
 	/*
 	 * This path doesn't have a good way to know if the open failed due to the file not
 	 * existing; we'll just have to throw the generic error below.
