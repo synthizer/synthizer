@@ -260,8 +260,8 @@ void Context::enableEvents() {
 	this->event_sender.setEnabled(true);
 }
 
-void Context::getNextEvent(syz_Event *out) {
-	this->event_sender.getNextEvent(out);
+void Context::getNextEvent(syz_Event *out, unsigned long long flags) {
+	this->event_sender.getNextEvent(out, flags);
 }
 
 }
@@ -311,10 +311,10 @@ SYZ_CAPI syz_ErrorCode syz_contextEnableEvents(syz_Handle context) {
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle context, int flags) {
+SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle context, unsigned long long flags) {
 	SYZ_PROLOGUE
 	std::shared_ptr<Context> ctx = fromC<Context>(context);
-	ctx->getNextEvent(out);
+	ctx->getNextEvent(out, flags);
 	return 0;
 	SYZ_EPILOGUE
 }

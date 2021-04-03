@@ -54,6 +54,11 @@ class SmallVec {
 		return this->length == 0;
 	}
 
+	T& operator[](std::size_t index) {
+		assert(index < this->size());
+		return this->storage[index];
+	}
+
 	private:
 	T *preparePush() {
 		if (this->length == MAX_CAPACITY) {

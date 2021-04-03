@@ -44,7 +44,7 @@ class PendingEvent {
 	 * The method called by the C API: writes the payload to the out pointer.
 	 * The out pointer will be zero-initialized if the event didn't fire, which sets the event type to SYZ_EVENT_TYPE_INVALID.
 	 * */
-	void extract(syz_Event *out);
+	void extract(syz_Event *out, unsigned long long flags);
 
 	void enqueue(syz_Event &&event, EventHandleVec &&handles);
 	private:
@@ -72,7 +72,7 @@ class EventSender {
 	 * 
 	 * Called by syz_contextGetNextEvent.
 	 * */
-	void getNextEvent(syz_Event *out);
+	void getNextEvent(syz_Event *out, unsigned long long flags);
 
 	void enqueue(syz_Event &&event, EventHandleVec &&handles);
 

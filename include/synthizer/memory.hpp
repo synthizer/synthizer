@@ -218,19 +218,27 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 		registerObjectForShutdown(reference);
 	}
 
-	void incRef() {
+	/* Returns whether or not the reference count was already 0. Used primarily by the event architecture. */
+	bool incRef() {
 		unsigned int cur = this->reference_count.load(std::memory_order_relaxed);
 		while (cur != 0) {
-			this->reference_count.compare_exchange_strong(cur, cur + 1, std::memory_order_acquire, std::memory_order_relaxed);
+			if (this->reference_count.compare_exchange_strong(cur, cur + 1, std::memory_order_acquire, std::memory_order_relaxed)) {
+				return true;
+			}
 		}
+		return false;
 	}
 
 	void decRef() {
 		unsigned int cur = this->reference_count.load(std::memory_order_relaxed);
 		while (cur != 0) {
-			this->reference_count.compare_exchange_strong(cur, cur - 1, std::memory_order_release, std::memory_order_relaxed);
+			if (this->reference_count.compare_exchange_strong(cur, cur - 1, std::memory_order_release, std::memory_order_relaxed)) {
+				break;
+			}
 		}
-		if (cur == 0) {
+		/* Be careful: compare_exchange_strong doesn't set cur when it succeeds. */
+		if (cur == 1) {
+			printf("hi\n");
 			this->internal_reference = nullptr;
 		}
 	}

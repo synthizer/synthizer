@@ -89,6 +89,17 @@ enum SYZ_EVENT_TYPES {
 	SYZ_EVENT_TYPE_FINISHED,
 };
 
+/**
+ * Flags for `syz_contextGetNextEvent`.  For the most part these are hidden from non-C consumers.
+ * */
+enum SYZ_EVENT_FLAGS {
+	/**
+	 *  The consumer of this event wishes to own any handles the event might return.  This signals to the event machinery that any returned handles
+	 * should not have their reference counts decremented when `syz_eventDeinit` is called.
+	 * */
+	SYZ_EVENT_FLAG_TAKE_OWNERSHIP = (1 << 0),
+};
+
 #ifdef __cplusplus
 }
 #endif

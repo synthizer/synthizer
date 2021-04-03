@@ -13,28 +13,33 @@
 
 namespace synthizer {
 
-static bool hasValidCHandle(const std::shared_ptr<CExposable> &obj) {
-	return obj != nullptr && obj->isPermanentlyDead() == false;
-}
-
-static bool hasValidCHandle(const std::weak_ptr<CExposable> &obj) {
-	return obj.expired() == false && hasValidCHandle(obj.lock());
-}
-
 PendingEvent::PendingEvent() {}
 
 PendingEvent::PendingEvent(syz_Event &&event, EventHandleVec &&referenced_handles): event(event), referenced_handles(referenced_handles), valid(true) {}
 
-void PendingEvent::extract(syz_Event *out) {
+void PendingEvent::extract(syz_Event *out, unsigned long long flags) {
 	*out = syz_Event{};
 
-	for (auto &o: this->referenced_handles) {
-		if (hasValidCHandle(o) == false) {
+	for (std::size_t i = 0; i < this->referenced_handles.size(); i++) {
+		auto strong = this->referenced_handles[i].lock();
+
+		if (strong == nullptr || strong->incRef()) {
+			/*
+			 * We failed to revive this object and produce a strong reference. Decrement all the references before it in the vector.
+			 * All the previous objects are still alive because we just incremented their reference counts, so unconditionally
+			 * decrement their reference counts without checking again.  if this crashes,
+			 * it's because the user misused the library.
+			 * */
+			for (std::size_t j = 0; j < i; j++) {
+				this->referenced_handles[j].lock()->decRef();
+			}
 			return;
 		}
 	}
 
 	*out = this->event;
+	/* We only have flags late, so put them in now. */
+	out->_private.flags = flags;
 }
 
 EventSender::EventSender(): pending_events(), producer_token(pending_events) {}
@@ -47,7 +52,7 @@ bool EventSender::isEnabled() {
 	return this->enabled;
 }
 
-void EventSender::getNextEvent(syz_Event *out) {
+void EventSender::getNextEvent(syz_Event *out, unsigned long long flags) {
 	PendingEvent maybe_event;
 
 	*out = syz_Event{};
@@ -56,7 +61,7 @@ void EventSender::getNextEvent(syz_Event *out) {
 		return;
 	}
 
-	maybe_event.extract(out);
+	maybe_event.extract(out, flags);
 }
 
 void EventSender::enqueue(syz_Event &&event, EventHandleVec &&handles) {
@@ -120,7 +125,7 @@ void EventBuilder::dispatch(EventSender *sender) {
 }
 
 bool EventBuilder::associateObject(const std::shared_ptr<CExposable> &obj) {
-	if (hasValidCHandle(obj) == false) {
+	if (obj == nullptr || obj->isPermanentlyDead()) {
 		return false;
 	}
 	auto weak = std::weak_ptr(obj);
@@ -149,5 +154,15 @@ void sendLoopedEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<
 
 
 SYZ_CAPI void syz_eventDeinit(struct syz_Event *event) {
-	// Nothing, for now.
+	/*
+	 * Deinitialize an event by decrementing reference counts as necessary. We'll just
+	 * go through the C API and not check errors: syz_handleDecRef always succeeds save for programmer error.
+	 * */
+	if (event->_private.flags & SYZ_EVENT_FLAG_TAKE_OWNERSHIP) {
+		return;
+	}
+
+	/* Invalid events are zero-initialized, so there's no need to check. */
+	syz_handleDecRef(event->source);
+	syz_handleDecRef(event->context);
 }

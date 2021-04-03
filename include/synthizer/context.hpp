@@ -258,7 +258,7 @@ class Context: public Pausable, public BaseObject {
 	 * Used by the C API for events:
 	 * */
 	void enableEvents();
-	void getNextEvent(syz_Event *out);
+	void getNextEvent(syz_Event *out, unsigned long long flags);
 	/* May be called from any thread as it is backed by a MPMC queue. */
 
 	#define PROPERTY_CLASS Context
