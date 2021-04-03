@@ -20,7 +20,8 @@ Once enabled, events feed a queue that can be polled with `syz_contextGetNextEve
 effectively a memory leak.  In other words, only enable events if you know you'll actually use them.
 
 C users are encouraged to read synthizer.h, in particular `struct syz_Event`.  See also the `enum SYZ_EVENT_TYPES` in `synthizer_constants.h`.  The basic idea is to call
-`syz_contextGetNextEvent` until you get `SYZ_EVENT_TYPE_INVALID` indicating the end of the queue.
+`syz_contextGetNextEvent` until you get `SYZ_EVENT_TYPE_INVALID` indicating the end of the queue, then `syz_eventDeinit` to free any internal resources associated with the event.
+A proper reference section on this machinery for C developers will exist as part of the 0.9 release.
 
 The events system will drop events which would refer to invalid handles on a best-effort basis, so that
 an invalid handle is never returned to the caller of `syz_contextGetNextEvent`.  This is guaranteed to work as long as all deletion happens on the same thread as the event polling.  In future, Synthizer is going to switch handles

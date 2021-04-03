@@ -370,7 +370,8 @@ cdef class Context(Pausable):
             _checked(syz_contextGetNextEvent(&event, self.handle, 0))
             if event.type == SYZ_EVENT_TYPE_INVALID:
                 break
-            yield _convert_event(event)
+            will_yield = _convert_event(event)
+            syz_eventDeinit(&event)
             drained_so_far += 1
             if limit != 0 and drained_so_far == limit:
                 break

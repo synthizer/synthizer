@@ -21,6 +21,8 @@ cdef extern from "synthizer.h":
         void* userdata
         _syz_Event_payload_u payload
 
+    void syz_eventDeinit(syz_Event* event)
+
     cdef enum SYZ_LOGGING_BACKEND:
         SYZ_LOGGING_BACKEND_STDERR
 

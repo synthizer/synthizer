@@ -146,3 +146,8 @@ void sendLoopedEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<
 
 }
 
+
+
+SYZ_CAPI void syz_eventDeinit(struct syz_Event *event) {
+	// Nothing, for now.
+}

@@ -81,6 +81,7 @@ int main(int argc, char *argv[]) {
 		CHECKED(syz_setD3(source, SYZ_P_POSITION, x, y, 0.0));
 
 		CHECKED(syz_contextGetNextEvent(&event, context, 0));
+		syz_eventDeinit(&event);
 	}
 
 end:
