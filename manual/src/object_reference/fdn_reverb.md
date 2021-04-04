@@ -20,10 +20,14 @@ Creates a global FDN reverb with default settings.
 
 See remarks for a description of what these do and how to use them effectively.
 
+In addition to the below, FdnReverb defaults its gain to 0.7.  Gains of 1.0 are almost never what you want, since that
+makes the reverb as loud as the non-reverb audio paths.
+
 Enum | Type | Default | Range | Description
 --- | --- | --- | --- | ---
-SYZ_P_MEAN_FREE_PATH | double | 0.02 | 0.0 to 0.5 | The mean free path of the simulated environment.
-SYZ_P_T60 | double | 1.0 | 0.0 to 100.0 | The T60 of the reverb
+SYZ_P_INPUT_FILTER | Biquad | Lowpass Butterworth at 2000 HZ | any biquad | a filter that applies to the audio at the input of the reverb.
+SYZ_P_MEAN_FREE_PATH | double | 0.1 | 0.0 to 0.5 | The mean free path of the simulated environment.
+SYZ_P_T60 | double | 0.3 | 0.0 to 100.0 | The T60 of the reverb
 SYZ_P_LATE_REFLECTIONS_LF_ROLLOFF | double | 1.0 | 0.0 to 2.0 | A multiplicative factor on T60 for the low frequency band
 SYZ_P_LATE_REFLECTIONS_LF_REFERENCE | double | 200.0 | 0.0 to 22050.0 | Where the low band of the feedback equalizer ends
 SYZ_P_LATE_REFLECTIONS_HF_ROLLOFF | double | 0.5 | 0.0 to 2.0 | A multiplicative factor on T60 for the high frequency band
@@ -31,9 +35,7 @@ SYZ_P_LATE_REFLECTIONS_HF_REFERENCE | double | 500.0 | 0.0 to 22050.0 | Where th
 SYZ_P_LATE_REFLECTIONS_DIFFUSION | double | 1.0 | 0.0 to 1.0 | Controls the diffusion of the late reflections as a percent.
 SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH | double | 0.01 | 0.0 to 0.3 | The depth of the modulation of the delay lines on the feedback path in seconds.
 SYZ_P_LATE_REFLECTIONS_MODULATION_FREQUENCY | double | 0.5 | 0.01 to 100.0 | The frequency of the modulation of the delay lines inthe feedback paths.
-SYZ_P_LATE_REFLECTIONS_DELAY | double | 0.01 | 0.0 to 0.5 | The delay of the late reflections relative to the input in seconds.
-
-Note that `SYZ_P_INPUT_FILTER` defaults to a lowpass Butterworth with a cutoff frequency of 1500 HZ.
+SYZ_P_LATE_REFLECTIONS_DELAY | double | 0.03 | 0.0 to 0.5 | The delay of the late reflections relative to the input in seconds.
 
 ## Remarks
 
