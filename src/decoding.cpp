@@ -21,27 +21,33 @@ static auto decoders = makeStaticArray(
 	DecoderDef{"dr_mp3", decodeMp3}
 );
 
-std::shared_ptr<AudioDecoder> getDecoderForProtocol(const char *protocol, const char *path, void *param) {
-	auto stream = getStreamForProtocol(protocol, path, param);
+
+std::shared_ptr<AudioDecoder> getDecoderForStream(std::shared_ptr<ByteStream> stream) {
 	auto lookahead_stream = getLookaheadByteStream(stream);
 	for(auto d: decoders) {
 		try {
 			lookahead_stream->reset();
 			auto tmp = d.func(lookahead_stream);
 			if (tmp == nullptr) {
-				logDebug("Path %s: handler %s returned nullptr. Skipping", path, d.name.c_str());
+				logDebug("Handler %s returned nullptr. Skipping", d.name.c_str());
 				continue;
 			}
-			logDebug("Handling path %s with handler %s", path, d.name.c_str());
+			logDebug("Handling stream with handler %s", d.name.c_str());
 			return tmp;
 		} catch(std::exception &e) {
-			logDebug("Path %s: Format %s threw error %s", path, d.name.c_str(), e.what());
+			logDebug("Format %s threw error %s", d.name.c_str(), e.what());
 			continue;
 		}
 	}
 
-	logDebug("Path %s: unable to decode", path);
-	throw UnsupportedFormatError(protocol, path);
+	logDebug("unable to decode");
+	throw UnsupportedFormatError();
+}
+
+std::shared_ptr<AudioDecoder> getDecoderForProtocol(const char *protocol, const char *path, void *param) {
+	logDebug("Trying to decode %s:%s", protocol, path);
+	auto stream = getStreamForProtocol(protocol, path, param);
+	return getDecoderForStream(stream);
 }
 
 }

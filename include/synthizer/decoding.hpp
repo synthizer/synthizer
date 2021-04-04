@@ -70,11 +70,11 @@ class AudioDecoder {
 /*
  * Given protocol/path/options, get an audio decoder.
  * 
- * This will be disk-backed.  We find the format required either by (1) a hint from the ByteStream, if any, or (2) trying all the decoders we support.
- * 
  * The underlying stream will only be opened once. Internal machinery caches the bytes at the head of the stream.
  * */
 std::shared_ptr<AudioDecoder> getDecoderForProtocol(const char *protocol, const char *path, void *param);
+
+std::shared_ptr<AudioDecoder> getDecoderForStream(std::shared_ptr<ByteStream> stream);
 
 /*
  * Decode an audio asset, converting it into an in-memory representation.
