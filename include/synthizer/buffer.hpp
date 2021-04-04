@@ -229,10 +229,10 @@ class BufferReader {
 				cursor[i] = workspace[i] / 32768.0f;
 			}
 			cursor += got * this->channels;
+			written += got;
 			if (got < requested) {
 				break;
 			}
-			written += got;
 		}
 
 		return written;

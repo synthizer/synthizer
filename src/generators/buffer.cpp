@@ -141,7 +141,7 @@ void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gain_driver
 			for (unsigned int j = 0; j < got; i++, j++) {
 				float g = gain_cb(i);
 				for (unsigned int ch = 0; ch < this->reader.getChannels(); ch++) {
-					cursor[i * this->reader.getChannels() + ch]  += g * workspace[i * this->reader.getChannels() + ch];
+					cursor[j * this->reader.getChannels() + ch]  += g * workspace[j * this->reader.getChannels() + ch];
 				}
 			}
 			remaining -= got;
@@ -154,8 +154,7 @@ void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gain_driver
 						this->sent_finished = true;
 					}
 					break;
-				}
-				else {
+				} else {
 					pos = 0;
 					this->looped_count += 1;
 				}
