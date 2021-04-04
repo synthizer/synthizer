@@ -16,9 +16,19 @@ Create a buffer from a file using an UTF-8 encoded path.
 SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param);
 ```
 
-Currently, the only way to make a buffer is from a stream, in the self-explanatory manner. See [Streams](../concepts/streams.md) for information on streams.
+Create a buffer from stream parameters.  See [Streams](../concepts/streams.md) for information on streams.
 
 This call will decode the stream in the calling thread, returning errors as necessary. Synthizer will eventually offer a BufferCache which supports background decoding and caching, but for the moment the responsibility of background decoding is placed on the calling program.
+
+### `syz_createBufferFromEncodedData`
+
+```
+SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned long long data_len, const char *data);
+```
+
+Create a buffer from encoded audio data in ram, for example an ogg file read from disk.  This will also work with mmapped pointers.
+As with all other decoding, Synthizer will autodetect the type from the data.
+The pointer must live for the duration of the call.
 
 ## Properties
 

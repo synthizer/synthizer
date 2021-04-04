@@ -288,6 +288,11 @@ SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz
  * This creates one from the 3 streaming parameters.
  * */
 SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param);
+/**
+ * Create a buffer from encoded audio data that's already
+ * in memory.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned long long data_len, const char *data);
 
 /**
  * Create a buffer from a file. Currently equivalent to:

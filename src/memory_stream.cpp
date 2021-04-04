@@ -33,7 +33,7 @@ std::size_t MemoryStream::read(std::size_t count, char *destination) {
 	std::size_t remaining = this->length - this->position;
 	/* Don't read past the end. */
 	std::size_t will_read = remaining > count ? count : remaining;
-	std::copy(this->data, this->data + will_read, destination);
+	std::copy(this->data + this->position, this->data + this->position + will_read, destination);
 	this->position += will_read;
 	return will_read;
 }
@@ -54,7 +54,7 @@ void MemoryStream::seek(std::size_t position) {
 }
 
 std::size_t MemoryStream::getLength() {
-	return this->position;
+	return this->length;
 }
 
 std::shared_ptr<ByteStream> memoryStream(std::size_t size, const char *data) {

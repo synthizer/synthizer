@@ -3,6 +3,7 @@
 #include "synthizer_constants.h"
 
 #include "synthizer/c_api.hpp"
+#include "synthizer/byte_stream.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/error.hpp"
@@ -147,6 +148,15 @@ static syz_Handle bufferFromDecoder(std::shared_ptr<AudioDecoder> dec) {
 SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param) {
 	SYZ_PROLOGUE
 	auto dec = getDecoderForStreamParams(protocol, path, param);
+	*out = bufferFromDecoder(dec);
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned long long data_len, const char *data) {
+	SYZ_PROLOGUE
+	auto stream = memoryStream(data_len, data);
+	auto dec = getDecoderForStream(stream);
 	*out = bufferFromDecoder(dec);
 	return 0;
 	SYZ_EPILOGUE
