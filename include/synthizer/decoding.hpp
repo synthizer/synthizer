@@ -72,7 +72,7 @@ class AudioDecoder {
  * 
  * The underlying stream will only be opened once. Internal machinery caches the bytes at the head of the stream.
  * */
-std::shared_ptr<AudioDecoder> getDecoderForProtocol(const char *protocol, const char *path, void *param);
+std::shared_ptr<AudioDecoder> getDecoderForStreamParams(const char *protocol, const char *path, void *param);
 
 std::shared_ptr<AudioDecoder> getDecoderForStream(std::shared_ptr<ByteStream> stream);
 

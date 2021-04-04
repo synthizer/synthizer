@@ -84,7 +84,7 @@ class LookaheadByteStream: public ByteStream {
  * Path: A protocol-specific path, i.e. a file, etc.
  * param: NULL for built-in streams. Reserved for user-defined streams.
  * */
-std::shared_ptr<ByteStream> getStreamForProtocol(const std::string &protocol, const std::string &path, void *param);
+std::shared_ptr<ByteStream> getStreamForStreamParams(const std::string &protocol, const std::string &path, void *param);
 
 /*
  * Register a protocol handler, a factory function for getting a protocol.

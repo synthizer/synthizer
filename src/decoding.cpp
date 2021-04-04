@@ -44,9 +44,9 @@ std::shared_ptr<AudioDecoder> getDecoderForStream(std::shared_ptr<ByteStream> st
 	throw UnsupportedFormatError();
 }
 
-std::shared_ptr<AudioDecoder> getDecoderForProtocol(const char *protocol, const char *path, void *param) {
+std::shared_ptr<AudioDecoder> getDecoderForStreamParams(const char *protocol, const char *path, void *param) {
 	logDebug("Trying to decode %s:%s", protocol, path);
-	auto stream = getStreamForProtocol(protocol, path, param);
+	auto stream = getStreamForStreamParams(protocol, path, param);
 	return getDecoderForStream(stream);
 }
 

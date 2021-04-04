@@ -34,7 +34,7 @@ void registerByteStreamProtocol(std::string &name, ByteStreamFactory *factory) {
 	byte_stream_registry[name] = factory;
 }
 
-std::shared_ptr<ByteStream> getStreamForProtocol(const std::string &protocol, const std::string &path, void *param) {
+std::shared_ptr<ByteStream> getStreamForStreamParams(const std::string &protocol, const std::string &path, void *param) {
 	auto l = std::shared_lock{byte_stream_registry_lock};
 	if (byte_stream_registry.count(protocol) == 0)
 		throw EByteStreamUnsupportedOperation("Unregistered protocol " + protocol);

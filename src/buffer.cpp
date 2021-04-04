@@ -131,12 +131,11 @@ int Buffer::getObjectType() {
 
 }
 
-
 using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param) {
 	SYZ_PROLOGUE
-	auto dec = getDecoderForProtocol(protocol, path, param);
+	auto dec = getDecoderForStreamParams(protocol, path, param);
 	auto data = bufferDataFromDecoder(dec);
 	auto buf = allocateSharedDeferred<Buffer>(data);
 	auto ce = std::static_pointer_cast<CExposable>(buf);
