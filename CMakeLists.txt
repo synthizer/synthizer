@@ -109,6 +109,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/decoders/flac.cpp
 	src/decoders/ogg.cpp
 	src/decoders/mp3.cpp
+	src/decoders/raw_decoder.cpp
 	src/decoders/wav.cpp
 
 	src/filters/audio_eq_cookbook.cpp
@@ -155,6 +156,8 @@ python "${CMAKE_SOURCE_DIR}/data_processor/main.py")
 add_executable(buffer_from_memory ./examples/buffer_from_memory.c)
 target_link_libraries(buffer_from_memory synthizer)
 
+add_executable(buffer_from_raw_data ./examples/buffer_from_raw_data.c)
+target_link_libraries(buffer_from_raw_data synthizer)
 
 # The following won't work on Windows unless compiled against a static build of Synthizer because we don't want to expose the C++ internals from the DLL.
 # Since these are just test programs and not actual utilities, disable them on all platforms if the build isn't static.

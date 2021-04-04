@@ -295,6 +295,11 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const c
 SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned long long data_len, const char *data);
 
 /**
+ * Create a buffer from a flaot array in memory.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned int sr, unsigned int channels, unsigned long long frames, float *data);
+
+/**
  * Create a buffer from a file. Currently equivalent to:
  * syz_createBufferFromStreamParams(&out, "file", "the_path", NULL);
  *

@@ -13,7 +13,6 @@ namespace synthizer {
 class ByteStream;
 class LookaheadByteStream;
 
-
 /* An unsupported format. */
 class UnsupportedFormatError: public Error {
 	public:
@@ -28,6 +27,7 @@ enum class AudioFormat: int {
 	Wav,
 	Flac,
 	Mp3,
+	Raw,
 };
 
 /*
@@ -95,5 +95,11 @@ std::shared_ptr<AudioDecoder> decodeFlac(std::shared_ptr<LookaheadByteStream> st
 std::shared_ptr<AudioDecoder> decodeOgg(std::shared_ptr<LookaheadByteStream> stream);
 std::shared_ptr<AudioDecoder> decodeMp3(std::shared_ptr<LookaheadByteStream> stream);
 std::shared_ptr<AudioDecoder> decodeWav(std::shared_ptr<LookaheadByteStream> stream);
+
+/**
+ * Get a decoder which is backed by a raw buffer of float data.  This is used
+ * to let users feed generated audio into Synthizer, e.g. waveforms in float arrays.
+ * */
+std::shared_ptr<AudioDecoder> getRawDecoder(unsigned int sr, unsigned int channels, std::size_t frames, float *data);
 
 }
