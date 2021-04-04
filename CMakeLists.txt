@@ -89,6 +89,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/hrtf.cpp
 	src/logging.cpp
 	src/memory.cpp
+	src/memory_stream.cpp
 	src/noise_generator.cpp
 	src/panner_bank.cpp
 	src/pausable.cpp

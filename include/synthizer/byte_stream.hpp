@@ -53,7 +53,7 @@ class ByteStream {
 	virtual void seek(std::size_t position) {
 		throw EByteStreamUnsupportedOperation("Streams of type " + this->getName() + " don't support seek");
 	}
-	/* If seek is reported, return the length. */
+	/* If seek is supported, return the length. Otherwise, return an undefined value. */
 	virtual std::size_t getLength() {
 		return 0;
 	}
