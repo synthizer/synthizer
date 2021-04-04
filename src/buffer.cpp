@@ -133,14 +133,21 @@ int Buffer::getObjectType() {
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param) {
-	SYZ_PROLOGUE
-	auto dec = getDecoderForStreamParams(protocol, path, param);
+/**
+ * Part of the C API only. Create a buffer from a decoder and return the handle.
+ * */
+static syz_Handle bufferFromDecoder(std::shared_ptr<AudioDecoder> dec) {
 	auto data = bufferDataFromDecoder(dec);
 	auto buf = allocateSharedDeferred<Buffer>(data);
 	auto ce = std::static_pointer_cast<CExposable>(buf);
 	ce->stashInternalReference(ce);
-	*out = toC(buf);
+	return toC(buf);
+}
+
+SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param) {
+	SYZ_PROLOGUE
+	auto dec = getDecoderForStreamParams(protocol, path, param);
+	*out = bufferFromDecoder(dec);
 	return 0;
 	SYZ_EPILOGUE
 }
