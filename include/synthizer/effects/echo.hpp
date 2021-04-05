@@ -8,7 +8,7 @@
 #include "synthizer/memory.hpp"
 #include "synthizer/types.hpp"
 
-#include "concurrentqueue.h"
+#include <concurrentqueue.h>
 
 #include <array>
 #include <utility>
@@ -49,7 +49,7 @@ class EchoEffect: public BASE, public EchoEffectCInterface {
 	public:
 	EchoEffect(const std::shared_ptr<Context> &ctx): BASE(ctx, 1) {}
 
-	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) override;
+	void runEffect(unsigned int block_time, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) override;
 	void resetEffect() override;
 
 	void pushNewConfig(deferred_vector<EchoTapConfig> &&config) override;
@@ -108,7 +108,9 @@ void EchoEffect<BASE>::runEffectInternal(float *output, float gain) {
 }
 
 template<typename BASE>
-void EchoEffect<BASE>::runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) {
+void EchoEffect<BASE>::runEffect(unsigned int block_time, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) {
+	(void)block_time;
+
 	/* Always 2 channels. */
 	auto working_buf_guard = acquireBlockBuffer();
 	float *working_buf = working_buf_guard;

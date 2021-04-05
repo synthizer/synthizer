@@ -20,7 +20,7 @@ class FadeDriver;
  * */
 class ExposedNoiseGenerator: public Generator {
 	public:
-	ExposedNoiseGenerator(const std::shared_ptr<Context> &ctx, int channels): Generator(ctx), channels(channels)  {
+	ExposedNoiseGenerator(const std::shared_ptr<Context> &ctx, unsigned int channels): Generator(ctx), channels(channels)  {
 		for (unsigned int i = 0; i < channels; i++) {
 			this->generators.emplace_back();
 		}

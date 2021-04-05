@@ -39,7 +39,7 @@ float NoiseGenerator::generateSample() {
 	case SYZ_NOISE_TYPE_FILTERED_BROWN:
 		return this->generateSampleFilteredBrown();
 	default:
-		assert(nullptr == "This should be unreachable");
+		assert("This should be unreachable");
 	}
 	return 0.0f;
 }
@@ -53,7 +53,7 @@ void NoiseGenerator::generateBlock(unsigned int size, float *block, unsigned int
 	case SYZ_NOISE_TYPE_FILTERED_BROWN:
 		return this->generateBlockFilteredBrown(size, block, stride);
 	default:
-		assert(nullptr == "This should be unreachable");
+		assert("This should be unreachable");
 	}
 }
 

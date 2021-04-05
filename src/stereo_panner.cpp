@@ -41,6 +41,8 @@ void StereoPanner::releaseLane(unsigned int lane) {
 }
 
 void StereoPanner::setPanningAngles(unsigned int lane, double azimuth, double elevation) {
+	(void)elevation;
+
 	/*
 	 * Angles are clockwise from forward; we want clockwise from left.
 	 * Then if we wrap, drop the wrapped part.

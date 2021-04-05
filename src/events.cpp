@@ -5,7 +5,7 @@
 #include "synthizer/events.hpp"
 #include "synthizer/memory.hpp"
 
-#include "concurrentqueue.h"
+#include <concurrentqueue.h>
 
 #include <cassert>
 #include <memory>

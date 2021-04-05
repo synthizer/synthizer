@@ -35,7 +35,7 @@ unsigned int BufferGenerator::getChannels() {
 	return buffer->getChannels();
 }
 
-void BufferGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
+void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
 	std::weak_ptr<Buffer> buffer_weak;
 	std::shared_ptr<Buffer> buffer;
 	bool buffer_changed = this->acquireBuffer(buffer_weak);
@@ -57,9 +57,9 @@ void BufferGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
 	}
 
 	if (std::fabs(1.0 - pitch_bend) > 0.001) {
-		this->generatePitchBend(output, gain_driver, pitch_bend);
+		this->generatePitchBend(output, gd, pitch_bend);
 	} else {
-		this->generateNoPitchBend(output, gain_driver);
+		this->generateNoPitchBend(output, gd);
 	}
 
 	this->setPosition(this->position_in_samples / config::SR, false);
@@ -91,10 +91,10 @@ void BufferGenerator::readInterpolated(double pos, float *out, float gain) {
 }
 
 template<bool L>
-void BufferGenerator::generatePitchBendHelper(float *output, FadeDriver *gain_driver, double pitch_bend) {
+void BufferGenerator::generatePitchBendHelper(float *output, FadeDriver *gd, double pitch_bend) {
 	double pos = this->position_in_samples;
 	double delta = pitch_bend;
-	gain_driver->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
+	gd->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
 		for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 			float g = gain_cb(i);
 			this->readInterpolated<L>(pos, &output[i*this->reader.getChannels()], g);
@@ -118,15 +118,15 @@ void BufferGenerator::generatePitchBendHelper(float *output, FadeDriver *gain_dr
 	this->position_in_samples = std::min<double>(pos, this->reader.getLength());
 }
 
-void BufferGenerator::generatePitchBend(float *output, FadeDriver *gain_driver, double pitch_bend) {
+void BufferGenerator::generatePitchBend(float *output, FadeDriver *gd, double pitch_bend) {
 	if (this->getLooping()) {
-		return this->generatePitchBendHelper<true>(output, gain_driver, pitch_bend);
+		return this->generatePitchBendHelper<true>(output, gd, pitch_bend);
 	} else {
-		return this->generatePitchBendHelper<false>(output, gain_driver, pitch_bend);
+		return this->generatePitchBendHelper<false>(output, gd, pitch_bend);
 	}
 }
 
-void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gain_driver) {
+void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) {
 	auto workspace_guard = acquireBlockBuffer();
 	float *workspace = workspace_guard;
 	std::size_t pos = std::round(this->position_in_samples);
@@ -135,7 +135,7 @@ void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gain_driver
 	bool looping = this->getLooping() != 0;
 	unsigned int i = 0;
 
-	gain_driver->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
+	gd->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
 		while (remaining) {
 			auto got = this->reader.readFrames(pos, remaining, workspace);
 			for (unsigned int j = 0; j < got; i++, j++) {

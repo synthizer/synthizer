@@ -48,7 +48,7 @@ void deferredFreeCallback(freeCallback *cb, void *value);
 /**
  * Drop-in replacement for free that deferrs to a background thread.
  * */
-static void deferredFree(void *ptr) {
+inline void deferredFree(void *ptr) {
 	deferredFreeCallback(free, ptr);
 }
 
@@ -74,9 +74,14 @@ class DeferredAllocator {
 	DeferredAllocator() {}
 
 	template<typename U>
-	DeferredAllocator(const DeferredAllocator<U> &other) {}
+	DeferredAllocator(const DeferredAllocator<U> &other) {
+		(void)other;
+	}
+
 	template<typename U>
-	DeferredAllocator(U &&other) {}
+	DeferredAllocator(U &&other) {
+		(void)other;
+	}
 
 	value_type *allocate(std::size_t n) {
 		void *ret;
@@ -88,6 +93,7 @@ class DeferredAllocator {
 	}
 
 	void deallocate(T *p, std::size_t n) {
+		(void)n;
 		deferredFree((void *)p);
 	}
 };

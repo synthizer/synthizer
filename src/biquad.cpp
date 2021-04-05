@@ -96,8 +96,8 @@ template<unsigned int CHANNELS>
 template<bool ADD, bool CROSSFADE>
 void ConcreteBiquadFilter<CHANNELS>::processBlockImpl(float *in, float *out) {
 	const float gain_inv = 1.0f / config::BLOCK_SIZE;
-	IIRFilter<CHANNELS, 3, 3> *active = &this->filters[this->active];
-	IIRFilter<CHANNELS, 3, 3> *inactive = &this->filters[this->active ^ 1];
+	IIRFilter<CHANNELS, 3, 3> *active_filt = &this->filters[this->active];
+	IIRFilter<CHANNELS, 3, 3> *inactive_filt = &this->filters[this->active ^ 1];
 
 	/*
 	 * The wire case is either a copy or add depending on ADD.
@@ -121,13 +121,13 @@ void ConcreteBiquadFilter<CHANNELS>::processBlockImpl(float *in, float *out) {
 		 * */
 		float *out_frame = ADD || CROSSFADE ? &tmp[0] : out + CHANNELS * i;
 
-		active->tick(in_frame, out_frame);
+		active_filt->tick(in_frame, out_frame);
 		if (CROSSFADE) {
 			/*
 			 * Fade inactive out, fade active in.
 			 * */
 			float cf_tmp[CHANNELS] = { 0.0f };
-			inactive->tick(in_frame, cf_tmp);
+			inactive_filt->tick(in_frame, cf_tmp);
 			/* We are fading active out in favor of inactive. processBlock flips them at the end. */
 			float inactive_w = i * gain_inv;
 			float active_w = 1.0f - inactive_w;

@@ -50,6 +50,8 @@ class AudioOutputDevice {
 };
 
 static void miniaudioDataCallback(ma_device* device, void *output, const void *input, ma_uint32 frames) {
+	(void)input;
+
 	AudioOutputDevice *dev = (AudioOutputDevice *)device->pUserData;
 	dev->doOutput(frames, (float *) output);
 }

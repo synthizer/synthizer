@@ -16,7 +16,7 @@
 #include "synthizer/types.hpp"
 #include "synthizer/vector_helpers.hpp"
 
-#include "concurrentqueue.h"
+#include <concurrentqueue.h>
 #include "sema.h"
 
 #include <functional>
@@ -27,12 +27,12 @@ namespace synthizer {
 
 Context::Context(): BaseObject(nullptr) { }
 
-void Context::initContext( bool headless) {
+void Context::initContext( bool is_headless) {
 	std::weak_ptr<Context> ctx_weak = this->getContext();
 
 	this->source_panners = createPannerBank();
 
-	this->headless = headless;
+	this->headless = is_headless;
 	if (headless) {
 		this->delete_directly.store(1);
 		return;
@@ -172,7 +172,7 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 
 		auto i = this->sources.begin();
 		while (i != this->sources.end()) {
-			auto [k, v] = *i;
+			auto v = i->second;
 			auto s = v.lock();
 			if (s == nullptr) {
 				i = this->sources.erase(i);
@@ -190,8 +190,8 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 		this->getRouter()->finishBlock();
 
 		/* Write the direct buffer. */
-		for (unsigned int i = 0; i < config::BLOCK_SIZE * channels; i++) {
-			destination[i] += this->direct_buffer[i];
+		for (unsigned int j = 0; j < config::BLOCK_SIZE * channels; j++) {
+			destination[j] += this->direct_buffer[j];
 		}
 
 		/**

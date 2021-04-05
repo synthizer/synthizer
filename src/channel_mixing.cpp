@@ -53,6 +53,8 @@ void mixChannels(unsigned int length, float *in, unsigned int inChannelCount, fl
 		return upmixMono(length, in, out, outChannelCount);
 	} else if (outChannelCount == 1) {
 		return downmixMono(length, in, inChannelCount, out);
+	} else {
+		truncateChannels(length, in, inChannelCount, out, outChannelCount);
 	}
 }
 

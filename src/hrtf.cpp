@@ -224,7 +224,7 @@ void HrtfPanner::stepConvolution(R &&reader, const float *hrir, std::array<float
 
 void HrtfPanner::run(float *output) {
 	float *prev_hrir = nullptr;
-	float *current_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * data::hrtf::IMPULSE_LENGTH ];
+	float *cur_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * data::hrtf::IMPULSE_LENGTH ];
 
 	bool crossfade = false;
 	for(unsigned int i = 0; i < CHANNELS; i++) {
@@ -233,16 +233,16 @@ void HrtfPanner::run(float *output) {
 	}
 
 	if (crossfade) {
-		prev_hrir = current_hrir;
+		prev_hrir = cur_hrir;
 		this->current_hrir ^= 1;
-		current_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * data::hrtf::IMPULSE_LENGTH ];
+		cur_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * data::hrtf::IMPULSE_LENGTH ];
 	}
 
 	std::array<std::tuple<double, double>, CHANNELS> itds = this->prev_itds;
 
 	if (crossfade) {
 		for(unsigned int i = 0; i < CHANNELS; i++) {
-			computeHrtfImpulses(this->azimuths[i], this->elevations[i], &current_hrir[i], 8, &current_hrir[i + 4], 8);
+			computeHrtfImpulses(this->azimuths[i], this->elevations[i], &cur_hrir[i], 8, &cur_hrir[i + 4], 8);
 			itds[i] = computeInterauralTimeDifference(azimuths[i], elevations[i]);
 		}
 	}
@@ -256,7 +256,7 @@ void HrtfPanner::run(float *output) {
 	crossfade_samples, [&](unsigned int i, auto &reader) {
 		std::array<float, 4> l_old, l_new, r_old, r_new;
 		this->stepConvolution(reader, prev_hrir, &l_old, &r_old);
-		this->stepConvolution(reader, current_hrir, &l_new, &r_new);
+		this->stepConvolution(reader, cur_hrir, &l_new, &r_new);
 		float *out = itd_block + CHANNELS * 2 * i;
 		float weight = i/(float)config::CROSSFADE_SAMPLES;
 		for (unsigned int j = 0; j < 4; j++) {
@@ -268,7 +268,7 @@ void HrtfPanner::run(float *output) {
 	},
 	normal_samples, [&](unsigned int i, auto &reader) {
 		std::array<float, 4> l, r;
-		this->stepConvolution(reader, current_hrir, &l, &r);
+		this->stepConvolution(reader, cur_hrir, &l, &r);
 		float *out = itd_block + CHANNELS * 2 * i;
 		for (unsigned int j = 0; j < 4; j++) {
 			out[j] = l[j];

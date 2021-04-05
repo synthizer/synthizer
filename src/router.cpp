@@ -121,7 +121,7 @@ void Router::configureRoute(OutputHandle *output, InputHandle *input, float gain
 	}
 	to_configure->output = output;
 	to_configure->input = input;
-	to_configure->gain_driver.setValue(this->time, gain);
+	to_configure->gain_driver.setValue(this->time, gain, fade_blocks);
 	to_configure->external_filter_config = filter_cfg;
 
 	/**
@@ -209,7 +209,7 @@ SYZ_CAPI syz_ErrorCode syz_initRouteConfig(struct syz_RouteConfig *cfg) {
 	SYZ_PROLOGUE
 	*cfg = syz_RouteConfig{};
 	cfg->gain = 1.0;
-	cfg->fade_time = 0.03;
+	cfg->fade_time = 0.03f;
 	syz_biquadDesignIdentity(&cfg->filter);
 	return 0;
 	SYZ_EPILOGUE

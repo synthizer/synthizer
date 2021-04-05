@@ -8,7 +8,7 @@ namespace synthizer {
 
 class RawDecoder: public AudioDecoder {
 	public:
-	RawDecoder(std::size_t sr, unsigned int channels, std::size_t frames, float *data): channels(channels), sr(sr), data(data), frames(frames) {}
+	RawDecoder(std::size_t sr, unsigned int channels, std::size_t frames, float *data): data(data), frames(frames), channels(channels), sr(sr) {}
 
 	std::int64_t writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels = 0) override;
 	void seekPcm(std::int64_t frame) override;
@@ -27,15 +27,15 @@ class RawDecoder: public AudioDecoder {
 	std::size_t position_in_frames = 0;
 };
 
-std::int64_t RawDecoder::writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels) {
+std::int64_t RawDecoder::writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t chans) {
 	if (this->position_in_frames >= this->frames) {
 		return 0;
 	}
 
 	std::size_t remaining_frames = this->frames - this->position_in_frames;
-	std::size_t will_read = num > remaining_frames ? remaining_frames : num;
-	if (channels == 0) channels = this->channels;
-	std::size_t channels_out = this->channels > channels ? this->channels : channels;
+	std::size_t will_read = (std::size_t)num > remaining_frames ? remaining_frames : num;
+	if (chans == 0) chans = this->channels;
+	std::size_t channels_out = this->channels > chans ? this->channels : chans;
 
 	if (channels_out == this->channels) {
 		std::copy(this->data + this->position_in_frames * this->channels, this->data + (this->position_in_frames + will_read) * this->channels, samples);

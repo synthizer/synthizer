@@ -72,7 +72,7 @@ unsigned int StreamingGenerator::getChannels() {
 	return channels;
 }
 
-void StreamingGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
+void StreamingGenerator::generateBlock(float *output, FadeDriver *gd) {
 	StreamingGeneratorCommand *cmd;
 	double new_pos;
 
@@ -80,7 +80,7 @@ void StreamingGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
 		return;
 	}
 
-	gain_driver->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
+	gd->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
 		for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 			float g = gain_cb(i);
 			for (unsigned int ch = 0; ch < this->channels; ch++) {

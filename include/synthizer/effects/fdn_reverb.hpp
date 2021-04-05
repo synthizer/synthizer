@@ -62,7 +62,7 @@ class FdnReverbEffect: public BASE {
 		this->setGain(0.7);
 	}
 
-	void runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) override;
+	void runEffect(unsigned int block_time, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) override;
 	void resetEffect() override;
 
 	#define PROPERTY_CLASS FdnReverbEffect
@@ -278,7 +278,9 @@ void FdnReverbEffect<BASE>::resetEffect() {
 }
 
 template<typename BASE>
-void FdnReverbEffect<BASE>::runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) {
+void FdnReverbEffect<BASE>::runEffect(unsigned int block_time, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) {
+	(void)block_time;
+
 	/*
 	 * Output is stereo. For surround setups, we can get 99% of the benefit just by upmixing stereo differently, which we'll do in future by hand
 	 * as a special case.
@@ -328,13 +330,13 @@ void FdnReverbEffect<BASE>::runEffect(unsigned int time_in_blocks, unsigned int 
 
 		/* not initialized because zeroing can be expensive and we set it immediately in the loop below. */
 		std::array<float, LINES> values;
-		for (unsigned int i = 0; i < LINES; i++) {
-			double delay = this->delays[i] + this->late_modulators[i].tick();
+		for (unsigned int j = 0; j < LINES; j++) {
+			double delay = this->delays[j] + this->late_modulators[j].tick();
 			float w2 = delay - std::floor(delay);
 			float w1 = 1.0f - w2;
-			float v1 = rw.read(i, delay);
-			float v2 = rw.read(i, delay + 1);
-		 values[i] = v1 * w1 + v2 * w2;
+			float v1 = rw.read(j, delay);
+			float v2 = rw.read(j, delay + 1);
+			values[j] = v1 * w1 + v2 * w2;
 		}
 
 		/*
@@ -349,8 +351,8 @@ void FdnReverbEffect<BASE>::runEffect(unsigned int time_in_blocks, unsigned int 
 		 * Write it back.
 		 * */
 		float input_per_line = input_sample * (1.0f / LINES);
-		for (unsigned int	 i = 0; i < LINES; i++) {
-			rw.write(i, values[i] - sum + input_per_line);
+		for (unsigned int	 j = 0; j < LINES; j++) {
+			rw.write(j, values[j] - sum + input_per_line);
 		}
 
 		/*

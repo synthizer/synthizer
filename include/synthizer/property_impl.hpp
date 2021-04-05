@@ -85,12 +85,12 @@ class PROPCLASS_NAME {
 
 	/* Mark a property as having changed. */
 	void propertyHasChanged(Bits bit) {
-		this->changed_bitset |= (1 << (unsigned int)bit);
+		this->changed_bitset |= ((std::uint64_t)1 << (std::uint64_t)bit);
 	}
 
 	/* Read the bitset to see if a property changed, and clear the bit. */
 	bool acquireBit(Bits bit) {
-		bool changed = this->changed_bitset & (1<< (unsigned int)bit);
+		bool changed = this->changed_bitset & ((std::uint64_t)1<< (std::uint64_t)bit);
 		this->changed_bitset &= ~(1<< (unsigned int)bit);
 		return changed;
 	}
@@ -258,6 +258,7 @@ STANDARD_WRITE(UNDERSCORE_NAME) \
 } \
 \
 void validate##CAMEL_NAME(const struct syz_BiquadConfig &value) const { \
+	(void)value; \
 	return; \
 } \
 \
@@ -333,8 +334,6 @@ bool hasProperty(int property) override {
 	default: 
 		return PROPERTY_BASE::hasProperty(property);
 	}
-
-	return false;
 }
 
 #undef INT_P

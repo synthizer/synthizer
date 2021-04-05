@@ -33,7 +33,7 @@ class DitherGenerator {
 
 	float gen01() {
 		float o = gen.generateFloat();
-		return (1.0 + 1.0f) * 0.5f;
+		return (1.0 + o) * 0.5f;
 	}
 
 	private:

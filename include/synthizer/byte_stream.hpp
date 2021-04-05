@@ -51,6 +51,7 @@ class ByteStream {
 	/* Get the position of the stream in bytes. */
 	virtual std::size_t getPosition() = 0;
 	virtual void seek(std::size_t position) {
+		(void)position;
 		throw EByteStreamUnsupportedOperation("Streams of type " + this->getName() + " don't support seek");
 	}
 	/* If seek is supported, return the length. Otherwise, return an undefined value. */

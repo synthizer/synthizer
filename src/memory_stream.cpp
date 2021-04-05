@@ -46,11 +46,11 @@ std::size_t MemoryStream::getPosition() {
 	return this->position;
 }
 
-void MemoryStream::seek(std::size_t position) {
-	if (position > this->length) {
+void MemoryStream::seek(std::size_t pos) {
+	if (pos > this->length) {
 		throw EByteStream("Out of range seek");
 	}
-	this->position = position;
+	this->position = pos;
 }
 
 std::size_t MemoryStream::getLength() {

@@ -23,7 +23,16 @@ class LinearFader {
 	public:
 	LinearFader(unsigned int start_time, float start_value, unsigned int end_time, float end_value): start_time(start_time), end_time(end_time), start_value(start_value), end_value(end_value) {
 		assert(end_time >= start_time);
-		this->slope = (end_value - start_value) / (end_time - start_time);
+		/**
+		 * Lots of places make faders that don't fade by using start_time = end_time = 0, which causes MSVC
+		 * warning C4723, due to a genertaed divide by zero. Branch, detecting this case,
+		 * to make sure that MSVC doesn't complain.
+		 * */
+		if (start_time == end_time) {
+			this->slope = 1.0f;
+		} else {
+			this->slope = (end_value - start_value) / (end_time - start_time);
+		}
 	}
 
 	/*

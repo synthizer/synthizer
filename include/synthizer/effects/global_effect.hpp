@@ -22,15 +22,15 @@ class GlobalEffect: public BaseEffect, public RouteInput {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wuninitialized"
 	GlobalEffect(const std::shared_ptr<Context> &ctx, unsigned int channels):
+		RouteInput(ctx, &this->input_buffer[0], channels),
 		input_buffer(),
-		channels(channels),
-		RouteInput(ctx, &this->input_buffer[0], channels) {}
+		channels(channels) {}
 #pragma clang diagnostic pop
 
-	void run(unsigned int channels, float *destination) {
+	void run(unsigned int dest_channels, float *destination) {
 		syz_BiquadConfig biquad_cfg;
 
-		if ((this->biquad_filter == nullptr || this->channels != last_channels) && this->channels != 0) {
+		if ((this->biquad_filter == nullptr || this->channels != this->last_channels) && this->channels != 0) {
 			this->biquad_filter = createBiquadFilter(this->channels);
 		}
 		if (this->biquad_filter != nullptr) {
@@ -41,7 +41,7 @@ class GlobalEffect: public BaseEffect, public RouteInput {
 		}
 		this->last_channels = this->channels;
 
-		this->runEffect(this->time_in_blocks, this->channels, &this->input_buffer[0], channels, destination, (float)this->getGain());
+		this->runEffect(this->time_in_blocks, this->channels, &this->input_buffer[0], dest_channels, destination, (float)this->getGain());
 		/*
 		 * Reset this for the next time. This needs to live here since routers don't know about effects if
 		 * there's no routing to them.

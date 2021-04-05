@@ -39,8 +39,8 @@ class TryLock {
 	 * */
 	template<typename CB1, typename CB2>
 	bool withLock(CB1 &&callback_locked, CB2 &&callback_failed) {
-		bool locked = this->try_lock();
-		if (locked) {
+		bool is_locked = this->try_lock();
+		if (is_locked) {
 			auto unlocker = AtScopeExit([&] () { this->unlock(); });
 			callback_locked(&this->data);
 			return true;

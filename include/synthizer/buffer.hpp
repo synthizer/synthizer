@@ -122,8 +122,8 @@ class BufferReader {
 		this->setBuffer(b);
 	}
 
-	void setBuffer(Buffer *buffer) {
-		this->buffer = buffer;
+	void setBuffer(Buffer *buf) {
+		this->buffer = buf;
 		this->channels = this->buffer->getChannels();
 		this->length = buffer->getLength();
 		assert(this->channels < config::MAX_CHANNELS);

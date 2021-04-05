@@ -30,6 +30,8 @@ using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_configureLoggingBackend(enum SYZ_LOGGING_BACKEND backend, void *param) {
 	SYZ_PROLOGUE
+	(void)param;
+
 	switch (backend) {
 	case SYZ_LOGGING_BACKEND_STDERR:
 		logToStderr();

@@ -6,6 +6,8 @@
 namespace synthizer {
 
 std::shared_ptr<AudioDecoder> decodeOgg(std::shared_ptr<LookaheadByteStream> stream) {
+	(void)stream;
+
 	return nullptr;
 }
 

@@ -162,7 +162,7 @@ auto designSincLowpass(double omega)
 
 	// Normalize DC to be a gain of 1.0.
 	double gain = 0.0;
-	for(int i = 0; i < coefs.size(); i++) gain += coefs[i];
+	for(unsigned int i = 0; i < coefs.size(); i++) gain += coefs[i];
 	// add a little bit to the denominator to avoid divide by zero, at the cost of slight gain loss for small filters.
 	gain = 1.0 / (gain + 0.01);
 
@@ -184,17 +184,17 @@ combineIIRFilters(IIRFilterDef<num1,  den1> f1, IIRFilterDef<num2, den2> f2) {
 	/*
 	 * Convolve the numerators, then convolve the denominators.
 	 * */
-	for(int i = 0; i < num1; i++) {
+	for(unsigned int i = 0; i < num1; i++) {
 		double num1r = f1.num_coefs[i];
-		for(int j = 0; j < num2; j++) {
+		for(unsigned int j = 0; j < num2; j++) {
 			double num2r = f2.num_coefs[j];
 			workingNum[i + j] += num1r * num2r;
 		}
 	}
 
-	for(int i = 0; i < den1; i++) {
+	for(unsigned int i = 0; i < den1; i++) {
 		double den1r = i == 0 ? 1.0 : f1.den_coefs[i-1];
-		for(int j = 0; j < den2; j++) {
+		for(unsigned int j = 0; j < den2; j++) {
 			double den2r = j == 0 ? 1.0 : f2.den_coefs[j-1];
 			workingDen[i + j] += den1r*den2r;
 		}

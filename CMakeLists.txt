@@ -20,6 +20,8 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	add_compile_options(
 		# Lets us use Clang pragmas.
 		/wd4068
+		# Lets us use non-MSVC attributes.
+		/wd5030
 		# allows implicit casts to smaller types. We need this because we can't i.e. std::copy(double, float) without hitting it.
 		/wd4244
 		/wd4267
@@ -27,6 +29,13 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		/Zc:preprocessor
 		# And now we need to silence a winbase.h warning because it's got a macro expanding to undefined somehow. Noe that this isn't our code:
 		/wd5105
+		# Not all compilers give us constexpr if, but MSVC likes to warn us when we can use it.
+		/wd4127
+		# Documented here: https://devblogs.microsoft.com/cppblog/broken-warnings-theory/
+		# By using this and putting Synthizer dependency headers behind <>, we can suppress warnings in dependencies.
+		/experimental:external
+		/external:W0
+		/external:anglebrackets
 	)
 endif()
 
@@ -56,7 +65,7 @@ endif()
 
 include(cmake/wdl.txt)
 
-include_directories(
+include_directories(SYSTEM
 	include
 	third_party/miniaudio
 	third_party/dr_libs
@@ -66,6 +75,12 @@ include_directories(
 	third_party/plf_colony
 	third_party/concurrentqueue
 )
+
+# Needs to be factored out so that -Wall doesn't apply to third-party deps.
+add_library(synthizer_single_file_libs OBJECT
+	src/single_file_libs.c
+)
+set_property(TARGET synthizer_single_file_libs PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 set(SYNTHIZER_LIB_TYPE STATIC CACHE STRING "The build type for Synthizer. Either STATIC or SHARED")
 add_library(synthizer ${SYNTHIZER_LIB_TYPE}
@@ -97,7 +112,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/property_internals.cpp
 	src/routable.cpp
 	src/router.cpp
-	src/single_file_libs.c
 	src/spsc_semaphore.cpp
 	src/source.cpp
 	src/spatialization_math.cpp
@@ -130,6 +144,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/streams/memory.cpp
 
 	$<TARGET_OBJECTS:wdl>
+	$<TARGET_OBJECTS:synthizer_single_file_libs>
 )
 target_compile_features(synthizer PUBLIC cxx_std_17)
 target_link_libraries(synthizer wdl Threads::Threads ${CMAKE_DL_LIBS})
@@ -144,11 +159,17 @@ if(${FILESYSTEM_OK})
 	target_compile_definitions(synthizer PRIVATE SYZ_USE_FILESYSTEM)
 endif()
 
+if(MSVC)
+	target_compile_options(synthizer PRIVATE /W4 /WX)
+else()
+	target_compile_options(synthizer PRIVATE -Wall -Wextra -pedantic -Werror)
+endif()
+
 set_property(TARGET synthizer PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # For CI artifacts:
 if(DEFINED CI_SYNTHIZER_NAME)
-set_target_properties(synthizer PROPERTIES OUTPUT_NAME ${CI_SYNTHIZER_NAME})
+	set_target_properties(synthizer PROPERTIES OUTPUT_NAME ${CI_SYNTHIZER_NAME})
 endif()
 
 add_custom_target(data

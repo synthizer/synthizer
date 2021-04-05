@@ -13,7 +13,7 @@
 #include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
 
-#include "concurrentqueue.h"
+#include <concurrentqueue.h>
 
 #include <atomic>
 #include <array>

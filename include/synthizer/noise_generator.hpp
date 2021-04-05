@@ -59,7 +59,7 @@ class NoiseGenerator {
 	 * 
 	 * -2 because this accounts for the always-run generator.
 	 * */
-	static const unsigned int VM_MASK = ~((1 << (VM_GENERATOR_COUNT - 2)) - 1);
+	static const unsigned int VM_MASK = ~((1 << (VM_GENERATOR_COUNT - 2u)) - 1u);
 	unsigned int vm_counter = 0;
 	void initVM();
 	float generateSampleVM();

@@ -5,7 +5,7 @@
 #include "synthizer/memory.hpp"
 #include "synthizer/vector_helpers.hpp"
 
-#include "concurrentqueue.h"
+#include <concurrentqueue.h>
 
 #include <atomic>
 #include <cassert>
@@ -152,10 +152,10 @@ UserdataDef::~UserdataDef() {
 	this->maybeFreeUserdata();
 }
 
-void UserdataDef::set(void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
+void UserdataDef::set(void *ud, syz_UserdataFreeCallback *ud_free_callback) {
 	this->maybeFreeUserdata();
-	this->userdata.store(userdata, std::memory_order_relaxed);
-	this->userdata_free_callback = userdata_free_callback;
+	this->userdata.store(ud, std::memory_order_relaxed);
+	this->userdata_free_callback = ud_free_callback;
 }
 
 void *UserdataDef::getAtomic() {
@@ -176,14 +176,14 @@ void *CExposable::getUserdata() {
 	return inner->getAtomic();
 }
 
-void CExposable::setUserdata(void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
+void CExposable::setUserdata(void *ud, syz_UserdataFreeCallback *ud_free_callback) {
 	bool did_set = this->userdata.withLock([&] (auto *u) {
-		u->set(userdata, userdata_free_callback);
+		u->set(ud, ud_free_callback);
 	});
 
 	/* We lost the race. */
-	if (did_set == false && userdata != nullptr && userdata_free_callback != nullptr) {
-		deferredFreeCallback(userdata_free_callback, userdata);
+	if (did_set == false && ud != nullptr && ud_free_callback != nullptr) {
+		deferredFreeCallback(ud_free_callback, ud);
 	}
 }
 

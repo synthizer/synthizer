@@ -18,16 +18,21 @@ namespace synthizer {
  * */
 class FadeDriver {
 	public:
-	FadeDriver(float start_value, unsigned int fade_time_in_blocks): fade_time_in_blocks(fade_time_in_blocks), fader(start_value) {}
+	FadeDriver(float start_value, unsigned int fade_time_in_blocks): fader(start_value), fade_time_in_blocks(fade_time_in_blocks) {}
 
-	/*
+	/**
 	 * Will update instantaneously if this driver is aware that the output is silent.
+	 * 
+	 * If fade_time_in_blocks is 0, uses the default set with the constructor. This is the default. Otherwise,
+	 * use the value provided in the function.
 	 * */
-	void setValue(unsigned int time_in_blocks, float new_value) {
+	void setValue(unsigned int block_time, float new_value, unsigned int fade_time = 0) {
+		unsigned int ft = fade_time != 0 ? fade_time : this->fade_time_in_blocks;
+
 		if (this->was_silent) {
 			this->fader = LinearFader(new_value);
 		} else {
-			this->fader = LinearFader{time_in_blocks, this->fader.getValue(time_in_blocks), time_in_blocks + this->fade_time_in_blocks, new_value};
+			this->fader = LinearFader{block_time, this->fader.getValue(block_time), block_time + ft, new_value};
 		}
 	}
 

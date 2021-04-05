@@ -76,7 +76,7 @@ class Xoshiro256PlusPlus {
 		std::uint64_t s1 = 0;
 		std::uint64_t s2 = 0;
 		std::uint64_t s3 = 0;
-		for(int i = 0; i < sizeof JUMP / sizeof *JUMP; i++)
+		for(unsigned int i = 0; i < sizeof JUMP / sizeof *JUMP; i++)
 			for(int b = 0; b < 64; b++) {
 				if (JUMP[i] & (std::uint64_t(1)) << b) {
 					s0 ^= s[0];
@@ -105,7 +105,7 @@ class Xoshiro256PlusPlus {
 		std::uint64_t s1 = 0;
 		std::uint64_t s2 = 0;
 		std::uint64_t s3 = 0;
-		for(int i = 0; i < sizeof LONG_JUMP / sizeof *LONG_JUMP; i++)
+		for(unsigned int i = 0; i < sizeof LONG_JUMP / sizeof *LONG_JUMP; i++)
 			for(int b = 0; b < 64; b++) {
 				if (LONG_JUMP[i] & std::uint64_t(1) << b) {
 					s0 ^= s[0];

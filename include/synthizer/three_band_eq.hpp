@@ -64,7 +64,7 @@ class ThreeBandEq {
 		/*
 		 * The overall gain is the gain for the middle band.
 		 * */
-		double gain = dbToGain(params.dbgain_mid);
+		double g = dbToGain(params.dbgain_mid);
 		/*
 		 * The lower and upper shelf filters are designed to cut any extra gain in the middle band, then to apply
 		 * the user-requested gain for that band.
@@ -76,7 +76,7 @@ class ThreeBandEq {
 		/*
 		 * We want to save some work here, so instead of storing the gain ourselves, apply it to the first filter.
 		 * */
-		l.gain *= gain;
+		l.gain *= g;
 		return std::make_tuple(l, u);
 	}
 

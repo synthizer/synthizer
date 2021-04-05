@@ -43,10 +43,10 @@ std::size_t MemoryByteStream::getPosition() {
 	return this->position;
 }
 
-void MemoryByteStream::seek(std::size_t position) {
-	if (position >= this->length)
+void MemoryByteStream::seek(std::size_t pos) {
+	if (pos >= this->length)
 		throw EByteStreamUnsupportedOperation("Attempt to seek past end of stream");
-	this->position = position;
+	this->position = pos;
 }
 
 }

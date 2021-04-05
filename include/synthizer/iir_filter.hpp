@@ -46,7 +46,7 @@ class SampleVector {
 
 	template<typename O>
 	SampleVector<T, n> &mul(const SampleVector<O, n> &other) {
-		for(int i = 0; i < n; i++) {
+		for(unsigned int i = 0; i < n; i++) {
 			this->values[i] *= other.values[i];
 		}
 		return *this;
@@ -54,7 +54,7 @@ class SampleVector {
 
 	template<typename O>
 	SampleVector<T, n> &mulScalar(O other) {
-		for(int i = 0; i < n; i++) {
+		for(unsigned int i = 0; i < n; i++) {
 			this->values[i] *= other;
 		}
 		return *this;
@@ -62,7 +62,7 @@ class SampleVector {
 
 	template<typename O>
 	SampleVector<T, n> &add(const SampleVector<O, n> &other) {
-		for(int i = 0; i < n; i++) {
+		for(unsigned int i = 0; i < n; i++) {
 			this->values[i] += other.values[i];
 		}
 		return *this;
@@ -70,7 +70,7 @@ class SampleVector {
 
 	template<typename O>
 	SampleVector<T, n> &addScalar(O other) {
-		for(int i = 0; i < n; i++) {
+		for(unsigned int i = 0; i < n; i++) {
 			this->values[i] += other;
 		}
 		return *this;
@@ -78,7 +78,7 @@ class SampleVector {
 
 	template<typename O>
 	SampleVector<T, n> &sub(const SampleVector<O, n> &other) {
-		for(int i = 0; i < n; i++) {
+		for(unsigned int i = 0; i < n; i++) {
 			this->values[i] -= other.values[i];
 		}
 		return *this;
@@ -86,7 +86,7 @@ class SampleVector {
 
 	template<typename O>
 	SampleVector<T, n> &subScalar(O other) {
-		for(int i = 0; i < n; i++) {
+		for(unsigned int i = 0; i < n; i++) {
 			this->values[i] -= other;
 		}
 	}
@@ -110,10 +110,10 @@ class IIRFilter {
 	}
 
 	void identity() {
-		for(int i = 0; i < this->numerator.size(); i++) {
+		for(unsigned int i = 0; i < this->numerator.size(); i++) {
 			this->numerator[i].setScalar(0.0);
 		}
-		for(int i = 0; i < this->denominator.size(); i++) {
+		for(unsigned int i = 0; i < this->denominator.size(); i++) {
 			this->denominator[i].setScalar(0.0);
 		}
 		this->gain.setScalar(1.0);
@@ -130,10 +130,10 @@ class IIRFilter {
 	void setParametersForLane(unsigned int l, const IIRFilterDef<nn, nd> &params) {
 		static_assert(nn <= num && nd <= den, "IIRFilter instance is not big enough to contain this filter.");
 		assert(l < lanes);
-		for(int i = 0; i < num; i++) {
+		for(unsigned int i = 0; i < num; i++) {
 			this->numerator[i].values[l] = i < nn ? params.num_coefs[i] : 0.0;
 		}
-		for(int i = 0; i < den - 1; i++) {
+		for(unsigned int i = 0; i < den - 1; i++) {
 			/* Recall that denominators are minus the first sample. This expression is weird because nd - 1 can wrap when nd == 0. */
 			this->denominator[i].values[l] = i + 1 < nd ? params.den_coefs[i] : 0.0;
 		}
@@ -142,7 +142,7 @@ class IIRFilter {
 
 	template<std::size_t nn, std::size_t nd>
 	void setParameters(const IIRFilterDef<nn, nd> &params) {
-		for(int i = 0; i < lanes; i++) setParametersForLane(i, params);
+		for(unsigned int i = 0; i < lanes; i++) setParametersForLane(i, params);
 	}
 
 	void tick(float *in, float *out) {
@@ -150,7 +150,7 @@ class IIRFilter {
 		SampleVector<double, lanes> working_recursive;
 		working_recursive.load(in)
 			.mul(this->gain);
-		for(int i = 0; i < this->denominator.size(); i++) {
+		for(unsigned int i = 0; i < this->denominator.size(); i++) {
 			auto h = this->history[(this->counter-i)%this->history.size()];
 			h.mul(this->denominator[i]);
 			working_recursive.sub(h);
@@ -161,7 +161,7 @@ class IIRFilter {
 		// and now the output, which is convolution.
 		SampleVector<double, lanes> sum;
 		sum.setScalar(0.0);
-		for(int i = 0; i < this->numerator.size(); i++) {
+		for(unsigned int i = 0; i < this->numerator.size(); i++) {
 			auto h = this->history[(this->counter - i )%this->history.size()];
 			h.mul(this->numerator[i]);
 			sum.add(h);

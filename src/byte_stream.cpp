@@ -95,17 +95,19 @@ std::size_t MemoryLookaheadStream::read(std::size_t count, char *destination) {
 			destination += needed;
 			this->current_block_pos += needed;
 			if (this->current_block_pos == LOOKAHEAD_BLOCK_SIZE) this->current_block ++;
+			got += needed;
 		} else {
 			/* No more blocks are recorded, so we need to do a read. */
 			std::array<char, LOOKAHEAD_BLOCK_SIZE> data;
-			std::size_t count;
-			count = this->read(LOOKAHEAD_BLOCK_SIZE, data.data());
-			if (count == 0) break; // we reached the end.
+			std::size_t got_this_time;
+			got_this_time = this->read(LOOKAHEAD_BLOCK_SIZE, data.data());
+			if (got_this_time == 0) break; // we reached the end.
 			auto block = std::make_shared<LookaheadBytes>();
-			block->count = count;
+			block->count = got_this_time;
 			block->data = data;
 			this->blocks.push_back(block);
 			this->current_block_pos = 0;
+			got += got_this_time;
 		}
 	}
 	return got;

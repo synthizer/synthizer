@@ -45,18 +45,28 @@ class BaseObject: public CExposable {
 
 	/* A baseObject has no properties whatsoever. */
 	virtual bool hasProperty(int property) {
+		(void)property;
+
 		return false;
 	}
 
 	virtual property_impl::PropertyValue getProperty(int property) {
+		(void)property;
+
 		throw EInvalidProperty();
 	}
 
 	virtual void validateProperty(int property, const property_impl::PropertyValue &value) {
+		(void)property;
+		(void)value;
+
 		throw EInvalidProperty();
 	}
 
 	virtual void setProperty(int property, const property_impl::PropertyValue &value) {
+		(void)property;
+		(void)value;
+
 		throw EInvalidProperty();
 	}
 

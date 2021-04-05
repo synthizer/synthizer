@@ -53,7 +53,7 @@ namespace synthizer::data::hrtf {
 const ImpulseArray IMPULSES{ {
     {%- for i in data.azimuths %}
     {%- for j in i %}
-    { {{ j | join(",") }} },
+    { {{ j | join("f ,") }}f },
     {%- endfor %}
     {%- endfor %}
 } };

@@ -14,7 +14,7 @@ int ExposedNoiseGenerator::getObjectType() {
 	return SYZ_OTYPE_NOISE_GENERATOR;
 }
 
-void ExposedNoiseGenerator::generateBlock(float *out, FadeDriver *gain_driver) {
+void ExposedNoiseGenerator::generateBlock(float *out, FadeDriver *gd) {
 	auto working_buf_guard = acquireBlockBuffer();
 	float *working_buf_ptr = working_buf_guard;
 
@@ -32,7 +32,7 @@ for (unsigned int i = 0; i < this->channels; i++) {
 		this->generators[i].generateBlock(config::BLOCK_SIZE, working_buf_ptr + i, this->channels);
 	}
 
-	gain_driver->drive(this->getContextRaw()->getBlockTime(), [&] (auto &gain_cb) {
+	gd->drive(this->getContextRaw()->getBlockTime(), [&] (auto &gain_cb) {
 		for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
 			float g = gain_cb(i);
 			for (unsigned int ch = 0; ch < this->channels; ch++) {
