@@ -55,6 +55,7 @@ ERRDEF(EInvalidProperty, "Not a valid property for this object type");
 ERRDEF(EPropertyType, "Property type mismatch");
 ERRDEF(ERange, "Value out of range");
 ERRDEF(EInvariant, "Invariant would be violated");
+ERRDEF(EValidation, "Validation error");
 ERRDEF(EInternal, "Internal library error");
 
 }

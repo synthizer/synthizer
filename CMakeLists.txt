@@ -102,6 +102,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/source.cpp
 	src/spatialization_math.cpp
 	src/stereo_panner.cpp
+	src/stream_handle.cpp
 
 	src/data/arrays.cpp
 	src/data/hrtf.cpp
@@ -153,11 +154,14 @@ endif()
 add_custom_target(data
 python "${CMAKE_SOURCE_DIR}/data_processor/main.py")
 
-add_executable(buffer_from_memory ./examples/buffer_from_memory.c)
-target_link_libraries(buffer_from_memory synthizer)
+macro(example NAME)
+	add_executable(${NAME} ./examples/${NAME}.c)
+	target_link_libraries(${NAME} synthizer)
+endmacro()
 
-add_executable(buffer_from_raw_data ./examples/buffer_from_raw_data.c)
-target_link_libraries(buffer_from_raw_data synthizer)
+example(buffer_from_memory)
+example(buffer_from_raw_data)
+example(basic_stream_handle)
 
 # The following won't work on Windows unless compiled against a static build of Synthizer because we don't want to expose the C++ internals from the DLL.
 # Since these are just test programs and not actual utilities, disable them on all platforms if the build isn't static.

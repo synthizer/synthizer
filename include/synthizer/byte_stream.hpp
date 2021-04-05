@@ -75,6 +75,49 @@ class LookaheadByteStream: public ByteStream {
 	virtual void resetFinal() = 0;
 };
 
+/**
+ * Inherit from T, and implement the forwarding interface on the underlying stream.
+ * 
+ * This is used primarily in two places: to implement lookahead streams using the CRTP, and to
+ * expose stream handles (by inheriting from a StreamHandle class with the CRTP).
+ * */
+template<typename T>
+class ForwardingStream: public T {
+	public:
+	ForwardingStream(std::shared_ptr<ByteStream> stream): stream(stream) {}
+
+	std::string getName() override {
+		return this->stream->getName();
+	}
+
+	std::size_t read(std::size_t count, char *destination) override {
+		return this->stream->read(count, destination);
+	}
+
+	bool supportsSeek() override {
+		return this->stream->supportsSeek();
+	}
+
+	virtual std::size_t getPosition() override {
+		return this->stream->getPosition();
+	}
+
+	virtual std::size_t getLength() override {
+		return this->stream->getLength();
+	}
+
+	virtual void seek(std::size_t position) override {
+		return this->stream->seek(position);
+	}
+
+	AudioFormat getFormatHint() override {
+		return this->stream->getFormatHint();
+	}
+
+	protected:
+	std::shared_ptr<ByteStream> stream;
+};
+
 /*
  * Synthizer has a concept of protocol, a bit like URL but pre-parsed.
  * 

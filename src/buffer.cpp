@@ -10,6 +10,7 @@
 #include "synthizer/math.hpp"
 #include "synthizer/memory.hpp"
 #include "synthizer/random_generator.hpp"
+#include "synthizer/stream_handle.hpp"
 
 #include "WDL/resample.h"
 
@@ -175,6 +176,16 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned 
 
 SYZ_CAPI syz_ErrorCode syz_createBufferFromFile(syz_Handle *out, const char *path) {
 	return syz_createBufferFromStreamParams(out, "file", path, NULL);
+}
+
+SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle *out, syz_Handle stream) {
+	SYZ_PROLOGUE
+	auto s = fromC<StreamHandle>(stream);
+	auto bs = consumeStreamHandle(s);
+	auto dec = getDecoderForStream(bs);
+	*out = bufferFromDecoder(dec);
+	return 0;
+	SYZ_EPILOGUE
 }
 
 SYZ_CAPI syz_ErrorCode syz_bufferGetChannels(unsigned int *out, syz_Handle buffer) {

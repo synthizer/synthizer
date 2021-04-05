@@ -261,6 +261,15 @@ SYZ_CAPI syz_ErrorCode syz_contextEnableEvents(syz_Handle context);
  * */
 SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle context, unsigned long long flags);
 
+/**
+ * Stream infrastructure. See the manual for details on these functions.
+ * 
+ * Most objects provide a convenient shorthand helper for creating a stream handle and passing it into the object.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param);
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle *out, unsigned long long data_len, const char *data);
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle *out, const char *path);
+
 /*
  * Create a generator that represents reading from a stream.
  * users who wish to read from files should call syz_createStreamingGeneratorFromFile, which is more future-proof than this API and should not break between major releases.
@@ -282,12 +291,18 @@ SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *
  */
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path);
 
+/**
+ * Create a StreamingGenerator from a stream handle.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context, syz_Handle stream);
+
 /*
  * A Buffer is decoded audio data.
  * 
  * This creates one from the 3 streaming parameters.
  * */
 SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param);
+
 /**
  * Create a buffer from encoded audio data that's already
  * in memory.
@@ -295,7 +310,7 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const c
 SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned long long data_len, const char *data);
 
 /**
- * Create a buffer from a flaot array in memory.
+ * Create a buffer from a float array in memory.
  * */
 SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned int sr, unsigned int channels, unsigned long long frames, float *data);
 
@@ -306,6 +321,11 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned 
  * Exists to future-proof the API.
  * */
 SYZ_CAPI syz_ErrorCode syz_createBufferFromFile(syz_Handle *out, const char *path);
+
+/**
+ * create a buffer from a stream handle.
+ * */
+SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle *out, syz_Handle stream);
 
 SYZ_CAPI syz_ErrorCode syz_bufferGetChannels(unsigned int *out, syz_Handle buffer);
 SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSamples(unsigned int *out, syz_Handle buffer);

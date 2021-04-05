@@ -13,6 +13,7 @@
 #include "synthizer/fade_driver.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/stream_handle.hpp"
 
 #include "WDL/resample.h"
 
@@ -208,4 +209,16 @@ SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *
 
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path) {
 	return syz_createStreamingGeneratorFromStreamParams(out, context, "file", path, NULL);
+}
+
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context, syz_Handle stream) {
+	SYZ_PROLOGUE
+	auto ctx = fromC<Context>(context);
+	auto s = fromC<StreamHandle>(stream);
+	auto bs = consumeStreamHandle(s);
+	auto decoder = getDecoderForStream(bs);
+	auto generator = ctx->createObject<StreamingGenerator>(decoder);
+	*out = toC(generator);
+	return 0;
+	SYZ_EPILOGUE
 }
