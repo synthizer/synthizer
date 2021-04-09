@@ -143,7 +143,7 @@ SYZ_CAPI syz_ErrorCode syz_play(syz_Handle object);
  * See synthizer_constants.h for the constants, and the manual for property definitions.
  * 
  * Note: getters are slow and should only be used for debugging. Synthizer doesn't guarantee that the values returned by getters are what you most
- * immediately set; they are merely some recent value. More advanced library features which introduce deferred setting and transsaction-like behavior will break even this guarantee if enabled.
+ * immediately set; they are merely some recent value. More advanced library features which introduce deferred setting and transaction-like behavior will break even this guarantee if enabled.
  * If you need to compute values based off what you last set a property to, save it outside Synthizer and do the computation there.
  * */
 
