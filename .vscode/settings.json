@@ -1,5 +1,5 @@
 {
-	"files.eol": "\n",,
+	"files.eol": "\n",
 	"files.associations": {
 		"chrono": "cpp",
 		"*.pyx": "python",
@@ -12,5 +12,17 @@
 		"editor.wordWrap": "on",
 		"editor.quickSuggestions": false,
 		"editor.insertSpaces": true,
-	}
+	},
+	"cmake.generator": "ninja",
+	"cSpell.words": [
+		"Biquad",
+		"Fdn",
+		"HRTF",
+		"Pausable",
+		"SYNTHIZER",
+		"SYZ",
+		"autopxd",
+		"spatialization",
+		"spatialized"
+	]
 }

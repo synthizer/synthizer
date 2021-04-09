@@ -20,7 +20,7 @@ extern "C" {
 
 /*
  * Note to maintainers: C API methods that obviously go with  a type live in the main .cpp file for that type, even if it is necessary to introduce a cpp file for that type to hold the C API (i.e. pure abstract classes).
- * 
+ *
  * Other methods are in src/c_api.cpp (i.e. generic property setters, initialization, etc.).
  * */
 
@@ -88,7 +88,7 @@ SYZ_CAPI void syz_setLogLevel(enum SYZ_LOG_LEVEL level);
 
 /*
  * Get the current error code for this thread. This is like errno, except that functions also return their error codes.
- * 
+ *
  * If the last function succeeded, the return value is undefined.
  * */
 SYZ_CAPI syz_ErrorCode syz_getLastErrorCode();
@@ -96,7 +96,7 @@ SYZ_CAPI syz_ErrorCode syz_getLastErrorCode();
 /*
  * Get the message associated with the last error for this thread. The pointer is valid only
  * until the next call into Synthizer by this thread.
- * 
+ *
  * If the last function succeeded, the return value is undefined.
  * */
 SYZ_CAPI const char *syz_getLastErrorMessage();
@@ -119,9 +119,9 @@ SYZ_CAPI syz_ErrorCode syz_handleGetObjectType(int *out, syz_Handle handle);
 /**
  * Userdata support. It is possible to use the following interface to associate arbitrary pointers with Synthizer objects.  If
  * the free_callback is non-NULL, Synthizer will call it on a background thread at the time of the object's death.
- * 
+ *
  * An example use for this interface is to associate game objects with Synthizer handles.
- * 
+ *
  * Note that there is a latency on the order of 50MS from syz_freeHandle to the userdata freeing callback being called, and latency on the order
  * of 20ms for calling the same callback when userdata is set to a different value. Both of these
  * values are rough worst cases, and it's usually faster. In particular, frequent updates to userdata will effectively batch frees, and the case wherein Synthizer keeps
@@ -139,9 +139,9 @@ SYZ_CAPI syz_ErrorCode syz_play(syz_Handle object);
 
 /*
  * Property getters and setters.
- * 
+ *
  * See synthizer_constants.h for the constants, and the manual for property definitions.
- * 
+ *
  * Note: getters are slow and should only be used for debugging. Synthizer doesn't guarantee that the values returned by getters are what you most
  * immediately set; they are merely some recent value. More advanced library features which introduce deferred setting and transaction-like behavior will break even this guarantee if enabled.
  * If you need to compute values based off what you last set a property to, save it outside Synthizer and do the computation there.
@@ -168,14 +168,14 @@ SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, dou
 
 /*
  * Biquad properties are biquad filters from the audio eq cookbook.
- * 
+ *
  * Note to maintainers: the C API is in src/filter_properties.cpp (except for syz_setBiquad, in c_api.cpp with the other property setters).
  * */
 
 /*
  * Configuration for a filter. Currently this struct should be treated as opaque. It's exposed here
  * in order to allow allocating them on the stack.  Changes to the layout and fields may occur without warning.
- * 
+ *
  * To initialize this struct, use one of the syz_BiquadDesignXXX functions, below.
  * */
 struct syz_BiquadConfig {
@@ -193,7 +193,7 @@ SYZ_CAPI syz_ErrorCode syz_setBiquad(syz_Handle target, int property, const stru
  *
  * q is a measure of resonance.  Generally q = 0.5 is a filter that doesn't resonate and q at or above 1 resonates too much to be useful.
  * q = 0.7071135624381276 gives second-order Butterworth lowpass and highpass filters, and is the suggested default.
- * 
+ *
  * Synthizer's Nyquist is 22050 HZ.
  * */
 SYZ_CAPI syz_ErrorCode syz_biquadDesignIdentity(struct syz_BiquadConfig *filter);
@@ -216,7 +216,7 @@ SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out);
  * */
 SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out);
 /*
- * get a block of audio with 2 channels. This is also 
+ * get a block of audio with 2 channels. This is also
  * currently only exposed for testing, especially since "block" is not part of the external API and using this wrong is a good way to
  * crash for the time being.
  * */
@@ -229,7 +229,7 @@ SYZ_CAPI syz_ErrorCode syz_contextGetBlock(syz_Handle context, float *block);
 /**
  * Enable events for a context. Once enabled, failure to drain the event queue is effectively a memory leak as the
  * queue will continue to fill forever.
- * 
+ *
  * Once enabled, it is not possible to disable events.
  * */
 SYZ_CAPI syz_ErrorCode syz_contextEnableEvents(syz_Handle context);
@@ -242,22 +242,22 @@ SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle
 
 /*
  * Create a generator that represents reading from a stream.
- * 
+ *
  * @param protocol: The protocol. You probably want file.
  * @param path: The path.
  * @param options: Options. You probably want the empty string.
- * 
+ *
  * This will be documented better when there's a manual and more than one type of protocol.
- * 
+ *
  * This is a shortcut for creating the stream yourself and adding it to a DecodingGenerator; advanced use cases can use the alternate path for other optimizations in future.
- * 
+ *
  * Note to maintainers: lives in src/generators/decoding.cpp, because it's a shortcut for that.
  * */
 SYZ_CAPI syz_ErrorCode syz_createStreamingGenerator(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, const char *options);
 
 /*
  * A Buffer is decoded audio data.
- * 
+ *
  * This creates one from the 3 streaming parameters.
  * */
 SYZ_CAPI syz_ErrorCode syz_createBufferFromStream(syz_Handle *out, const char *protocol, const char *path, const char *options);
@@ -273,9 +273,9 @@ SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle con
 
 /*
  * Add/remove generators from a Source. The Source weak references the generators; they must be kept alive on the external side for the time being.
- * 
+ *
  * This will probably change as lifetimes get narrowed down, and as sources are extended with more functionality to manage their generators.
- * 
+ *
  * Each generator may only be added to a source once. Duplicate calls are ignored.
  * If a generator isn't on a source, the call silently does nothing.
  * */
@@ -290,7 +290,7 @@ SYZ_CAPI syz_ErrorCode syz_createDirectSource(syz_Handle *out, syz_Handle contex
 
 /*
  * Create a panned source, a source with azimuth/elevation as the underlying panning strategy.
- * 
+ *
  * For spatialized audio like games, use Source3D, which has x/y/z and other interesting spatialization properties.
  * */
 SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context);
@@ -311,11 +311,11 @@ struct syz_RouteConfig {
 
 /*
  * Initialize a syz_routeConfig with default values.
- * 
+ *
  * Should be called before using syz_RouteConfig for the first time.  Afterwords, it's fine to just reuse the already-initialized
  * config and change values in it, but some values in the struct need to be nonzero unless explicitly set to 0 by the user.
  * Though the struct is currently simple, it will shortly contain filters which must be properly initialized if audio is to play at all.
- * 
+ *
  * The defaults configure a gain of 1 and a fade_time of 0.03 seconds.
  * */
 SYZ_CAPI syz_ErrorCode syz_initRouteConfig(struct syz_RouteConfig *cfg);
