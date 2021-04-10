@@ -338,11 +338,9 @@ cdef class Context(Pausable):
 
     cpdef config_route(self, _BaseObject output, _BaseObject input, gain = 1.0, fade_time = 0.01, BiquadConfig filter = None):
         cdef syz_RouteConfig config
-        syz_initRouteConfig(&config)
+        _checked(syz_initRouteConfig(&config))
         if filter:
             config.filter = filter.config
-        else:
-            _checked(syz_initRouteConfig(&config));
         config.gain = gain
         config.fade_time = fade_time
         _checked(syz_routingConfigRoute(self.handle, output.handle, input.handle, &config))
