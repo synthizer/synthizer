@@ -43,20 +43,20 @@ class AudioDecoder {
 	 * 
 	 * This class isn't responsible for channel conversion. Only audio I/O.
 	 * */
-	virtual std::int64_t writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels = 0) = 0;
+	virtual unsigned long long writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels = 0) = 0;
 	/* Seek to a specific PCM frame.
 	 *
 	 * If this is past the end, then the position of the underlying stream is set to the end, and no samples are output.
 	 * 
 	 * IMPORTANT: not all formats support sample-accurate seeking. If you need sample-accurate seeking, decode the asset in memory.
 	 * */
-	virtual void seekPcm(std::int64_t frame) = 0;
+	virtual void seekPcm(unsigned long long frame) = 0;
 	/* We only support seek if the underlying stream will allow it, and the decoded format supports seek. */
 	virtual bool supportsSeek() = 0;
 	/* Some formats only support approximate seeking. */
 	virtual bool supportsSampleAccurateSeek() { return false; }
 	/* If seeking is supported, return the size of this asset. */
-	virtual std::int64_t getLength() = 0;
+	virtual unsigned long long getLength() = 0;
 	/* Converts to PCM frame for you. */
 	virtual void seekSeconds(double seconds) {
 		seekPcm(seconds*this->getSr());

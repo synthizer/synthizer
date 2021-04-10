@@ -80,7 +80,7 @@ std::shared_ptr<BufferData> generateBufferData(unsigned int channels, unsigned i
 
 			if (resampler != nullptr) {
 				float *dst;
-				auto needed = resampler->ResamplePrepare(config::BUFFER_CHUNK_SIZE, channels, &dst);
+				unsigned long long needed = resampler->ResamplePrepare(config::BUFFER_CHUNK_SIZE, channels, &dst);
 				auto got = producer(needed, dst);
 				last = got < needed;
 				next_chunk_len = resampler->ResampleOut(working_buf, got, config::BUFFER_CHUNK_SIZE, channels);

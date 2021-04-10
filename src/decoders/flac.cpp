@@ -37,14 +37,14 @@ class FlacDecoder: public AudioDecoder {
 	public:
 	FlacDecoder(std::shared_ptr<LookaheadByteStream> stream);
 	~FlacDecoder();
-	std::int64_t writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels = 0);
+	unsigned long long writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels = 0);
 	int getSr();
 	int getChannels();
 	AudioFormat getFormat();
-	void seekPcm(std::int64_t pos);
+	void seekPcm(unsigned long long pos);
 	bool supportsSeek();
 	bool supportsSampleAccurateSeek();
-	std::int64_t getLength();
+	unsigned long long getLength();
 
 	private:
 	drflac *flac;
@@ -73,14 +73,14 @@ FlacDecoder::~FlacDecoder() {
 	delete this->tmp_buf;
 }
 
-std::int64_t FlacDecoder::writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels) {
+unsigned long long FlacDecoder::writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels) {
 	auto actualChannels = channels < 1 ? this->flac->channels : channels;
 	/* Fast case: if the channels are equal, just write. */
 	if (actualChannels == this->flac->channels)
 		return drflac_read_pcm_frames_f32(this->flac, num, samples);
 
 	/* Otherwise we have to round trip via the temporary buffer. */
-	std::int64_t got = drflac_read_pcm_frames_f32(this->flac, num, this->tmp_buf);
+	unsigned long long got = drflac_read_pcm_frames_f32(this->flac, num, this->tmp_buf);
 	std::fill(samples, samples + got * this->flac->channels, 0.0f);
 	mixChannels(got, this->tmp_buf, this->flac->channels, samples, actualChannels);
 	return got;
@@ -98,7 +98,7 @@ AudioFormat FlacDecoder::getFormat() {
 	return AudioFormat::Flac;
 }
 
-void FlacDecoder::seekPcm(std::int64_t pos) {
+void FlacDecoder::seekPcm(unsigned long long pos) {
 	auto actualPos = std::min(this->getLength(), pos);
 	if (drflac_seek_to_pcm_frame(this->flac, actualPos) == DRFLAC_FALSE)
 		throw new Error("Unable to seek.");
@@ -112,7 +112,7 @@ bool FlacDecoder::supportsSampleAccurateSeek() {
 	return this->supportsSeek() && true;
 }
 
-std::int64_t FlacDecoder::getLength() {
+unsigned long long FlacDecoder::getLength() {
 	return this->flac->totalPCMFrameCount;
 }
 

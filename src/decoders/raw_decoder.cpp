@@ -10,11 +10,11 @@ class RawDecoder: public AudioDecoder {
 	public:
 	RawDecoder(std::size_t sr, unsigned int channels, std::size_t frames, float *data): data(data), frames(frames), channels(channels), sr(sr) {}
 
-	std::int64_t writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels = 0) override;
-	void seekPcm(std::int64_t frame) override;
+	unsigned long long writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels = 0) override;
+	void seekPcm(unsigned long long frame) override;
 	bool supportsSeek() override;
 	bool supportsSampleAccurateSeek() override;
-	std::int64_t getLength() override;
+	unsigned long long getLength() override;
 	int getSr() override;
 	int getChannels() override;
 	AudioFormat getFormat() override;
@@ -27,7 +27,7 @@ class RawDecoder: public AudioDecoder {
 	std::size_t position_in_frames = 0;
 };
 
-std::int64_t RawDecoder::writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t chans) {
+unsigned long long RawDecoder::writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int chans) {
 	if (this->position_in_frames >= this->frames) {
 		return 0;
 	}
@@ -63,7 +63,7 @@ std::int64_t RawDecoder::writeSamplesInterleaved(std::int64_t num, float *sample
 	return will_read;
 }
 
-void RawDecoder::seekPcm(std::int64_t frame) {
+void RawDecoder::seekPcm(unsigned long long frame) {
 	this->position_in_frames = frame;
 }
 
@@ -75,7 +75,7 @@ bool RawDecoder::supportsSampleAccurateSeek() {
 	return true;
 }
 
-std::int64_t RawDecoder::getLength() {
+unsigned long long RawDecoder::getLength() {
 	return this->frames;
 }
 

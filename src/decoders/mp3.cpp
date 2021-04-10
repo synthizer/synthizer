@@ -28,20 +28,20 @@ class Mp3Decoder: public AudioDecoder {
 	public:
 	Mp3Decoder(std::shared_ptr<LookaheadByteStream> stream);
 	~Mp3Decoder();
-	std::int64_t writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels = 0);
+	unsigned long long writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels = 0);
 	int getSr();
 	int getChannels();
 	AudioFormat getFormat();
-	void seekPcm(std::int64_t pos);
+	void seekPcm(unsigned long long pos);
 	bool supportsSeek();
 	bool supportsSampleAccurateSeek();
-	std::int64_t getLength();
+	unsigned long long getLength();
 
 	private:
 	drmp3 mp3;
 	std::shared_ptr<ByteStream> stream;
 	float *tmp_buf = nullptr;
-	std::int64_t frame_count = 0;
+	unsigned long long frame_count = 0;
 
 	static const int TMP_BUF_FRAMES = 1024;
 };
@@ -74,7 +74,7 @@ Mp3Decoder::~Mp3Decoder() {
 	delete this->tmp_buf;
 }
 
-std::int64_t Mp3Decoder::writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels) {
+unsigned long long Mp3Decoder::writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels) {
 	auto actualChannels = channels < 1 ? this->mp3.channels : channels;
 	/* Fast case: if the channels are equal, just write. */
 	if (actualChannels == this->mp3.channels) {
@@ -82,7 +82,7 @@ std::int64_t Mp3Decoder::writeSamplesInterleaved(std::int64_t num, float *sample
 	}
 
 	/* Otherwise we have to round trip via the temporary buffer. */
-	std::int64_t got = drmp3_read_pcm_frames_f32(&this->mp3, num, this->tmp_buf);
+	unsigned long long got = drmp3_read_pcm_frames_f32(&this->mp3, num, this->tmp_buf);
 	std::fill(samples, samples + got * this->mp3.channels, 0.0f);
 	mixChannels(got, this->tmp_buf, this->mp3.channels, samples, actualChannels);
 	return got;
@@ -100,7 +100,7 @@ AudioFormat Mp3Decoder::getFormat() {
 	return AudioFormat::Mp3;
 }
 
-void Mp3Decoder::seekPcm(std::int64_t pos) {
+void Mp3Decoder::seekPcm(unsigned long long pos) {
 	auto actualPos = std::min(this->getLength(), pos);
 	if (drmp3_seek_to_pcm_frame(&this->mp3, actualPos) == DRMP3_FALSE)
 		throw new Error("Unable to seek.");
@@ -114,7 +114,7 @@ bool Mp3Decoder::supportsSampleAccurateSeek() {
 	return this->supportsSeek() && true;
 }
 
-std::int64_t Mp3Decoder::getLength() {
+unsigned long long Mp3Decoder::getLength() {
 	return this->frame_count;
 }
 

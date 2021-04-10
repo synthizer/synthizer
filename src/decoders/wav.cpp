@@ -28,14 +28,14 @@ class WavDecoder: public AudioDecoder {
 	public:
 	WavDecoder(std::shared_ptr<LookaheadByteStream> stream);
 	~WavDecoder();
-	std::int64_t writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels = 0);
+	unsigned long long writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels = 0);
 	int getSr();
 	int getChannels();
 	AudioFormat getFormat();
-	void seekPcm(std::int64_t pos);
+	void seekPcm(unsigned long long pos);
 	bool supportsSeek();
 	bool supportsSampleAccurateSeek();
-	std::int64_t getLength();
+	unsigned long long getLength();
 
 	private:
 	drwav wav;
@@ -66,14 +66,14 @@ WavDecoder::~WavDecoder() {
 	delete this->tmp_buf;
 }
 
-std::int64_t WavDecoder::writeSamplesInterleaved(std::int64_t num, float *samples, std::int64_t channels) {
+unsigned long long WavDecoder::writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels) {
 	auto actualChannels = channels < 1 ? this->wav.channels : channels;
 	/* Fast case: if the channels are equal, just write. */
 	if (actualChannels == this->wav.channels)
 		return drwav_read_pcm_frames_f32(&this->wav, num, samples);
 
 	/* Otherwise we have to round trip via the temporary buffer. */
-	std::int64_t got = drwav_read_pcm_frames_f32(&this->wav, num, this->tmp_buf);
+	unsigned long long got = drwav_read_pcm_frames_f32(&this->wav, num, this->tmp_buf);
 	std::fill(samples, samples + got * this->wav.channels, 0.0f);
 	mixChannels(got, this->tmp_buf, this->wav.channels, samples, actualChannels);
 	return got;
@@ -91,7 +91,7 @@ AudioFormat WavDecoder::getFormat() {
 	return AudioFormat::Wav;
 }
 
-void WavDecoder::seekPcm(std::int64_t pos) {
+void WavDecoder::seekPcm(unsigned long long pos) {
 	auto actualPos = std::min(this->getLength(), pos);
 	if (drwav_seek_to_pcm_frame(&this->wav, actualPos) == DRWAV_FALSE)
 		throw new Error("Unable to seek.");
@@ -105,7 +105,7 @@ bool WavDecoder::supportsSampleAccurateSeek() {
 	return this->supportsSeek() && true;
 }
 
-std::int64_t WavDecoder::getLength() {
+unsigned long long WavDecoder::getLength() {
 	return this->wav.totalPCMFrameCount;
 }
 
