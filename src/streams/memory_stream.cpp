@@ -14,11 +14,11 @@ class MemoryStream: public ByteStream {
 	MemoryStream(std::size_t length, const char *data): data(data), length(length), position(0) {}
 
 	std::string getName() override;
-	std::size_t read(std::size_t count, char *destination) override;
+	unsigned long long read(unsigned long long count, char *destination) override;
 	bool supportsSeek() override;
-	std::size_t getPosition() override;
-	void seek(std::size_t position) override;
-	std::size_t getLength() override;
+	unsigned long long getPosition() override;
+	void seek(unsigned long long position) override;
+	unsigned long long getLength() override;
 
 	private:
 	const char *data;
@@ -29,7 +29,7 @@ std::string MemoryStream::getName() {
 	return "memory";
 }
 
-std::size_t MemoryStream::read(std::size_t count, char *destination) {
+unsigned long long MemoryStream::read(unsigned long long count, char *destination) {
 	std::size_t remaining = this->length - this->position;
 	/* Don't read past the end. */
 	std::size_t will_read = remaining > count ? count : remaining;
@@ -42,18 +42,18 @@ bool MemoryStream::supportsSeek() {
 	return true;
 }
 
-std::size_t MemoryStream::getPosition() {
+unsigned long long MemoryStream::getPosition() {
 	return this->position;
 }
 
-void MemoryStream::seek(std::size_t pos) {
+void MemoryStream::seek(unsigned long long pos) {
 	if (pos > this->length) {
 		throw EByteStream("Out of range seek");
 	}
 	this->position = pos;
 }
 
-std::size_t MemoryStream::getLength() {
+unsigned long long MemoryStream::getLength() {
 	return this->length;
 }
 

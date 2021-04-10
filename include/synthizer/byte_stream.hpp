@@ -11,6 +11,14 @@
 
 namespace synthizer {
 
+/**
+ * Byte streaming functionality, to abstract over file and otherI/O.
+ * 
+ * Note that this infrastructure uses unsigned long long instead of size_t.  This is to support custom
+ * streams, which need to play nice with FFI, not all of which is able to
+ * conveniently handle size_t.
+ * */
+
 class EByteStream: public Error {
 	public:
 	EByteStream(std::string message): Error(message) {}
@@ -45,17 +53,17 @@ class ByteStream {
 	 * 
 	 * Calls after the stream is finished should return 0 to indicate stream end.
 	 * */
-	virtual std::size_t read(std::size_t count, char *destination) = 0;
+	virtual unsigned long long read(unsigned long long count, char *destination) = 0;
 	/* If seek is supported, override this to return true. */
 	virtual bool supportsSeek() { return false; }
 	/* Get the position of the stream in bytes. */
-	virtual std::size_t getPosition() = 0;
-	virtual void seek(std::size_t position) {
+	virtual unsigned long long getPosition() = 0;
+	virtual void seek(unsigned long long position) {
 		(void)position;
 		throw EByteStreamUnsupportedOperation("Streams of type " + this->getName() + " don't support seek");
 	}
 	/* If seek is supported, return the length. Otherwise, return an undefined value. */
-	virtual std::size_t getLength() {
+	virtual unsigned long long  getLength() {
 		return 0;
 	}
 
@@ -91,7 +99,7 @@ class ForwardingStream: public T {
 		return this->stream->getName();
 	}
 
-	std::size_t read(std::size_t count, char *destination) override {
+	unsigned long long read(unsigned long long count, char *destination) override {
 		return this->stream->read(count, destination);
 	}
 
@@ -99,15 +107,15 @@ class ForwardingStream: public T {
 		return this->stream->supportsSeek();
 	}
 
-	virtual std::size_t getPosition() override {
+	virtual unsigned long long  getPosition() override {
 		return this->stream->getPosition();
 	}
 
-	virtual std::size_t getLength() override {
+	virtual unsigned long long getLength() override {
 		return this->stream->getLength();
 	}
 
-	virtual void seek(std::size_t position) override {
+	virtual void seek(unsigned long long position) override {
 		return this->stream->seek(position);
 	}
 

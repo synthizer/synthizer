@@ -2,7 +2,7 @@
 
 #include "synthizer/logging.hpp"
 
-#include "concurrentqueue.h"
+#include <concurrentqueue.h>
 #include "sema.h"
 
 #include <atomic>

@@ -104,7 +104,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/hrtf.cpp
 	src/logging.cpp
 	src/memory.cpp
-	src/memory_stream.cpp
 	src/noise_generator.cpp
 	src/panner_bank.cpp
 	src/pausable.cpp
@@ -130,18 +129,16 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/filters/audio_eq_cookbook.cpp
 	src/filters/simple_filters.cpp
 
-
 	src/generators/buffer.cpp
 	src/generators/noise.cpp
 	src/generators/streaming.cpp
-
 
 	src/sources/direct_source.cpp
 	src/sources/panned_source.cpp
 	src/sources/source3d.cpp
 
 	src/streams/file.cpp
-	src/streams/memory.cpp
+	src/streams/memory_stream.cpp
 
 	$<TARGET_OBJECTS:wdl>
 	$<TARGET_OBJECTS:synthizer_single_file_libs>

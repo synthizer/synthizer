@@ -22,15 +22,15 @@ class FileByteStream: public ByteStream {
 	FileByteStream(std::fstream &&f);
 
 	std::string getName() override;
-	std::size_t read(std::size_t count, char *destination) override;
+	unsigned long long read(unsigned long long count, char *destination) override;
 	bool supportsSeek() override;
-	std::size_t getPosition() override;
-	void seek(std::size_t position) override;
-	std::size_t getLength() override;
+	unsigned long long getPosition() override;
+	void seek(unsigned long long position) override;
+	unsigned long long getLength() override;
 
 	private:
 	std::fstream stream;
-	std::size_t length = 0;
+	unsigned long long length = 0;
 };
 
 FileByteStream::FileByteStream(std::fstream &&s): stream(std::move(s)) {
@@ -43,8 +43,8 @@ std::string FileByteStream::getName() {
 	return "file";
 }
 
-std::size_t FileByteStream::read(std::size_t count, char *destination) {
-	std::size_t read = 0;
+unsigned long long FileByteStream::read(unsigned long long count, char *destination) {
+	unsigned long long read = 0;
 	int retries = 5;
 	if (count == 0)
 		return 0;
@@ -62,21 +62,21 @@ bool FileByteStream::supportsSeek() {
 	return true;
 }
 
-std::size_t FileByteStream::getPosition() {
+unsigned long long FileByteStream::getPosition() {
 	auto pos = this->stream.tellg();
 	if (pos < 0)
 		throw EByteStream("Unable to get file position. This should probably never happen.");
 	return pos;
 }
 
-void FileByteStream::seek(std::size_t position) {
+void FileByteStream::seek(unsigned long long position) {
 	this->stream.clear();
 	this->stream.seekg(position);
 	if (this->stream.good() != true)
 		throw EByteStream("Unable to seek.");
 }
 
-std::size_t FileByteStream::getLength() {
+unsigned long long FileByteStream::getLength() {
 	return this->length;
 }
 

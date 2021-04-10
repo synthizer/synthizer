@@ -4,7 +4,7 @@
 #include "synthizer/config.hpp"
 
 #include "autoresetevent.h"
-#include "concurrentqueue.h"
+#include <concurrentqueue.h>
 
 #include <algorithm>
 #include <atomic>

@@ -2,7 +2,7 @@
 
 #include "synthizer/small_vec.hpp"
 
-#include "concurrentqueue.h"
+#include <concurrentqueue.h>
 
 #include <cstdint>
 #include <memory>
