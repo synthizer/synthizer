@@ -22,11 +22,11 @@ namespace synthizer {
  * Infrastructure for the registry.
  * */
 static std::shared_mutex byte_stream_registry_lock{};
-static std::map<std::string, ByteStreamFactory *> byte_stream_registry{
+static std::map<std::string, ByteStreamFactory> byte_stream_registry{
 	{ "file", fileStream },
 };
 
-void registerByteStreamProtocol(std::string &name, ByteStreamFactory *factory) {
+void registerByteStreamProtocol(std::string &name, ByteStreamFactory factory) {
 	auto guard = std::lock_guard(byte_stream_registry_lock);
 	if (byte_stream_registry.count(name))
 		throw EByteStreamUnsupportedOperation("Attempted duplicate registry of protocol "+name);

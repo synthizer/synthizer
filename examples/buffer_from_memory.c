@@ -1,5 +1,5 @@
 /**
- * Demonstrate reading a buffer rfom in-memory encoded audio assets.
+ * Demonstrate reading a buffer from in-memory encoded audio assets.
  * */
 #include "synthizer.h"
 #include "synthizer_constants.h"

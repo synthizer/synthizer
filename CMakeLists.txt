@@ -137,6 +137,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/sources/panned_source.cpp
 	src/sources/source3d.cpp
 
+	src/streams/custom_stream.cpp
 	src/streams/file.cpp
 	src/streams/memory_stream.cpp
 
@@ -180,6 +181,7 @@ endmacro()
 example(buffer_from_memory)
 example(buffer_from_raw_data)
 example(basic_stream_handle)
+example(custom_stream)
 
 # The following won't work on Windows unless compiled against a static build of Synthizer because we don't want to expose the C++ internals from the DLL.
 # Since these are just test programs and not actual utilities, disable them on all platforms if the build isn't static.

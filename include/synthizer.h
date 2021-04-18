@@ -270,6 +270,71 @@ SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromStreamParams(syz_Handle *out, c
 SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle *out, unsigned long long data_len, const char *data);
 SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle *out, const char *path);
 
+/**
+ * Custom streams.
+ * 
+ * The callbacks here return a non-zero value to indicate an error, and may assign a string whose lifetime shares that
+ * of the stream  to `err_msg`.  Currently it isn't possible to extract the code, but the message will be communicated
+ * through Synthizer errors where possible and both values may be logged in the background.  Eventually,
+ * it will be possible to also extract the error code.
+ * */
+
+/**
+ * Callbacks for streaming.  Read is mandatory.  If seek is provided, get length must also be set.
+ * Synthizer handles position tracking for you internally.  Streams should not
+ * change their state out from under Synthizer or be used concurrently by non-Synthizer components.
+ * */
+
+/**
+ * Read from a stream. Must always write as many bytes as are requested.  Writing
+ * less indicates the end of stream.
+ * */
+typedef int syz_StreamReadCallback(unsigned long long *read, unsigned long long requested, char *destination, void *userdata, const char ** err_msg);
+
+/**
+ * Stream seek callback. Should be self-explanatory.
+ * */
+typedef int syz_StreamSeekCallback(unsigned long long pos, void *userdata, const char **err_msg);
+
+/**
+ * Close the stream.
+ * */
+typedef int syz_StreamCloseCallback(void *userdata, const char **err_msg);
+
+/**
+ * Represents a custom stream.  If the length of the stream is unknown, set it to -1.  Note that internally Synthizer
+ * treats streams of unknown length as unseekable even if the seek callback is set.
+ * */
+struct syz_CustomStreamDef {
+	syz_StreamReadCallback *read_cb;
+	/**
+	 * Optional. If unset, this stream doesn't support seeking.
+	 * */
+	syz_StreamSeekCallback *seek_cb;
+	syz_StreamCloseCallback *close_cb;
+	long long length;
+	void *userdata;
+};
+
+/**
+ * Get a stream handle from CustomStreamDef.
+ * */
+SYZ_CAPI syz_ErrorCode syz_streamHandleFromCustomStream(syz_Handle *out, struct syz_CustomStreamDef callbacks);
+
+/**
+ * Open a stream by filling out the callbacks struct.
+ * */
+typedef int syz_StreamOpenCallback(struct syz_CustomStreamDef *callbacks, const char *protocol, const char *path, void *param, void *userdata, const char **err_msg);
+
+/**
+ * Register a protocol with the stream handler.
+ * 
+ * afterword, this can be used as `syz_streamHandleFromStreamParams(&handle, "myprotocol", "mypath", myparam)`.
+ * 
+ * It is not possible to unregister protocols.
+ * */
+SYZ_CAPI syz_ErrorCode syz_registerStreamProtocol(const char *protocol, syz_StreamOpenCallback *callback, void *userdata);
+
 /*
  * Create a generator that represents reading from a stream.
  * users who wish to read from files should call syz_createStreamingGeneratorFromFile, which is more future-proof than this API and should not break between major releases.

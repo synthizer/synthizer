@@ -9,6 +9,8 @@
 #include "error.hpp"
 #include "decoding.hpp"
 
+struct syz_CustomStreamDef;
+
 namespace synthizer {
 
 /**
@@ -34,7 +36,7 @@ class name: public base { \
 
 BERROR(EByteStreamUnsupportedOperation, "Unsupported byte stream operation");
 BERROR(EByteStreamNotFound, "Resource not found");
-
+BERROR(EByteStreamCustom, "custom byte stream callback error");
 
 /*
  * A class representing a stream of bytes.
@@ -145,8 +147,8 @@ std::shared_ptr<ByteStream> getStreamForStreamParams(const std::string &protocol
  * 
  * Throws EByteStreamUnsupportedOperation in the event of duplicate registration.
  * */
-typedef std::shared_ptr<ByteStream> ByteStreamFactory(const char *path, void *param);
-void registerByteStreamProtocol(std::string &name, ByteStreamFactory *factory);
+typedef std::function<std::shared_ptr<ByteStream>(const char *path, void *param)> ByteStreamFactory;
+void registerByteStreamProtocol(std::string &name, ByteStreamFactory factory);
 
 std::shared_ptr<LookaheadByteStream> getLookaheadByteStream(std::shared_ptr<ByteStream> stream);
 
@@ -171,5 +173,7 @@ std::shared_ptr<ByteStream> memoryStream(std::size_t size, const char *data);
 
 /* file stream. Throws EByteStreamNotFound. */
 std::shared_ptr<ByteStream> fileStream(const char *path, void *param);
+
+std::shared_ptr<ByteStream> customStream(struct syz_CustomStreamDef *def);
 
 }
