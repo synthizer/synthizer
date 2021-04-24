@@ -96,6 +96,14 @@ class DeferredAllocator {
 		(void)n;
 		deferredFree((void *)p);
 	}
+
+	bool operator==(const DeferredAllocator &other) {
+		return true;
+	}
+
+	bool operator!=(const DeferredAllocator &other) {
+		return false;
+	}
 };
 
 template<typename T>

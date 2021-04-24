@@ -128,7 +128,7 @@ bool EventBuilder::associateObject(const std::shared_ptr<CExposable> &obj) {
 	if (obj == nullptr || obj->isPermanentlyDead()) {
 		return false;
 	}
-	auto weak = std::weak_ptr(obj);
+	auto weak = std::weak_ptr<CExposable>(obj);
 	assert(this->referenced_objects.pushBack(std::move(weak)) && "Event has too many referenced objects");
 	return true;
 }

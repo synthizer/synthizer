@@ -69,9 +69,9 @@ class MemoryLookaheadStream: public ForwardingStream<LookaheadByteStream> {
 		this->blocks.reserve(5);
 	}
 
-	void reset();
-	void resetFinal();
-	std::size_t read(std::size_t count, char *destination);
+	virtual void reset() override;
+	virtual void resetFinal() override;
+	virtual unsigned long long read(unsigned long long count, char *destination) override;
 
 	private:
 	static const int LOOKAHEAD_BLOCK_SIZE = 1024;
@@ -84,13 +84,13 @@ class MemoryLookaheadStream: public ForwardingStream<LookaheadByteStream> {
 	bool recording = true;
 };
 
-std::size_t MemoryLookaheadStream::read(std::size_t count, char *destination) {
-	std::size_t got = 0;
+unsigned long long MemoryLookaheadStream::read(unsigned long long count, char *destination) {
+	unsigned long long got = 0;
 	while (got < count) {
 		if (this->blocks.size() > this->current_block) {
 			auto &cur = this->blocks[this->current_block];
 			char *d = cur->data.data();
-			std::size_t needed = std::min(got-count, cur->count-this->current_block_pos);
+			unsigned long long needed = std::min<unsigned long long>(got-count, cur->count-this->current_block_pos);
 			std::copy(d, d+needed, destination);
 			destination += needed;
 			this->current_block_pos += needed;
@@ -99,7 +99,7 @@ std::size_t MemoryLookaheadStream::read(std::size_t count, char *destination) {
 		} else {
 			/* No more blocks are recorded, so we need to do a read. */
 			std::array<char, LOOKAHEAD_BLOCK_SIZE> data;
-			std::size_t got_this_time;
+			unsigned long long got_this_time;
 			got_this_time = this->read(LOOKAHEAD_BLOCK_SIZE, data.data());
 			if (got_this_time == 0) break; // we reached the end.
 			auto block = std::make_shared<LookaheadBytes>();
