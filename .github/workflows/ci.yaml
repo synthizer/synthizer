@@ -84,9 +84,6 @@ jobs:
         ninja
         ninja test
 
-
-
-
   python_sdist:
     runs-on: ubuntu-20.04
     steps:
@@ -139,7 +136,7 @@ jobs:
   deploy_docs:
     if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request'
     runs-on: ubuntu-20.04
-    needs: [ 'build_docs', 'windows', 'ubuntu', 'python_sdist' ]
+    needs: [ 'build_docs', 'windows', 'ubuntu', 'python_sdist', 'osx' ]
     env:
       DOCS_DEPLOY_KEY: ${{secrets.docs_deploy_key}}
       DOCS_DEPLOY_KEY_PUB: ${{secrets.docs_deploy_key_pub}}
@@ -167,7 +164,7 @@ jobs:
         git push
 
   github_release:
-    needs: [ "build_docs", "windows", "python_sdist", "ubuntu" ]
+    needs: [ "build_docs", "windows", "python_sdist", "ubuntu", "osx" ]
     if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request'
     runs-on: ubuntu-20.04
     steps:
@@ -212,7 +209,7 @@ jobs:
 
   deploy_pypi:
     if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request'
-    needs: [ "build_docs", "windows", "python_sdist", "ubuntu" ]
+    needs: [ "build_docs", "windows", "python_sdist", "ubuntu", "osx" ]
     runs-on: ubuntu-20.04
     steps:
     - name: Download Windows Wheels 32-bit
