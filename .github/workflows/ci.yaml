@@ -4,6 +4,7 @@ on:
 
 jobs:
   ubuntu:
+    if: 'false'
     runs-on: ${{matrix.os}}
     env:
       PYVERSIONS: ${{matrix.pyversions}}
@@ -28,6 +29,7 @@ jobs:
             pyversions: "python3.8"
 
   windows:
+    if: 'false'
     runs-on: windows-2019
     env:
       CI_ARCH: ${{matrix.CI_ARCH}}
@@ -69,6 +71,7 @@ jobs:
         CI_ARCH: ['32', '64']
 
   python_sdist:
+    if: 'false'
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout
@@ -89,6 +92,7 @@ jobs:
         path: bindings/python/dist/*
 
   build_docs:
+    if: 'false'
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout
@@ -118,7 +122,7 @@ jobs:
         path: manual/book/html/**
 
   deploy_docs:
-    if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request'
+    if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request && false'
     runs-on: ubuntu-20.04
     needs: [ 'build_docs', 'windows', 'ubuntu', 'python_sdist' ]
     env:
@@ -148,8 +152,8 @@ jobs:
         git push
 
   github_release:
-    needs: [ "build_docs", "windows", "python_sdist", "ubuntu" ]
-    if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request'
+    #needs: [ "build_docs", "windows", "python_sdist", "ubuntu" ]
+    if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request && false'
     runs-on: ubuntu-20.04
     steps:
     - name: Download Docs
@@ -192,7 +196,7 @@ jobs:
         asset_paths: '[ "/home/runner/artifacts/*" ]'
 
   deploy_pypi:
-    if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request'
+    if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request && false'
     needs: [ "build_docs", "windows", "python_sdist", "ubuntu" ]
     runs-on: ubuntu-20.04
     steps:
