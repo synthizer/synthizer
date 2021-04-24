@@ -70,6 +70,25 @@ jobs:
       matrix:
         CI_ARCH: ['32', '64']
 
+  osx:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - shell: bash
+      run:  |
+        set -ex
+        brew install ninja
+        cd $GITHUB_WORKSPACE
+        mkdir build
+        cd build
+        cmake -G Ninja ..
+        ninja
+        ninja test
+
+
+
+
   python_sdist:
     if: 'false'
     runs-on: ubuntu-20.04
