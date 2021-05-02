@@ -82,6 +82,7 @@ int openCallback(struct syz_CustomStreamDef *def, const char *protocol, const ch
 }
 
 int main(int argc, char *argv[]) {
+	struct syz_LibraryConfig library_config;
 	syz_Handle context = 0, generator = 0, source = 0;
 	/* Used by the CHECKED macro. */
 	int ecode = 0;
@@ -91,9 +92,10 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	CHECKED(syz_configureLoggingBackend(SYZ_LOGGING_BACKEND_STDERR, NULL));
-	syz_setLogLevel(SYZ_LOG_LEVEL_DEBUG);
-	CHECKED(syz_initialize());
+	syz_libraryConfigSetDefaults(&library_config);
+	library_config.log_level = SYZ_LOG_LEVEL_DEBUG;
+	library_config.logging_backend = SYZ_LOGGING_BACKEND_STDERR;
+	CHECKED(syz_initializeWithConfig(&library_config));
 
 	CHECKED(syz_registerStreamProtocol("custom", openCallback, NULL));
 	CHECKED(syz_createContext(&context));

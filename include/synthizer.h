@@ -78,15 +78,9 @@ SYZ_CAPI void syz_eventDeinit(struct syz_Event *event);
 * It is possible to change the level at any time.
 */
 enum SYZ_LOGGING_BACKEND {
-	SYZ_LOGGING_BACKEND_STDERR = 0,
+	SYZ_LOGGING_BACKEND_NONE,
+	SYZ_LOGGING_BACKEND_STDERR,
 };
-
-/**
- * The parameter is specific to the backend:
- *
- * - For STDERR, ignored.
- */
-SYZ_CAPI syz_ErrorCode syz_configureLoggingBackend(enum SYZ_LOGGING_BACKEND backend, void *param);
 
 enum SYZ_LOG_LEVEL {
 	SYZ_LOG_LEVEL_ERROR = 0,
@@ -95,7 +89,22 @@ enum SYZ_LOG_LEVEL {
 	SYZ_LOG_LEVEL_DEBUG = 30,
 };
 
-SYZ_CAPI void syz_setLogLevel(enum SYZ_LOG_LEVEL level);
+struct syz_LibraryConfig {
+	unsigned int log_level;
+	unsigned int logging_backend;
+};
+
+/**
+ * Set the default values of the LibraryConfig struct, which are not necessarily all 0.
+ * */
+void syz_libraryConfigSetDefaults(struct syz_LibraryConfig *config);
+
+/*
+ * Library initialization and shutdown.
+ * */
+SYZ_CAPI syz_ErrorCode syz_initialize(void);	
+SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(struct syz_LibraryConfig *config);
+SYZ_CAPI syz_ErrorCode syz_shutdown();
 
 /*
  * Get the current error code for this thread. This is like errno, except that functions also return their error codes.
@@ -112,11 +121,6 @@ SYZ_CAPI syz_ErrorCode syz_getLastErrorCode();
  * */
 SYZ_CAPI const char *syz_getLastErrorMessage();
 
-/*
- * Library initialization and shutdown.
- * */
-SYZ_CAPI syz_ErrorCode syz_initialize();
-SYZ_CAPI syz_ErrorCode syz_shutdown();
 /**
  * Increment and decrement the reference count on a C handle.
  * 

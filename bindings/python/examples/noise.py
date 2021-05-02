@@ -4,12 +4,11 @@ import itertools
 
 noise_types = [synthizer.NoiseType.UNIFORM, synthizer.NoiseType.VM]
 
-synthizer.configure_logging_backend(synthizer.LoggingBackend.STDERR)
-synthizer.set_log_level(synthizer.LogLevel.DEBUG)
-
-with synthizer.initialized():
+with synthizer.initialized(
+    log_level=synthizer.LogLevel.DEBUG, logging_backend=synthizer.LoggingBackend.STDERR
+):
     ctx = synthizer.Context()
-    noise = synthizer.NoiseGenerator(ctx, channels = 2)
+    noise = synthizer.NoiseGenerator(ctx, channels=2)
     source = synthizer.DirectSource(ctx)
     source.add_generator(noise)
 

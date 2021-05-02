@@ -11,10 +11,9 @@ import random
 import sys
 import math
 
-synthizer.configure_logging_backend(synthizer.LoggingBackend.STDERR)
-synthizer.set_log_level(synthizer.LogLevel.DEBUG)
-
-with synthizer.initialized():
+with synthizer.initialized(
+    log_level=synthizer.LogLevel.DEBUG, logging_backend=synthizer.LoggingBackend.STDERR
+):
     # Normal source setup from a CLI arg.
     ctx = synthizer.Context()
     gen = synthizer.BufferGenerator(ctx)
@@ -33,7 +32,9 @@ with synthizer.initialized():
     duration = 2.0
     delta = duration / n_taps
     taps = [
-        synthizer.EchoTapConfig(delta + i * delta + random.random() * 0.01, random.random(), random.random())
+        synthizer.EchoTapConfig(
+            delta + i * delta + random.random() * 0.01, random.random(), random.random()
+        )
         for i in range(n_taps)
     ]
 
@@ -42,7 +43,7 @@ with synthizer.initialized():
     # This script normalizes so that the constant overall power of the echo is around 1.0, but
     # a simpler strategy is to simply compute an average.  Wich works better depends
     # highly on the use case.
-    norm_left = sum([i.gain_l** 2 for i in taps])
+    norm_left = sum([i.gain_l ** 2 for i in taps])
     norm_right = sum([i.gain_r ** 2 for i in taps])
     norm = 1.0 / math.sqrt(max(norm_left, norm_right))
     for t in taps:

@@ -16,6 +16,13 @@ cdef extern from "Python.h":
     int PyEval_InitThreads()
 PyEval_InitThreads()
 
+# An internal sentinel for an unset default parameter. Used because
+# None is sometimes used.
+class _DefaultSentinel:
+    pass
+
+DEFAULT_VALUE = _DefaultSentinel()
+
 cdef class SynthizerError(Exception):
     cdef str message
     cdef int code
@@ -146,15 +153,15 @@ class LogLevel(Enum):
 class LoggingBackend(Enum):
     STDERR = 0
 
-cpdef configure_logging_backend(backend):
-    _checked(syz_configureLoggingBackend(backend.value, NULL))
-
-cpdef set_log_level(level):
-    syz_setLogLevel(level.value)
-
-cpdef initialize():
+cpdef initialize(log_level=DEFAULT_VALUE, logging_backend=DEFAULT_VALUE):
     """Initialize Synthizer.  Try synthizer.Initialized for a context manager that will shut things down on exceptions. """
-    _checked(syz_initialize())
+    cdef syz_LibraryConfig cfg
+    syz_libraryConfigSetDefaults(&cfg)
+    if log_level is not DEFAULT_VALUE:
+        cfg.log_level = log_level.value
+    if logging_backend is not DEFAULT_VALUE:
+        cfg.logging_backend = logging_backend.value
+    _checked(syz_initializeWithConfig(&cfg))
 
 cpdef shutdown():
     """Shut Synthizer down."""
@@ -166,15 +173,17 @@ cpdef shutdown():
     _checked(ecode)
 
 @contextlib.contextmanager
-def initialized():
+def initialized(*args, **kwargs):
     """A context manager that safely initializes and shuts Synthizer down.
 
     Usage:
 
     with synthizer.initialized():
         ...my code
+
+    All arguments are passed to initialize
     """
-    initialize()
+    initialize(*args, **kwargs)
     try:
         yield
     except BaseException as e:

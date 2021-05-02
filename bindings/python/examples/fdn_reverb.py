@@ -11,10 +11,9 @@ import random
 import sys
 import math
 
-synthizer.configure_logging_backend(synthizer.LoggingBackend.STDERR)
-synthizer.set_log_level(synthizer.LogLevel.DEBUG)
-
-with synthizer.initialized():
+with synthizer.initialized(
+    log_level=synthizer.LogLevel.DEBUG, logging_backend=synthizer.LoggingBackend.STDERR
+):
     # Normal source setup from a CLI arg.
     ctx = synthizer.Context()
     gen = synthizer.BufferGenerator(ctx)
@@ -25,5 +24,6 @@ with synthizer.initialized():
 
     # create and connect the effect with a default gain of 1.0.
     reverb = synthizer.GlobalFdnReverb(ctx)
+    reverb.t60 = 10
     ctx.config_route(src, reverb)
     time.sleep(5.0)

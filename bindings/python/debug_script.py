@@ -16,18 +16,17 @@ import atexit
 # doesn't freeze things so badly that you have to kill it via task manager.
 atexit.register(synthizer.shutdown)
 
-synthizer.configure_logging_backend(synthizer.LoggingBackend.STDERR)
-synthizer.set_log_level(synthizer.LogLevel.DEBUG)
-
-synthizer.initialize()
+synthizer.initialize(
+    log_level=synthizer.LogLevel.DEBUG, logging_backend=synthizer.LoggingBackend.STDERR
+)
 ctx = synthizer.Context(enable_events=True)
 gen = synthizer.StreamingGenerator.from_stream_params(ctx, "file", sys.argv[1])
-#buffer = synthizer.Buffer.from_stream("file", sys.argv[1], "")
-#gen.buffer = buffer
-#ctx.panner_strategy = synthizer.PannerStrategy.HRTF    
+# buffer = synthizer.Buffer.from_stream("file", sys.argv[1], "")
+# gen.buffer = buffer
+# ctx.panner_strategy = synthizer.PannerStrategy.HRTF
 src = synthizer.PannedSource(ctx)
 src.add_generator(gen)
-src.panner_strategy= synthizer.PannerStrategy.HRTF
+src.panner_strategy = synthizer.PannerStrategy.HRTF
 
 reverb = synthizer.GlobalFdnReverb(ctx)
 ctx.config_route(src, reverb)

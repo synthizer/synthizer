@@ -28,21 +28,31 @@ void setCThreadError(syz_ErrorCode error, const char *message) {
 /* C stuff itself; note we're outside the namespace. */
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_configureLoggingBackend(enum SYZ_LOGGING_BACKEND backend, void *param) {
-	SYZ_PROLOGUE
-	(void)param;
+void syz_libraryConfigSetDefaults(struct syz_LibraryConfig *cfg) {
+	*cfg = syz_LibraryConfig{};
+}
 
-	switch (backend) {
+SYZ_CAPI syz_ErrorCode syz_initialize(void) {
+	struct syz_LibraryConfig cfg;
+	syz_libraryConfigSetDefaults(&cfg);
+	return syz_initializeWithConfig(&cfg);
+}
+
+SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(struct syz_LibraryConfig *config) {
+	SYZ_PROLOGUE
+
+	switch (config->logging_backend) {
+	case SYZ_LOGGING_BACKEND_NONE:
+		break;
 	case SYZ_LOGGING_BACKEND_STDERR:
 		logToStderr();
 		break;
+	default:
+		throw ERange("Invalid log_level");
 	}
-	return 0;
-	SYZ_EPILOGUE
-}
 
-SYZ_CAPI syz_ErrorCode syz_initialize() {
-	SYZ_PROLOGUE
+	setLogLevel((enum SYZ_LOG_LEVEL)config->log_level);
+
 	initializeMemorySubsystem();
 	startBackgroundThread();
 	initializeAudioOutputDevice();

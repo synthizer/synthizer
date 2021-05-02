@@ -8,13 +8,9 @@ if len(sys.argv) != 2:
     print(f"Usage: {sys.argv[0]} <file>")
     sys.exit(1)
 
-# Log to debug. At the moment this writes directly to stdout, but will in
-#  future integrate with Python's logging modules.
-# It's best to call this before any initialization.
-synthizer.configure_logging_backend(synthizer.LoggingBackend.STDERR)
-synthizer.set_log_level(synthizer.LogLevel.DEBUG)
-
-with synthizer.initialized():
+with synthizer.initialized(
+    log_level=synthizer.LogLevel.DEBUG, logging_backend=synthizer.LoggingBackend.STDERR
+):
     # Get our context, which almost everything requires.
     # This starts the audio threads.
     ctx = synthizer.Context()

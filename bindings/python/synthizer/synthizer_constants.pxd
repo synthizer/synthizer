@@ -11,6 +11,7 @@ cdef extern from "synthizer_constants.h":
         SYZ_OTYPE_SOURCE_3D
         SYZ_OTYPE_GLOBAL_ECHO
         SYZ_OTYPE_GLOBAL_FDN_REVERB
+        SYZ_OTYPE_STREAM_HANDLE
 
     cdef enum SYZ_PANNER_STRATEGY:
         SYZ_PANNER_STRATEGY_HRTF
@@ -69,3 +70,6 @@ cdef extern from "synthizer_constants.h":
         SYZ_EVENT_TYPE_INVALID
         SYZ_EVENT_TYPE_LOOPED
         SYZ_EVENT_TYPE_FINISHED
+
+    cdef enum SYZ_EVENT_FLAGS:
+        SYZ_EVENT_FLAG_TAKE_OWNERSHIP

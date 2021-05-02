@@ -14,19 +14,22 @@ cdef extern from "synthizer.h":
         syz_EventLooped looped
         syz_EventFinished finished
 
+    cdef struct _syz_Event__private_s:
+        unsigned long long flags
+
     cdef struct syz_Event:
         int type
         syz_Handle source
         syz_Handle context
         void* userdata
         _syz_Event_payload_u payload
+        _syz_Event__private_s _private
 
     void syz_eventDeinit(syz_Event* event)
 
     cdef enum SYZ_LOGGING_BACKEND:
+        SYZ_LOGGING_BACKEND_NONE
         SYZ_LOGGING_BACKEND_STDERR
-
-    syz_ErrorCode syz_configureLoggingBackend(SYZ_LOGGING_BACKEND backend, void* param)
 
     cdef enum SYZ_LOG_LEVEL:
         SYZ_LOG_LEVEL_ERROR
@@ -34,15 +37,23 @@ cdef extern from "synthizer.h":
         SYZ_LOG_LEVEL_INFO
         SYZ_LOG_LEVEL_DEBUG
 
-    void syz_setLogLevel(SYZ_LOG_LEVEL level)
+    cdef struct syz_LibraryConfig:
+        unsigned int log_level
+        unsigned int logging_backend
+
+    void syz_libraryConfigSetDefaults(syz_LibraryConfig* config)
+
+    syz_ErrorCode syz_initialize()
+
+    syz_ErrorCode syz_initializeWithConfig(syz_LibraryConfig* config)
+
+    syz_ErrorCode syz_shutdown() nogil
 
     syz_ErrorCode syz_getLastErrorCode()
 
     char* syz_getLastErrorMessage()
 
-    syz_ErrorCode syz_initialize()
-
-    syz_ErrorCode syz_shutdown() nogil
+    syz_ErrorCode syz_handleIncRef(syz_Handle handle)
 
     syz_ErrorCode syz_handleDecRef(syz_Handle handle)
 
@@ -105,15 +116,48 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_contextEnableEvents(syz_Handle context)
 
-    syz_ErrorCode syz_contextGetNextEvent(syz_Event* out, syz_Handle context, int flags)
+    syz_ErrorCode syz_contextGetNextEvent(syz_Event* out, syz_Handle context, unsigned long long flags)
+
+    syz_ErrorCode syz_createStreamHandleFromStreamParams(syz_Handle* out, char* protocol, char* path, void* param)
+
+    syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle* out, unsigned long long data_len, char* data)
+
+    syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle* out, char* path)
+
+    ctypedef int syz_StreamReadCallback(unsigned long long* read, unsigned long long requested, char* destination, void* userdata, char** err_msg)
+
+    ctypedef int syz_StreamSeekCallback(unsigned long long pos, void* userdata, char** err_msg)
+
+    ctypedef int syz_StreamCloseCallback(void* userdata, char** err_msg)
+
+    cdef struct syz_CustomStreamDef:
+        syz_StreamReadCallback* read_cb
+        syz_StreamSeekCallback* seek_cb
+        syz_StreamCloseCallback* close_cb
+        long long length
+        void* userdata
+
+    syz_ErrorCode syz_streamHandleFromCustomStream(syz_Handle* out, syz_CustomStreamDef callbacks)
+
+    ctypedef int syz_StreamOpenCallback(syz_CustomStreamDef* callbacks, char* protocol, char* path, void* param, void* userdata, char** err_msg)
+
+    syz_ErrorCode syz_registerStreamProtocol(char* protocol, syz_StreamOpenCallback* callback, void* userdata)
 
     syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle* out, syz_Handle context, char* protocol, char* path, void* param)
 
     syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle* out, syz_Handle context, char* path)
 
+    syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle* out, syz_Handle context, syz_Handle stream)
+
     syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle* out, char* protocol, char* path, void* param) nogil
 
+    syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle* out, unsigned long long data_len, char* data) nogil
+
+    syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle* out, unsigned int sr, unsigned int channels, unsigned long long frames, float* data) nogil
+
     syz_ErrorCode syz_createBufferFromFile(syz_Handle* out, char* path) nogil
+
+    syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle* out, syz_Handle stream) nogil
 
     syz_ErrorCode syz_bufferGetChannels(unsigned int* out, syz_Handle buffer)
 
