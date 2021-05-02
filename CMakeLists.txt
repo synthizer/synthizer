@@ -94,6 +94,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/channel_mixing.cpp
 	src/context.cpp
 	src/decoding.cpp
+	src/shared_object.cpp
 	src/effects/echo.cpp
 	src/effects/effects.cpp
 	src/effects/fdn_reverb.cpp
