@@ -28,7 +28,7 @@ void setCThreadError(syz_ErrorCode error, const char *message) {
 /* C stuff itself; note we're outside the namespace. */
 using namespace synthizer;
 
-void syz_libraryConfigSetDefaults(struct syz_LibraryConfig *cfg) {
+SYZ_CAPI void syz_libraryConfigSetDefaults(struct syz_LibraryConfig *cfg) {
 	*cfg = syz_LibraryConfig{};
 }
 

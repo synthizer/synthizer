@@ -97,7 +97,7 @@ struct syz_LibraryConfig {
 /**
  * Set the default values of the LibraryConfig struct, which are not necessarily all 0.
  * */
-void syz_libraryConfigSetDefaults(struct syz_LibraryConfig *config);
+SYZ_CAPI void syz_libraryConfigSetDefaults(struct syz_LibraryConfig *config);
 
 /*
  * Library initialization and shutdown.
