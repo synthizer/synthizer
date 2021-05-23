@@ -1,14 +1,16 @@
-#include <memory>
-#include <cstdint>
-#include <algorithm>
-
-#include "dr_flac.h"
-
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/channel_mixing.hpp"
+#include "synthizer/config.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/error.hpp"
 #include "synthizer/types.hpp"
+
+#include "dr_flac.h"
+
+#include <algorithm>
+#include <array>
+#include <cstdint>
+#include <memory>
 
 namespace synthizer {
 
@@ -49,9 +51,7 @@ class FlacDecoder: public AudioDecoder {
 	private:
 	drflac *flac;
 	std::shared_ptr<ByteStream> stream;
-	float *tmp_buf = nullptr;
-
-	static const int TMP_BUF_FRAMES = 1024;
+	std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> tmp_buf{{0.0f}};
 };
 
 FlacDecoder::FlacDecoder(std::shared_ptr<LookaheadByteStream> stream) {
@@ -62,28 +62,41 @@ FlacDecoder::FlacDecoder(std::shared_ptr<LookaheadByteStream> stream) {
 	if (this->flac == nullptr)
 		throw Error("Unable to initialize flac stream");
 
-	if(this->flac->channels == 0)
+	if(this->flac->channels == 0 ) {
 		throw Error("Got a flac file with 0 channels.");
-
-	this->tmp_buf = new float[TMP_BUF_FRAMES*this->flac->channels];
+	}
+	if (this->flac->channels >= config::MAX_CHANNELS) {
+		throw Error("Got a flac file with too many channels");
+	}
 }
 
 FlacDecoder::~FlacDecoder() {
 	drflac_close(this->flac);
-	delete this->tmp_buf;
 }
 
 unsigned long long FlacDecoder::writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels) {
 	auto actualChannels = channels < 1 ? this->flac->channels : channels;
 	/* Fast case: if the channels are equal, just write. */
-	if (actualChannels == this->flac->channels)
+	if (actualChannels == this->flac->channels) {
 		return drflac_read_pcm_frames_f32(this->flac, num, samples);
+	}
 
 	/* Otherwise we have to round trip via the temporary buffer. */
-	unsigned long long got = drflac_read_pcm_frames_f32(this->flac, num, this->tmp_buf);
-	std::fill(samples, samples + got * this->flac->channels, 0.0f);
-	mixChannels(got, this->tmp_buf, this->flac->channels, samples, actualChannels);
-	return got;
+	std::fill(samples, samples + num * actualChannels, 0.0f);
+
+	unsigned long long needed = num;
+	unsigned long long tmp_buf_frames = this->tmp_buf.size() / this->flac->channels;
+	while (needed > 0) {
+		unsigned long long will_read = std::min(tmp_buf_frames, needed);
+		unsigned long long got = drflac_read_pcm_frames_f32(this->flac, will_read, &this->tmp_buf[0]);
+		if (got == 0) {
+			break;
+		}
+		needed -= got;
+		mixChannels(got, &this->tmp_buf[0], this->flac->channels, samples + (num - needed) * actualChannels, actualChannels);
+	}
+
+	return num - needed;
 }
 
 int FlacDecoder::getSr() {

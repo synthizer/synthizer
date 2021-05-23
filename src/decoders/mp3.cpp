@@ -1,14 +1,16 @@
-#include <memory>
-#include <cstdint>
-#include <algorithm>
-
-#include "dr_mp3.h"
-
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/channel_mixing.hpp"
+#include "synthizer/config.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/error.hpp"
 #include "synthizer/types.hpp"
+
+#include "dr_mp3.h"
+
+#include <algorithm>
+#include <array>
+#include <cstdint>
+#include <memory>
 
 namespace synthizer {
 
@@ -40,10 +42,8 @@ class Mp3Decoder: public AudioDecoder {
 	private:
 	drmp3 mp3;
 	std::shared_ptr<ByteStream> stream;
-	float *tmp_buf = nullptr;
 	unsigned long long frame_count = 0;
-
-	static const int TMP_BUF_FRAMES = 1024;
+	std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> tmp_buf{{0.0f}};
 };
 
 Mp3Decoder::Mp3Decoder(std::shared_ptr<LookaheadByteStream> stream) {
@@ -58,6 +58,9 @@ Mp3Decoder::Mp3Decoder(std::shared_ptr<LookaheadByteStream> stream) {
 	if(this->mp3.channels == 0) {
 		throw Error("Got a MP3 file with 0 channels.");
 	}
+	if (this->mp3.channels > config::MAX_CHANNELS) {
+		throw Error("File has too many channels");
+	}
 
 	if (stream->supportsSeek()) {
 		this->frame_count = drmp3_get_pcm_frame_count(&this->mp3);
@@ -65,13 +68,10 @@ Mp3Decoder::Mp3Decoder(std::shared_ptr<LookaheadByteStream> stream) {
 			throw Error("Stream supports seek, but unable to compute frame count for Mp3 stream");
 		}
 	}
-
-	this->tmp_buf = new float[TMP_BUF_FRAMES*this->mp3.channels];
 }
 
 Mp3Decoder::~Mp3Decoder() {
 	drmp3_uninit(&this->mp3);
-	delete this->tmp_buf;
 }
 
 unsigned long long Mp3Decoder::writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels) {
@@ -82,10 +82,20 @@ unsigned long long Mp3Decoder::writeSamplesInterleaved(unsigned long long num, f
 	}
 
 	/* Otherwise we have to round trip via the temporary buffer. */
-	unsigned long long got = drmp3_read_pcm_frames_f32(&this->mp3, num, this->tmp_buf);
-	std::fill(samples, samples + got * this->mp3.channels, 0.0f);
-	mixChannels(got, this->tmp_buf, this->mp3.channels, samples, actualChannels);
-	return got;
+	std::fill(samples, samples + num * actualChannels, 0.0f);
+	unsigned long long needed = num;
+	unsigned long long tmp_buf_frames = this->tmp_buf.size() / this->mp3.channels;
+	while (needed > 0) {
+		unsigned long long will_read = std::min(needed, tmp_buf_frames);
+		unsigned long long got = drmp3_read_pcm_frames_f32(&this->mp3, will_read, &this->tmp_buf[0]);
+		if (got == 0) {
+			break;
+		}
+		needed -= got;
+		mixChannels(got, &this->tmp_buf[0], this->mp3.channels, samples + (num - needed) * actualChannels, actualChannels);
+	}
+
+	return num - needed;
 }
 
 int Mp3Decoder::getSr() {

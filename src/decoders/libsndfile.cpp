@@ -220,7 +220,7 @@ unsigned long long LibsndfileDecoder::writeSamplesInterleaved(unsigned long long
 		if (got == 0) {
 			break;
 		}
-		mixChannels(got, &this->tmp_buf[0], this->info.channels, samples + got * actualChannels, actualChannels);
+		mixChannels(got, &this->tmp_buf[0], this->info.channels, samples + (num - needed) * actualChannels, actualChannels);
 	}
 	return num - needed;
 }

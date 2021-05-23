@@ -1,14 +1,16 @@
-#include <memory>
-#include <cstdint>
-#include <algorithm>
-
-#include "dr_wav.h"
-
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/channel_mixing.hpp"
+#include "synthizer/config.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/error.hpp"
 #include "synthizer/types.hpp"
+
+#include "dr_wav.h"
+
+#include <algorithm>
+#include <array>
+#include <cstdint>
+#include <memory>
 
 namespace synthizer {
 
@@ -40,30 +42,31 @@ class WavDecoder: public AudioDecoder {
 	private:
 	drwav wav;
 	std::shared_ptr<ByteStream> stream;
-	float *tmp_buf = nullptr;
-
-	static const int TMP_BUF_FRAMES = 1024;
+	std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> tmp_buf{{0.0f}};
 };
 
 WavDecoder::WavDecoder(std::shared_ptr<LookaheadByteStream> stream) {
 	stream->resetFinal();
 	this->stream = stream;
 	drwav_uint32 flags = 0;
-	if (stream->supportsSeek() == false)
+	if (stream->supportsSeek() == false) {
 		flags = DRWAV_SEQUENTIAL;
+	}
 
-	if (drwav_init_ex(&this->wav, read_cb, seek_cb, NULL, this->stream.get(), NULL, flags, NULL) == DRWAV_FALSE)
+	if (drwav_init_ex(&this->wav, read_cb, seek_cb, NULL, this->stream.get(), NULL, flags, NULL) == DRWAV_FALSE) {
 		throw Error("Unable to initialize wav stream");
+	}
 
-	if(this->wav.channels == 0)
+	if(this->wav.channels == 0) {
 		throw Error("Got a wave file with 0 channels.");
-
-	this->tmp_buf = new float[TMP_BUF_FRAMES*this->wav.channels];
+	}
+	if (this->wav.channels > config::MAX_CHANNELS) {
+		throw Error("Too many channels");
+	}
 }
 
 WavDecoder::~WavDecoder() {
 	drwav_uninit(&this->wav);
-	delete this->tmp_buf;
 }
 
 unsigned long long WavDecoder::writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels) {
@@ -73,10 +76,20 @@ unsigned long long WavDecoder::writeSamplesInterleaved(unsigned long long num, f
 		return drwav_read_pcm_frames_f32(&this->wav, num, samples);
 
 	/* Otherwise we have to round trip via the temporary buffer. */
-	unsigned long long got = drwav_read_pcm_frames_f32(&this->wav, num, this->tmp_buf);
-	std::fill(samples, samples + got * this->wav.channels, 0.0f);
-	mixChannels(got, this->tmp_buf, this->wav.channels, samples, actualChannels);
-	return got;
+	std::fill(samples, samples + num * actualChannels, 0.0f);
+	unsigned long long needed = num;
+	unsigned long long tmp_buf_frames = this->tmp_buf.size() / this->wav.channels;
+	while (needed > 0) {
+		unsigned long long will_read = std::min(needed, tmp_buf_frames);
+		unsigned long long got = drwav_read_pcm_frames_f32(&this->wav, will_read, &this->tmp_buf[0]);
+		needed -= got;
+		if (got == 0) {
+			break;
+		}
+		mixChannels(got, &this->tmp_buf[0], this->wav.channels, samples + (num - needed) * actualChannels, actualChannels);
+	}
+
+	return num - needed;
 }
 
 int WavDecoder::getSr() {
