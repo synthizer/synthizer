@@ -92,6 +92,11 @@ enum SYZ_LOG_LEVEL {
 struct syz_LibraryConfig {
 	unsigned int log_level;
 	unsigned int logging_backend;
+	/**
+	 * If non-NULL, load libsndfile from the specified path.
+	 * If libsndfile is requested and fails to load, initialization of the library also fails.
+	 * */
+	char *libsndfile_path;
 };
 
 /**

@@ -63,6 +63,8 @@ bool FileByteStream::supportsSeek() {
 }
 
 unsigned long long FileByteStream::getPosition() {
+	// Have to clear eofbit or we can't get the position, even though eof has a defined position.
+	this->stream.clear();
 	auto pos = this->stream.tellg();
 	if (pos < 0)
 		throw EByteStream("Unable to get file position. This should probably never happen.");

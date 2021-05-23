@@ -16,6 +16,7 @@ struct DecoderDef {
 };
 
 static auto decoders = makeStaticArray(
+	DecoderDef { "libsndfile", decodeLibsndfile },
 	DecoderDef{"dr_wav", decodeWav},
 	DecoderDef{"dr_flac", decodeFlac},
 	DecoderDef{"dr_mp3", decodeMp3}

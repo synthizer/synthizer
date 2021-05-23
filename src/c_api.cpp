@@ -5,6 +5,7 @@
 #include "synthizer/base_object.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"
+#include "synthizer/decoding.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
 
@@ -56,6 +57,10 @@ SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(struct syz_LibraryConfig *config
 	initializeMemorySubsystem();
 	startBackgroundThread();
 	initializeAudioOutputDevice();
+	if (config->libsndfile_path != nullptr) {
+		loadLibsndfile(config->libsndfile_path);
+	}
+
 	return 0;
 	SYZ_EPILOGUE
 }
