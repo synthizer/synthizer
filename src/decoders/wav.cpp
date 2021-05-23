@@ -58,9 +58,11 @@ WavDecoder::WavDecoder(std::shared_ptr<LookaheadByteStream> stream) {
 	}
 
 	if(this->wav.channels == 0) {
+		drwav_uninit(&this->wav);
 		throw Error("Got a wave file with 0 channels.");
 	}
 	if (this->wav.channels > config::MAX_CHANNELS) {
+		drwav_uninit(&this->wav);
 		throw Error("Too many channels");
 	}
 }
