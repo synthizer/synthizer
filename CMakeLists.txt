@@ -122,7 +122,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/data/hrtf.cpp
 
 	src/decoders/flac.cpp
-	src/decoders/ogg.cpp
 	src/decoders/libsndfile.cpp
 	src/decoders/mp3.cpp
 	src/decoders/raw_decoder.cpp

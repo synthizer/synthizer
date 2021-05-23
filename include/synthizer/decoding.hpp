@@ -23,7 +23,6 @@ class UnsupportedFormatError: public Error {
 /* The audio formats we support. */
 enum class AudioFormat: int {
 	Unknown,
-	Ogg,
 	Wav,
 	Flac,
 	Mp3,
@@ -92,7 +91,6 @@ std::shared_ptr<AudioDecoder> convertAudioDecoderToInMemory(std::shared_ptr<Audi
  * getDecoderForProtocol tries all of these and takes the first which doesn't error and doesn't return nullptr.
  * */
 std::shared_ptr<AudioDecoder> decodeFlac(std::shared_ptr<LookaheadByteStream> stream);
-std::shared_ptr<AudioDecoder> decodeOgg(std::shared_ptr<LookaheadByteStream> stream);
 std::shared_ptr<AudioDecoder> decodeMp3(std::shared_ptr<LookaheadByteStream> stream);
 std::shared_ptr<AudioDecoder> decodeWav(std::shared_ptr<LookaheadByteStream> stream);
 std::shared_ptr<AudioDecoder> decodeLibsndfile(std::shared_ptr<LookaheadByteStream> stream);
