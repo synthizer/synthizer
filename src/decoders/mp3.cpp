@@ -56,15 +56,18 @@ Mp3Decoder::Mp3Decoder(std::shared_ptr<LookaheadByteStream> stream) {
 	}
 
 	if(this->mp3.channels == 0) {
+		drmp3_uninit(&this->mp3);
 		throw Error("Got a MP3 file with 0 channels.");
 	}
 	if (this->mp3.channels > config::MAX_CHANNELS) {
+		drmp3_uninit(&this->mp3);
 		throw Error("File has too many channels");
 	}
 
 	if (stream->supportsSeek()) {
 		this->frame_count = drmp3_get_pcm_frame_count(&this->mp3);
 		if (this->frame_count == 0) {
+			drmp3_uninit(&this->mp3);
 			throw Error("Stream supports seek, but unable to compute frame count for Mp3 stream");
 		}
 	}
