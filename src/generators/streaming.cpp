@@ -56,7 +56,7 @@ void StreamingGenerator::initInAudioThread() {
 	 * If position starts as changed, StreamingGenerator improperly tries to do an initial seek. This is audible
 	 * because the background thread runs ahead, and results in an initial audio artifact.
 	 * */
-	this->markPositionUnchanged();
+	this->markPlaybackPositionUnchanged();
 }
 
 StreamingGenerator::~StreamingGenerator() {
