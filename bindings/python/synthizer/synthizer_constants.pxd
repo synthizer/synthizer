@@ -39,6 +39,7 @@ cdef extern from "synthizer_constants.h":
         SYZ_P_PANNER_STRATEGY
         SYZ_P_DEFAULT_PANNER_STRATEGY
         SYZ_P_PANNING_SCALAR
+        SYZ_P_PLAYBACK_POSITION
         SYZ_P_POSITION
         SYZ_P_ORIENTATION
         SYZ_P_CLOSENESS_BOOST

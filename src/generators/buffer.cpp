@@ -51,7 +51,7 @@ void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
 		this->configureBufferReader(buffer);
 	}
 
-	if (this->acquirePosition(new_pos)) {
+	if (this->acquirePlaybackPosition(new_pos)) {
 		this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLength());
 		this->sent_finished = false;
 	}
@@ -62,7 +62,7 @@ void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
 		this->generateNoPitchBend(output, gd);
 	}
 
-	this->setPosition(this->position_in_samples / config::SR, false);
+	this->setPlaybackPosition(this->position_in_samples / config::SR, false);
 
 	while (this->looped_count > 0) {
 		sendLoopedEvent(this->getContext(), this->shared_from_this());
@@ -168,7 +168,7 @@ void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) {
 
 void BufferGenerator::configureBufferReader(const std::shared_ptr<Buffer> &b) {
 	this->reader.setBuffer(b.get());
-	this->setPosition(0.0);
+	this->setPlaybackPosition(0.0);
 }
 
 void BufferGenerator::handleEndEvent() {

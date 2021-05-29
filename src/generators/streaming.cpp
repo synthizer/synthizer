@@ -98,10 +98,10 @@ void StreamingGenerator::generateBlock(float *output, FadeDriver *gd) {
 		cmd->finished_count--;
 		sendFinishedEvent(this->getContext(), this->shared_from_this());
 	}
-	if (this->acquirePosition(new_pos) == true) {
+	if (this->acquirePlaybackPosition(new_pos) == true) {
 		cmd->seek.emplace(new_pos);
 	}
-	this->setPosition(cmd->final_position, false);
+	this->setPlaybackPosition(cmd->final_position, false);
 	this->background_thread.send(cmd);
 }
 

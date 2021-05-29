@@ -425,7 +425,7 @@ cdef class StreamingGenerator(Generator):
         _checked(syz_createStreamingGeneratorFromFile(&out, ctx, path))
         return StreamingGenerator(out)
 
-    position = DoubleProperty(SYZ_P_POSITION)
+    playback_position = DoubleProperty(SYZ_P_PLAYBACK_POSITION)
     looping = IntProperty(SYZ_P_LOOPING, conv_in = int, conv_out = bool)
 
 cdef class Source(Pausable):
@@ -547,7 +547,7 @@ cdef class BufferGenerator(Generator):
         super().__init__(handle)
 
     buffer = ObjectProperty(SYZ_P_BUFFER, Buffer)
-    position = DoubleProperty(SYZ_P_POSITION)
+    playback_position = DoubleProperty(SYZ_P_PLAYBACK_POSITION)
     looping = IntProperty(SYZ_P_LOOPING, conv_in = int, conv_out = bool)
 
 

@@ -58,7 +58,7 @@ with synthizer.initialized(
                 print("Unable to parse position")
                 continue
             try:
-                generator.position = pos
+                generator.playback_position = pos
             except synthizer.SynthizerError as e:
                 print(e)
         elif cmd[0] == "quit":

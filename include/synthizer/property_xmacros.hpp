@@ -66,11 +66,11 @@ DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0)
 
 #define BUFFER_GENERATOR_PROPERTIES \
 OBJECT_P(SYZ_P_BUFFER, buffer, Buffer, Buffer) \
-DOUBLE_P(SYZ_P_POSITION, position, Position, 0.0, P_DOUBLE_MAX, 0.0) \
+DOUBLE_P(SYZ_P_PLAYBACK_POSITION, playback_position, PlaybackPosition, 0.0, P_DOUBLE_MAX, 0.0) \
 INT_P(SYZ_P_LOOPING, looping, Looping, 0, 1, 0) \
 
 #define STREAMING_GENERATOR_PROPERTIES \
-DOUBLE_P(SYZ_P_POSITION, position, Position, 0.0, P_DOUBLE_MAX, 0.0) \
+DOUBLE_P(SYZ_P_PLAYBACK_POSITION, playback_position, PlaybackPosition, 0.0, P_DOUBLE_MAX, 0.0) \
 INT_P(SYZ_P_LOOPING, looping, Looping, 0, 1, 0)
 
 #define NOISE_GENERATOR_PROPERTIES \
