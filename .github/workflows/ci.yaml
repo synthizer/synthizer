@@ -91,6 +91,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Build Python sdist
       run: |
+        sudo apt update
         cd $GITHUB_WORKSPACE/bindings/python
         sudo apt-fast install -y virtualenv python3.9
         virtualenv -p python3.9 ./venvs/python3.9
