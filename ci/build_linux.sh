@@ -5,6 +5,8 @@
 # the specified versions. This is passed in because not all of the platforms we run on have the same ones.
 set -ex
 
+sudo apt update
+
 # GitHub doesn't give us Ninja
 sudo apt-fast install -y ninja-build virtualenv
 
