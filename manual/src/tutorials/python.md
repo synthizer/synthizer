@@ -114,7 +114,7 @@ x = myobj.property
 assert x == 15
 ```
 
-Property reads are primarily useful for properties like position on various generators, where Synthizer is updating the property itself.
+Property reads are primarily useful for properties like `playback_position` on various generators, where Synthizer is updating the property itself.
 In general, it's best to use properties to tell Synthizer what to do, but keep the model of what's supposed to be going on in your code.
 A common mistake is to try to use Synthizer to store data, for example putting the position of your objects in a source rather than maintaing the coordinates yourself.
 
@@ -190,13 +190,9 @@ if len(sys.argv) != 2:
     print(f"Usage: {sys.argv[0]} <file>")
     sys.exit(1)
 
-# Log to debug. At the moment this writes directly to stdout, but will in
-#  future integrate with Python's logging modules.
-# It's best to call this before any initialization.
-synthizer.configure_logging_backend(synthizer.LoggingBackend.STDERR)
-synthizer.set_log_level(synthizer.LogLevel.DEBUG)
-
-with synthizer.initialized():
+with synthizer.initialized(
+    log_level=synthizer.LogLevel.DEBUG, logging_backend=synthizer.LoggingBackend.STDERR
+):
     # Get our context, which almost everything requires.
     # This starts the audio threads.
     ctx = synthizer.Context()
@@ -204,7 +200,7 @@ with synthizer.initialized():
     # A BufferGenerator plays back a buffer:
     generator = synthizer.BufferGenerator(ctx)
     # A buffer holds audio data. We read from the specified file:
-    buffer = synthizer.Buffer.from_stream("file", sys.argv[1])
+    buffer = synthizer.Buffer.from_file(sys.argv[1])
     # Tell the generator to use the buffer.
     generator.buffer = buffer
     # A Source3D is a 3D source, as you'd expect.
@@ -244,7 +240,7 @@ with synthizer.initialized():
                 print("Unable to parse position")
                 continue
             try:
-                generator.position = pos
+                generator.playback_position = pos
             except synthizer.SynthizerError as e:
                 print(e)
         elif cmd[0] == "quit":
@@ -267,4 +263,5 @@ with synthizer.initialized():
             source.gain = gain
         else:
             print("Unrecognized command")
+
 ```
