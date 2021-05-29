@@ -25,20 +25,22 @@ extern "C" {
  * Synthizer needs two versions of the name that aren't the constant. The first is of the form my_property and used for logging, etc. The second is of the form MyProperty (with leading capital) to link up with methods on C++ classes.
  * */
 
-#define STANDARD_DISTANCE_MODEL_PROPERTIES \
-INT_P(SYZ_P_DISTANCE_MODEL, distance_model, DistanceModel, 0, SYZ_DISTANCE_MODEL_COUNT - 1, SYZ_DISTANCE_MODEL_LINEAR) \
-DOUBLE_P(SYZ_P_DISTANCE_REF, distance_ref, DistanceRef, 0.0, P_DOUBLE_MAX, 1.0) \
-DOUBLE_P(SYZ_P_DISTANCE_MAX, distance_max, DistanceMax, 0.0, P_DOUBLE_MAX, 50.0) \
-DOUBLE_P(SYZ_P_ROLLOFF, rolloff, Rolloff, 0.0, P_DOUBLE_MAX, 1.0) \
-DOUBLE_P(SYZ_P_CLOSENESS_BOOST, closeness_boost, ClosenessBoost, P_DOUBLE_MIN, P_DOUBLE_MAX, 0.0) \
-DOUBLE_P(SYZ_P_CLOSENESS_BOOST_DISTANCE, closeness_boost_distance, ClosenessBoostDistance, 0.0, P_DOUBLE_MAX, 0.0)
+#define DISTANCE_MODEL_PROPERTIES(A, B, C) \
+INT_P(SYZ_P##A##DISTANCE_MODEL, B##distance_model, C##DistanceModel, 0, SYZ_DISTANCE_MODEL_COUNT - 1, SYZ_DISTANCE_MODEL_LINEAR) \
+DOUBLE_P(SYZ_P##A##DISTANCE_REF, B##distance_ref, C##DistanceRef, 0.0, P_DOUBLE_MAX, 1.0) \
+DOUBLE_P(SYZ_P##A##DISTANCE_MAX, B##distance_max, C##DistanceMax, 0.0, P_DOUBLE_MAX, 50.0) \
+DOUBLE_P(SYZ_P##A##ROLLOFF, B##rolloff, C##Rolloff, 0.0, P_DOUBLE_MAX, 1.0) \
+DOUBLE_P(SYZ_P##A##CLOSENESS_BOOST, B##closeness_boost, C##ClosenessBoost, P_DOUBLE_MIN, P_DOUBLE_MAX, 0.0) \
+DOUBLE_P(SYZ_P##A##CLOSENESS_BOOST_DISTANCE, B##closeness_boost_distance, C##ClosenessBoostDistance, 0.0, P_DOUBLE_MAX, 0.0)
+
+#define STANDARD_DISTANCE_MODEL_PROPERTIES DISTANCE_MODEL_PROPERTIES(_, ,)
 
 #define CONTEXT_PROPERTIES \
 DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0) \
 DOUBLE3_P(SYZ_P_POSITION, position, Position, 0.0, 0.0, 0.0) \
 DOUBLE6_P(SYZ_P_ORIENTATION, orientation, Orientation, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0) \
-INT_P(SYZ_P_PANNER_STRATEGY, panner_strategy, PannerStrategy, 0, SYZ_PANNER_STRATEGY_COUNT - 1, SYZ_PANNER_STRATEGY_STEREO) \
-STANDARD_DISTANCE_MODEL_PROPERTIES
+INT_P(SYZ_P_DEFAULT_PANNER_STRATEGY, default_panner_strategy, DefaultPannerStrategy, 0, SYZ_PANNER_STRATEGY_COUNT - 1, SYZ_PANNER_STRATEGY_STEREO) \
+DISTANCE_MODEL_PROPERTIES(_DEFAULT_, default_, Default)
 
 #define SOURCE_PROPERTIES \
 DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0) \

@@ -227,7 +227,7 @@ class Context: public Pausable, public BaseObject {
 
 	/* materialize distance params from the properties. */
 	DistanceParams getDefaultDistanceParams() {
-		return materializeDistanceParamsFromProperties(this);
+		return materializeDistanceParamsFromDefaultProperties(this);
 	}
 
 	/*

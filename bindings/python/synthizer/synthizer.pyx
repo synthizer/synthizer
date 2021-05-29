@@ -337,13 +337,13 @@ cdef class Context(Pausable):
     gain = DoubleProperty(SYZ_P_GAIN)
     position = Double3Property(SYZ_P_POSITION)
     orientation = Double6Property(SYZ_P_ORIENTATION)
-    distance_model = enum_property(SYZ_P_DISTANCE_MODEL, lambda x: DistanceModel(x))
-    distance_ref = DoubleProperty(SYZ_P_DISTANCE_REF)
-    distance_max = DoubleProperty(SYZ_P_DISTANCE_MAX)
-    rolloff = DoubleProperty(SYZ_P_ROLLOFF)
-    closeness_boost = DoubleProperty(SYZ_P_CLOSENESS_BOOST)
-    closeness_boost_distance = DoubleProperty(SYZ_P_CLOSENESS_BOOST_DISTANCE)
-    panner_strategy = enum_property(SYZ_P_PANNER_STRATEGY, lambda x: PannerStrategy(x))
+    default_distance_model = enum_property(SYZ_P_DEFAULT_DISTANCE_MODEL, lambda x: DistanceModel(x))
+    default_distance_ref = DoubleProperty(SYZ_P_DEFAULT_DISTANCE_REF)
+    default_distance_max = DoubleProperty(SYZ_P_DEFAULT_DISTANCE_MAX)
+    default_rolloff = DoubleProperty(SYZ_P_DEFAULT_ROLLOFF)
+    default_closeness_boost = DoubleProperty(SYZ_P_DEFAULT_CLOSENESS_BOOST)
+    default_closeness_boost_distance = DoubleProperty(SYZ_P_DEFAULT_CLOSENESS_BOOST_DISTANCE)
+    default_panner_strategy = enum_property(SYZ_P_DEFAULT_PANNER_STRATEGY, lambda x: PannerStrategy(x))
 
     cpdef config_route(self, _BaseObject output, _BaseObject input, gain = 1.0, fade_time = 0.01, BiquadConfig filter = None):
         cdef syz_RouteConfig config

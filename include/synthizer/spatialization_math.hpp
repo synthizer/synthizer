@@ -23,7 +23,7 @@ struct DistanceParams {
 };
 
 /*
- * These two templates materialize and/or set properties on anything with all of the properties for distance models.
+ * These templates materialize and/or set properties on anything with all of the properties for distance models.
  * 
  * They're not instance methods because the distance model struct itself will probably become public as part of being able to configure effect sends.
  * */
@@ -39,6 +39,25 @@ DistanceParams materializeDistanceParamsFromProperties(T *source) {
 		source->acquireClosenessBoostDistance(ret.closeness_boost_distance) |
 		/* This one needs a cast, so pull it to a different vairable first. */
 		source->acquireDistanceModel(distance_model);
+	ret.distance_model = (enum SYZ_DISTANCE_MODEL)distance_model;
+	return ret;
+}
+
+/**
+ * Used on e.g. contexts, to build one from defaults.
+ * */
+template<typename T>
+DistanceParams materializeDistanceParamsFromDefaultProperties(T *source) {
+	DistanceParams ret;
+	int distance_model;
+
+	ret.changed = source->acquireDefaultDistanceRef(ret.distance_ref) |
+		source->acquireDefaultDistanceMax(ret.distance_max) |
+		source->acquireDefaultRolloff(ret.rolloff) |
+		source->acquireDefaultClosenessBoost(ret.closeness_boost) |
+		source->acquireDefaultClosenessBoostDistance(ret.closeness_boost_distance) |
+		/* This one needs a cast, so pull it to a different vairable first. */
+		source->acquireDefaultDistanceModel(distance_model);
 	ret.distance_model = (enum SYZ_DISTANCE_MODEL)distance_model;
 	return ret;
 }
