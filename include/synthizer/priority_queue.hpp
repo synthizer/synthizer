@@ -9,8 +9,8 @@
 namespace synthizer {
 
 namespace {
-template<typename A, typename B>
-bool heap_cmp(const A &a, const B &b) {
+template<typename PRIO, typename ELEM>
+bool heap_cmp(const std::tuple<PRIO, ELEM> &a, const std::tuple<PRIO, ELEM> &b) {
 	std::get<0>(b) < std::get<0>(a);
 }
 
@@ -33,7 +33,7 @@ class PriorityQueue {
 
 	void push(PRIO priority, const ELEM &element) {
 		this->elements.emplace_back(priority, element);
-		std::push_heap(this->elements.begin(), this->elements.end(), heap_cmp);
+		std::push_heap(this->elements.begin(), this->elements.end(), heap_cmp<PRIO, ELEM>);
 	}
 
 	/**
@@ -44,7 +44,7 @@ class PriorityQueue {
 		if (this->elements.empty()) {
 			return false;
 		}
-		std::pop_heap(this->elements.begin(), this->elements.end(), heap_cmp);
+		std::pop_heap(this->elements.begin(), this->elements.end(), heap_cmp<PRIO, ELEM>);
 		closure(this->elements.pop_back());
 		return true;
 	}
@@ -66,9 +66,9 @@ class PriorityQueue {
 			if (this->elements.empty()) {
 				return;
 			}
-			std::pop_heap(this->elements.begin(), this->elements.end(), heap_cmp);
+			std::pop_heap(this->elements.begin(), this->elements.end(), heap_cmp<PRIO, ELEM>);
 			if (std::get<0>(this->elements.last()) > priority) {
-				std::push_heap(this->elements.begin(), this->elements.end(), heap_cmp);
+				std::push_heap(this->elements.begin(), this->elements.end(), heap_cmp<PRIO, ELEMM>);
 				return;
 			}
 			closure(this->elements.pop_back());
@@ -98,7 +98,7 @@ class PriorityQueue {
 		if (this->elements.empty( || did_filter == false) {
 			return;
 		}
-		std::make_heap(this->elements.begin(), this->elements.end(), heap_cmp);
+		std::make_heap(this->elements.begin(), this->elements.end(), heap_cmp<PRIO, ELEM>);
 	}
 
 	private:

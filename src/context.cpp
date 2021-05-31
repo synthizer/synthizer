@@ -20,6 +20,7 @@
 #include "sema.h"
 
 #include <functional>
+#include <cmath>
 #include <memory>
 #include <utility>
 
@@ -265,7 +266,32 @@ void Context::getNextEvent(syz_Event *out, unsigned long long flags) {
 }
 
 void Context::doLinger(const std::shared_ptr<BaseObject> &obj) {
-	(void)obj;
+	if (obj->wantsLinger() == false) {
+		return;
+	}
+
+	auto delete_cfg = obj->getDeleteBehaviorConfig();
+	if (delete_cfg.linger == false) {
+		return;
+	}
+
+	this->enqueueCallbackCommand([this, obj, delete_cfg]() {
+		double suggested_timeout = obj->startLingering(obj, delete_cfg.linger_timeout);
+		/**
+		 * If objects are allowed to raise the linger timeout, the user's timeout is not respected. This isn't what we want: users should always be able to know when
+		 * their objects die.
+		 * */
+		double actual_timeout = suggested_timeout;
+		if (delete_cfg.linger_timeout != 0.0) {
+			actual_timeout = std::min(suggested_timeout, delete_cfg.linger_timeout);
+		}
+		double block_timeout = std::ceil(actual_timeout * config::SR / config::BLOCK_SIZE);
+		std::uint64_t block_time = this->getBlockTime() + block_timeout;
+		/**
+		 * Then schedule the delete.
+		 * */
+		this->lingering_objects.push(block_time, obj);
+	});
 }
 
 }

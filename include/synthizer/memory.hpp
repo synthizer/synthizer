@@ -289,6 +289,8 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	 * implemented linger behavior return true
 	 * 
 	 * used to optimize object deletion by not enqueueing things in the priority queue.
+	 * 
+	 * May be called from any thread.
 	 * */
 	virtual bool wantsLinger() {
 		return false;
@@ -303,6 +305,8 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	 * more than once.
 	 * 
 	 * Will be called in the audio thread.
+	 * 
+	 * Should never return 0. Currently, Synthizer relies on this value being accurate.
 	 * */
 	virtual double startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) {
 		this->linger_reference = reference;
