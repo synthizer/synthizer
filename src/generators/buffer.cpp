@@ -180,6 +180,31 @@ void BufferGenerator::handleEndEvent() {
 	}
 }
 
+bool BufferGenerator::wantsLinger() {
+	return true;
+}
+
+double BufferGenerator::startLingering(const std::shared_ptr<CExposable> &obj, double configured_timeout) {
+	CExposable::startLingering(obj, configured_timeout);
+
+	/**
+	 * To linger, stop any looping, then set the timeout to the duration of the buffer
+	 * minus the current position.
+	 * */
+	double pos = this->getPlaybackPosition();
+	this->setLooping(false);
+	auto buf = this->getBuffer();
+	auto buf_strong = buf.lock();
+	if (buf_strong == nullptr) {
+		return 0.0;
+	}
+	double remaining = buf_strong->getLength() / (double)config::SR - pos;
+	if (remaining < 0.0) {
+		return 0.0;
+	}
+	return remaining;
+}
+
 }
 
 using namespace synthizer;

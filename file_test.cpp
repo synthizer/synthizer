@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_initializeWithConfig(&library_config));
 
 	CHECKED(syz_createContext(&context));
-	CHECKED(syz_setI(context, SYZ_P_PANNER_STRATEGY, SYZ_PANNER_STRATEGY_HRTF));
+	CHECKED(syz_setI(context, SYZ_P_DEFAULT_PANNER_STRATEGY, SYZ_PANNER_STRATEGY_HRTF));
 
 	CHECKED(syz_contextEnableEvents(context));
 	CHECKED(syz_createSource3D(&source, context));

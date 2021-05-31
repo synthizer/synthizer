@@ -245,9 +245,9 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	}
 
 	/**
-	 * Returns whether this was the last reference, which is used to know if this object will be dropped at the end of `syz_decRef`.
+	 * Returns the new reference count, which is used to know if this object will be dropped at the end of `syz_decRef`.
 	 * */
-	bool decRef() {
+	unsigned int decRef() {
 		unsigned int cur = this->reference_count.load(std::memory_order_relaxed);
 		while (cur != 0) {
 			if (this->reference_count.compare_exchange_strong(cur, cur - 1, std::memory_order_release, std::memory_order_relaxed)) {
@@ -257,9 +257,8 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 		/* Be careful: compare_exchange_strong doesn't set cur when it succeeds. */
 		if (cur == 1) {
 			this->internal_reference = nullptr;
-			return true;
 		}
-		return false;
+		return cur - 1;
 	}
 
 	std::shared_ptr<CExposable> getInternalReference() {
@@ -306,7 +305,7 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	 * 
 	 * Will be called in the audio thread.
 	 * 
-	 * Should never return 0. Currently, Synthizer relies on this value being accurate.
+	 * Currently, Synthizer relies on this value being accurate.
 	 * */
 	virtual double startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) {
 		this->linger_reference = reference;
