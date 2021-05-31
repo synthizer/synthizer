@@ -257,3 +257,14 @@ SYZ_CAPI syz_ErrorCode syz_setBiquad(syz_Handle target, int property, const stru
 	SYZ_EPILOGUE
 }
 
+SYZ_CAPI void syz_initDeleteBehaviorConfig(struct syz_DeleteBehaviorConfig *cfg) {
+	*cfg = syz_DeleteBehaviorConfig{};
+}
+
+SYZ_CAPI syz_ErrorCode syz_configureDeleteBehavior(syz_Handle object, struct syz_DeleteBehaviorConfig *cfg) {
+	SYZ_PROLOGUE
+	(void)object;
+	(void)cfg;
+	return 0;
+	SYZ_EPILOGUE
+}

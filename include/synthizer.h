@@ -135,6 +135,23 @@ SYZ_CAPI const char *syz_getLastErrorMessage();
 SYZ_CAPI syz_ErrorCode syz_handleIncRef(syz_Handle handle);
 SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle);
 
+struct syz_DeleteBehaviorConfig {
+	/**
+	 * Configure this object to linger.  For instance, causes
+	 * buffer generators to not delete themselves until they finish playing their current buffer. behavior
+	 * is object specific.
+	 * */
+	int linger;
+	/**
+	 * If nonzero, set the time the object is allowed to linger for. After this timeout,
+	 * the object is force deleted 
+	 * */
+	double linger_timeout;
+};
+
+SYZ_CAPI void syz_initDeleteBehaviorConfig(struct syz_DeleteBehaviorConfig *cfg);
+SYZ_CAPI syz_ErrorCode syz_configureDeleteBehavior(syz_Handle object, struct syz_DeleteBehaviorConfig *cfg);
+
 /**
  * Query the type of a handle. Returns one of the SYZ_OTYPE constants.
  * */
