@@ -2,6 +2,7 @@
 
 #include "synthizer.h"
 
+#include "synthizer/cells.hpp"
 #include "synthizer/error.hpp"
 #include "synthizer/trylock.hpp"
 
@@ -268,6 +269,15 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 		this->internal_reference = nullptr;
 	}
 
+
+	struct syz_DeleteBehaviorConfig getDeleteBehaviorConfig() {
+		return this->delete_behavior.read();
+	}
+
+	void setDeleteBehaviorConfig(struct syz_DeleteBehaviorConfig cfg) {
+		this->delete_behavior.write(cfg);
+	}
+
 	private:
 	/*
 	 * Reference counts start at 0 because if this object is internal to the library,then the object won't be
@@ -283,6 +293,7 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 
 	std::atomic<unsigned char> permanently_dead = 0;
 	TryLock<UserdataDef> userdata{};
+	LatchCell<struct syz_DeleteBehaviorConfig> delete_behavior;
 };
 
 /*
