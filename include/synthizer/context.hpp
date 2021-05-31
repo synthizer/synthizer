@@ -7,6 +7,7 @@
 #include "synthizer/fade_driver.hpp"
 #include "synthizer/panner_bank.hpp"
 #include "synthizer/pausable.hpp"
+#include "synthizer/priority_queue.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/mpsc_ring.hpp"
 #include "synthizer/router.hpp"
@@ -17,12 +18,14 @@
 
 #include <atomic>
 #include <array>
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <thread>
 #include <utility>
+
 struct syz_Event;
 
 namespace synthizer {
@@ -332,6 +335,11 @@ class Context: public Pausable, public BaseObject {
 
 	/* Events support. */
 	EventSender event_sender;
+
+	/**
+	 * A queue mapping objects which wish to linger to their linger timeout converted to blocks. Uses std::UINT64_MAX as infinity.
+	 * */
+	PriorityQueue<std::uint64_t, std::weak_ptr<CExposable>> lingering_objects;
 
 	FadeDriver gain_driver{1.0f, 1};
 };
