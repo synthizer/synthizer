@@ -263,8 +263,8 @@ SYZ_CAPI void syz_initDeleteBehaviorConfig(struct syz_DeleteBehaviorConfig *cfg)
 
 SYZ_CAPI syz_ErrorCode syz_configureDeleteBehavior(syz_Handle object, struct syz_DeleteBehaviorConfig *cfg) {
 	SYZ_PROLOGUE
-	(void)object;
-	(void)cfg;
+	auto obj = fromC<BaseObject>(object);
+	obj->setDeleteBehaviorConfig(*cfg);
 	return 0;
 	SYZ_EPILOGUE
 }

@@ -92,8 +92,19 @@ class BaseObject: public CExposable {
 		return nullptr;
 	}
 
+	struct syz_DeleteBehaviorConfig getDeleteBehaviorConfig() {
+		return this->delete_behavior.read();
+	}
+
+	void setDeleteBehaviorConfig(struct syz_DeleteBehaviorConfig cfg) {
+		this->delete_behavior.write(cfg);
+	}
+
 	protected:
 	std::shared_ptr<Context> context;
+
+	private:
+	LatchCell<struct syz_DeleteBehaviorConfig> delete_behavior;
 };
 
 }
