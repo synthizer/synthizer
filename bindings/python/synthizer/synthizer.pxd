@@ -58,6 +58,14 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_handleDecRef(syz_Handle handle)
 
+    cdef struct syz_DeleteBehaviorConfig:
+        int linger
+        double linger_timeout
+
+    void syz_initDeleteBehaviorConfig(syz_DeleteBehaviorConfig* cfg)
+
+    syz_ErrorCode syz_configureDeleteBehavior(syz_Handle object, syz_DeleteBehaviorConfig* cfg)
+
     syz_ErrorCode syz_handleGetObjectType(int* out, syz_Handle handle)
 
     syz_ErrorCode syz_getUserdata(void** out, syz_Handle handle)
