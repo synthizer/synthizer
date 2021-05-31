@@ -168,7 +168,7 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 		if (this->isPaused()) {
 			return;
 		}
-	
+
 		std::fill(this->getDirectBuffer(), this->getDirectBuffer() + config::BLOCK_SIZE * channels, 0.0f);
 
 		auto i = this->sources.begin();
@@ -196,7 +196,7 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 		}
 
 		/**
-		 * Handle gain. Note that destination was zeroed and only contains audio from this invocation, so the final step is to
+		 * Handle gain. Note that destination was zeroed and only contains audio from this invocation.
 		 * 
 		 * This must come after commands, which might change the property.
 		 * */
@@ -218,6 +218,18 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 					destination[ind] *= g;
 				}
 			}
+		});
+
+		this->lingering_objects.popUntilPriority(this->getBlockTime(), [](auto prio, auto &obj) {
+			(void)prio;
+			auto strong = obj.lock();
+			if (strong) {
+				strong->dieNow();
+			}
+		});
+		this->lingering_objects.filterAllItems([](auto prio, auto &obj) { 
+			(void)prio;
+			return obj.expired();
 		});
 
 		this->block_time++;

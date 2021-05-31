@@ -67,11 +67,13 @@ class PriorityQueue {
 				return;
 			}
 			std::pop_heap(this->elements.begin(), this->elements.end(), heap_cmp<PRIO, ELEM>);
-			if (std::get<0>(this->elements.last()) > priority) {
-				std::push_heap(this->elements.begin(), this->elements.end(), heap_cmp<PRIO, ELEMM>);
+			if (std::get<0>(this->elements.back()) > priority) {
+				std::push_heap(this->elements.begin(), this->elements.end(), heap_cmp<PRIO, ELEM>);
 				return;
 			}
-			closure(this->elements.pop_back());
+			auto [prio, elem] = this->elements.back();
+			elements.pop_back();
+			closure(prio, elem);
 		}
 	}
 
@@ -86,7 +88,7 @@ class PriorityQueue {
 		bool did_filter = false;
 		vector_helpers::filter(this->elements, [&](auto &element) {
 			bool ret = closure(std::get<0>(element), std::get<1>(element));
-			did_filter ||= ret;
+			did_filter |= ret;
 			return ret;
 		});
 		/**
@@ -95,7 +97,7 @@ class PriorityQueue {
 		 * nothing is dropped from the queue, which we expect to be the common
 		 * case.
 		 * */
-		if (this->elements.empty( || did_filter == false) {
+		if (this->elements.empty() || did_filter == false) {
 			return;
 		}
 		std::make_heap(this->elements.begin(), this->elements.end(), heap_cmp<PRIO, ELEM>);
