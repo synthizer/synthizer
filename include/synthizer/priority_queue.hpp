@@ -11,7 +11,7 @@ namespace synthizer {
 namespace {
 template<typename PRIO, typename ELEM>
 bool heap_cmp(const std::tuple<PRIO, ELEM> &a, const std::tuple<PRIO, ELEM> &b) {
-	std::get<0>(b) < std::get<0>(a);
+	return std::get<0>(b) < std::get<0>(a);
 }
 
 }
