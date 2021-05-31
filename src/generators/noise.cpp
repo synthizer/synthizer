@@ -43,6 +43,15 @@ for (unsigned int i = 0; i < this->channels; i++) {
 	});
 }
 
+double ExposedNoiseGenerator::startLingering(const std::shared_ptr<CExposable> &obj, double configured_timeout) {
+	CExposable::startLingering(obj, configured_timeout);
+	setGain(0.0);
+	/**
+	 * Linger for one block, to give the gain a chance to fade out.
+	 * */
+	return config::BLOCK_SIZE / (double)config::SR;
+}
+
 }
 
 using namespace synthizer;

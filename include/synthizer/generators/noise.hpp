@@ -34,6 +34,8 @@ class ExposedNoiseGenerator: public Generator {
 
 	void generateBlock(float *out, FadeDriver *gain_driver) override;
 
+	double startLingering(const std::shared_ptr<CExposable> &obj, double configured_timeout);
+
 	#define PROPERTY_CLASS ExposedNoiseGenerator
 	#define PROPERTY_LIST NOISE_GENERATOR_PROPERTIES
 	#define PROPERTY_BASE Generator
