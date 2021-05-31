@@ -244,7 +244,10 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 		return false;
 	}
 
-	void decRef() {
+	/**
+	 * Returns whether this was the last reference, which is used to know if this object will be dropped at the end of `syz_decRef`.
+	 * */
+	bool decRef() {
 		unsigned int cur = this->reference_count.load(std::memory_order_relaxed);
 		while (cur != 0) {
 			if (this->reference_count.compare_exchange_strong(cur, cur - 1, std::memory_order_release, std::memory_order_relaxed)) {
@@ -254,7 +257,9 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 		/* Be careful: compare_exchange_strong doesn't set cur when it succeeds. */
 		if (cur == 1) {
 			this->internal_reference = nullptr;
+			return true;
 		}
+		return false;
 	}
 
 	std::shared_ptr<CExposable> getInternalReference() {
@@ -267,8 +272,8 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	 * */
 	void dieNow() {
 		this->internal_reference = nullptr;
+		this->linger_reference = nullptr;
 	}
-
 
 	struct syz_DeleteBehaviorConfig getDeleteBehaviorConfig() {
 		return this->delete_behavior.read();
@@ -276,6 +281,32 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 
 	void setDeleteBehaviorConfig(struct syz_DeleteBehaviorConfig cfg) {
 		this->delete_behavior.write(cfg);
+	}
+
+	/**
+	 * Return true if this object wants to linger.
+	 * Buffers, contexts, etc. return false. Generators, etc. with
+	 * implemented linger behavior return true
+	 * 
+	 * used to optimize object deletion by not enqueueing things in the priority queue.
+	 * */
+	virtual bool wantsLinger() {
+		return false;
+	}
+
+	/**
+	 * Stash an internal reference to keep this object alive. Also tell derived classes that lingering has begun.
+	 * 
+	 * Should return a suggested timeout in seconds for lingering. This is e.g. the length of the buffer in a BufferGenerator.
+	 * 
+	 * `configured_timeout` is the currently configured linger timeout, which is retrieved by the caller so that the `LatchCell` doesn't need to do a rather complicated runaround for us
+	 * more than once.
+	 * 
+	 * Will be called in the audio thread.
+	 * */
+	virtual double startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) {
+		this->linger_reference = reference;
+		return configured_timeout;
 	}
 
 	private:
@@ -290,6 +321,11 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	 * keeps this object alive until set to nullptr.
 	 * */
 	std::shared_ptr<CExposable> internal_reference = nullptr;
+	/**
+	 * Keeps this object alive when lingering.
+	 * */
+	std::shared_ptr<CExposable> linger_reference = nullptr;
+
 
 	std::atomic<unsigned char> permanently_dead = 0;
 	TryLock<UserdataDef> userdata{};

@@ -102,7 +102,12 @@ SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle) {
 		return 0;
 	}
 	auto h = fromC<CExposable>(handle);
-	h->decRef();
+	if (h->decRef() == 0) {
+		auto bo = std::dynamic_pointer_cast<BaseObject>(h);
+		if (bo) {
+			bo->getContext()->doLinger(bo);
+		}
+	}
 	return 0;
 	SYZ_EPILOGUE
 }

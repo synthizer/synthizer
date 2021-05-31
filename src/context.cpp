@@ -264,6 +264,10 @@ void Context::getNextEvent(syz_Event *out, unsigned long long flags) {
 	this->event_sender.getNextEvent(out, flags);
 }
 
+void Context::doLinger(const std::shared_ptr<BaseObject> &obj) {
+	(void)obj;
+}
+
 }
 
 using namespace synthizer;

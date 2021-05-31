@@ -261,8 +261,19 @@ class Context: public Pausable, public BaseObject {
 	 * Used by the C API for events:
 	 * */
 	void enableEvents();
-	void getNextEvent(syz_Event *out, unsigned long long flags);
 	/* May be called from any thread as it is backed by a MPMC queue. */
+	void getNextEvent(syz_Event *out, unsigned long long flags);
+
+	/**
+	 * Begin lingering for an object.
+	 * 
+	 * Though users can call `syz_configureDeleteBehavior` on any object, it's only really implemented for objects
+	 * which have access to a context.
+	 * 
+	 * Handles the `shouldLinger` etc. runaround and won't do anything if the object just wants
+	 * to die immediately.
+	 * */
+	void doLinger(const std::shared_ptr<BaseObject> &obj);
 
 	#define PROPERTY_CLASS Context
 	#define PROPERTY_BASE BaseObject

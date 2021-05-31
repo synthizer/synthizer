@@ -149,7 +149,7 @@ namespace referencing_cmd_details {
 	 * The first parameter is a boolean, written to if the template
 	 * successfully promoted to shared_ptr.  This is done as:
 	 * 
-	 * *success = *sucess && new_success
+	 * *success = *success && new_success
 	 * 
 	 * So that the higher level template can tell if *any* of these failed, not just the current one.
 	 * */
