@@ -15,6 +15,7 @@
 
 #include <array>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace synthizer {
@@ -42,6 +43,9 @@ class Source: public RouteOutput, public Pausable {
 	virtual void removeGenerator(std::shared_ptr<Generator> &gen);
 	bool hasGenerator(std::shared_ptr<Generator> &generator);
 
+	bool wantsLinger() override;
+	std::optional<double> startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) override;
+
 	#define PROPERTY_CLASS Source
 	#define PROPERTY_BASE BaseObject
 	#define PROPERTY_LIST SOURCE_PROPERTIES
@@ -67,6 +71,15 @@ class Source: public RouteOutput, public Pausable {
 	/* Used to detect channel changes in fillBlock. */
 	unsigned int last_channels = 0;
 	std::shared_ptr<BiquadFilter> filter = nullptr, filter_direct = nullptr, filter_effects = nullptr;
+	bool is_lingering = false;
+	/**
+	 * A countdown for lingering. Decremented for every block after there are no generators. When it hits zero,
+	 * the source enqueues itself for death.
+	 * 
+	 * This exists because some source/panner types need a few blocks of audio to finish fading out, as do the
+	 * filters. Without it, sources can click on death.
+	 * */
+	unsigned int linger_countdown = 3;
 };
 
 class DirectSource: public Source {

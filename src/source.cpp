@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <array>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace synthizer {
@@ -130,6 +131,27 @@ void Source::fillBlock(unsigned int channels) {
 	 * And now the direct filter, which applies only to the source's local block.
 	 * */
 	this->filter_direct->processBlock(&this->block[0], &this->block[0], false);
+
+	if (this->is_lingering && this->generators.empty()) {
+		this->linger_countdown--;
+		if (this->linger_countdown == 0) {
+			this->stopLingering();
+		}
+	}
+}
+
+bool Source::wantsLinger() {
+	return true;
+}
+
+std::optional<double> Source::startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) {
+	CExposable::startLingering(reference, configured_timeout);
+
+	this->is_lingering = true;
+	/**
+	 * Sources linger until they have no generators.
+	 * */
+	return std::nullopt;
 }
 
 }
