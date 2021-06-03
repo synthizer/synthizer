@@ -288,7 +288,12 @@ void Context::doLinger(const std::shared_ptr<BaseObject> &obj) {
 	}
 
 	this->enqueueCallbackCommand([this, obj, delete_cfg]() {
-		double suggested_timeout = obj->startLingering(obj, delete_cfg.linger_timeout);
+		auto maybe_suggested_timeout = obj->startLingering(obj, delete_cfg.linger_timeout);
+		if (!maybe_suggested_timeout && delete_cfg.linger_timeout <= 0.0) {
+		/* The object will manage ending the linger itself. */
+			return;
+		}
+		double suggested_timeout = maybe_suggested_timeout.value_or(delete_cfg.linger_timeout);
 		/**
 		 * If objects are allowed to raise the linger timeout, the user's timeout is not respected. This isn't what we want: users should always be able to know when
 		 * their objects die.

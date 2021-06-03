@@ -17,6 +17,7 @@
 #include <cmath>
 #include <cstdint>
 #include <memory>
+#include <optional>
 
 namespace synthizer {
 
@@ -184,7 +185,7 @@ bool BufferGenerator::wantsLinger() {
 	return true;
 }
 
-double BufferGenerator::startLingering(const std::shared_ptr<CExposable> &obj, double configured_timeout) {
+std::optional<double> BufferGenerator::startLingering(const std::shared_ptr<CExposable> &obj, double configured_timeout) {
 	CExposable::startLingering(obj, configured_timeout);
 
 	/**

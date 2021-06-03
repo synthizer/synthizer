@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <memory>
 #include <new>
+#include <optional>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -305,11 +306,14 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	 * 
 	 * Will be called in the audio thread.
 	 * 
-	 * Currently, Synthizer relies on this value being accurate.
+	 * If this function returns an empty optional, the object will handle ending the linger itself, 
+	 * 
+	 * The derived class must always call this function so that internal references may be properly assigned, but may otherwise
+	 * ignore the return value.
 	 * */
-	virtual double startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) {
+	virtual std::optional<double> startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) {
 		this->linger_reference = reference;
-		return configured_timeout;
+		return std::optional(configured_timeout);
 	}
 
 	private:

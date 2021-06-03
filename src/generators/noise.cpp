@@ -43,7 +43,7 @@ for (unsigned int i = 0; i < this->channels; i++) {
 	});
 }
 
-double ExposedNoiseGenerator::startLingering(const std::shared_ptr<CExposable> &obj, double configured_timeout) {
+std::optional<double> ExposedNoiseGenerator::startLingering(const std::shared_ptr<CExposable> &obj, double configured_timeout) {
 	CExposable::startLingering(obj, configured_timeout);
 	setGain(0.0);
 	/**
