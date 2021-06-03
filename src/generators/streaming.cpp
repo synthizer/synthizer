@@ -109,6 +109,10 @@ struct FillBufferRet {
 	double position = 0.0;
 	unsigned int looped_count = 0;
 	unsigned int finished_count = 0;
+	/**
+	 * True if the block wasn't completely filled.
+	 * */
+	bool is_incomplete = false;
 };
 
 /*
@@ -146,6 +150,7 @@ static FillBufferRet fillBufferFromDecoder(AudioDecoder &decoder, unsigned int s
 		}
 	}
 	std::fill(cursor, cursor + needed*channels, 0.0f);
+	ret.is_incomplete = needed != 0;
 	return ret;
 }
 
