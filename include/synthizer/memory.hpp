@@ -306,7 +306,7 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	 * 
 	 * Will be called in the audio thread.
 	 * 
-	 * If this function returns an empty optional, the object will handle ending the linger itself, 
+	 * If this function returns an empty optional, the object will handle ending the linger itself.
 	 * 
 	 * The derived class must always call this function so that internal references may be properly assigned, but may otherwise
 	 * ignore the return value.
@@ -316,7 +316,21 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 		return std::optional(configured_timeout);
 	}
 
+	/**
+	 * Stop lingering for this object.  For any object deriving directly or indirectly from baseObject, this function should only be called
+	 * from the audio thread.
+	 * 
+	 * The CExposable version does nothing, but the BaseObject version enqueues a command with the context which will destroy the object
+	 * after the current tick.  Implementors should be careful that their implementations don't
+	 * destroy the object while still inside member functions of the object itself, which is usually guarded against by a parent caller holing a
+	 * strong reference via shared_ptr (e.g. the loops in Context::generateAudio).
+	 * */
+	virtual void stopLingering() {
+	}
+
 	private:
+	friend class BaseObject;
+
 	/*
 	 * Reference counts start at 0 because if this object is internal to the library,then the object won't be
 	 * accessible to the user and is kept alive by shared_ptr and weak_ptr.
@@ -332,7 +346,6 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	 * Keeps this object alive when lingering.
 	 * */
 	std::shared_ptr<CExposable> linger_reference = nullptr;
-
 
 	std::atomic<unsigned char> permanently_dead = 0;
 	TryLock<UserdataDef> userdata{};

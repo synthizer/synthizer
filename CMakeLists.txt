@@ -86,6 +86,7 @@ set(SYNTHIZER_LIB_TYPE STATIC CACHE STRING "The build type for Synthizer. Either
 add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/audio_output.cpp
 	src/background_thread.cpp
+	src/base_object.cpp
 	src/biquad.cpp
 	src/block_buffer_cache.cpp
 	src/buffer.cpp

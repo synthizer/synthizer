@@ -272,8 +272,18 @@ class Context: public Pausable, public BaseObject {
 	 * 
 	 * Handles the `shouldLinger` etc. runaround and won't do anything if the object just wants
 	 * to die immediately.
+	 * 
+	 * Should not be called from the audio thread.
 	 * */
 	void doLinger(const std::shared_ptr<BaseObject> &obj);
+
+	/**
+	 * Enqueue an object to stop lingering immediately. Note that stopLingering is a base class method
+	 * used as part of the linger machinery, and so the name must be different.  If called
+	 * as part of the audio tick and assuming the object is already otherwise dead, the object will be dropped
+	 * before the next audio tick.
+	 * */
+	void enqueueLingerStop(const std::shared_ptr<BaseObject> &obj);
 
 	#define PROPERTY_CLASS Context
 	#define PROPERTY_BASE BaseObject

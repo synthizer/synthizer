@@ -311,6 +311,10 @@ void Context::doLinger(const std::shared_ptr<BaseObject> &obj) {
 	});
 }
 
+void Context::enqueueLingerStop(const std::shared_ptr<BaseObject> &obj) {
+	this->lingering_objects.push(0, std::static_pointer_cast<CExposable>(obj));
+}
+
 }
 
 using namespace synthizer;
