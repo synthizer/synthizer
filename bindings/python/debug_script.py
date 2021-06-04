@@ -20,10 +20,10 @@ synthizer.initialize(
     log_level=synthizer.LogLevel.DEBUG, logging_backend=synthizer.LoggingBackend.STDERR
 )
 ctx = synthizer.Context(enable_events=True)
-buffer = synthizer.Buffer.from_stream_params("file", sys.argv[1])
-gen = synthizer.BufferGenerator(ctx)
-gen.buffer = buffer
-# buffer = synthizer.Buffer.from_stream("file", sys.argv[1], "")
+#buffer = synthizer.Buffer.from_stream_params("file", sys.argv[1])
+#gen = synthizer.BufferGenerator(ctx)
+gen = synthizer.StreamingGenerator.from_file(ctx, sys.argv[1])
+
 # gen.buffer = buffer
 # ctx.panner_strategy = synthizer.PannerStrategy.HRTF
 src = synthizer.PannedSource(ctx)

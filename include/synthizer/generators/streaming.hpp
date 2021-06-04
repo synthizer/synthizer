@@ -30,6 +30,11 @@ class StreamingGeneratorCommand {
 	double final_position = 0.0;
 	/* Used to send events from the main thread. */
 	unsigned int finished_count = 0, looped_count = 0;
+	/**
+	 * True if this block was partial, which can happen if the block
+	 * had an error or was past the end of the stream.
+	 * */
+	bool partial = false;
 };
 
 class StreamingGenerator: public Generator {
@@ -41,6 +46,9 @@ class StreamingGenerator: public Generator {
 	int getObjectType() override;
 	unsigned int getChannels() override;
 	void generateBlock(float *output, FadeDriver *gain_driver) override;
+
+	bool wantsLinger() override;
+	std::optional<double> startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) override;
 
 	#define PROPERTY_CLASS StreamingGenerator
 	#define PROPERTY_LIST STREAMING_GENERATOR_PROPERTIES
@@ -58,10 +66,13 @@ class StreamingGenerator: public Generator {
 	deferred_vector<StreamingGeneratorCommand> commands;
 	/* Allocates the buffers for the commands contiguously. */
 	deferred_vector<float> buffer;
-	/* Everything below here is owned by the background thread. */
 	double background_position = 0.0;
 	/* Used to guard against spamming finished events. */
 	bool sent_finished = false;
+	/**
+	 * Toggled in the audio thread when lingering begins.
+	 * */
+	bool is_lingering = false;
 };
 
 }

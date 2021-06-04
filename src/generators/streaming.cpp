@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <optional>
 
 namespace synthizer {
 
@@ -102,6 +103,11 @@ void StreamingGenerator::generateBlock(float *output, FadeDriver *gd) {
 		cmd->seek.emplace(new_pos);
 	}
 	this->setPlaybackPosition(cmd->final_position, false);
+
+	if (cmd->partial && this->is_lingering) {
+		this->stopLingering();
+	}
+
 	this->background_thread.send(cmd);
 }
 
@@ -112,7 +118,7 @@ struct FillBufferRet {
 	/**
 	 * True if the block wasn't completely filled.
 	 * */
-	bool is_incomplete = false;
+	bool partial = false;
 };
 
 /*
@@ -150,7 +156,7 @@ static FillBufferRet fillBufferFromDecoder(AudioDecoder &decoder, unsigned int s
 		}
 	}
 	std::fill(cursor, cursor + needed*channels, 0.0f);
-	ret.is_incomplete = needed != 0;
+	ret.partial = needed != 0;
 	return ret;
 }
 
@@ -185,6 +191,7 @@ void StreamingGenerator::generateBlockInBackground(StreamingGeneratorCommand *cm
 		cmd->looped_count = fill_info.looped_count;
 		cmd->finished_count = fill_info.finished_count;
 		cmd->final_position = this->background_position;
+		cmd->partial = fill_info.partial;
 		/*
 		 * Guard against flooding the event queue.
 		 * */
@@ -195,7 +202,28 @@ void StreamingGenerator::generateBlockInBackground(StreamingGeneratorCommand *cm
 		}
 	} catch(std::exception &e) {
 		logError("Background thread for streaming generator had error: %s. Trying to recover...", e.what());
+		cmd->partial = true;
 	}
+}
+
+bool StreamingGenerator::wantsLinger() {
+	return true;
+}
+
+std::optional<double> StreamingGenerator::startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) {
+	CExposable::startLingering(reference, configured_timeout);
+
+	/**
+	 * The streaming generator lingers until it gets  apartial block from the background thread, which
+	 * either means that the stream finished or errored.  We don't
+	 * try to recover from errors.
+	 * 
+	 * We can't always know the duration of streams. When we can, we can't know if they will underrun.  Consequently,
+	 * we can't specify a linger timeout.
+	 * */
+	setLooping(false);
+	this->is_lingering = true;
+	return std::nullopt;
 }
 
 }
