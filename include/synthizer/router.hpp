@@ -107,8 +107,10 @@ class Router {
 	void configureRoute(OutputHandle *output, InputHandle *input, float gain, unsigned int fade_blocks_in, syz_BiquadConfig filter_cfg);
 	/* Remove a route. If it doesn't exist, do nothing. */
 	void removeRoute(OutputHandle *output, InputHandle *input, unsigned int fade_out = 1);
-	/* Remove all routes for a specified WriteHandle. */
+	/* Remove all routes for a specified handle. */
 	void removeAllRoutes(OutputHandle *output, unsigned int fade_out = 1);
+	void removeAllRoutes(InputHandle *input, unsigned int fade_out = 1);
+
 	/* Signal the router that we are finished with a block of audio. Increments the internal timestamp. */
 	void finishBlock();
 

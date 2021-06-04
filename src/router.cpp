@@ -147,6 +147,15 @@ void Router::removeAllRoutes(OutputHandle *output, unsigned int fade_out) {
 	}
 }
 
+void Router::removeAllRoutes(InputHandle *input, unsigned int fade_out) {
+	for (auto &i: this->routes) {
+		if (i.input != input) {
+			continue;
+		}
+		this->configureRoute(i.output, i.input, 0.0f, fade_out, i.external_filter_config);
+	}
+}
+
 void Router::finishBlock() {
 	this->time++;
 	vector_helpers::filter_stable(this->routes, [&](auto &r) {
