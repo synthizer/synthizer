@@ -213,6 +213,10 @@ bool StreamingGenerator::wantsLinger() {
 std::optional<double> StreamingGenerator::startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) {
 	CExposable::startLingering(reference, configured_timeout);
 
+	if (this->isPaused()) {
+		return config::BLOCK_SIZE / (double)config::SR;
+	}
+
 	/**
 	 * The streaming generator lingers until it gets  apartial block from the background thread, which
 	 * either means that the stream finished or errored.  We don't

@@ -188,6 +188,10 @@ bool BufferGenerator::wantsLinger() {
 std::optional<double> BufferGenerator::startLingering(const std::shared_ptr<CExposable> &obj, double configured_timeout) {
 	CExposable::startLingering(obj, configured_timeout);
 
+	if (this->isPaused()) {
+		return config::BLOCK_SIZE / (double)config::SR;
+	}
+
 	/**
 	 * To linger, stop any looping, then set the timeout to the duration of the buffer
 	 * minus the current position.

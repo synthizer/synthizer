@@ -48,6 +48,8 @@ std::optional<double> ExposedNoiseGenerator::startLingering(const std::shared_pt
 	setGain(0.0);
 	/**
 	 * Linger for one block, to give the gain a chance to fade out.
+	 * 
+	 * This is also sufficient for if the generator is paused.
 	 * */
 	return config::BLOCK_SIZE / (double)config::SR;
 }
