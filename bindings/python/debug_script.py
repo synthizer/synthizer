@@ -30,5 +30,10 @@ src = synthizer.PannedSource(ctx)
 src.add_generator(gen)
 src.panner_strategy = synthizer.PannerStrategy.HRTF
 
-reverb = synthizer.GlobalFdnReverb(ctx)
-ctx.config_route(src, reverb)
+#reverb = synthizer.GlobalFdnReverb(ctx)
+echo=synthizer.GlobalEcho(ctx)
+tap = synthizer.EchoTapConfig(gain_l=1.0, gain_r=1.0, delay=2.0)
+echo.set_taps([tap])
+ctx.config_route(src, echo)
+echo.configure_delete_behavior(linger=True)
+

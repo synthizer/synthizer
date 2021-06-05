@@ -33,6 +33,13 @@ class BaseEffect {
 	 * */
 	virtual void runEffect(unsigned int time_in_blocks, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) = 0;
 	virtual void resetEffect() = 0;
+
+	/**
+	 * All derived effects must know how long they wish to linger for. This is not optional.
+	 * 
+	 * The actual lingering behavior is handled in e.g. GlobalEffect.
+	 * */
+	virtual double getEffectLingerTimeout() = 0;
 };
 
 }

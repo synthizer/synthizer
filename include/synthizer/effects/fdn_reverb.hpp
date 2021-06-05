@@ -64,6 +64,8 @@ class FdnReverbEffect: public BASE {
 
 	void runEffect(unsigned int block_time, unsigned int input_channels, float *input, unsigned int output_channels, float *output, float gain) override;
 	void resetEffect() override;
+	double getEffectLingerTimeout() override;
+
 
 	#define PROPERTY_CLASS FdnReverbEffect
 	#define PROPERTY_BASE BASE
@@ -367,6 +369,11 @@ void FdnReverbEffect<BASE>::runEffect(unsigned int block_time, unsigned int inpu
 	});
 
 	mixChannels(config::BLOCK_SIZE, output_buf_ptr, 2, output, output_channels);
+}
+
+template<typename BASE>
+double FdnReverbEffect<BASE>::getEffectLingerTimeout() {
+	return this->getT60();
 }
 
 }

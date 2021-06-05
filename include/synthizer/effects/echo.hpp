@@ -11,6 +11,7 @@
 #include <concurrentqueue.h>
 
 #include <array>
+#include <algorithm>
 #include <utility>
 
 namespace synthizer {
@@ -53,6 +54,8 @@ class EchoEffect: public BASE, public EchoEffectCInterface {
 	void resetEffect() override;
 
 	void pushNewConfig(deferred_vector<EchoTapConfig> &&config) override;
+
+	double getEffectLingerTimeout() override;
 
 	private:
 	/*
@@ -159,9 +162,22 @@ void EchoEffect<BASE>::resetEffect() {
 
 template<typename BASE>
 void EchoEffect<BASE>::pushNewConfig(deferred_vector<EchoTapConfig> &&config) {
+	std::sort(config.begin(), config.end(), [](auto &a, auto &b) {
+		return a.delay < b.delay;
+	});
 	if (this->pending_configs.enqueue(std::move(config)) == false) {
 		throw std::bad_alloc();
 	}
+}
+
+template<typename BASE>
+double EchoEffect<BASE>::getEffectLingerTimeout() {
+	/**
+	 * The best we can do is linger until the entire delay line is empty.
+	 * 
+	 * Add a block to prevent rounding error.
+	 * */
+	return (ECHO_MAX_DELAY / config::BLOCK_SIZE + 1)  * config::BLOCK_SIZE / (double)config::SR;
 }
 
 }

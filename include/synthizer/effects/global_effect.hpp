@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <array>
 #include <memory>
+#include <optional>
 #include <utility>
 
 namespace synthizer {
@@ -48,6 +49,22 @@ class GlobalEffect: public BaseEffect, public RouteInput {
 		 * */
 		std::fill(&this->input_buffer[0], &this->input_buffer[this->channels * config::BLOCK_SIZE], 0.0f);
 		this->time_in_blocks++;
+	}
+
+	bool wantsLinger() override {
+		return true;
+	}
+
+	std::optional<double> startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) override {
+		CExposable::startLingering(reference, configured_timeout);
+
+		double t = this->getEffectLingerTimeout();
+		/**
+		 * Now add in one block to allow for routes to also fade out.
+		 * */
+		t += config::BLOCK_SIZE / (double)config::SR;
+		this->getContextRaw()->getRouter()->removeAllRoutes(this->getInputHandle());
+		return t;
 	}
 
 	#define PROPERTY_CLASS GlobalEffect
