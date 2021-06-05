@@ -207,7 +207,8 @@ std::optional<double> BufferGenerator::startLingering(const std::shared_ptr<CExp
 	if (remaining < 0.0) {
 		return 0.0;
 	}
-	return remaining;
+	auto pb = this->getPitchBend();
+	return remaining / pb;
 }
 
 }
