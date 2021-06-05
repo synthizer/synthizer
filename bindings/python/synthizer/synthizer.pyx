@@ -257,14 +257,14 @@ cdef class _BaseObject:
         Py_INCREF(userdata)
         _checked(syz_setUserdata(self.handle, <void *>ud, userdataFree))
 
-    def configure_delete_behavior(self, linger = _DefaultSentinel, linger_timeout = _DefaultSentinel):
+    def config_delete_behavior(self, linger = _DefaultSentinel, linger_timeout = _DefaultSentinel):
         cdef syz_DeleteBehaviorConfig cfg
         syz_initDeleteBehaviorConfig(&cfg)
         if linger is not _DefaultSentinel:
             cfg.linger = linger
         if linger_timeout is not _DefaultSentinel:
             cfg.linger_timeout = linger_timeout
-        _checked(syz_configureDeleteBehavior(self.handle, &cfg))
+        _checked(syz_configDeleteBehavior(self.handle, &cfg))
 
 cdef class Pausable(_BaseObject):
     """Base class for anything which can be paused. Adds pause and play methods."""

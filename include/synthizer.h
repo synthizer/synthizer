@@ -150,7 +150,7 @@ struct syz_DeleteBehaviorConfig {
 };
 
 SYZ_CAPI void syz_initDeleteBehaviorConfig(struct syz_DeleteBehaviorConfig *cfg);
-SYZ_CAPI syz_ErrorCode syz_configureDeleteBehavior(syz_Handle object, struct syz_DeleteBehaviorConfig *cfg);
+SYZ_CAPI syz_ErrorCode syz_configDeleteBehavior(syz_Handle object, struct syz_DeleteBehaviorConfig *cfg);
 
 /**
  * Query the type of a handle. Returns one of the SYZ_OTYPE constants.

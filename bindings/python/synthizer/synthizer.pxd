@@ -64,7 +64,7 @@ cdef extern from "synthizer.h":
 
     void syz_initDeleteBehaviorConfig(syz_DeleteBehaviorConfig* cfg)
 
-    syz_ErrorCode syz_configureDeleteBehavior(syz_Handle object, syz_DeleteBehaviorConfig* cfg)
+    syz_ErrorCode syz_configDeleteBehavior(syz_Handle object, syz_DeleteBehaviorConfig* cfg)
 
     syz_ErrorCode syz_handleGetObjectType(int* out, syz_Handle handle)
 
