@@ -37,7 +37,7 @@ std::optional<double> Generator::startLingering(const std::shared_ptr<CExposable
 GeneratorRef::GeneratorRef(): ref() {
 }
 
-GeneratorRef::GeneratorRef(const std::shared_ptr<Generator> &generator): GeneratorRef(std::weak_ptr(generator)) {
+GeneratorRef::GeneratorRef(const std::shared_ptr<Generator> &generator): GeneratorRef(std::weak_ptr<Generator>(generator)) {
 }
 
 GeneratorRef::GeneratorRef(const std::weak_ptr<Generator> &weak): ref(weak) {
