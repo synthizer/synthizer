@@ -2,6 +2,11 @@
 
 #include "synthizer/context.hpp"
 
+#include <atomic>
+#include <cstdint>
+#include <memory>
+#include <optional>
+
 namespace synthizer {
 
 void Generator::run(float *output) {
@@ -18,6 +23,15 @@ void Generator::run(float *output) {
 	this->tickPausable();
 
 	this->generateBlock(output, &this->gain_driver);
+}
+
+bool Generator::wantsLinger() {
+	return true;
+}
+
+std::optional<double> Generator::startLingering(const std::shared_ptr<CExposable> &ref, double configured_timeout) {
+	CExposable::startLingering(ref, configured_timeout);
+	return std::nullopt;
 }
 
 GeneratorRef::GeneratorRef(): ref() {

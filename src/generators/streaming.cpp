@@ -206,10 +206,6 @@ void StreamingGenerator::generateBlockInBackground(StreamingGeneratorCommand *cm
 	}
 }
 
-bool StreamingGenerator::wantsLinger() {
-	return true;
-}
-
 std::optional<double> StreamingGenerator::startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) {
 	CExposable::startLingering(reference, configured_timeout);
 

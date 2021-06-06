@@ -181,10 +181,6 @@ void BufferGenerator::handleEndEvent() {
 	}
 }
 
-bool BufferGenerator::wantsLinger() {
-	return true;
-}
-
 std::optional<double> BufferGenerator::startLingering(const std::shared_ptr<CExposable> &obj, double configured_timeout) {
 	CExposable::startLingering(obj, configured_timeout);
 

@@ -9,6 +9,7 @@
 #include <atomic>
 #include <cstdint>
 #include <memory>
+#include <optional>
 
 namespace synthizer {
 
@@ -56,6 +57,8 @@ class Generator: public Pausable, public BaseObject {
 		return this->use_count.load(std::memory_order_relaxed) != 0;
 	}
 
+	bool wantsLinger() override;
+	std::optional<double> startLingering(const std::shared_ptr<CExposable> &ref, double configured_timeout) override;
 
 	#define PROPERTY_CLASS Generator
 	#define PROPERTY_LIST GENERATOR_PROPERTIES
