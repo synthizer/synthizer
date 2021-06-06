@@ -6,6 +6,7 @@
 #include "synthizer/config.hpp"
 #include "synthizer/fade_driver.hpp"
 #include "synthizer/faders.hpp"
+#include "synthizer/generator.hpp"
 #include "synthizer/memory.hpp"
 #include "synthizer/pausable.hpp"
 #include "synthizer/property_internals.hpp"
@@ -24,7 +25,6 @@ namespace synthizer {
 
 class BiquadFilter;
 class Context;
-class Generator;
 class PannerLane;
 
 class Source: public RouteOutput, public Pausable {
@@ -66,7 +66,7 @@ class Source: public RouteOutput, public Pausable {
 	void fillBlock(unsigned int channels);
 
 	private:
-	deferred_vector<std::weak_ptr<Generator>> generators;
+	deferred_vector<GeneratorRef> generators;
 	FadeDriver gain_fader = {1.0f, 1};
 	/* Used to detect channel changes in fillBlock. */
 	unsigned int last_channels = 0;

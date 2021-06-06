@@ -11,27 +11,46 @@ namespace synthizer {
  * Helpers to iterate over vectors and do interesting things.
  * */
 
-/* Operations on weak_ptr vectors. */
+/**
+ * Operations on weak_ptr vectors, and anything else
+ * implementing subsets of the weak_ptr interface (e.g. `GeneratorRef`).
+ * 
+ * Functions below indicate what functionality they need.
+ * */
 namespace weak_vector {
 
-template<typename T, typename ALLOC>
-bool contains(const std::vector<std::weak_ptr<T>, ALLOC> &v, const std::shared_ptr<T> &x) {
+/**
+ * Find out if an element is contained in the vector and is still alive.
+ * 
+ * Requires `T` to implement lock and `expired`.
+ * */
+template<typename T, typename C, typename ALLOC>
+bool contains(const std::vector<T, ALLOC> &v, const std::shared_ptr<C> &x) {
 	for (auto &i: v) {
-		if (i.lock() == x) return true;
+		if (i.expired()) {
+			continue;
+		}
+		if (i.lock() == x) {
+			return true;
+		}
 	}
 
 	return false;
 }
 
-/* Call the callable on all elements of the vector which are still there, and remove any weak_ptr that's not. */
+/**
+ * Call the callable on all elements of the vector which are still there, and remove any which are expired.
+ * 
+ * Requires `T` to implement `expired` and `lock`.
+ * */
 template<typename T, typename CALLABLE, typename ALLOC>
-void iterate_removing(std::vector<std::weak_ptr<T>, ALLOC> &v, CALLABLE &&c) {
+void iterate_removing(std::vector<T, ALLOC> &v, CALLABLE &&c) {
 	unsigned int i = 0;
 	unsigned int size = v.size();
 
 	while (i < size) {
-		auto s = v[i].lock();
-		if (s == nullptr) {
+		decltype(v[i].lock()) s;
+		if (v[i].expired() || (s = v[i].lock()) == nullptr) {
 			std::swap(v[size-1], v[i]);
 			size--;
 			continue;

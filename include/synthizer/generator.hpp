@@ -21,6 +21,10 @@ class Context;
  * 
  * - They output a block of samples, of up to config::MAX_CHANNELS channels (truncating if more).
  * - They adopt to pitch bends in a generator-defined fashion to participate in doppler for moving sources, and/or if asked by the user.
+ * 
+ * NOTE: users of generators should immediately convert the generator to a `GeneratorRef` (below).
+ * This is necessary to avoid "leaking" generators in complex scenarios, primarily around linger behavior, and also allows
+ * existant generators to know if they are in use.
  * */
 class Generator: public Pausable, public BaseObject {
 	public:
@@ -50,6 +54,25 @@ class Generator: public Pausable, public BaseObject {
 
 	private:
 	FadeDriver gain_driver{1.0, 1};
+};
+
+/**
+ * Like a weak_ptr, but lets us hook into various functionality
+ * when no weak references exist but strong ones do. Used ot let generators
+ * know when they're not being used, which is important for linger behaviors and various
+ * optimizations.
+ * */
+class GeneratorRef {
+	public:
+	GeneratorRef();
+	GeneratorRef(const std::shared_ptr<Generator> &generator);
+	GeneratorRef(const std::weak_ptr<Generator> &weak);
+
+	std::shared_ptr<Generator> lock() const;
+	bool expired() const;
+
+	private:
+	std::weak_ptr<Generator> ref;
 };
 
 }
