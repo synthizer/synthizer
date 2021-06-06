@@ -324,6 +324,9 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	 * after the current tick.  Implementors should be careful that their implementations don't
 	 * destroy the object while still inside member functions of the object itself, which is usually guarded against by a parent caller holing a
 	 * strong reference via shared_ptr (e.g. the loops in Context::generateAudio).
+	 * 
+	 * It is important that callers should be able to call this function before lingering has begun with no effect.  Note that
+	 * lingering is (almost always) serialized on the audio thread.
 	 * */
 	virtual void stopLingering() {
 	}
