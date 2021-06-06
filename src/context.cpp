@@ -290,7 +290,7 @@ void Context::doLinger(const std::shared_ptr<BaseObject> &obj) {
 	this->enqueueCallbackCommand([this, obj, delete_cfg]() {
 		auto maybe_suggested_timeout = obj->startLingering(obj, delete_cfg.linger_timeout);
 		if (!maybe_suggested_timeout && delete_cfg.linger_timeout <= 0.0) {
-		/* The object will manage ending the linger itself. */
+			/* The object will manage ending the linger itself. */
 			return;
 		}
 		double suggested_timeout = maybe_suggested_timeout.value_or(delete_cfg.linger_timeout);
@@ -299,9 +299,23 @@ void Context::doLinger(const std::shared_ptr<BaseObject> &obj) {
 		 * their objects die.
 		 * */
 		double actual_timeout = suggested_timeout;
-		if (delete_cfg.linger_timeout != 0.0) {
+		if (delete_cfg.linger_timeout > 0.0) {
 			actual_timeout = std::min(suggested_timeout, delete_cfg.linger_timeout);
 		}
+
+		/**
+		 * If the linger timeout is 0.0, then let's kill the object now.
+		 * 
+		 * This is important because some objects will return 0.0 when they can't work out their
+		 * timeouts until `startLingering` is called in the audio thread.
+		 * This works correctly without the optimization, but at the cost of spamming the linger queue and keeping the object alive
+		 * for a further block.
+		 * */
+		if (actual_timeout == 0.0) {
+			obj->dieNow();
+			return;
+		}
+
 		double block_timeout = std::ceil(actual_timeout * config::SR / config::BLOCK_SIZE);
 		std::uint64_t block_time = this->getBlockTime() + block_timeout;
 		/**
