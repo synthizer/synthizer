@@ -207,10 +207,6 @@ void StreamingGenerator::generateBlockInBackground(StreamingGeneratorCommand *cm
 }
 
 std::optional<double> StreamingGenerator::startGeneratorLingering() {
-	if (this->isPaused()) {
-		return config::BLOCK_SIZE / (double)config::SR;
-	}
-
 	/**
 	 * The streaming generator lingers until it gets  apartial block from the background thread, which
 	 * either means that the stream finished or errored.  We don't

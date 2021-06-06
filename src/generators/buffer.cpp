@@ -182,10 +182,6 @@ void BufferGenerator::handleEndEvent() {
 }
 
 std::optional<double> BufferGenerator::startGeneratorLingering() {
-	if (this->isPaused()) {
-		return config::BLOCK_SIZE / (double)config::SR;
-	}
-
 	/**
 	 * To linger, stop any looping, then set the timeout to the duration of the buffer
 	 * minus the current position.
