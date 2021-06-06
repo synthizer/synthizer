@@ -81,6 +81,10 @@ class Generator: public Pausable, public BaseObject {
  * when no weak references exist but strong ones do. Used ot let generators
  * know when they're not being used, which is important for linger behaviors and various
  * optimizations.
+ * 
+ * This is fundamentally not a threadsafe object. Though it maintains the generator's `use_count` atomically,
+ * when the `use_count` reaches zero logic can occur which must execute only
+ * on the audio thread.
  * */
 class GeneratorRef {
 	public:
