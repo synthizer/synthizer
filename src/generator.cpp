@@ -79,7 +79,16 @@ GeneratorRef::~GeneratorRef() {
 		 * Like weak_ptr and shared_ptr itself, use_count going to 0 may have other consequences. Though using memory_order_release
 		 * probably isn't necessary, let's go ahead and actually implement this like weak_ptr to avoid surprises later.
 		 * */
-		s->use_count.fetch_sub(1, std::memory_order_release);
+		auto uc = s->use_count.fetch_sub(1, std::memory_order_release) - 1;
+		if (uc == 0) {
+			/**
+			 * The generator isn't being used anymore.  Tell it that it can stop lingering.
+			 * 
+			 * This makes it such that generators which are lingerin imediately die if dropped from 
+			 * their sources.
+			 * */
+			s->signalLingerStopPoint();
+		}
 	}
 }
 
