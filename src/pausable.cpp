@@ -21,6 +21,10 @@ bool Pausable::isPaused() {
 	return this->pause_state == PauseState::Paused;
 }
 
+PauseState Pausable::getPauseState() {
+	return this->pause_state;
+}
+
 bool Pausable::shouldIncorporatePausableGain() {
 	return this->pause_state == PauseState::Pausing || this->pause_state == PauseState::Unpausing;
 }
@@ -45,7 +49,6 @@ void Pausable::play() {
 }
 
 }
-
 
 using namespace synthizer;
 

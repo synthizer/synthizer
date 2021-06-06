@@ -51,6 +51,8 @@ class Pausable {
 	 * */
 	bool isPaused();
 
+	PauseState getPauseState();
+
 	/**
 	 * If this returns true, the Pausable wishes to introduce some sort of fade in addition to the gain
 	 * of the object itself.  To determine what the final gain of this fade is, call getPausableGain.
@@ -65,7 +67,7 @@ class Pausable {
 	 * if shouldIncorporatePausableGain returned true.  note that
 	 * in the case where shouldIncorporatePausableGain returns false, this just returns 1.  This allows one to do:
 	 * 
-	 * if (this->acquireGain(new_gain) || this->shouldIncorporatePausableGain()) { update_gain(): }
+	 * if (this->acquireGain(new_gain) || this->shouldIncorporatePausableGain()) { update_gain(); }
 	 * */
 	float getPausableGain();
 
