@@ -317,18 +317,13 @@ class CExposable: public std::enable_shared_from_this<CExposable> {
 	}
 
 	/**
-	 * Stop lingering for this object.  For any object deriving directly or indirectly from baseObject, this function should only be called
-	 * from the audio thread.
+	 * Signal a linger stop point, a point at which
+	 * an object should die if it has opted to linger.  For objects associated with an audio thread (aka anything inheriting from
+	 * BaseObject) this function should only ever be called from the audio thread.
 	 * 
-	 * The CExposable version does nothing, but the BaseObject version enqueues a command with the context which will destroy the object
-	 * after the current tick.  Implementors should be careful that their implementations don't
-	 * destroy the object while still inside member functions of the object itself, which is usually guarded against by a parent caller holing a
-	 * strong reference via shared_ptr (e.g. the loops in Context::generateAudio).
-	 * 
-	 * It is important that callers should be able to call this function before lingering has begun with no effect.  Note that
-	 * lingering is (almost always) serialized on the audio thread.
+	 * If called while the object isn't lingering, does nothing.
 	 * */
-	virtual void stopLingering() {
+	virtual void signalLingerStopPoint() {
 	}
 
 	private:

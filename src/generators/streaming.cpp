@@ -105,7 +105,7 @@ void StreamingGenerator::generateBlock(float *output, FadeDriver *gd) {
 	this->setPlaybackPosition(cmd->final_position, false);
 
 	if (cmd->partial && this->is_lingering) {
-		this->stopLingering();
+		this->signalLingerStopPoint();
 	}
 
 	this->background_thread.send(cmd);

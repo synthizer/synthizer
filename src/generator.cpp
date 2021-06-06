@@ -30,7 +30,7 @@ void Generator::run(float *output) {
 	 * long enough.
 	 * */
 	if (this->isPaused()) {
-		this->stopLingering();
+		this->signalLingerStopPoint();
 	}
 }
 

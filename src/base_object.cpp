@@ -6,7 +6,7 @@
 namespace synthizer {
 
 
-void BaseObject::stopLingering() {
+void BaseObject::signalLingerStopPoint() {
 	if (this->linger_reference == nullptr) {
 		return;
 	}

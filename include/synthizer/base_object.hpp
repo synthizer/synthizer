@@ -92,7 +92,7 @@ class BaseObject: public CExposable {
 		return nullptr;
 	}
 
-	void stopLingering() override;
+	void signalLingerStopPoint() override;
 
 	protected:
 	std::shared_ptr<Context> context;
