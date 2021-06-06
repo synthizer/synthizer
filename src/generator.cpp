@@ -27,6 +27,21 @@ GeneratorRef::GeneratorRef(const std::shared_ptr<Generator> &generator): Generat
 }
 
 GeneratorRef::GeneratorRef(const std::weak_ptr<Generator> &weak): ref(weak) {
+	auto s = weak.lock();
+	if (s) {
+		s->use_count.fetch_add(1, std::memory_order_relaxed);
+	}
+}
+
+GeneratorRef::~GeneratorRef() {
+	auto s = this->ref.lock();
+	if (s) {
+		/**
+		 * Like weak_ptr and shared_ptr itself, use_count going to 0 may have other consequences. Though using memory_order_release
+		 * probably isn't necessary, let's go ahead and actually implement this like weak_ptr to avoid surprises later.
+		 * */
+		s->use_count.fetch_sub(1, std::memory_order_release);
+	}
 }
 
 std::shared_ptr<Generator> GeneratorRef::lock() const {

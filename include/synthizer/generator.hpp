@@ -6,6 +6,8 @@
 #include "synthizer/property_internals.hpp"
 #include "synthizer/types.hpp"
 
+#include <atomic>
+#include <cstdint>
 #include <memory>
 
 namespace synthizer {
@@ -47,13 +49,28 @@ class Generator: public Pausable, public BaseObject {
 	 * */
 	virtual void generateBlock(float *output, FadeDriver *gain_driver) = 0;
 
+	/**
+	 * Returns whether something is using this generator still.
+	 * */
+	bool isInuse() {
+		return this->use_count.load(std::memory_order_relaxed) != 0;
+	}
+
+
 	#define PROPERTY_CLASS Generator
 	#define PROPERTY_LIST GENERATOR_PROPERTIES
 	#define PROPERTY_BASE BaseObject
 	#include "synthizer/property_impl.hpp"
 
 	private:
+	friend class GeneratorRef;
+
 	FadeDriver gain_driver{1.0, 1};
+
+	/**
+	 * Maintained by GeneratorRef on our behalf.
+	 * */
+	std::atomic<std::size_t> use_count = 0;
 };
 
 /**
@@ -67,6 +84,7 @@ class GeneratorRef {
 	GeneratorRef();
 	GeneratorRef(const std::shared_ptr<Generator> &generator);
 	GeneratorRef(const std::weak_ptr<Generator> &weak);
+	~GeneratorRef();
 
 	std::shared_ptr<Generator> lock() const;
 	bool expired() const;
