@@ -41,6 +41,13 @@ bool Generator::wantsLinger() {
 std::optional<double> Generator::startLingering(const std::shared_ptr<CExposable> &ref, double configured_timeout) {
 	CExposable::startLingering(ref, configured_timeout);
 
+	/**
+	 * If this generator isn't linked to a source, it isn't audible and never can be again.
+	 * */
+	if (this->use_count.load(std::memory_order_relaxed) == 0) {
+		return 0.0;
+	}
+
 	if (this->isPaused()) {
 		return 0.0;
 	}
