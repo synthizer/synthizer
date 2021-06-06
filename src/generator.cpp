@@ -23,6 +23,15 @@ void Generator::run(float *output) {
 	this->tickPausable();
 
 	this->generateBlock(output, &this->gain_driver);
+
+	/**
+	 * It is necessary to check this every block. If thread a deletes and thread b simultaneously
+	 * pauses, then the command for pause can end up in the queue after the command for delete and may still execute because the linger reference keeps the object alive
+	 * long enough.
+	 * */
+	if (this->isPaused()) {
+		this->stopLingering();
+	}
 }
 
 bool Generator::wantsLinger() {
@@ -31,6 +40,15 @@ bool Generator::wantsLinger() {
 
 std::optional<double> Generator::startLingering(const std::shared_ptr<CExposable> &ref, double configured_timeout) {
 	CExposable::startLingering(ref, configured_timeout);
+
+	if (this->isPaused()) {
+		return 0.0;
+	}
+
+	if (this->getPauseState() == PauseState::Pausing) {
+		return config::BLOCK_SIZE / (double)config::SR;
+	}
+
 	return this->startGeneratorLingering();
 }
 
