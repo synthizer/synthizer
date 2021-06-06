@@ -31,7 +31,7 @@ bool Generator::wantsLinger() {
 
 std::optional<double> Generator::startLingering(const std::shared_ptr<CExposable> &ref, double configured_timeout) {
 	CExposable::startLingering(ref, configured_timeout);
-	return std::nullopt;
+	return this->startGeneratorLingering();
 }
 
 GeneratorRef::GeneratorRef(): ref() {

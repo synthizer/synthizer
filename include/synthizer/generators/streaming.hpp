@@ -47,7 +47,7 @@ class StreamingGenerator: public Generator {
 	unsigned int getChannels() override;
 	void generateBlock(float *output, FadeDriver *gain_driver) override;
 
-	std::optional<double> startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) override;
+	std::optional<double> startGeneratorLingering() override;
 
 	#define PROPERTY_CLASS StreamingGenerator
 	#define PROPERTY_LIST STREAMING_GENERATOR_PROPERTIES

@@ -181,9 +181,7 @@ void BufferGenerator::handleEndEvent() {
 	}
 }
 
-std::optional<double> BufferGenerator::startLingering(const std::shared_ptr<CExposable> &obj, double configured_timeout) {
-	CExposable::startLingering(obj, configured_timeout);
-
+std::optional<double> BufferGenerator::startGeneratorLingering() {
 	if (this->isPaused()) {
 		return config::BLOCK_SIZE / (double)config::SR;
 	}

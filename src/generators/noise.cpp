@@ -43,8 +43,7 @@ for (unsigned int i = 0; i < this->channels; i++) {
 	});
 }
 
-std::optional<double> ExposedNoiseGenerator::startLingering(const std::shared_ptr<CExposable> &obj, double configured_timeout) {
-	CExposable::startLingering(obj, configured_timeout);
+std::optional<double> ExposedNoiseGenerator::startGeneratorLingering() {
 	setGain(0.0);
 	/**
 	 * Linger for one block, to give the gain a chance to fade out.

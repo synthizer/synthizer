@@ -206,9 +206,7 @@ void StreamingGenerator::generateBlockInBackground(StreamingGeneratorCommand *cm
 	}
 }
 
-std::optional<double> StreamingGenerator::startLingering(const std::shared_ptr<CExposable> &reference, double configured_timeout) {
-	CExposable::startLingering(reference, configured_timeout);
-
+std::optional<double> StreamingGenerator::startGeneratorLingering() {
 	if (this->isPaused()) {
 		return config::BLOCK_SIZE / (double)config::SR;
 	}

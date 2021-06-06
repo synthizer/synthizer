@@ -58,7 +58,17 @@ class Generator: public Pausable, public BaseObject {
 	}
 
 	bool wantsLinger() override;
-	std::optional<double> startLingering(const std::shared_ptr<CExposable> &ref, double configured_timeout) override;
+	std::optional<double> startLingering(const std::shared_ptr<CExposable> &ref, double configured_timeout) override final;
+
+	/**
+	 * All generators should support linger.  This function allows the base class to do extra
+	 * generator-specific logic like never lingering when paused, and so derived classes implement it instead of
+	 * startLingering.
+	 * 
+	 * The return value has the same meaning as startLingering, except that it may be modified
+	 * by the generator.
+	 * */
+	virtual std::optional<double> startGeneratorLingering() = 0;
 
 	#define PROPERTY_CLASS Generator
 	#define PROPERTY_LIST GENERATOR_PROPERTIES

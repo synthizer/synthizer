@@ -21,7 +21,7 @@ class BufferGenerator: public Generator {
 	unsigned int getChannels() override;
 	void generateBlock(float *output, FadeDriver *gain_driver) override;
 
-	virtual std::optional<double> startLingering(const std::shared_ptr<CExposable> &obj, double configured_timeout) override;
+	std::optional<double> startGeneratorLingering() override;
 
 	#define PROPERTY_CLASS BufferGenerator
 	#define PROPERTY_BASE Generator
