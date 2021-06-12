@@ -74,6 +74,12 @@ void EventSender::enqueue(syz_Event &&event, EventHandleVec &&handles) {
 }
 
 void EventBuilder::setSource(const std::shared_ptr<CExposable> &source) {
+	/**
+	 * When lingering, sources can become nullptr because of shared_from_this
+	 * not having a non-NULL shared_ptr, as well as other now-read references.
+	 * Deal with that by remembering if that was the case, and not sending these
+	 * events.
+	 */
 	if (this->associateObject(source)) {
 		this->event.source = source->getCHandle();
 		this->event.userdata = source->getUserdata();
@@ -117,8 +123,10 @@ void EventBuilder::dispatch(EventSender *sender) {
 	if (this->will_send == false) {
 		return;
 	}
+	if (this->has_source == false) {
+		return;
+	}
 
-	assert(this->has_source && "Events must have sources");
 	assert(this->has_payload && "Events must have payloads");
 
 	sender->enqueue(std::move(this->event), std::move(this->referenced_objects));
