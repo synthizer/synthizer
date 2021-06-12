@@ -151,7 +151,8 @@ class LogLevel(Enum):
     DEBUG = SYZ_LOG_LEVEL_DEBUG
 
 class LoggingBackend(Enum):
-    STDERR = 0
+    NONE = SYZ_LOGGING_BACKEND_NONE
+    STDERR = SYZ_LOGGING_BACKEND_STDERR
 
 cpdef initialize(log_level=DEFAULT_VALUE, logging_backend=DEFAULT_VALUE):
     """Initialize Synthizer.  Try synthizer.Initialized for a context manager that will shut things down on exceptions. """
