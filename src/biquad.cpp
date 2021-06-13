@@ -42,18 +42,18 @@ ConcreteBiquadFilter<CHANNELS>::ConcreteBiquadFilter() {
 template<unsigned int CHANNELS>
 void ConcreteBiquadFilter<CHANNELS>::configure(const syz_BiquadConfig &config) {
 	BiquadFilterDef def;
-	def.num_coefs[0] = config.b0;
-	def.num_coefs[1] = config.b1;
-	def.num_coefs[2] = config.b2;
-	def.den_coefs[0] = config.a1;
-	def.den_coefs[1] = config.a2;
-	def.gain = config.gain;
+	def.num_coefs[0] = config._b0;
+	def.num_coefs[1] = config._b1;
+	def.num_coefs[2] = config._b2;
+	def.den_coefs[0] = config._a1;
+	def.den_coefs[1] = config._a2;
+	def.gain = config._gain;
 
 	if (def == this->filter_def) {
 		/* Filter is the same. Crossfading would produce artifacts for no reason since inactive has to reach steady state, so stop now. */
 		return;
 	}
-	this->is_wire = config.is_wire != 0;
+	this->is_wire = config._is_wire != 0;
 	this->filter_def = def;
 	this->filters[this->active ^ 1].setParameters(this->filter_def);
 	if (this->first_block) {

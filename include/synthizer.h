@@ -220,10 +220,10 @@ SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, dou
  * To initialize this struct, use one of the syz_BiquadDesignXXX functions, below.
  * */
 struct syz_BiquadConfig {
-	double b0, b1, b2;
-	double a1, a2;
-	double gain;
-	unsigned char is_wire;
+	double _b0, _b1, _b2;
+	double _a1, _a2;
+	double _gain;
+	unsigned char _is_wire;
 };
 
 SYZ_CAPI syz_ErrorCode syz_getBiquad(struct syz_BiquadConfig *filter, syz_Handle target, int property);

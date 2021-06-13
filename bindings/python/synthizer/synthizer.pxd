@@ -97,13 +97,13 @@ cdef extern from "synthizer.h":
     syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, double y1, double z1, double x2, double y2, double z2)
 
     cdef struct syz_BiquadConfig:
-        double b0
-        double b1
-        double b2
-        double a1
-        double a2
-        double gain
-        unsigned char is_wire
+        double _b0
+        double _b1
+        double _b2
+        double _a1
+        double _a2
+        double _gain
+        unsigned char _is_wire
 
     syz_ErrorCode syz_getBiquad(syz_BiquadConfig* filter, syz_Handle target, int property)
 
