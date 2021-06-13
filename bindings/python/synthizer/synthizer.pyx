@@ -539,6 +539,28 @@ cdef class Buffer(_BaseObject):
         _checked(result)
         return Buffer(_handle=handle)
 
+    @staticmethod
+    def from_encoded_data(const unsigned char [::1] data not None):
+        """Load a buffer from in-memory audio data.  Works with anything
+        implementing the buffer protocol on top of characters, e.g. bytes and
+        arrays from the array module.
+
+        This code isn't matching the C API because C and Synthizer usually use
+        char for strings, but Python foreces unsigned char on us and Cython is
+        limited enough that we can't take both."""
+        cdef syz_ErrorCode result
+        cdef syz_Handle handle
+        cdef const char *ptr
+        cdef unsigned long long length
+        length = data.shape[0]
+        if length == 0:
+            raise ValueError("Cannot safely pass empty arrays to Synthizer")
+        ptr = <const char *>&data[0]
+        with nogil:
+            result = syz_createBufferFromEncodedData(&handle, length, ptr)
+        _checked(result)
+        return Buffer(_handle=handle)
+
     cpdef get_channels(self):
         cdef unsigned int ret
         _checked(syz_bufferGetChannels(&ret, self.handle))
