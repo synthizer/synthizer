@@ -33,10 +33,14 @@ class PannerStrategy(Enum):
 # Initialization functions:
 
 def initialized(
-    log_level: LogLevel = ..., logging_backend: LoggingBackend = ...
+    log_level: LogLevel = ...,
+    logging_backend: LoggingBackend = ...,
+    libsndfile_path: StringOrBytes = ...,
 ) -> ContextManager[None]: ...
 def initialize(
-    log_level: LogLevel = ..., logging_backend: LoggingBackend = ...
+    log_level: LogLevel = ...,
+    logging_backend: LoggingBackend = ...,
+    libsndfile_path: StringOrBytes = ...,
 ) -> None: ...
 def shutdown() -> None: ...
 

@@ -154,7 +154,8 @@ class LoggingBackend(Enum):
     NONE = SYZ_LOGGING_BACKEND_NONE
     STDERR = SYZ_LOGGING_BACKEND_STDERR
 
-cpdef initialize(log_level=DEFAULT_VALUE, logging_backend=DEFAULT_VALUE):
+cpdef initialize(log_level=DEFAULT_VALUE, logging_backend=DEFAULT_VALUE,
+    libsndfile_path=DEFAULT_VALUE):
     """Initialize Synthizer.  Try synthizer.Initialized for a context manager that will shut things down on exceptions. """
     cdef syz_LibraryConfig cfg
     syz_libraryConfigSetDefaults(&cfg)
@@ -162,6 +163,9 @@ cpdef initialize(log_level=DEFAULT_VALUE, logging_backend=DEFAULT_VALUE):
         cfg.log_level = log_level.value
     if logging_backend is not DEFAULT_VALUE:
         cfg.logging_backend = logging_backend.value
+    if libsndfile_path is not DEFAULT_VALUE:
+        libsndfile_path = _to_bytes(libsndfile_path)
+        cfg.libsndfile_path = libsndfile_path
     _checked(syz_initializeWithConfig(&cfg))
 
 cpdef shutdown():
