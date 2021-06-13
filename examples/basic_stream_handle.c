@@ -1,7 +1,7 @@
 /**
  * Demonstrates basic use of a stream handle.
  * 
- * This doesn't show anything aprticularly special beyond how to create a buffer without going throguh `syz_createBufferFromFile` and/or
+ * This doesn't show anything particularly special beyond how to create a buffer without going throguh `syz_createBufferFromFile` and/or
  * `syz_createBufferFromStreamParams`.
  * 
  * Mostly, this exists as a runnable test of the functionality; it's only a one line change from basic file reading.

@@ -228,10 +228,13 @@ cdef class _UserdataBox:
     """An internal box for containing userdata.  This exists so that we can have
     multiple userdata values associated with an object, which we use to keep
     buffers alive for stream handles."""
-    cpdef object userdata
+    cdef object userdata
+    # Used by StreamHandle
+    cdef object stream_buffer
 
     def __init__(self):
         self.userdata = None
+        self.stream_buffer = None
 
 cdef class _BaseObject:
     cdef syz_Handle handle
@@ -406,13 +409,58 @@ cdef class Context(Pausable):
             if limit != 0 and drained_so_far == limit:
                 break
 
+cdef class StreamHandle(_BaseObject):
+    """Wraps the C API concept of a StreamHandle, which may be created in a variety of ways."""
+    def __init__(self, _handle=None):
+        if _handle is None:
+            raise RuntimeError("Use one of the staticmethods to initialize Buffers in order to specify where the data comes from.")
+        super().__init__(_handle)
+
+    @staticmethod
+    def from_stream_params(protocol, path, size_t param):
+        """Create a StreamHandle from the 3 streaming parameters. The `param`
+        parameter is a pointer in C, but exposed in Python as a size_t which is
+        large enough to contain a pointer on all platforms.  If working with a
+        custom stream that needs a value for `param`, it can be passed by
+        converting it to an int and letting Cython convert it to what Synthizer needs."""
+        protocol = _to_bytes(protocol)
+        path = _to_bytes(path)
+        cdef void *param_c = <void *>param
+        cdef syz_Handle handle
+        _checked(syz_createStreamHandleFromStreamParams(&handle, protocol, path, param_c))
+        return StreamHandle(_handle=handle)
+
+    @staticmethod
+    def from_file(path):
+        cdef syz_Handle handle
+        path = _to_bytes(path)
+        _checked(syz_createStreamHandleFromFile(&handle, path))
+        return StreamHandle(_handle=handle)
+
+    @staticmethod
+    def from_memory(const unsigned char[::1] data not None):
+        """Build a `StreamHandle` from encoded in-memory data, which can be
+        anything implementing Python's buffer protocol over unsigned char (e.g.
+        bytes objects, the array module).  This function will keep the data
+        alive until the handle is no longer needed on the Synthizer side
+        automatically, but changing the data in a way that invalidates the
+        buffer will crash and changing the data in other ways (e.g. replacing
+        bytes) will have undefined behavior."""
+        cdef syz_Handle handle
+        cdef const char *ptr
+        cdef unsigned long long length
+        length = data.shape[0]
+        if length == 0:
+            raise ValueError("data cannot be of 0 length")
+        ptr = <const char *>&data[0]
+        _checked(syz_createStreamHandleFromMemory(&handle, length, ptr))
+        return StreamHandle(_handle = handle)
 
 cdef class Generator(Pausable):
     """Base class for all generators."""
 
     pitch_bend = DoubleProperty(SYZ_P_PITCH_BEND)
     gain = DoubleProperty(SYZ_P_GAIN)
-
 
 cdef class StreamingGenerator(Generator):
     def __init__(self, _handle = None):
@@ -447,6 +495,13 @@ cdef class StreamingGenerator(Generator):
         ctx = context._get_handle_checked(Context)
         _checked(syz_createStreamingGeneratorFromFile(&out, ctx, path))
         return StreamingGenerator(out)
+
+
+    @staticmethod
+    def from_stream_handle(Context context, StreamHandle stream):
+        cdef syz_Handle handle
+        _checked(syz_createStreamingGeneratorFromStreamHandle(&handle, context.handle, stream.handle))
+        return StreamingGenerator(_handle=handle)
 
     playback_position = DoubleProperty(SYZ_P_PLAYBACK_POSITION)
     looping = IntProperty(SYZ_P_LOOPING, conv_in = int, conv_out = bool)
@@ -588,8 +643,18 @@ cdef class Buffer(_BaseObject):
         _checked(result)
         return Buffer(_handle=handle)
 
-        
-    cpdef get_channels(self):
+    @staticmethod
+    def from_stream_handle(StreamHandle stream):
+        cdef syz_ErrorCode result
+        cdef syz_Handle handle
+        cdef syz_Handle stream_handle
+        stream_handle = stream.handle
+        with nogil:
+            result = syz_createBufferFromStreamHandle(&handle, stream_handle)
+        _checked(result)
+        return Buffer(_handle=handle)
+
+    cdef get_channels(self):
         cdef unsigned int ret
         _checked(syz_bufferGetChannels(&ret, self.handle))
         return ret
