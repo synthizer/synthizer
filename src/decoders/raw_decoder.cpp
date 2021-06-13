@@ -8,7 +8,7 @@ namespace synthizer {
 
 class RawDecoder: public AudioDecoder {
 	public:
-	RawDecoder(std::size_t sr, unsigned int channels, std::size_t frames, float *data): data(data), frames(frames), channels(channels), sr(sr) {}
+	RawDecoder(std::size_t sr, unsigned int channels, std::size_t frames, const float *data): data(data), frames(frames), channels(channels), sr(sr) {}
 
 	unsigned long long writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels = 0) override;
 	void seekPcm(unsigned long long frame) override;
@@ -20,7 +20,7 @@ class RawDecoder: public AudioDecoder {
 	AudioFormat getFormat() override;
 
 	private:
-	float *data;
+	const float *data;
 	std::size_t frames;
 	unsigned int channels;
 	unsigned int sr;
@@ -41,7 +41,7 @@ unsigned long long RawDecoder::writeSamplesInterleaved(unsigned long long num, f
 		std::copy(this->data + this->position_in_frames * this->channels, this->data + (this->position_in_frames + will_read) * this->channels, samples);
 	} else if (channels_out > this->channels) {
 		for (unsigned int i = 0; i < will_read; i++) {
-			float *frame = this->data + (this->position_in_frames + i) * this->channels;
+			const float *frame = this->data + (this->position_in_frames + i) * this->channels;
 			float *out_frame = samples + i * channels_out;
 			for (unsigned int j = 0; j < this->channels; j++) {
 				out_frame[j] = frame[j];
@@ -50,7 +50,7 @@ unsigned long long RawDecoder::writeSamplesInterleaved(unsigned long long num, f
 		}
 	} else {
 		for (unsigned int i = 0; i < will_read; i++) {
-			float *frame = this->data + (this->position_in_frames + i) * this->channels;
+			const float *frame = this->data + (this->position_in_frames + i) * this->channels;
 			float *out_frame = samples + i * channels_out;
 			for (unsigned int j = 0; j < channels_out; j++) {
 				out_frame[j] = frame[j];
@@ -91,7 +91,7 @@ AudioFormat RawDecoder::getFormat() {
 	return AudioFormat::Raw;
 }
 
-std::shared_ptr<AudioDecoder> getRawDecoder(unsigned int sr, unsigned int channels, std::size_t frames, float *data) {
+std::shared_ptr<AudioDecoder> getRawDecoder(unsigned int sr, unsigned int channels, std::size_t frames, const float *data) {
 	RawDecoder *dec = new RawDecoder(sr, channels, frames, data);
 	return sharedPtrDeferred<RawDecoder>(dec, deferredDelete<RawDecoder>);
 }

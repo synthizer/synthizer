@@ -163,7 +163,7 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned int sr, unsigned int channels, unsigned long long frames, float *data) {
+SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned int sr, unsigned int channels, unsigned long long frames, const float *data) {
 	SYZ_PROLOGUE
 	if (channels > config::MAX_CHANNELS) {
 		throw ERange("Too many channels");

@@ -561,6 +561,25 @@ cdef class Buffer(_BaseObject):
         _checked(result)
         return Buffer(_handle=handle)
 
+    @staticmethod
+    def from_float_array(unsigned int sr, unsigned int channels, const float[::1] data not None):
+        """Build a buffer from an array of float data."""
+        cdef const float *ptr
+        cdef unsigned long long length
+        cdef syz_Handle handle
+        cdef syz_ErrorCode result
+        length = data.shape[0]
+        if length == 0:
+            raise ValueError("Cannot safely pass arrays of 0 length to Synthizer")
+        if length % channels != 0:
+            raise ValueError("The length of the buffer must be a multiple of the channel count")
+        ptr = &data[0]
+        with nogil:
+            result = syz_createBufferFromFloatArray(&handle, sr, channels, length // channels, ptr)
+        _checked(result)
+        return Buffer(_handle=handle)
+
+        
     cpdef get_channels(self):
         cdef unsigned int ret
         _checked(syz_bufferGetChannels(&ret, self.handle))

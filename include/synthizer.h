@@ -403,7 +403,7 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned
 /**
  * Create a buffer from a float array in memory.
  * */
-SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned int sr, unsigned int channels, unsigned long long frames, float *data);
+SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned int sr, unsigned int channels, unsigned long long frames, const float *data);
 
 /**
  * Create a buffer from a file. Currently equivalent to:
