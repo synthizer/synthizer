@@ -224,12 +224,25 @@ cdef _handle_to_object(handle):
 cdef void userdataFree(void *userdata) with gil:
     Py_DECREF(<object>userdata)
 
+cdef class _UserdataBox:
+    """An internal box for containing userdata.  This exists so that we can have
+    multiple userdata values associated with an object, which we use to keep
+    buffers alive for stream handles."""
+    cpdef object userdata
+
+    def __init__(self):
+        self.userdata = None
+
 cdef class _BaseObject:
     cdef syz_Handle handle
 
     def __init__(self, syz_Handle handle):
         self.handle = handle
         _register_object(self)
+        ubox = _UserdataBox()
+        cdef PyObject *ud = <PyObject *>ubox
+        Py_INCREF(ubox)
+        _checked(syz_setUserdata(self.handle, <void *>ud, userdataFree))
 
     def destroy(self):
         """Destroy this object. Must be called in order to not leak Synthizer objects.
@@ -245,22 +258,18 @@ cdef class _BaseObject:
             raise ValueError("Synthizer object is of an unexpected type")
         return self.handle
 
-    cpdef object get_userdata(self):
+    cdef object _get_userdata_box(self):
         cdef void *userdata
         _checked(syz_getUserdata(&userdata, self.handle))
-        if userdata == NULL:
-            return None
-        return <object>userdata
+        return <_UserdataBox>userdata
 
-    cpdef set_userdata(self, object userdata):\
-        # Note that the following isn't bad code. It's "I discovered Cython is buggy around PyObject casts" code.
-        if userdata is None:
-            # Special case None and avoid making Synthizer do work to free a global Python object.
-            # Fun fact: None is reference counted too, at least by Cython, but never actually goes away.
-            _checked(syz_setUserdata(self.handle, NULL, NULL))
-        cdef PyObject *ud = <PyObject *>userdata
-        Py_INCREF(userdata)
-        _checked(syz_setUserdata(self.handle, <void *>ud, userdataFree))
+    cpdef get_userdata(self):
+        cdef _UserdataBox box = self._get_userdata_box()
+        return box.userdata
+
+    cpdef set_userdata(self, userdata):
+        cdef _UserdataBox box = self._get_userdata_box()
+        box.userdata = userdata
 
     def config_delete_behavior(self, linger = _DefaultSentinel, linger_timeout = _DefaultSentinel):
         cdef syz_DeleteBehaviorConfig cfg
