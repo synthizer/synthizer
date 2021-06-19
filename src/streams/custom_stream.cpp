@@ -59,6 +59,10 @@ CustomByteStream::~CustomByteStream() {
 		auto msg = formatCustomByteStreamError(code, err_msg);
 		logError("Error closing custom byte stream: %s", msg.c_str());
 	}
+
+	if (this->callbacks.destroy_cb != nullptr) {
+		this->callbacks.destroy_cb(this->callbacks.userdata);
+	}
 }
 
 std::string CustomByteStream::getName() {
@@ -124,7 +128,7 @@ SYZ_CAPI syz_ErrorCode syz_registerStreamProtocol(const char *protocol, syz_Stre
 	 * */
 	std::string pname = protocol;
 	auto factory = [=](const char *path, void *param) -> std::shared_ptr<ByteStream> {
-		syz_CustomStreamDef def;
+		syz_CustomStreamDef def{};
 		int code;
 		const char *err_msg = nullptr;
 		code = callback(&def, pname.c_str(), path, param, userdata, &err_msg);

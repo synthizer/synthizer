@@ -139,10 +139,13 @@ cdef extern from "synthizer.h":
 
     ctypedef int syz_StreamCloseCallback(void* userdata, char** err_msg)
 
+    ctypedef void syz_StreamDestroyCallback(void* userdata)
+
     cdef struct syz_CustomStreamDef:
         syz_StreamReadCallback* read_cb
         syz_StreamSeekCallback* seek_cb
         syz_StreamCloseCallback* close_cb
+        syz_StreamDestroyCallback* destroy_cb
         long long length
         void* userdata
 
@@ -162,7 +165,7 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle* out, unsigned long long data_len, char* data) nogil
 
-    syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle* out, unsigned int sr, unsigned int channels, unsigned long long frames, const float* data) nogil
+    syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle* out, unsigned int sr, unsigned int channels, unsigned long long frames, float* data) nogil
 
     syz_ErrorCode syz_createBufferFromFile(syz_Handle* out, char* path) nogil
 

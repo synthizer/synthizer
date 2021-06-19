@@ -414,41 +414,60 @@ cdef class Context(Pausable):
             if limit != 0 and drained_so_far == limit:
                 break
 
+# Used to keep errors alive per the custom stream error lifetime rules in synthizer.h.
+cdef class WrappedStream:
+    cdef object stream
+    cdef object last_err
+
+    def __init__(self, stream):
+        self.stream = stream
+        self.last_err = None
+
 cdef int custom_stream_read_cb(unsigned long long *wrote, unsigned long long requested, char *destination, void *userdata, const char **err_msg) with gil:
-    cdef object obj = <object>userdata
+    cdef WrappedStream obj = <WrappedStream>userdata
+    cdef stream = obj.stream
     cdef object read_data
     cdef const unsigned char[::1] out_view = None
     try:
-        read_data = obj.read(requested)
+        read_data = stream.read(requested)
         out_view = read_data
-    except Exception as e:
-        # We can't actually do anything here because the msg param has to have static lifetime.
-        # In future, we'll integrate with logging.
+    except:
+        (ign, e, ign2) = sys.exc_info()
+        obj.last_err = _to_bytes(str(e))
+        err_msg[0] = obj.last_err
         return 1
     wrote[0] = out_view.shape[0]
     if out_view.shape[0] != 0:
         memcpy(destination, &out_view[0], out_view.shape[0])
-
     return 0
 
 cdef int custom_stream_seek_cb(unsigned long long pos, void *userdata, const char **err_msg) with gil:
-    cdef object obj = <object>userdata
+    cdef WrappedStream obj = <WrappedStream>userdata
+    cdef stream = obj.stream
     try:
-        obj.seek(pos)
+        stream.seek(pos)
     except:
+        (ign, e, ign2) = sys.exc_info()
+        obj.last_err = _to_bytes(str(e))
+        err_msg[0] = obj.last_err
         return 1
     return 0
 
 cdef int custom_stream_close_cb(void *userdata, const char **err_msg) with gil:
-    cdef object obj = <object>userdata
+    cdef WrappedStream obj = <WrappedStream>userdata
+    cdef stream = obj.stream
     try:
-        closer = getattr(obj, 'close')
+        closer = getattr(stream, 'close')
         if callable(closer):
             closer()
     except:
-        return 1
-    Py_DECREF(<object>userdata)
+        (ign, e, ign2) = sys.exc_info()
+        obj.last_err = _to_bytes(str(e))
+        err_msg[0] = obj.last_err
     return 0
+
+cdef void custom_stream_destroy_cb(void *userdata) with gil:
+    Py_DECREF(<object>userdata)
 
 # Used to force the Python bindings to keep exceptions
 # from opening custom streams around long enough to communicate the error to the caller.
@@ -458,6 +477,7 @@ cdef int custom_stream_open_cb(syz_CustomStreamDef *callbacks, const char *proto
     cdef object obj = <object>userdata
     cdef object stream = None
     cdef object length_getter = None
+    cdef WrappedStream wrapped
     cdef unsigned long long length = -1
     try:
         stream = obj(protocol.decode("utf-8"), path.decode("utf-8"), <unsigned long long>param)
@@ -473,7 +493,9 @@ cdef int custom_stream_open_cb(syz_CustomStreamDef *callbacks, const char *proto
         if callable(getattr(stream, 'seek')):
             callbacks.seek_cb = &custom_stream_seek_cb
         callbacks.close_cb = &custom_stream_close_cb
-        callbacks.userdata = <void *>stream
+        wrapped = WrappedStream(stream)
+        callbacks.userdata = <void *>wrapped
+        callbacks.destroy_cb = custom_stream_destroy_cb
         Py_INCREF(<object>callbacks.userdata)
         return 0
     except:

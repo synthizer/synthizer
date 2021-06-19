@@ -298,17 +298,16 @@ SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle *out, const cha
 
 /**
  * Custom streams.
- * 
- * The callbacks here return a non-zero value to indicate an error, and may assign a string whose lifetime shares that
- * of the stream  to `err_msg`.  Currently it isn't possible to extract the code, but the message will be communicated
- * through Synthizer errors where possible and both values may be logged in the background.  Eventually,
- * it will be possible to also extract the error code.
- * */
-
-/**
- * Callbacks for streaming.  Read is mandatory.  If seek is provided, get length must also be set.
- * Synthizer handles position tracking for you internally.  Streams should not
- * change their state out from under Synthizer or be used concurrently by non-Synthizer components.
+ *
+ * The callbacks here return a non-zero value to indicate an error, and may
+ * assign a string to `err_msg` which must live until either:
+ * - The end of the stream's lifetime; or
+ * - The next time a callback associated with that stream is called.
+ *
+ * So, e.g., using a thread local to keep objects alive in bindings is fine.
+ *
+ * At the moment, these values are logged, but it is not possible to otherwise
+ * recover them.
  * */
 
 /**
@@ -324,8 +323,25 @@ typedef int syz_StreamSeekCallback(unsigned long long pos, void *userdata, const
 
 /**
  * Close the stream.
+ *
+ * The stream lifetime actually ends when the destroy callback is called.  The
+ * lifetime of err_msg must be at least as long as the duration until that
+ * point.  Put simply:
+ * - If you're a C developer, you can either ignore the destroy callback and
+ *   free your resources in close (in which case err_msg must effectively be a
+ *   static string) or free your resources in desroy (in which case err_msg is a
+ *   thing you can free).
+ * - If you're developing bindings, you can use the destroy callback to keep
+ *   exception objects and byte buffers around.
  * */
 typedef int syz_StreamCloseCallback(void *userdata, const char **err_msg);
+
+/**
+ * The stream destroy callback is optional and is called when the steraam will
+ * no longer be used.  TGhis primarily exists for bindinggs developers so that
+ * they can keep error messages alive long enough.
+ * */
+typedef void syz_StreamDestroyCallback(void *userdata);
 
 /**
  * Represents a custom stream.  If the length of the stream is unknown, set it to -1.  Note that internally Synthizer
@@ -338,6 +354,8 @@ struct syz_CustomStreamDef {
 	 * */
 	syz_StreamSeekCallback *seek_cb;
 	syz_StreamCloseCallback *close_cb;
+	/* Optional. Set to NULL if not using. */
+	syz_StreamDestroyCallback *destroy_cb;
 	long long length;
 	void *userdata;
 };
