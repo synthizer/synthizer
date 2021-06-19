@@ -3,6 +3,7 @@
 import contextlib
 import threading
 from enum import Enum
+import sys
 
 from synthizer_constants cimport *
 
@@ -15,6 +16,10 @@ from cpython.ref cimport PyObject, Py_DECREF, Py_INCREF
 cdef extern from "Python.h":
     int PyEval_InitThreads()
 PyEval_InitThreads()
+cdef extern from "string.h":
+    void *memcpy(void *dest, const void *src, size_t count)
+
+# We need memcpy for custom streams.
 
 # An internal sentinel for an unset default parameter. Used because
 # None is sometimes used.
@@ -408,6 +413,105 @@ cdef class Context(Pausable):
             drained_so_far += 1
             if limit != 0 and drained_so_far == limit:
                 break
+
+cdef int custom_stream_read_cb(unsigned long long *wrote, unsigned long long requested, char *destination, void *userdata, const char **err_msg) with gil:
+    cdef object obj = <object>userdata
+    cdef object read_data
+    cdef const unsigned char[::1] out_view = None
+    try:
+        read_data = obj.read(requested)
+        out_view = read_data
+    except Exception as e:
+        # We can't actually do anything here because the msg param has to have static lifetime.
+        # In future, we'll integrate with logging.
+        return 1
+    wrote[0] = out_view.shape[0]
+    if out_view.shape[0] != 0:
+        memcpy(destination, &out_view[0], out_view.shape[0])
+
+    return 0
+
+cdef int custom_stream_seek_cb(unsigned long long pos, void *userdata, const char **err_msg) with gil:
+    cdef object obj = <object>userdata
+    try:
+        obj.seek(pos)
+    except:
+        return 1
+    return 0
+
+cdef int custom_stream_close_cb(void *userdata, const char **err_msg) with gil:
+    cdef object obj = <object>userdata
+    try:
+        closer = getattr(obj, 'close')
+        if callable(closer):
+            closer()
+    except:
+        return 1
+    Py_DECREF(<object>userdata)
+    return 0
+
+# Used to force the Python bindings to keep exceptions
+# from opening custom streams around long enough to communicate the error to the caller.
+cdef object last_custom_stream_open_error = threading.local()
+
+cdef int custom_stream_open_cb(syz_CustomStreamDef *callbacks, const char *protocol, const char *path, void *param, void *userdata, const char **err_msg) with gil:
+    cdef object obj = <object>userdata
+    cdef object stream = None
+    cdef object length_getter = None
+    cdef unsigned long long length = -1
+    try:
+        stream = obj(protocol.decode("utf-8"), path.decode("utf-8"), <unsigned long long>param)
+        if not callable(getattr(stream, 'read')):
+            raise ValueError("Streams must have a read callback")
+        length_getter = getattr(stream, 'get_length')
+        if length_getter:
+            if not callable(length_getter):
+                raise ValueError("Stream has get_length, but it isn't callable")
+            length = length_getter()
+        callbacks.read_cb = &custom_stream_read_cb
+        callbacks.length = length
+        if callable(getattr(stream, 'seek')):
+            callbacks.seek_cb = &custom_stream_seek_cb
+        callbacks.close_cb = &custom_stream_close_cb
+        callbacks.userdata = <void *>stream
+        Py_INCREF(<object>callbacks.userdata)
+        return 0
+    except:
+        (ign, e, ign2) = sys.exc_info()
+        last_custom_stream_open_error.err = _to_bytes(str(e))
+        err_msg[0] = last_custom_stream_open_error.err
+        Py_DECREF(stream)
+        return 1
+
+def register_stream_protocol(protocol, factory):
+    """Register a custom stream protocol with the given name.  The factory
+function must be callable as:
+
+`factory(protocol: str, path: str, param: integer)`
+
+And return an object with the following functions:
+
+- `read(size)`: Must return a bytes object containing exactly size bytes.  Required.  if this function returns lss,
+  it is considered end of stream.
+- `seek(position)`: Optional. If present and if `get_length` is also present, this
+  stream is sekable.  Must seek to `position` from the beginning of the stream.  Note that `position` may be one byte past the last readable byte, like with `file` objects.
+- `get_length()`: Optional. Return the length of the stream in bytes. Must always return the same value.
+- `close()`: Optional.  Close the stream.  Called when Synthizer is entirely done with the stream.  The object will not be used after this point, but may not be
+  garbage collected immediately.
+
+The stream object will be used by background threads and needs to be safe to send between threads.  It will only ever be used from one thread at a time.
+
+The `factory` factory function/object will be leaked forever.  This should only be used
+to set statically determined protocols.
+"""
+    cdef void *userdata = <void *>factory
+    if not callable(factory):
+        raise ValueError("factory must be a callable factory function")
+    # We try registering first, then increment the reference.  Incrementing the reference
+    # doesn't fail, but registering might.
+    _checked(syz_registerStreamProtocol(_to_bytes(protocol), custom_stream_open_cb, userdata))
+    # Now leak it.
+    Py_INCREF(<object>userdata)
 
 cdef class StreamHandle(_BaseObject):
     """Wraps the C API concept of a StreamHandle, which may be created in a variety of ways."""

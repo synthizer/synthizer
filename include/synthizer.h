@@ -349,6 +349,10 @@ SYZ_CAPI syz_ErrorCode syz_streamHandleFromCustomStream(syz_Handle *out, struct 
 
 /**
  * Open a stream by filling out the callbacks struct.
+ * 
+ * Stream opening is done in the context of the calling thread, which means that the lifetime of err_msg only needs to be long enough that Synthizer can 
+ * convert it to a SynthizerError.  Put another way, if calling `syz_streamHandleFromStreamParams`, this callback is called inline and the string will be cloned and communicated out through the usual Synthizer error
+ * mechanism.
  * */
 typedef int syz_StreamOpenCallback(struct syz_CustomStreamDef *callbacks, const char *protocol, const char *path, void *param, void *userdata, const char **err_msg);
 
