@@ -72,11 +72,6 @@ struct syz_Event {
  * */
 SYZ_CAPI void syz_eventDeinit(struct syz_Event *event);
 
-/*
-* Configure logging.  Do this before your program calls anything else for reliability.
-*
-* It is possible to change the level at any time.
-*/
 enum SYZ_LOGGING_BACKEND {
 	SYZ_LOGGING_BACKEND_NONE,
 	SYZ_LOGGING_BACKEND_STDERR,
