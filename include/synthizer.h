@@ -329,7 +329,7 @@ typedef int syz_StreamSeekCallback(unsigned long long pos, void *userdata, const
  * point.  Put simply:
  * - If you're a C developer, you can either ignore the destroy callback and
  *   free your resources in close (in which case err_msg must effectively be a
- *   static string) or free your resources in desroy (in which case err_msg is a
+ *   static string) or free your resources in destroy (in which case err_msg is a
  *   thing you can free).
  * - If you're developing bindings, you can use the destroy callback to keep
  *   exception objects and byte buffers around.
@@ -338,8 +338,8 @@ typedef int syz_StreamCloseCallback(void *userdata, const char **err_msg);
 
 /**
  * The stream destroy callback is optional and is called when the steraam will
- * no longer be used.  TGhis primarily exists for bindinggs developers so that
- * they can keep error messages alive long enough.
+ * no longer be used.  Thhis primarily exists for bindinggs developers so that
+ * they can keep error messages alive long enough and make sure the stream always dies.  Note that this is called if `syz_createStreamHandleFromCustomStream` fails as well, in the calling thread.
  * */
 typedef void syz_StreamDestroyCallback(void *userdata);
 
@@ -362,8 +362,12 @@ struct syz_CustomStreamDef {
 
 /**
  * Get a stream handle from CustomStreamDef.
+ *
+ * If this function fails, the stream's close and destroy callbacks will be
+ * called as if it had succeeded, in an arbitrary thread which may include the
+ * caller.
  * */
-SYZ_CAPI syz_ErrorCode syz_streamHandleFromCustomStream(syz_Handle *out, struct syz_CustomStreamDef callbacks);
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle *out, struct syz_CustomStreamDef *callbacks);
 
 /**
  * Open a stream by filling out the callbacks struct.

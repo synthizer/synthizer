@@ -149,7 +149,7 @@ cdef extern from "synthizer.h":
         long long length
         void* userdata
 
-    syz_ErrorCode syz_streamHandleFromCustomStream(syz_Handle* out, syz_CustomStreamDef callbacks)
+    syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle* out, syz_CustomStreamDef *callbacks)
 
     ctypedef int syz_StreamOpenCallback(syz_CustomStreamDef* callbacks, char* protocol, char* path, void* param, void* userdata, char** err_msg)
 

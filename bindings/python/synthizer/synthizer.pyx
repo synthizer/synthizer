@@ -469,6 +469,27 @@ cdef int custom_stream_close_cb(void *userdata, const char **err_msg) with gil:
 cdef void custom_stream_destroy_cb(void *userdata) with gil:
     Py_DECREF(<object>userdata)
 
+cdef custom_stream_fillout_callbacks(syz_CustomStreamDef *callbacks, object stream):
+    cdef object length_getter = None
+    cdef WrappedStream wrapped
+    cdef unsigned long long length = -1
+    if not callable(getattr(stream, 'read')):
+        raise ValueError("Streams must have a read callback")
+    length_getter = getattr(stream, 'get_length')
+    if length_getter:
+        if not callable(length_getter):
+            raise ValueError("Stream has get_length, but it isn't callable")
+        length = length_getter()
+    callbacks.read_cb = &custom_stream_read_cb
+    callbacks.length = length
+    if callable(getattr(stream, 'seek')):
+        callbacks.seek_cb = &custom_stream_seek_cb
+    callbacks.close_cb = &custom_stream_close_cb
+    wrapped = WrappedStream(stream)
+    callbacks.userdata = <void *>wrapped
+    callbacks.destroy_cb = custom_stream_destroy_cb
+    Py_INCREF(<object>callbacks.userdata)
+
 # Used to force the Python bindings to keep exceptions
 # from opening custom streams around long enough to communicate the error to the caller.
 cdef object last_custom_stream_open_error = threading.local()
@@ -481,22 +502,7 @@ cdef int custom_stream_open_cb(syz_CustomStreamDef *callbacks, const char *proto
     cdef unsigned long long length = -1
     try:
         stream = obj(protocol.decode("utf-8"), path.decode("utf-8"), <unsigned long long>param)
-        if not callable(getattr(stream, 'read')):
-            raise ValueError("Streams must have a read callback")
-        length_getter = getattr(stream, 'get_length')
-        if length_getter:
-            if not callable(length_getter):
-                raise ValueError("Stream has get_length, but it isn't callable")
-            length = length_getter()
-        callbacks.read_cb = &custom_stream_read_cb
-        callbacks.length = length
-        if callable(getattr(stream, 'seek')):
-            callbacks.seek_cb = &custom_stream_seek_cb
-        callbacks.close_cb = &custom_stream_close_cb
-        wrapped = WrappedStream(stream)
-        callbacks.userdata = <void *>wrapped
-        callbacks.destroy_cb = custom_stream_destroy_cb
-        Py_INCREF(<object>callbacks.userdata)
+        custom_stream_fillout_callbacks(callbacks, stream)
         return 0
     except:
         (ign, e, ign2) = sys.exc_info()
@@ -581,6 +587,16 @@ cdef class StreamHandle(_BaseObject):
         ptr = <const char *>&data[0]
         _checked(syz_createStreamHandleFromMemory(&handle, length, ptr))
         return StreamHandle(_handle = handle)
+
+    @staticmethod
+    def from_custom_stream(stream):
+        """See register_stream_protocol docstring for what the stream object needs to do."""
+        cdef syz_CustomStreamDef callbacks
+        cdef syz_Handle handle
+        cdef syz_ErrorCode res
+        custom_stream_fillout_callbacks(&callbacks, stream)
+        _checked(syz_createStreamHandleFromCustomStream(&handle, &callbacks))
+        return StreamHandle(_handle=handle)
 
 cdef class Generator(Pausable):
     """Base class for all generators."""

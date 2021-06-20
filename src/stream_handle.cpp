@@ -59,9 +59,9 @@ SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle *out, const cha
 }
 
 
-SYZ_CAPI syz_ErrorCode syz_streamHandleFromCustomStream(syz_Handle *out, struct syz_CustomStreamDef callbacks) {
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle *out, struct syz_CustomStreamDef *callbacks) {
 	SYZ_PROLOGUE
-	auto s = customStream(&callbacks);
+	auto s = customStream(callbacks);
 	*out = exposeStream(s);
 	return 0;
 	SYZ_EPILOGUE
