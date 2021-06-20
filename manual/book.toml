@@ -7,4 +7,4 @@ title = "The Synthizer Manual"
 
 [output.html]
 
-[output.linkcheck]
+#[output.linkcheck]

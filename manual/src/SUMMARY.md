@@ -10,17 +10,24 @@
 
 # Concepts
 
-- [Introduction](./concepts/introduction.md)
-- [Stability Guarantees](./concepts/stability.md)
+- [Logging, Initialization, and Shutdown](./concepts/initialization.md)
+- [Handles and userdata](./concepts/handles.md)
+- [Basics of Audio In Synthizer](./concepts/audio_in.md)
+  - [The Context](./concepts/context.md)
+  - [Introduction to Generators](./concepts/generators.md)
+  - [Introduction to Sources](./concepts/sources.md)
+  - [Controlling Object Properties](./concepts/properties.md)
+  - [Streams and Decoding Audio Data](./concepts/decoding.md)
+  - [Loading LibsndFile](./concepts/libsndfile.md)
+  - [Implementing Custom Streams and Custom Stream Protocols](./concepts/custom_streams.md)
+  - [Channel Upmixing and Downmixing ](./concepts/channel_mixing.md)
+- [ 3D Audio, Panning, and HRTF](./concepts/3d_panning.md)
+- [Filters and Effects](./concepts/filters_and_effects.md)
+  - [Filters](./concepts/filters.md)
+  - [Effects and Effect Routing](./concepts/effects.md)
 - [The Signal Graph, Library Parameters, and limitations](./concepts/signal_graph.md)
 - [C API Conventions](./concepts/conventions.md)
-- [Logging, Initialization, and Shutdown](./concepts/initialization.md)
-- [Objects, Handles, and Properties](./concepts/object_model.md)
-- [Filters](./concepts/filters.md)
-- [Streams](./concepts/streams.md)
-- [ 3D Panning ](./concepts/3d_panning.md)
-- [Channel Upmixing and Downmixing ](./concepts/channel_mixing.md)
-- [Effects and Effect Routing](./concepts/effects.md)
+- [Stability Guarantees](./concepts/stability.md)
 
 # The Object Reference
 
