@@ -33,4 +33,4 @@ To use it, call `syz_initDeleteBehaviorConfig` on an empty
 Lingering doesn't keep related objects alive.  For example a `BufferGenerator`
 that is lingering still goes silent if the buffer attached to it is destroyed.
 
-As with pausing this procedure is usually bound as an instance method.
+As with pausing, bindings usually make this an instance method.
