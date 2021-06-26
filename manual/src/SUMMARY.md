@@ -35,16 +35,25 @@
 
 - [Context](./object_reference/context.md)
 - [Buffer](./object_reference/buffer.md)
-- [Source (abstract)](./object_reference/source.md)
+
+---
+
+- [Operations Common to All Sources](./object_reference/source.md)
 - [DirectSource](./object_reference/direct_source.md)
-- [SpatializedSource (abstract)](./object_reference/spatialized_source.md)
+- [Operations Common to Panned and 3D Sources](./object_reference/spatialized_source.md)
 - [PannedSource](./object_reference/panned_source.md)
 - [Source3D](./object_reference/source_3d.md)
-- [Generator (abstract)](./object_reference/generator.md)
+
+---
+
+- [Operations Common to All Generators](./object_reference/generator.md)
 - [StreamingGenerator](./object_reference/streaming_generator.md)
 - [BufferGenerator](./object_reference/buffer_generator.md)
 - [NoiseGenerator](./object_reference/noise_generator.md)
-- [GlobalEffect](./object_reference/global_effect.md)
+
+---
+
+- [Operations Common to All Effects](./object_reference/global_effect.md)
 - [Echo](./object_reference/echo.md)
 - [FdnReverb](./object_reference/fdn_reverb.md)
 
