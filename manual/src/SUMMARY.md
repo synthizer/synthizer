@@ -10,6 +10,7 @@
 
 # Concepts
 
+- [Introduction to the C API](./concepts/c_api.md)
 - [Logging, Initialization, and Shutdown](./concepts/initialization.md)
 - [Handles and userdata](./concepts/handles.md)
 - [Basics of Audio In Synthizer](./concepts/audio_in.md)
@@ -28,8 +29,6 @@
 - [Filters and Effects](./concepts/filters_and_effects.md)
   - [Filters](./concepts/filters.md)
   - [Effects and Effect Routing](./concepts/effects.md)
-- [The Signal Graph, Library Parameters, and limitations](./concepts/signal_graph.md)
-- [C API Conventions](./concepts/conventions.md)
 - [Stability Guarantees](./concepts/stability.md)
 
 # The Object Reference

@@ -111,7 +111,7 @@ SYZ_CAPI syz_ErrorCode syz_shutdown();
  * 
  * If the last function succeeded, the return value is undefined.
  * */
-SYZ_CAPI syz_ErrorCode syz_getLastErrorCode();
+SYZ_CAPI syz_ErrorCode syz_getLastErrorCode(void);
 
 /*
  * Get the message associated with the last error for this thread. The pointer is valid only
@@ -119,7 +119,7 @@ SYZ_CAPI syz_ErrorCode syz_getLastErrorCode();
  * 
  * If the last function succeeded, the return value is undefined.
  * */
-SYZ_CAPI const char *syz_getLastErrorMessage();
+SYZ_CAPI const char *syz_getLastErrorMessage(void);
 
 /**
  * Increment and decrement the reference count on a C handle.

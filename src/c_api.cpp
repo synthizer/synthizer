@@ -77,11 +77,11 @@ SYZ_CAPI syz_ErrorCode syz_shutdown() {
 }
 
 
-SYZ_CAPI syz_ErrorCode syz_getLastErrorCode() {
+SYZ_CAPI syz_ErrorCode syz_getLastErrorCode(void) {
 	return last_error_code;
 }
 
-SYZ_CAPI const char *syz_getLastErrorMessage() {
+SYZ_CAPI const char *syz_getLastErrorMessage(void) {
 	return last_error_message.c_str();
 }
 
