@@ -6,7 +6,7 @@ most interesting audio control happens through properties, which are like knobs
 on hardware controllers or dials in your DAW.  Synthizer picks the values of
 properties up on the next audio tick and automatically handles crossfading and
 graceful changes as your app drives the values.  Every property is identified
-with a `SY_P` constant in `synthizer_constants.h`.  IN bindings,
+with a `SYZ_P` constant in `synthizer_constants.h`.  IN bindings,
 `SYZ_P_MY_PROPERTY` will generally become `my_property` or `MyProperty` or etc.
 depending on the dominant style of the language, and then either become an
 actual settable property or a `get_property` and `set_property` pair depending
@@ -22,6 +22,7 @@ All properties are of one of the following types:
   orientation.
 - `object`, identified by a `o` suffix, used to set object properties such as
   the buffer to use for a buffer generator.
+- `biquad`, configuration for a biquad filter.  Used on effects and sources to allow filtering audio.
 
 No property constant represents a property of two types.  For example
 `SYZ_P_POSITION` is both on `Context` and `Source3D` but is a `d3` in both
@@ -44,8 +45,10 @@ SYZ_CAPI syz_ErrorCode syz_setD3(syz_Handle target, int property, double x, doub
 
 SYZ_CAPI syz_ErrorCode syz_getD6(double *x1, double *y1, double *z1, double *x2, double *y2, double *z2, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, double y1, double z1, double x2, double y2, double z2);
-```
 
+SYZ_CAPI syz_ErrorCode syz_getBiquad(struct syz_BiquadConfig *filter, syz_Handle target, int property);
+SYZ_CAPI syz_ErrorCode syz_setBiquad(syz_Handle target, int property, const struct syz_BiquadConfig *filter);
+```
 
 Property accesses happen without syscalls and are usually atomic operations and
 enqueues on a lockfree queue.
