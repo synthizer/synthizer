@@ -51,13 +51,12 @@ struct syz_Event {
 	int type;
 	syz_Handle source;
 	/**
-	 *  * Can be 0. EThe context of the event, if any.
+	 *  * Can be 0. The context of the event, if any.
 	 * */
 	syz_Handle context;
-	void *userdata;
 	union {
-	 struct syz_EventLooped looped;
-	 struct syz_EventFinished finished;
+		struct syz_EventLooped looped;
+		struct syz_EventFinished finished;
 	} payload;
 	/**
 	 * These fields are internal to Synthizer, and should not be touched.

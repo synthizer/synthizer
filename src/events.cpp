@@ -23,12 +23,15 @@ void PendingEvent::extract(syz_Event *out, unsigned long long flags) {
 	for (std::size_t i = 0; i < this->referenced_handles.size(); i++) {
 		auto strong = this->referenced_handles[i].lock();
 
-		if (strong == nullptr || strong->incRef()) {
-			/*
-			 * We failed to revive this object and produce a strong reference. Decrement all the references before it in the vector.
-			 * All the previous objects are still alive because we just incremented their reference counts, so unconditionally
-			 * decrement their reference counts without checking again.  if this crashes,
-			 * it's because the user misused the library.
+		if (strong == nullptr || strong->incRef() == false) {
+			/**
+			 * We failed to revive this object and produce a strong reference.
+			 * Decrement all the references before it in the vector. All the
+			 * previous objects are still alive because we just incremented
+			 * their reference counts, so unconditionally decrement their
+			 * reference counts without checking again.  If this crashes, it's
+			 * because the user misused the library, probably by decrementing
+			 * reference counts more than they were incremented.
 			 * */
 			for (std::size_t j = 0; j < i; j++) {
 				this->referenced_handles[j].lock()->decRef();
@@ -82,7 +85,6 @@ void EventBuilder::setSource(const std::shared_ptr<CExposable> &source) {
 	 */
 	if (this->associateObject(source)) {
 		this->event.source = source->getCHandle();
-		this->event.userdata = source->getUserdata();
 		this->has_source = true;
 	}
 }

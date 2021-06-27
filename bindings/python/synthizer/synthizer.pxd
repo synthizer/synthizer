@@ -21,7 +21,6 @@ cdef extern from "synthizer.h":
         int type
         syz_Handle source
         syz_Handle context
-        void* userdata
         _syz_Event_payload_u payload
         _syz_Event__private_s _private
 
