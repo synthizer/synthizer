@@ -1,13 +1,5 @@
 # A Basic Media Player
 
-## Installation
-
-We support Python 3.  Python wheels for Windows X64 are published to Pypi, so to install:
-
-```bash
-pip install synthizer
-```
-
 ## Some Basics
 
 Synthizer requires initialization and deinitialization. The best way to initialize Synthizer is to use the context manager:
