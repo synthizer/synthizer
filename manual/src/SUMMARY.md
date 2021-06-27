@@ -2,11 +2,12 @@
 
 - [Introduction](./introduction.md)
 
-# Tutorials
+# Python Tutorials
 
-- [A Basic Python Tutorial](./tutorials/python.md)
-- [Events (alpha)](./tutorials/events.md)
-- [Filters in Python](./tutorials/python_filters.md)
+- [Introduction](./python_tutorials/introduction.md)
+- [A Basic Media Player](./python_tutorials/basics.md)
+- [Events](./python_tutorials/events.md)
+- [Filters](./python_tutorials/filters.md)
 
 # Concepts
 

@@ -1,4 +1,4 @@
-# A Basic Python Tutorial
+# A Basic Media Player
 
 ## Installation
 
