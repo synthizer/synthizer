@@ -14,6 +14,8 @@ with synthizer.initialized(
     # Get our context, which almost everything requires.
     # This starts the audio threads.
     ctx = synthizer.Context()
+    # Enable HRTF as the default panning strategy before making a source
+    ctx.default_panner_strategy = synthizer.PannerStrategy.HRTF
 
     # A BufferGenerator plays back a buffer:
     generator = synthizer.BufferGenerator(ctx)
@@ -50,7 +52,7 @@ with synthizer.initialized(
             source.position = (x, y, z)
         elif cmd[0] == "seek":
             if len(cmd) != 2:
-                print("Syntax: pos <seconds>")
+                print("Syntax: seek <seconds>")
                 continue
             try:
                 pos = float(cmd[1])
