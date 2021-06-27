@@ -7,6 +7,7 @@
 - [Introduction](./python_tutorials/introduction.md)
 - [Installation](./python_tutorials/installation.md)
 - [A Basic Media Player](./python_tutorials/basics.md)
+- [Configuring Linger](./python_tutorials/linger.md)
 - [Events](./python_tutorials/events.md)
 - [Filters](./python_tutorials/filters.md)
 
