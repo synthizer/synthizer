@@ -58,8 +58,8 @@
 ---
 
 - [Operations Common to All Effects](./object_reference/global_effect.md)
-- [Echo](./object_reference/echo.md)
-- [FdnReverb](./object_reference/fdn_reverb.md)
+- [GlobalEcho](./object_reference/global_echo.md)
+- [GlobalFdnReverb](./object_reference/global_fdn_reverb.md)
 
 # Appendecies
 

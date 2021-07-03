@@ -62,4 +62,4 @@ To design occlusion, use a lowpass filter on the source, either as `filter` or
 `filter_direct`.  Synthizer doesn't currently provide anything to help because
 it's not possible to build a proper physics-based occlusion model and it is
 sometimes even beneficial to use bandpass or highpass filters instead (e.g.
-audio traveling through a pipe). It has to be done per application.
+haudio traveling through a pipe). It has to be done per application.
