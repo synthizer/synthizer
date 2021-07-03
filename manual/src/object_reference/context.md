@@ -39,13 +39,19 @@ The context is the main entrypoint to Synthizer, responsible for the following:
 - Owning all objects that play together.
 - Representing the listener in 3D space.
 
-All objects which are associated with a context take a context as part of all their constructors.  Two objects which are both associated with different contexts should never interact.
-For efficiency, whether two objects are from different contexts is unvalidated, and the behavior of mixing them is undefined.
+All objects which are associated with a context take a context as part of all
+their constructors.  Two objects which are both associated with different
+contexts should never interact. For efficiency, whether two objects are from
+different contexts is unvalidated, and the behavior of mixing them is undefined.
 
-All objects associated with a context become useless once the context is destroyed.  Calls to them will still work, but they can't be reassociated with a different context and no audioble output will result.
+All objects associated with a context become useless once the context is
+destroyed.  Calls to them will still work, but they can't be reassociated with a
+different context and no audioble output will result.
 
 Most programs create one context and destroy it at shutdown.
 
-For the time being, all contexts output stereo audio, and it is not possible to specify the output device. These restrictions will be lifted in future.
+For the time being, all contexts output stereo audio, and it is not possible to
+specify the output device. These restrictions will be lifted in future.
 
-For information on the meaning of the distance model properties, see [3D Audio](../concepts/3d_audio.md).
+For information on the meaning of the distance model properties, see [3D
+Audio](../concepts/3d_audio.md).

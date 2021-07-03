@@ -8,7 +8,8 @@
 SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context);
 ```
 
-Creates a BufferGenerator. The buffer is set to NULL and the resulting generator will play silence until one is associated.
+Creates a BufferGenerator. The buffer is set to NULL and the resulting generator
+will play silence until one is associated.
 
 ## Properties
 
@@ -20,12 +21,16 @@ SYZ_P_LOOPING | int | 0 | 0 or 1 | Whether playback loops at the end of the buff
 
 ## Remarks
 
-BufferGenerators play [Buffer](./buffer.md)s.  This is the most efficient way to play audio.
+BufferGenerators play [Buffer](./buffer.md)s.  This is the most efficient way to
+play audio.
 
 `SYZ_P_PLAYBACK_POSITION` is reset if `SYZ_P_BUFFER` is modified.
 
-`SYZ_P_PLAYBACK_POSITION` can be set past the end of the buffer.  If `SYZ_P_LOOPING = 0`, the generator will play silence.  Otherwise, the position will immediately loop to the beginning.
+`SYZ_P_PLAYBACK_POSITION` can be set past the end of the buffer.  If
+`SYZ_P_LOOPING = 0`, the generator will play silence.  Otherwise, the position
+will immediately loop to the beginning.
 
 More than one BufferGenerator can use the same underlying Buffer.
 
-If the buffer being used by this generator is destroyed, this generator immediately begins playing silence until another buffer is associated.
+If the buffer being used by this generator is destroyed, this generator
+immediately begins playing silence until another buffer is associated.

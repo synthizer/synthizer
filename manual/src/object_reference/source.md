@@ -22,13 +22,20 @@ SYZ_CAPI syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle gene
 SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle generator);
 ```
 
-Add/remove a generator from a source. Each generator may be added once and duplicate add calls will have no effect. Each generator should only be used with one source at a time.
+Add/remove a generator from a source. Each generator may be added once and
+duplicate add calls will have no effect. Each generator should only be used with
+one source at a time.
 
 ## Remarks
 
-Sources represent audio output.  They combine all generators connected to them, apply any effects if necessary, and feed the context. Subclasses of Source add panning and other features.
+Sources represent audio output.  They combine all generators connected to them,
+apply any effects if necessary, and feed the context. Subclasses of Source add
+panning and other features.
 
 
-All sources offer filters via `SYZ_P_FILTER`, `SYZ_P_FILTER_DIRECT` and `SYZ_P_FILTER_EFFECTS`.
-First, `SYZ_P_FILTER` is applied, then the audio is split into two paths: the portion heading directly to the speakers gets `SYZ_P_FILTER_DIRECT`, and the portion
-heading to the effect sends gets `SYZ_P_FILTER_EFFECTS`.  This can be used to simulate occlusion and perform other per-source effect customization.
+All sources offer filters via `SYZ_P_FILTER`, `SYZ_P_FILTER_DIRECT` and
+`SYZ_P_FILTER_EFFECTS`. First, `SYZ_P_FILTER` is applied, then the audio is
+split into two paths: the portion heading directly to the speakers gets
+`SYZ_P_FILTER_DIRECT`, and the portion heading to the effect sends gets
+`SYZ_P_FILTER_EFFECTS`.  This can be used to simulate occlusion and perform
+other per-source effect customization.

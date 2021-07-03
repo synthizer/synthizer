@@ -25,6 +25,10 @@ SYZ_P_CLOSENESS_BOOST_DISTANCE | double | From Context | value >= 0.0 | The clos
 
 ## Remarks
 
-A Source3D represents an entity in 3D space.  For explanations of the above properties, see [3D Audio](../concepts/3d_audio.md).
+A Source3D represents an entity in 3D space.  For explanations of the above
+properties, see [3D Audio](../concepts/3d_audio.md).
 
-When created, Source3D reads all of its defaults from the Context's corresponding properties.  Changes to the Context versions don't affect already created sources.  A typical use case is to configure the Context to the defaults of the game, and then create sources.
+When created, Source3D reads all of its defaults from the Context's
+corresponding properties.  Changes to the Context versions don't affect already
+created sources.  A typical use case is to configure the Context to the defaults
+of the game, and then create sources.

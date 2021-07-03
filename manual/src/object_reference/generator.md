@@ -1,6 +1,7 @@
 # Operations Common to All Generators
 
-Generators generate audio, and are how Synthizer knows what to play through sources. 
+Generators generate audio, and are how Synthizer knows what to play through
+sources. 
 
 ## Properties
 
@@ -13,4 +14,5 @@ SYZ_P_PITCH_BEND | double | 1.0 | value >= 0.0 | Pitch bend of the generator as 
 
 ## Remarks
 
-Not all generators support `SYZ_P_PITCH_BEND` because it doesn't necessarily make sense for them to do so, but it can always be set.
+Not all generators support `SYZ_P_PITCH_BEND` because it doesn't necessarily
+make sense for them to do so, but it can always be set.

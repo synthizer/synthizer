@@ -15,9 +15,11 @@ SYZ_P_FILTER_INPUT | biquad | usually identity. if not, documented with the effe
 SYZ_CAPI syz_ErrorCode syz_effectReset(syz_Handle effect);
 ```
 
-Clears the internal state of the effect. Intended for design/development purposes.  This function may produce clicks and other artifacts and is slow.
+Clears the internal state of the effect. Intended for design/development
+purposes.  This function may produce clicks and other artifacts and is slow.
 
 
 ## Remarks
 
-For more information on how effects work, see [the dedicated section](../concepts/effects.md).
+For more information on how effects work, see [the dedicated
+section](../concepts/effects.md).
