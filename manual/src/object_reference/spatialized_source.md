@@ -1,4 +1,4 @@
-# SpatializedSource (abstract)
+# Operations Common to Panned and 3D Sources
 
 ## Constructors
 
@@ -8,8 +8,8 @@ None
 
 Enum | Type | Default | Range | Description
 --- | --- | --- | --- | ---
-SYZ_P_PANNER_STRATEGY | int | SYZ_PANNER_STRATEGY_HRTF | any SYZ_PANNER_STRATEGY | The panner strategy for this source.
+SYZ_P_PANNER_STRATEGY | int | delegated to Context | any SYZ_PANNER_STRATEGY | The panner strategy for this source.
 
 ## Remarks
 
-SpatializedSource is an abstract class which gives all panned sources their distance model and gain.
+All panned sources allow setting their panner strategy, which is taken by default from `SYZ_P_DEFAULT_PANNER_STRATEGY` on the context. See [3D Audio](../concepts/3d_audio.md) for info on panner strategies.

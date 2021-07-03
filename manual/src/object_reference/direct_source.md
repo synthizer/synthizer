@@ -1,7 +1,5 @@
 # DirectSource
 
-Inherits from Source.
-
 ## Constructors
 
 ### `syz_createDirectSource`

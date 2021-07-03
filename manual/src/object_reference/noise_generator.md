@@ -22,8 +22,7 @@ SYZ_P_NOISE_TYPE | int | SYZ_NOISE_TYPE_UNIFORM | any SYZ_NOISE_TYPE | The type 
 
 ## Remarks
 
-NoiseGenerators generate noise, which will be useful in future when various effects are added.  For instance filtered noise makes plausible wind.
-Note that noise generators don't support `SYZ_P_PITCH_BEND` because noise doesn't have a pitch by definition.
+NoiseGenerators generate noise.  This is most useful when filtered via the source, and can make things such as plausible if low-quality wind and whistling effects.
 
 Synthizer allows setting the algorithm used to generate noise to one of the following options.  Note that these are more precisely named than white/pink/brown; the sections below document the equivalent in the more standard nomenclature.
 

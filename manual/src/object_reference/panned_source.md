@@ -1,7 +1,5 @@
 # PannedSource
 
-Inherits from [SpatializedSource](./spatialized_source.md).
-
 ## Constructors
 
 ### `syz_createPannedSource`
@@ -30,4 +28,4 @@ Some applications want to control panners through a panning scalar instead, i.e.
 
 Applications should use either a panning scalar or azimuth/elevation, never both on the same source.  Using both simultaneously is undefined behavior.
 
-For information on panning, see [3D Panning](../concepts/3d_panning.md).
+For information on panning, see [3D Audio](../concepts/3d_audio.md).

@@ -1,7 +1,5 @@
 # StreamingGenerator
 
-Inherits from [Generator](./generator.md).
-
 ## Constructors
 
 ### `syz_createStreamingGeneratorFromFile`
@@ -18,8 +16,15 @@ Create a StreamingGenerator from an UTF-8 encoded path.
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, void *param);
 ```
 
-Creates a StreamingGenerator from the standard [stream parameters](../concepts/streams.md).
+Create a StreamingGenerator from the standard [stream parameters](../concepts/streams.md).
 
+### `syz_createStreamingGeneratorFromStreamHandle`
+
+```
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context, syz_Handle stream);
+```
+
+Create a `StreamingGenerator` from a stream handle.
 ## Properties
 
 Enum | Type | Default Value | Range | Description
@@ -29,9 +34,9 @@ SYZ_P_LOOPING | int | 0 | 0 or 1 | Whether playback loops
 
 ## Remarks
 
-StreamingGenerator plays streams, decoding and reading on demand.  The typical use case is for music playback.
+`StreamingGenerator` plays streams, decoding and reading on demand.  The typical use case is for music playback.
 
-Due to the expense of streaming from disk and other I/O sources, having more than a few StreamingGenerators going will cause a decrease in audio quality on many systems, typically manifesting as drop--outs and crackling.
+Due to the expense of streaming from disk and other I/O sources, having more than a few StreamingGenerators going will cause a decrease in audio quality on many systems, typically manifesting as drop-outs and crackling.
 StreamingGenerator creates one background thread per instance and does all decoding and I/O in that thread.
 
 At startup, StreamingGenerator's background thread eagerly decodes a relatively large amount of data in order to build up a buffer which prevents underruns.

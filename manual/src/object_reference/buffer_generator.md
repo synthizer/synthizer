@@ -1,7 +1,5 @@
 # BufferGenerator
 
-Inherits from [Generator](./generator.md).
-
 ## Constructors
 
 ### `syz_createBufferGenerator`
@@ -22,7 +20,7 @@ SYZ_P_LOOPING | int | 0 | 0 or 1 | Whether playback loops at the end of the buff
 
 ## Remarks
 
-BufferGenerators play [Buffer](./buffer.md)s.
+BufferGenerators play [Buffer](./buffer.md)s.  This is the most efficient way to play audio.
 
 `SYZ_P_PLAYBACK_POSITION` is reset if `SYZ_P_BUFFER` is modified.
 
@@ -30,7 +28,4 @@ BufferGenerators play [Buffer](./buffer.md)s.
 
 More than one BufferGenerator can use the same underlying Buffer.
 
-
-`SYZ_P_PITCH_BEND` is a multiplicative rate on the playback of the buffer.  Though this clarification is currently unimportant, the difference between this and it being *the* rate
-is that it will eventually be combined with doppler effects.  A value of 2.0 is one octave higher. A value of 0.5 is one octave lower.  Expect `SYZ_P_PITCH_BEND` to move to a base "class" in future:
-though we only support it for buffers at the moment, many other generator types will be able to do so in future.
+If the buffer being used by this generator is destroyed, this generator immediately begins playing silence until another buffer is associated.

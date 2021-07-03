@@ -26,17 +26,9 @@ SYZ_P_DEFAULT_CLOSENESS_BOOST_DISTANCE | double | 0.0 | value >= 0.0 | The defau
 SYZ_P_DEFAULT_PANNER_STRATEGY | int | SYZ_PANNER_STRATEGY_STEREO | any SYZ_PANNER_STRATEGY | The default panner strategy for new sources.
 
 ## Functions
+### `syz_contextGetNextEvent`
 
-### `syz_pause`, `syz_play`
-
-```
-syz_ErrorCode syz_pause(syz_Handle object);
-syz_ErrorCode syz_play(syz_Handle object);
-```
-
-The standard play/pause functions, which do exactly what their name suggests.
-
-When the context is paused, nothing it manages advances and no audio is audible.
+See [events](../concepts/events.md).
 
 ## Remarks
 
@@ -56,4 +48,4 @@ Most programs create one context and destroy it at shutdown.
 
 For the time being, all contexts output stereo audio, and it is not possible to specify the output device. These restrictions will be lifted in future.
 
-For information on the meaning of the distance model properties, see [3D Panning](../concepts/3d_panning.md).
+For information on the meaning of the distance model properties, see [3D Audio](../concepts/3d_audio.md).
