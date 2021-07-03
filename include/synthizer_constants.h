@@ -94,7 +94,7 @@ enum SYZ_PROPERTIES {
 };
 
 enum SYZ_EVENT_TYPES {
-	/* Invalid must always be 0. */
+	/* Internal detail: Invalid must always be 0. */
 	SYZ_EVENT_TYPE_INVALID,
 	SYZ_EVENT_TYPE_LOOPED,
 	SYZ_EVENT_TYPE_FINISHED,

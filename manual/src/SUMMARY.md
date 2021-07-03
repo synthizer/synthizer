@@ -32,6 +32,7 @@
 - [Filters and Effects](./concepts/filters_and_effects.md)
   - [Filters](./concepts/filters.md)
   - [Effects and Effect Routing](./concepts/effects.md)
+- [Events](./concepts/events.md)
 - [Stability Guarantees](./concepts/stability.md)
 
 # The Object Reference
