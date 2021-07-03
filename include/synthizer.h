@@ -47,12 +47,6 @@ struct syz_Event {
 	 *  * Can be 0. The context of the event, if any.
 	 * */
 	syz_Handle context;
-	/**
-	 * These fields are internal to Synthizer, and should not be touched.
-	 * */
-	struct {
-		unsigned long long flags;
-	} _private;
 };
 
 /**

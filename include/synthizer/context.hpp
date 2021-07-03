@@ -262,7 +262,7 @@ class Context: public Pausable, public BaseObject {
 	 * */
 	void enableEvents();
 	/* May be called from any thread as it is backed by a MPMC queue. */
-	void getNextEvent(syz_Event *out, unsigned long long flags);
+	void getNextEvent(syz_Event *out);
 
 	/**
 	 * Begin lingering for an object.

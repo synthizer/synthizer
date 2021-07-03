@@ -17,7 +17,7 @@ PendingEvent::PendingEvent() {}
 
 PendingEvent::PendingEvent(syz_Event &&event, EventHandleVec &&referenced_handles): event(event), referenced_handles(referenced_handles), valid(true) {}
 
-void PendingEvent::extract(syz_Event *out, unsigned long long flags) {
+void PendingEvent::extract(syz_Event *out) {
 	*out = syz_Event{};
 
 	for (std::size_t i = 0; i < this->referenced_handles.size(); i++) {
@@ -41,8 +41,6 @@ void PendingEvent::extract(syz_Event *out, unsigned long long flags) {
 	}
 
 	*out = this->event;
-	/* We only have flags late, so put them in now. */
-	out->_private.flags = flags;
 }
 
 EventSender::EventSender(): pending_events(), producer_token(pending_events) {}
@@ -55,7 +53,7 @@ bool EventSender::isEnabled() {
 	return this->enabled;
 }
 
-void EventSender::getNextEvent(syz_Event *out, unsigned long long flags) {
+void EventSender::getNextEvent(syz_Event *out) {
 	PendingEvent maybe_event;
 
 	*out = syz_Event{};
@@ -64,7 +62,7 @@ void EventSender::getNextEvent(syz_Event *out, unsigned long long flags) {
 		return;
 	}
 
-	maybe_event.extract(out, flags);
+	maybe_event.extract(out);
 }
 
 void EventSender::enqueue(syz_Event &&event, EventHandleVec &&handles) {

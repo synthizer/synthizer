@@ -12,9 +12,6 @@ struct syz_Event {
     int type;
     syz_Handle source;
     syz_Handle context;
-    struct {
-        ...
-    } _private;
 };
 
 SYZ_CAPI syz_ErrorCode syz_contextEnableEvents(syz_Handle context);

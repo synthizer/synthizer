@@ -4,14 +4,10 @@ cdef extern from "synthizer.h":
 
     ctypedef int syz_ErrorCode
 
-    cdef struct _syz_Event__private_s:
-        unsigned long long flags
-
     cdef struct syz_Event:
         int type
         syz_Handle source
         syz_Handle context
-        _syz_Event__private_s _private
 
     void syz_eventDeinit(syz_Event* event)
 

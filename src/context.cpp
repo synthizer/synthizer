@@ -273,8 +273,8 @@ void Context::enableEvents() {
 	this->event_sender.setEnabled(true);
 }
 
-void Context::getNextEvent(syz_Event *out, unsigned long long flags) {
-	this->event_sender.getNextEvent(out, flags);
+void Context::getNextEvent(syz_Event *out) {
+	this->event_sender.getNextEvent(out);
 }
 
 void Context::doLinger(const std::shared_ptr<BaseObject> &obj) {
@@ -377,9 +377,11 @@ SYZ_CAPI syz_ErrorCode syz_contextEnableEvents(syz_Handle context) {
 }
 
 SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle context, unsigned long long flags) {
+	(void)flags;
+
 	SYZ_PROLOGUE
 	std::shared_ptr<Context> ctx = fromC<Context>(context);
-	ctx->getNextEvent(out, flags);
+	ctx->getNextEvent(out);
 	return 0;
 	SYZ_EPILOGUE
 }
