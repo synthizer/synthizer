@@ -110,16 +110,9 @@ syz_Handle EventBuilder::translateHandle(const std::weak_ptr<CExposable> &object
 	return this->translateHandle(object.lock());
 }
 
-#define SP(E, T, F) \
-void EventBuilder::setPayload(const T &payload) { \
-	assert(this->has_payload == false && "Events may only have one payload"); \
-	this->event.payload.F = payload; \
-	this->event.type = E; \
-	this->has_payload = true; \
+void EventBuilder::setType(int type) {
+	this->event.type = type;
 }
-
-SP(SYZ_EVENT_TYPE_LOOPED, syz_EventLooped, looped)
-SP(SYZ_EVENT_TYPE_FINISHED, syz_EventFinished, finished)
 
 void EventBuilder::dispatch(EventSender *sender) {
 	if (this->will_send == false) {
@@ -129,7 +122,7 @@ void EventBuilder::dispatch(EventSender *sender) {
 		return;
 	}
 
-	assert(this->has_payload && "Events must have payloads");
+	assert(this->event.type != 0 && "Events must have a type");
 
 	sender->enqueue(std::move(this->event), std::move(this->referenced_objects));
 }
@@ -147,7 +140,7 @@ void sendFinishedEvent(const std::shared_ptr<Context> &ctx, const std::shared_pt
 	ctx->sendEvent([&](auto *builder) {
 		builder->setSource(std::static_pointer_cast<CExposable>(source));
 		builder->setContext(ctx);
-		builder->setPayload(syz_EventFinished{});
+		builder->setType(SYZ_EVENT_TYPE_FINISHED);
 	});
 }
 
@@ -155,7 +148,7 @@ void sendLoopedEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<
 	ctx->sendEvent([&](auto *builder) {
 		builder->setSource(std::static_pointer_cast<CExposable>(source));
 		builder->setContext(ctx);
-		builder->setPayload(syz_EventLooped{});
+		builder->setType(SYZ_EVENT_TYPE_LOOPED);
 	});
 }
 

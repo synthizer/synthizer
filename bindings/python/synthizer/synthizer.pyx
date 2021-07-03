@@ -410,6 +410,7 @@ cdef class Context(Pausable):
                 break
             will_yield = _convert_event(event)
             syz_eventDeinit(&event)
+            yield will_yield
             drained_so_far += 1
             if limit != 0 and drained_so_far == limit:
                 break

@@ -4,16 +4,6 @@ cdef extern from "synthizer.h":
 
     ctypedef int syz_ErrorCode
 
-    cdef struct syz_EventFinished:
-        char unused
-
-    cdef struct syz_EventLooped:
-        unsigned long long loop_counter
-
-    cdef union _syz_Event_payload_u:
-        syz_EventLooped looped
-        syz_EventFinished finished
-
     cdef struct _syz_Event__private_s:
         unsigned long long flags
 
@@ -21,7 +11,6 @@ cdef extern from "synthizer.h":
         int type
         syz_Handle source
         syz_Handle context
-        _syz_Event_payload_u payload
         _syz_Event__private_s _private
 
     void syz_eventDeinit(syz_Event* event)
@@ -148,7 +137,7 @@ cdef extern from "synthizer.h":
         long long length
         void* userdata
 
-    syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle* out, syz_CustomStreamDef *callbacks)
+    syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle* out, syz_CustomStreamDef* callbacks)
 
     ctypedef int syz_StreamOpenCallback(syz_CustomStreamDef* callbacks, char* protocol, char* path, void* param, void* userdata, char** err_msg)
 

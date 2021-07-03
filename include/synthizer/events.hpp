@@ -105,11 +105,10 @@ class EventBuilder {
 
 	syz_Handle translateHandle(const std::shared_ptr<CExposable> &object);
 	syz_Handle translateHandle(const std::weak_ptr<CExposable> &object);
-
-	void setPayload(const syz_EventLooped &payload);
-	void setPayload(const syz_EventFinished &payload);
+	void setType(int type);
 
 	void dispatch(EventSender *sender);
+
 
 	private:
 	/**
@@ -120,7 +119,6 @@ class EventBuilder {
 	syz_Event event{};
 	EventHandleVec referenced_objects;
 	bool will_send = true;
-	bool has_payload = false;
 	bool has_source = false;
 };
 

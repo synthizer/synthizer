@@ -39,13 +39,6 @@ typedef int syz_ErrorCode;
  *
  * Note to maintainers: pulling these out to a separate header breaks at least autopxd, and possibly other bindings generators.
  * */
-struct syz_EventFinished {
-	char unused; // gives the struct a size in C, lets C->C++ not die horribly.
-};
-
-struct syz_EventLooped {
-	unsigned long long loop_counter;
-};
 
 struct syz_Event {
 	int type;
@@ -54,10 +47,6 @@ struct syz_Event {
 	 *  * Can be 0. The context of the event, if any.
 	 * */
 	syz_Handle context;
-	union {
-		struct syz_EventLooped looped;
-		struct syz_EventFinished finished;
-	} payload;
 	/**
 	 * These fields are internal to Synthizer, and should not be touched.
 	 * */
