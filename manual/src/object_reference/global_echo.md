@@ -21,7 +21,7 @@ struct syz_EchoTapConfig {
     float gain_r;
 };
 
-SYZ_CAPI syz_ErrorCode syz_echoSetTaps(syz_Handle handle, unsigned int n_taps, struct syz_EchoTapConfig *taps);
+SYZ_CAPI syz_ErrorCode syz_globalEchoSetTaps(syz_Handle handle, unsigned int n_taps, struct syz_EchoTapConfig *taps);
 ```
 
 Configure the taps for this Echo.  Currently, delay must be no greater than 5

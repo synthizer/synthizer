@@ -199,6 +199,6 @@ cdef extern from "synthizer.h":
         float gain_l
         float gain_r
 
-    syz_ErrorCode syz_echoSetTaps(syz_Handle handle, unsigned int n_taps, syz_EchoTapConfig* taps)
+    syz_ErrorCode syz_globalEchoSetTaps(syz_Handle handle, unsigned int n_taps, syz_EchoTapConfig* taps)
 
     syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle* out, syz_Handle context)

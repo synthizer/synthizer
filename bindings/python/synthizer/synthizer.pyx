@@ -867,7 +867,7 @@ cdef class GlobalEcho(GlobalEffect):
         cdef EchoTapConfig tap
         try:
             if n_taps == 0:
-                _checked(syz_echoSetTaps(self.handle, 0, NULL))
+                _checked(syz_globalEchoSetTaps(self.handle, 0, NULL))
                 return
             cfgs = <syz_EchoTapConfig *>PyMem_Malloc(n_taps * sizeof(syz_EchoTapConfig))
             if not cfgs:
@@ -877,7 +877,7 @@ cdef class GlobalEcho(GlobalEffect):
                 cfgs[i].delay = t.delay
                 cfgs[i].gain_l = t.gain_l
                 cfgs[i].gain_r = t.gain_r
-            _checked(syz_echoSetTaps(self.handle, n_taps, cfgs))
+            _checked(syz_globalEchoSetTaps(self.handle, n_taps, cfgs))
         finally:
             PyMem_Free(cfgs)
 
