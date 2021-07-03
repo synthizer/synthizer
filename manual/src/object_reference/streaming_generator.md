@@ -24,7 +24,7 @@ Creates a StreamingGenerator from the standard [stream parameters](../concepts/s
 
 Enum | Type | Default Value | Range | Description
 --- | --- | --- | --- | ---
-SYZ_P_POSITION | double | 0.0 | value >= 0.0 | The position in of the stream.
+SYZ_P_PLAYBACK_POSITION | double | 0.0 | value >= 0.0 | The position in of the stream.
 SYZ_P_LOOPING | int | 0 | 0 or 1 | Whether playback loops
 
 ## Remarks
