@@ -10,8 +10,8 @@ automatically be used where possible, replacing the built-in decoders.
 Unfortunately, due to Libsndfile limitations, Libsndfile can only be used on
 seekable streams of known length.  All Synthizer-provided methods of decoding
 currently support this, but custom streams may opt not to do so, for example if
-they're reading from the network.  In this case, Libsndfile will be skipped.
-To see if this is happening, enable debug logging at library initialization and
+they're reading from the network.  In this case, Libsndfile will be skipped. To
+see if this is happening, enable debug logging at library initialization and
 Synthizer will log what decoders it's trying to use.
 
 Because of licensing incompatibilities, Libsndfile cannot be statically linked

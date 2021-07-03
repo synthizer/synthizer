@@ -22,7 +22,8 @@ All properties are of one of the following types:
   orientation.
 - `object`, identified by a `o` suffix, used to set object properties such as
   the buffer to use for a buffer generator.
-- `biquad`, configuration for a biquad filter.  Used on effects and sources to allow filtering audio.
+- `biquad`, configuration for a biquad filter.  Used on effects and sources to
+  allow filtering audio.
 
 No property constant represents a property of two types.  For example
 `SYZ_P_POSITION` is both on `Context` and `Source3D` but is a `d3` in both

@@ -3,12 +3,12 @@
 ## `SYZ_P_GAIN`
 
 All objects which play audio (generators, sources, contexts) offer a
-`SYZ_P_GAIN` property, a double scalar between 0.0 and infinity which
-controls object volume.  For example `2.0` is twice the amplitude and `0.5` is
-half the amplitude.  This works as you'd expect: if set on a generator it only
-affects that generator, if on a source it affects everything connected to the
-source, and so on.  If a generator is set to 0.5 and the source that it's on is
-also 0.5, the output volume of the generator is 0.25 because both gains apply in
+`SYZ_P_GAIN` property, a double scalar between 0.0 and infinity which controls
+object volume.  For example `2.0` is twice the amplitude and `0.5` is half the
+amplitude.  This works as you'd expect: if set on a generator it only affects
+that generator, if on a source it affects everything connected to the source,
+and so on.  If a generator is set to 0.5 and the source that it's on is also
+0.5, the output volume of the generator is 0.25 because both gains apply in
 order.
 
 This means that it is possible to control the volume of generators relative to

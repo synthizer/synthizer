@@ -162,10 +162,10 @@ To indicate an error, callbacks should return a non-zero return value and
 error.  Synthizer will log these errors if logging is enabled.  For more complex
 error handling, apps are encouraged to ferry the information from streams to
 their main threads themselves.  If a stream callback fails, Synthizer will
-generally stop the stream all together.  Consequently, apps should do their
-best to recover and never fail the stream.  Synthizer takes the approach of
-assuming that any error is likely unrecoverable and expects that implementations
-already did their best to succeed.
+generally stop the stream all together.  Consequently, apps should do their best
+to recover and never fail the stream.  Synthizer takes the approach of assuming
+that any error is likely unrecoverable and expects that implementations already
+did their best to succeed.
 
 if the read callback fails, the position of the stream isn't updated.  If the
 seek callback fails, Synthizer assumes that the position didn't move.

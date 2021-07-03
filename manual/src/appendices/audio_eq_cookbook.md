@@ -1,10 +1,11 @@
 # Audio EQ Cookbook
 
-The following is the Audio EQ Cookbook, containing the most widely used formulas for biquad filters.  Synthizer's
-internal implementation of most filters either follows these exactly or is composed of cascaded/parallel sections.
+The following is the Audio EQ Cookbook, containing the most widely used formulas
+for biquad filters.  Synthizer's internal implementation of most filters either
+follows these exactly or is composed of cascaded/parallel sections.
 
-There are several versions of this document on the web.
-This version is from http://music.columbia.edu/pipermail/music-dsp/2001-March/041752.html.
+There are several versions of this document on the web. This version is from
+http://music.columbia.edu/pipermail/music-dsp/2001-March/041752.html.
 
 ```
          Cookbook formulae for audio EQ biquad filter coefficients

@@ -3,7 +3,8 @@
 ## The Quick Overview
 
 
-Synthizer supports mp3, wav, and flac.  If you need more formats, then you can [load Libsndfile](./libsndfile.md) or decode the data yourself.
+Synthizer supports mp3, wav, and flac.  If you need more formats, then you can
+[load Libsndfile](./libsndfile.md) or decode the data yourself.
 
 If you need to read from a file, use e.g. `syz_createBufferFromFile`.  If you
 need to read from memory, use e.g. `syz_createBufferFromEncodedData`.  If you

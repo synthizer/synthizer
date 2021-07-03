@@ -1,8 +1,8 @@
 # Effects and Effect Routing
 
 users of the Synthizer API can route any number of sources to any number of
-global effects, for example [echo](../object_reference/global_echo.md).  This is done
-through the following C API:
+global effects, for example [echo](../object_reference/global_echo.md).  This is
+done through the following C API:
 
 ```
 struct syz_RouteConfig {
