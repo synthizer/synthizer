@@ -1,10 +1,8 @@
-# FdnReverb
+# GlobalFdnReverb
 
 A reverb based off a feedback delay network.
 
 Inherits from [GlobalEffect](./global_effect.md).
-
-This is provisional functionality, and subject to change.
 
 ## Constructors
 
