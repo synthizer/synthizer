@@ -1,10 +1,5 @@
 # Effects and Effect Routing
 
-Synthizer will support two kinds of effects: global effects and
-generator-specific effects.  At the moment, only global effects are implemented.
-In future, generator-specific effects will be added, but this is likely to be a
-post-1.0 feature.
-
 users of the Synthizer API can route any number of sources to any number of
 global effects, for example [echo](../object_reference/echo.md).  This is done
 through the following C API:
@@ -41,12 +36,6 @@ this can be used to change the filter on a per-reverb basis for a reverb zone
 algorithm that feeds sources to more than one reverb at a time.
 
 In order to remove a route, use `syz_routingRemoveRoute`.
-
-This manual doesn't document global effects as distinct entities because
-Synthizer is internally designed to allow for object reuse in future when we
-support per-generator effects.  Specifically, an object like
-[Echo](../object_reference/echo.md) will often be able to be used in both
-positions.
 
 Many effects involve feedback and/or other long-running audio as part of their
 intended function. But while in development, it is often useful to reset an
