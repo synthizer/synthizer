@@ -252,10 +252,8 @@ cdef class _BaseObject:
         Py_INCREF(ubox)
         _checked(syz_setUserdata(self.handle, <void *>ud, userdataFree))
 
-    def destroy(self):
-        """Destroy this object. Must be called in order to not leak Synthizer objects.
-
-        Internally this maps to decrementing the reference count of the object in question, but in Python this detail is hidden from you and all returned objects are the same object."""
+    def dec_ref(self):
+        """Decrement the reference count. Must be called in order to not leak Synthizer objects."""
         _checked(syz_handleDecRef(self.handle))
         _unregister_object(self)
         self.handle = 0

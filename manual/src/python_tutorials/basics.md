@@ -32,15 +32,15 @@ architecture, which need to have a defined lifetime in order to control when
 they are and aren't being heard, and also to ensure that it can be well
 understood when things are and aren't using system resources.  To that end,
 Synthizer objects don't interact with Python garbage collection. When you're
-done with an object, call `myobj.destroy()`.
+done with an object, call `myobj.dec_ref()`.
 
 At the moment, failing to do so will permanently leak the object.  Work in
 future may lift this restriction, but it's still necessary to be explicit: if
 you aren't, things may be audioble longer than you intend.
 
-Be careful here.  If you leak objects, you will eventually run out of memory.
-If you intentionally leak objects and the Python bindings start garbage
-collecting them, your program will stop working.
+Be careful here.  If you leak objects, you will eventually run out of memory. If
+you intentionally leak objects and the Python bindings start garbage collecting
+them, your program will stop working.
 
 ## The Context
 
@@ -184,7 +184,7 @@ rules that will ensure you avoid these bugs:
   `playback_position`.
 
 Object properties are internally referenced in a weak fashion. That is to say
-that destroying (`.destroy()`)the object the property is set to will clear the
+that destroying (`.dec_ref()`)the object the property is set to will clear the
 property.  If this is a `Buffer` on a `BufferGenerator`, the generator will
 become silent unless a new buffer is assigned.
 
@@ -279,7 +279,7 @@ completely silent at around 50 units out. Movements close to the head won't
 change the volume much.
 
 This example also doesn't demonstrate destruction, as that's handled by library
-deinitialization and process shutdown. A proper program needs `source.destroy()`
+deinitialization and process shutdown. A proper program needs `source.dec_ref()`
 etc for dynamic sources, as explained above.
 
 The code:
