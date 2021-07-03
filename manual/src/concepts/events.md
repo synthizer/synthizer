@@ -30,7 +30,9 @@ begin to fill the event queue and must be retrieved with
 slowly fill the event queue, so applications should be sure to incorporate this
 into their main UI/game update loops.  After the application is done with an
 event struct, it should then call `syz_eventDeinit` on the event structure;
-failure to do so leaks handles.
+failure to do so leaksh handles.
+
+The `flags` argument of `syz_getNextEvent` is reserved and must be 0.
 
 Events have a type, context, and source.  The type is the kind of the vent.  The
 context is the context from which the event was extracted.  The source is the

@@ -78,6 +78,3 @@ cdef extern from "synthizer_constants.h":
         SYZ_EVENT_TYPE_INVALID
         SYZ_EVENT_TYPE_LOOPED
         SYZ_EVENT_TYPE_FINISHED
-
-    cdef enum SYZ_EVENT_FLAGS:
-        SYZ_EVENT_FLAG_TAKE_OWNERSHIP

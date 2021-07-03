@@ -161,9 +161,6 @@ SYZ_CAPI void syz_eventDeinit(struct syz_Event *event) {
 	 * Deinitialize an event by decrementing reference counts as necessary. We'll just
 	 * go through the C API and not check errors: syz_handleDecRef always succeeds save for programmer error.
 	 * */
-	if (event->_private.flags & SYZ_EVENT_FLAG_TAKE_OWNERSHIP) {
-		return;
-	}
 
 	/* Invalid events are zero-initialized, so there's no need to check. */
 	syz_handleDecRef(event->source);

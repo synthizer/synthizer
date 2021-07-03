@@ -261,12 +261,6 @@ SYZ_CAPI syz_ErrorCode syz_contextEnableEvents(syz_Handle context);
 /**
  * Get an event from the queue. If the queue is empty, the event type
  * is SYZ_EVENT_TYPE_INVALID.
- *
- * Flags is one of the `SYZ_EVENT_FLAGS` constants.
- * 
- * Handles returned in an event are guaranteed to be valid until `syz_eventDeinit` is called.
- * This is done by implicitly incrementing and decrementing references, so failure to call `syz_eventDeinit` will leak objects.  If the application wishes
- * to own the events (e.g. because a binding to Synthizer converted the event into a different object), it should set `SYZ_EVENT_FLAG_TAKE_OWNERSHIP`.
  * */
 SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle context, unsigned long long flags);
 
