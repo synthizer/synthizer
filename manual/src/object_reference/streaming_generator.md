@@ -16,7 +16,7 @@ Create a StreamingGenerator from an UTF-8 encoded path.
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, void *param);
 ```
 
-Create a StreamingGenerator from the standard [stream parameters](../concepts/streams.md).
+Create a StreamingGenerator from the standard [stream parameters](../concepts/decoding.md).
 
 ### `syz_createStreamingGeneratorFromStreamHandle`
 

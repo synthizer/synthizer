@@ -20,7 +20,7 @@ and should no longer be used.
 
 ## 0.7.5
 
-- Introduce [reverb](../object_reference/fdn_reverb.md).
+- Introduce [reverb](../object_reference/global_fdn_reverb.md).
 - Start building Python 3.9 wheels.
 - Sources now fade gain changes to prevent clicks, especially when feeding effects.
 - Expose `syz_resetEffect` for interactive experimentation purposes, to clear the internal state of effects. In python this is `.reset()` on any effect.
@@ -33,7 +33,7 @@ and should no longer be used.
 
 - Document our [versioning and stability guarantees](../concepts/stability.md).
 - Introduce [effect routing support](../concepts/effects.md).
-- Introduce an [Echo](../object_reference/echo.md) effect.
+- Introduce an [Echo](../object_reference/global_echo.md) effect.
 
 ## 0.7.3
 
