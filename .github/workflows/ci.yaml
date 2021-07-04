@@ -95,7 +95,7 @@ jobs:
         cd $GITHUB_WORKSPACE
         ./vendor.sh bindings/python/synthizer-vendored
         cd $GITHUB_WORKSPACE/bindings/python
-        sudo apt-fast install -y virtualenv python3.9
+        sudo apt-fast install -y virtualenv python3.9 python3.9-dev
         virtualenv -p python3.9 ./venvs/python3.9
         source venvs/python3.9/bin/activate
         pip install -U cython wheel
