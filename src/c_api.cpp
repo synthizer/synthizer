@@ -10,6 +10,7 @@
 #include "synthizer/memory.hpp"
 
 #include <array>
+#include <atomic>
 #include <string>
 #include <tuple>
 
@@ -22,6 +23,15 @@ thread_local std::string last_error_message = "";
 void setCThreadError(syz_ErrorCode error, const char *message) {
 	last_error_code = error;
 	last_error_message = message;
+}
+
+/**
+ * Set to 1 after the first library initializastion.
+ * */
+std::atomic<int> is_initialized = 0;
+
+bool isInitialized() {
+	return is_initialized.load(std::memory_order_relaxed) != 0;
 }
 
 }
@@ -40,7 +50,7 @@ SYZ_CAPI syz_ErrorCode syz_initialize(void) {
 }
 
 SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(struct syz_LibraryConfig *config) {
-	SYZ_PROLOGUE
+	SYZ_PROLOGUE_UNINIT
 
 	switch (config->logging_backend) {
 	case SYZ_LOGGING_BACKEND_NONE:
@@ -61,12 +71,16 @@ SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(struct syz_LibraryConfig *config
 		loadLibsndfile(config->libsndfile_path);
 	}
 
+	is_initialized.store(1, std::memory_order_relaxed);
+
 	return 0;
 	SYZ_EPILOGUE
 }
 
 SYZ_CAPI syz_ErrorCode syz_shutdown() {
-	SYZ_PROLOGUE
+	SYZ_PROLOGUE_UNINIT
+	is_initialized.store(0, std::memory_order_relaxed);
+
 	clearAllCHandles();
 	shutdownOutputDevice();
 	stopBackgroundThread();
@@ -89,7 +103,17 @@ SYZ_CAPI const char *syz_getLastErrorMessage(void) {
  * Memory management.
  * */
 SYZ_CAPI syz_ErrorCode syz_handleIncRef(syz_Handle handle) {
-	SYZ_PROLOGUE
+	SYZ_PROLOGUE_UNINIT
+
+	/**
+	 * If the library is uninitialized, all other functions will return an error. In
+	 * that case, we just assume that the handle exists from the user's perspective,
+	 * which allows languages like Rust to implement infallible cloning.
+	 * */
+	if (isInitialized() == false) {
+		return 0;
+	}
+
 	auto h = fromC<CExposable>(handle);
 	h->incRef();
 	return 0;
@@ -97,7 +121,18 @@ SYZ_CAPI syz_ErrorCode syz_handleIncRef(syz_Handle handle) {
 }
 
 SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle) {
-	SYZ_PROLOGUE
+	SYZ_PROLOGUE_UNINIT
+
+	/**
+	 * If the library is uninitialized, no handle can exist. But it is useful
+	 * for languages to be able to implement infallible freeing so, in that
+	 * case, just pretend that it did and succeed. Note that all other functions
+	 * will error, so the behavior of this handle existing or not is the same.
+	 * */
+	if (isInitialized() == false) {
+		return 0;
+	}
+
 	if (handle == 0) {
 		return 0;
 	}

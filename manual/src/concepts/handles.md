@@ -16,7 +16,9 @@ SYZ_CAPI syz_ErrorCode syz_setUserdata(syz_Handle handle, void *userdata, syz_Us
 
 All Synthizer handles start with a reference count of 1.  When the reference
 count reaches 0, the object is scheduled for deletion, but may not be deleted
-immediately.
+immediately.  Uniquely among Synthizer functions, `syz_handleIncRef` and
+`syz_handleDecRef` can be called after library shutdown in order to allow
+languages like Rust to implement infallible cloning and freeing.
 
 Synthizer objects are like classes.  They have "methods" and "bases".  For
 example all generators support a common set of operations named with a
