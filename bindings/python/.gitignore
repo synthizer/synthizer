@@ -10,3 +10,4 @@ dist
 /synthizer-git-repo
 *.cpp
 *.so
+synthizer-vendored

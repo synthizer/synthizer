@@ -92,6 +92,8 @@ jobs:
     - name: Build Python sdist
       run: |
         sudo apt update
+        cd $GITHUB_WORKSPACE
+        ./vendor.sh bindings/python/synthizer-vendored
         cd $GITHUB_WORKSPACE/bindings/python
         sudo apt-fast install -y virtualenv python3.9
         virtualenv -p python3.9 ./venvs/python3.9
@@ -99,6 +101,10 @@ jobs:
         pip install -U cython wheel
         BUILDING_SYNTHIZER=1 python setup.py sdist
         deactivate
+        # Now try to build it, to make sure vendoring worked out.
+        virtualenv -p python3.9 ./venvs/python3.9-test
+        source venvs/python3.9-test/bin/activate
+        pip install dist/*
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:

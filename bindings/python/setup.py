@@ -53,29 +53,15 @@ else:
     # give people trouble on Windows, thus us publishing wheels.
     # Find this file:
     root_dir = os.path.split(os.path.abspath(__file__))[0]
-    git_dir = os.path.join(root_dir, "synthizer-git-repo")
-    # Be sure we're going to clone next to setup.py.
+    vendored_dir = os.path.join(root_dir, "synthizer-vendored")
     os.chdir(root_dir)
-    # Always start clean
-    if os.path.exists(git_dir):
-        shutil.rmtree(git_dir, onerror=handle_remove_readonly)
-    # try cloning the Synthizer repository.
-    subprocess.check_call(
-        [
-            "git",
-            "clone",
-            "https://github.com/synthizer/synthizer",
-            "synthizer-git-repo",
-            "--branch",
-            VERSION,
-        ]
-    )
     # Configure and build Synthizer itself.
     cmake = cmaker.CMaker()
-    # Force Ninja on all platforms. This lets us work on Windows reliably if run from an MSVC shell, wher reliably
-    # means fail noisily and obviously at the beginning if the world is insane.
+    # Force Ninja on all platforms. This lets us work on Windows reliably if run
+    # from an MSVC shell, where reliably means fail noisily and obviously at the
+    # beginning if the world is insane.
     cmake.configure(
-        cmake_source_dir=git_dir,
+        cmake_source_dir=vendored_dir,
         generator_name="Ninja",
         clargs=[
             "-DCMAKE_BUILD_TYPE=Release",
@@ -88,7 +74,7 @@ else:
     # skbuild is making architecture specific directories so, instead of guessing, just grab it.
     synthizer_lib_dir = os.path.split(os.path.abspath(cmake.install()[0]))[0]
     extension_args = {
-        "include_dirs": [os.path.join(git_dir, "include")],
+        "include_dirs": [os.path.join(vendored_dir, "include")],
         "library_dirs": [synthizer_lib_dir],
         "libraries": ["synthizer"],
     }
@@ -100,6 +86,9 @@ extensions = [
 setup(
     name="synthizer",
     version=VERSION,
+    author="Synthizer Developers",
+    author_email="ahicks@ahicks.io",
+    url="https://synthizer.github.io",
     ext_modules=cythonize(extensions, language_level=3),
     zip_safe=False,
     package_data={
