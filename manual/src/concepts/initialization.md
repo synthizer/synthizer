@@ -19,7 +19,7 @@ enum SYZ_LOG_LEVEL {
 struct syz_LibraryConfig {
     unsigned int log_level;
     unsigned int logging_backend;
-    char *libsndfile_path;
+    const char *libsndfile_path;
 };
 
 SYZ_CAPI void syz_libraryConfigSetDefaults(struct syz_LibraryConfig *config);

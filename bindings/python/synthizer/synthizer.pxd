@@ -24,7 +24,7 @@ cdef extern from "synthizer.h":
     cdef struct syz_LibraryConfig:
         unsigned int log_level
         unsigned int logging_backend
-        char* libsndfile_path
+        const char* libsndfile_path
 
     void syz_libraryConfigSetDefaults(syz_LibraryConfig* config)
 

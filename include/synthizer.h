@@ -73,7 +73,7 @@ struct syz_LibraryConfig {
 	 * If non-NULL, load libsndfile from the specified path.
 	 * If libsndfile is requested and fails to load, initialization of the library also fails.
 	 * */
-	char *libsndfile_path;
+	const char *libsndfile_path;
 };
 
 /**
