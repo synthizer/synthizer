@@ -25,7 +25,7 @@ struct syz_LibraryConfig {
 SYZ_CAPI void syz_libraryConfigSetDefaults(struct syz_LibraryConfig *config);
 
 SYZ_CAPI syz_ErrorCode syz_initialize(void);    
-SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(struct syz_LibraryConfig *config);
+SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(const struct syz_LibraryConfig *config);
 SYZ_CAPI syz_ErrorCode syz_shutdown();
 ```
 

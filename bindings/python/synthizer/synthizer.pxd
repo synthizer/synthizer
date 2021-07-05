@@ -30,7 +30,7 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_initialize()
 
-    syz_ErrorCode syz_initializeWithConfig(syz_LibraryConfig* config)
+    syz_ErrorCode syz_initializeWithConfig(const syz_LibraryConfig* config)
 
     syz_ErrorCode syz_shutdown() nogil
 

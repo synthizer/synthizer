@@ -49,7 +49,7 @@ SYZ_CAPI syz_ErrorCode syz_initialize(void) {
 	return syz_initializeWithConfig(&cfg);
 }
 
-SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(struct syz_LibraryConfig *config) {
+SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(const struct syz_LibraryConfig *config) {
 	SYZ_PROLOGUE_UNINIT
 
 	switch (config->logging_backend) {
