@@ -795,7 +795,7 @@ cdef class Buffer(_BaseObject):
         _checked(result)
         return Buffer(_handle=handle)
 
-    cdef get_channels(self):
+    cpdef get_channels(self):
         cdef unsigned int ret
         _checked(syz_bufferGetChannels(&ret, self.handle))
         return ret
