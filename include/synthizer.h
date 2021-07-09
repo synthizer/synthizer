@@ -308,8 +308,8 @@ typedef int syz_StreamSeekCallback(unsigned long long pos, void *userdata, const
 typedef int syz_StreamCloseCallback(void *userdata, const char **err_msg);
 
 /**
- * The stream destroy callback is optional and is called when the steraam will
- * no longer be used.  Thhis primarily exists for bindinggs developers so that
+ * The stream destroy callback is optional and is called when the stream will
+ * no longer be used.  This primarily exists for bindings developers so that
  * they can keep error messages alive long enough and make sure the stream always dies.  Note that this is called if `syz_createStreamHandleFromCustomStream` fails as well, in the calling thread.
  * */
 typedef void syz_StreamDestroyCallback(void *userdata);
