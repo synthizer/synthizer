@@ -486,7 +486,7 @@ struct syz_EchoTapConfig {
 	float gain_r;
 };
 
-SYZ_CAPI syz_ErrorCode syz_globalEchoSetTaps(syz_Handle handle, unsigned int n_taps, struct syz_EchoTapConfig *taps);
+SYZ_CAPI syz_ErrorCode syz_globalEchoSetTaps(syz_Handle handle, unsigned int n_taps, const struct syz_EchoTapConfig *taps);
 
 SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle context);
 

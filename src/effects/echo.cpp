@@ -36,7 +36,7 @@ SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context)
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_globalEchoSetTaps(syz_Handle handle, unsigned int n_taps, struct syz_EchoTapConfig *taps) {
+SYZ_CAPI syz_ErrorCode syz_globalEchoSetTaps(syz_Handle handle, unsigned int n_taps, const struct syz_EchoTapConfig *taps) {
 	SYZ_PROLOGUE
 	deferred_vector<EchoTapConfig> cfg;
 	auto echo = fromC<EchoEffectCInterface>(handle);
