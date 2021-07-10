@@ -184,16 +184,16 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, syz_RouteConfig* config)
 
-    syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle output, syz_Handle input, float fade_out)
+    syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle output, syz_Handle input, double fade_out)
 
     syz_ErrorCode syz_effectReset(syz_Handle effect)
 
     syz_ErrorCode syz_createGlobalEcho(syz_Handle* out, syz_Handle context)
 
     cdef struct syz_EchoTapConfig:
-        float delay
-        float gain_l
-        float gain_r
+        double delay
+        double gain_l
+        double gain_r
 
     syz_ErrorCode syz_globalEchoSetTaps(syz_Handle handle, unsigned int n_taps, const syz_EchoTapConfig* taps)
 
