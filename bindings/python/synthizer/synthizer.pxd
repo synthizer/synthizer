@@ -24,13 +24,13 @@ cdef extern from "synthizer.h":
     cdef struct syz_LibraryConfig:
         unsigned int log_level
         unsigned int logging_backend
-        const char* libsndfile_path
+        char* libsndfile_path
 
     void syz_libraryConfigSetDefaults(syz_LibraryConfig* config)
 
     syz_ErrorCode syz_initialize()
 
-    syz_ErrorCode syz_initializeWithConfig(const syz_LibraryConfig* config)
+    syz_ErrorCode syz_initializeWithConfig(syz_LibraryConfig* config)
 
     syz_ErrorCode syz_shutdown() nogil
 
@@ -176,8 +176,8 @@ cdef extern from "synthizer.h":
     syz_ErrorCode syz_createNoiseGenerator(syz_Handle* out, syz_Handle context, unsigned int channels)
 
     cdef struct syz_RouteConfig:
-        float gain
-        float fade_time
+        double gain
+        double fade_time
         syz_BiquadConfig filter
 
     syz_ErrorCode syz_initRouteConfig(syz_RouteConfig* cfg)

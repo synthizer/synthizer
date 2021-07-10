@@ -6,8 +6,8 @@ done through the following C API:
 
 ```
 struct syz_RouteConfig {
-    float gain;
-    float fade_time;
+    double gain;
+    double fade_time;
     syz_BiquadConfig filter;
 };
 
