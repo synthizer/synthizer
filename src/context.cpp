@@ -333,7 +333,7 @@ void Context::enqueueLingerStop(const std::shared_ptr<BaseObject> &obj) {
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out) {
+SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
 	SYZ_PROLOGUE
 	auto *ctx = new Context();
 	std::shared_ptr<Context> ptr{ctx, deleteInBackground<Context>};
@@ -341,11 +341,11 @@ SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out) {
 	auto ce = std::static_pointer_cast<CExposable>(ptr);
 	ce->stashInternalReference(ce);
 	*out = toC(ptr);
-	return 0;
+	return syz_setUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out) {
+SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
 	SYZ_PROLOGUE
 	auto *ctx = new Context();
 	std::shared_ptr<Context> ptr{ctx, deleteInBackground<Context>};
@@ -354,7 +354,7 @@ SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out) {
 	auto ce = std::static_pointer_cast<CExposable>(ptr);
 	ce->stashInternalReference(ce);
 	*out = toC(ptr);
-	return 0;
+	return syz_setUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 

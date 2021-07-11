@@ -226,13 +226,13 @@ SYZ_CAPI syz_ErrorCode syz_biquadDesignBandpass(struct syz_BiquadConfig *filter,
 /*
  * Create a context. This represents the audio device itself, and all other Synthizer objects need one.
  * */
-SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out);
+SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /*
  * Create a context which doesn't feed an audio device.
  * Currently this is exposed for testing purposes, but will eventually become a stable and useful API.
  * */
-SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out);
+SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 /*
  * get a block of audio with 2 channels. This is also 
  * currently only exposed for testing, especially since "block" is not part of the external API and using this wrong is a good way to
@@ -263,9 +263,9 @@ SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle
  * 
  * Most objects provide a convenient shorthand helper for creating a stream handle and passing it into the object.
  * */
-SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param);
-SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle *out, unsigned long long data_len, const char *data);
-SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle *out, const char *path);
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle *out, unsigned long long data_len, const char *data, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle *out, const char *path, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /**
  * Custom streams.
@@ -338,7 +338,7 @@ struct syz_CustomStreamDef {
  * called as if it had succeeded, in an arbitrary thread which may include the
  * caller.
  * */
-SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle *out, struct syz_CustomStreamDef *callbacks);
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle *out, struct syz_CustomStreamDef *callbacks, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /**
  * Open a stream by filling out the callbacks struct.
@@ -372,35 +372,35 @@ SYZ_CAPI syz_ErrorCode syz_registerStreamProtocol(const char *protocol, syz_Stre
  * 
  * Note to maintainers: lives in src/generators/decoding.cpp, because it's a shortcut for that.
  * */
-SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, void *param);
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, void *param, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /*
  * Same as calling syz_createStreamingGeneratorFromStreamParams with the file protocol. Exists to future-proof the API.
  */
-SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path);
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /**
  * Create a StreamingGenerator from a stream handle.
  * */
-SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context, syz_Handle stream);
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context, syz_Handle stream, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /*
  * A Buffer is decoded audio data.
  * 
  * This creates one from the 3 streaming parameters.
  * */
-SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param);
+SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /**
  * Create a buffer from encoded audio data that's already
  * in memory.
  * */
-SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned long long data_len, const char *data);
+SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned long long data_len, const char *data, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /**
  * Create a buffer from a float array in memory.
  * */
-SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned int sr, unsigned int channels, unsigned long long frames, const float *data);
+SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned int sr, unsigned int channels, unsigned long long frames, const float *data, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /**
  * Create a buffer from a file. Currently equivalent to:
@@ -408,12 +408,12 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned 
  *
  * Exists to future-proof the API.
  * */
-SYZ_CAPI syz_ErrorCode syz_createBufferFromFile(syz_Handle *out, const char *path);
+SYZ_CAPI syz_ErrorCode syz_createBufferFromFile(syz_Handle *out, const char *path, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /**
  * create a buffer from a stream handle.
  * */
-SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle *out, syz_Handle stream);
+SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle *out, syz_Handle stream, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 SYZ_CAPI syz_ErrorCode syz_bufferGetChannels(unsigned int *out, syz_Handle buffer);
 SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSamples(unsigned int *out, syz_Handle buffer);
@@ -422,7 +422,7 @@ SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSeconds(double *out, syz_Handle buff
 /*
  * A buffer generator generates audio from a buffer.
  * */
-SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context);
+SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /*
  * Add/remove generators from a Source. The Source weak references the generators; they must be kept alive on the external side for the time being.
@@ -439,21 +439,21 @@ SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle g
  * Create a DirectSource, which routes audio directly to speakers.
  * This is for music, for example.
  * */
-SYZ_CAPI syz_ErrorCode syz_createDirectSource(syz_Handle *out, syz_Handle context);
+SYZ_CAPI syz_ErrorCode syz_createDirectSource(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /*
  * Create a panned source, a source with azimuth/elevation as the underlying panning strategy.
  * 
  * For spatialized audio like games, use Source3D, which has x/y/z and other interesting spatialization properties.
  * */
-SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context);
+SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /*
  * A Source3D has x/y/z, and distance model properties.
  * */
-SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context);
+SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
-SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels);
+SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /* Initialize with syz_initRouteConfig before using. */
 struct syz_RouteConfig {
@@ -478,7 +478,7 @@ SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle out
 
 SYZ_CAPI syz_ErrorCode syz_effectReset(syz_Handle effect);
 
-SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context);
+SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 struct syz_EchoTapConfig {
 	double delay;
@@ -488,7 +488,7 @@ struct syz_EchoTapConfig {
 
 SYZ_CAPI syz_ErrorCode syz_globalEchoSetTaps(syz_Handle handle, unsigned int n_taps, const struct syz_EchoTapConfig *taps);
 
-SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle context);
+SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 #ifdef __cplusplus
 }

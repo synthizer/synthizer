@@ -224,21 +224,21 @@ std::optional<double> StreamingGenerator::startGeneratorLingering() {
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, void *param) {
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, void *param, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
 	auto decoder = getDecoderForStreamParams(protocol, path, param);
 	auto generator = ctx->createObject<StreamingGenerator>(decoder);
 	*out = toC(generator);
-	return 0;
+	return syz_setUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path) {
-	return syz_createStreamingGeneratorFromStreamParams(out, context, "file", path, NULL);
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
+	return syz_createStreamingGeneratorFromStreamParams(out, context, "file", path, NULL, userdata, userdata_free_callback);
 }
 
-SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context, syz_Handle stream) {
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context, syz_Handle stream, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
 	auto s = fromC<StreamHandle>(stream);
@@ -246,6 +246,6 @@ SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *
 	auto decoder = getDecoderForStream(bs);
 	auto generator = ctx->createObject<StreamingGenerator>(decoder);
 	*out = toC(generator);
-	return 0;
+	return syz_setUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }

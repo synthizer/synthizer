@@ -77,13 +77,13 @@ void PannedSource::run() {
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context) {
+SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
 	auto ret = ctx->createObject<PannedSource>();
 	std::shared_ptr<Source> src_ptr = ret;
 	ctx->registerSource(src_ptr);
 	*out = toC(ret);
-	return 0;
+	return syz_setUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }

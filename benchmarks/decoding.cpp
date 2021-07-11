@@ -42,11 +42,11 @@ int main(int argc, char *argv[]) {
 	library_config.logging_backend = SYZ_LOGGING_BACKEND_STDERR;
 	CHECKED(syz_initializeWithConfig(&library_config));
 
-	CHECKED(syz_createContext(&context));
+	CHECKED(syz_createContext(&context, NULL, NULL));
 
 	t_start = clock.now();
 	for(unsigned int i = 0; i < iterations; i++) {
-		CHECKED(syz_createBufferFromStreamParams(&buffer, "file", argv[1], NULL));
+		CHECKED(syz_createBufferFromStreamParams(&buffer, "file", argv[1], NULL, NULL, NULL));
 		CHECKED(syz_bufferGetLengthInSamples(&frames_tmp, buffer));
 		total_frames += frames_tmp;
 		CHECKED(syz_handleDecRef(buffer));

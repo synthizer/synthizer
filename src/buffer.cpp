@@ -146,45 +146,45 @@ static syz_Handle bufferFromDecoder(std::shared_ptr<AudioDecoder> dec) {
 	return toC(buf);
 }
 
-SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param) {
+SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
 	SYZ_PROLOGUE
 	auto dec = getDecoderForStreamParams(protocol, path, param);
 	*out = bufferFromDecoder(dec);
-	return 0;
+	return syz_setUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned long long data_len, const char *data) {
+SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned long long data_len, const char *data, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
 	SYZ_PROLOGUE
 	auto stream = memoryStream(data_len, data);
 	auto dec = getDecoderForStream(stream);
 	*out = bufferFromDecoder(dec);
-	return 0;
+	return syz_setUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned int sr, unsigned int channels, unsigned long long frames, const float *data) {
+SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned int sr, unsigned int channels, unsigned long long frames, const float *data, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
 	SYZ_PROLOGUE
 	if (channels > config::MAX_CHANNELS) {
 		throw ERange("Too many channels");
 	}
 	auto dec = getRawDecoder(sr, channels, frames, data);
 	*out = bufferFromDecoder(dec);
-	return 0;
+	return syz_setUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_createBufferFromFile(syz_Handle *out, const char *path) {
-	return syz_createBufferFromStreamParams(out, "file", path, NULL);
+SYZ_CAPI syz_ErrorCode syz_createBufferFromFile(syz_Handle *out, const char *path, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
+	return syz_createBufferFromStreamParams(out, "file", path, NULL, userdata, userdata_free_callback);
 }
 
-SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle *out, syz_Handle stream) {
+SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle *out, syz_Handle stream, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
 	SYZ_PROLOGUE
 	auto s = fromC<StreamHandle>(stream);
 	auto bs = consumeStreamHandle(s);
 	auto dec = getDecoderForStream(bs);
 	*out = bufferFromDecoder(dec);
-	return 0;
+	return syz_setUserdata(0, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 

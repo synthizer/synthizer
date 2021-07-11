@@ -32,13 +32,13 @@ int main() {
 	CHECKED(syz_initialize());
 
 	//CHECKED(syz_createContextHeadless(&ctx));
-	CHECKED(syz_createContext(&ctx));
+	CHECKED(syz_createContext(&ctx, NULL, NULL));
 
-	CHECKED(syz_createSource3D(&source1, ctx));
-	CHECKED(syz_createSource3D(&source2, ctx));
-	CHECKED(syz_createSource3D(&source3, ctx));
-	CHECKED(syz_createGlobalFdnReverb(&reverb1, ctx));
-	CHECKED(syz_createGlobalFdnReverb(&reverb2, ctx));
+	CHECKED(syz_createSource3D(&source1, ctx, NULL, NULL));
+	CHECKED(syz_createSource3D(&source2, ctx, NULL, NULL));
+	CHECKED(syz_createSource3D(&source3, ctx, NULL, NULL));
+	CHECKED(syz_createGlobalFdnReverb(&reverb1, ctx, NULL, NULL));
+	CHECKED(syz_createGlobalFdnReverb(&reverb2, ctx, NULL, NULL));
 
 	TICK_CTX();
 

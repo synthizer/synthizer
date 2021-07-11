@@ -34,13 +34,13 @@ int main(int argc, char *argv[]) {
 	library_config.libsndfile_path = argv[2];
 	CHECKED(syz_initializeWithConfig(&library_config));
 
-	CHECKED(syz_createContext(&context));
-	CHECKED(syz_createBufferGenerator(&generator, context));
-	CHECKED(syz_createDirectSource(&source, context));
+	CHECKED(syz_createContext(&context, NULL, NULL));
+	CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
+	CHECKED(syz_createDirectSource(&source, context, NULL, NULL));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
-	CHECKED(syz_createStreamHandleFromStreamParams(&stream, "file", argv[1], NULL));
-	CHECKED(syz_createBufferFromStreamHandle(&buffer, stream));
+	CHECKED(syz_createStreamHandleFromStreamParams(&stream, "file", argv[1], NULL, NULL, NULL));
+	CHECKED(syz_createBufferFromStreamHandle(&buffer, stream, NULL, NULL));
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 
 	printf("Press any key to exit...\n");

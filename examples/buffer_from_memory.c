@@ -35,9 +35,9 @@ int main(int argc, char *argv[]) {
 	library_config.logging_backend = SYZ_LOGGING_BACKEND_STDERR;
 	CHECKED(syz_initializeWithConfig(&library_config));
 
-	CHECKED(syz_createContext(&context));
-	CHECKED(syz_createBufferGenerator(&generator, context));
-	CHECKED(syz_createDirectSource(&source, context));
+	CHECKED(syz_createContext(&context, NULL, NULL));
+	CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
+	CHECKED(syz_createDirectSource(&source, context, NULL, NULL));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
 	/**
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
 		goto end;
 	}
 
-	CHECKED(syz_createBufferFromEncodedData(&buffer, data_len, data));
+	CHECKED(syz_createBufferFromEncodedData(&buffer, data_len, data, NULL, NULL));
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 
 	printf("Press any key to quit...\n");

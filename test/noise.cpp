@@ -32,9 +32,9 @@ int main(int argc, char *argv[]) {
 	library_config.logging_backend = SYZ_LOGGING_BACKEND_STDERR;
 	CHECKED(syz_initializeWithConfig(&library_config));
 
-	CHECKED(syz_createContext(&context));
-	CHECKED(syz_createDirectSource(&source, context));
-	CHECKED(syz_createNoiseGenerator(&generator, context, 2));
+	CHECKED(syz_createContext(&context, NULL, NULL));
+	CHECKED(syz_createDirectSource(&source, context, NULL, NULL));
+	CHECKED(syz_createNoiseGenerator(&generator, context, 2, NULL, NULL));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
 	for (unsigned int i = 0; i < SYZ_NOISE_TYPE_COUNT; i++) {

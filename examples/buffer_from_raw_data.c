@@ -43,9 +43,9 @@ int main(int argc, char *argv[]) {
 	library_config.logging_backend = SYZ_LOGGING_BACKEND_STDERR;
 	CHECKED(syz_initializeWithConfig(&library_config));
 
-	CHECKED(syz_createContext(&context));
-	CHECKED(syz_createBufferGenerator(&generator, context));
-	CHECKED(syz_createDirectSource(&source, context));
+	CHECKED(syz_createContext(&context, NULL, NULL));
+	CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
+	CHECKED(syz_createDirectSource(&source, context, NULL, NULL));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
 	/* Do one second. */
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 
 	genSine(FREQ_LEFT, SR, 2, data);
 	genSine(FREQ_RIGHT, SR, 2, data + 1);
-	CHECKED(syz_createBufferFromFloatArray(&buffer, SR, 2, SR, data));
+	CHECKED(syz_createBufferFromFloatArray(&buffer, SR, 2, SR, data, NULL, NULL));
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
 

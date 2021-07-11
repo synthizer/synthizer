@@ -205,11 +205,11 @@ std::optional<double> BufferGenerator::startGeneratorLingering() {
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context) {
+SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
 	SYZ_PROLOGUE
 	auto ctx = fromC<Context>(context);
 	auto x = ctx->createObject<BufferGenerator>();
 	*out = toC(x);
-	return 0;
+	return syz_setUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }

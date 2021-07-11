@@ -358,7 +358,7 @@ cdef class Context(Pausable):
 
     def __init__(self, enable_events=False):
         cdef syz_Handle handle
-        _checked(syz_createContext(&handle))
+        _checked(syz_createContext(&handle, NULL, NULL))
         super().__init__(handle)
         if enable_events:
             self.enable_events()
@@ -558,14 +558,14 @@ cdef class StreamHandle(_BaseObject):
         path = _to_bytes(path)
         cdef void *param_c = <void *>param
         cdef syz_Handle handle
-        _checked(syz_createStreamHandleFromStreamParams(&handle, protocol, path, param_c))
+        _checked(syz_createStreamHandleFromStreamParams(&handle, protocol, path, param_c, NULL, NULL))
         return StreamHandle(_handle=handle)
 
     @staticmethod
     def from_file(path):
         cdef syz_Handle handle
         path = _to_bytes(path)
-        _checked(syz_createStreamHandleFromFile(&handle, path))
+        _checked(syz_createStreamHandleFromFile(&handle, path, NULL, NULL))
         return StreamHandle(_handle=handle)
 
     @staticmethod
@@ -584,7 +584,7 @@ cdef class StreamHandle(_BaseObject):
         if length == 0:
             raise ValueError("data cannot be of 0 length")
         ptr = <const char *>&data[0]
-        _checked(syz_createStreamHandleFromMemory(&handle, length, ptr))
+        _checked(syz_createStreamHandleFromMemory(&handle, length, ptr, NULL, NULL))
         return StreamHandle(_handle = handle)
 
     @staticmethod
@@ -594,7 +594,7 @@ cdef class StreamHandle(_BaseObject):
         cdef syz_Handle handle
         cdef syz_ErrorCode res
         custom_stream_fillout_callbacks(&callbacks, stream)
-        _checked(syz_createStreamHandleFromCustomStream(&handle, &callbacks))
+        _checked(syz_createStreamHandleFromCustomStream(&handle, &callbacks, NULL, NULL))
         return StreamHandle(_handle=handle)
 
 cdef class Generator(Pausable):
@@ -624,7 +624,7 @@ cdef class StreamingGenerator(Generator):
         path = _to_bytes(path)
         protocol = _to_bytes(protocol)
         ctx = context._get_handle_checked(Context)
-        _checked(syz_createStreamingGeneratorFromStreamParams(&out, ctx, protocol, path, NULL))
+        _checked(syz_createStreamingGeneratorFromStreamParams(&out, ctx, protocol, path, NULL, NULL, NULL))
         return StreamingGenerator(out)
 
     @staticmethod
@@ -634,14 +634,14 @@ cdef class StreamingGenerator(Generator):
         cdef syz_Handle out
         path = _to_bytes(path)
         ctx = context._get_handle_checked(Context)
-        _checked(syz_createStreamingGeneratorFromFile(&out, ctx, path))
+        _checked(syz_createStreamingGeneratorFromFile(&out, ctx, path, NULL, NULL))
         return StreamingGenerator(out)
 
 
     @staticmethod
     def from_stream_handle(Context context, StreamHandle stream):
         cdef syz_Handle handle
-        _checked(syz_createStreamingGeneratorFromStreamHandle(&handle, context.handle, stream.handle))
+        _checked(syz_createStreamingGeneratorFromStreamHandle(&handle, context.handle, stream.handle, NULL, NULL))
         return StreamingGenerator(_handle=handle)
 
     playback_position = DoubleProperty(SYZ_P_PLAYBACK_POSITION)
@@ -667,7 +667,7 @@ cdef class DirectSource(Source) :
     def __init__(self, context):
         cdef syz_Handle ctx = context._get_handle_checked(Context)      
         cdef syz_Handle out
-        _checked(syz_createDirectSource(&out, ctx))
+        _checked(syz_createDirectSource(&out, ctx, NULL, NULL))
         super().__init__(out)
 
 cdef class PannedSourceCommon(Source):
@@ -681,7 +681,7 @@ cdef class PannedSource(PannedSourceCommon):
     def __init__(self, context):
         cdef syz_Handle ctx = context._get_handle_checked(Context)      
         cdef syz_Handle out
-        _checked(syz_createPannedSource(&out, ctx))
+        _checked(syz_createPannedSource(&out, ctx, NULL, NULL))
         super().__init__(out)
 
     azimuth = DoubleProperty(SYZ_P_AZIMUTH)
@@ -695,7 +695,7 @@ cdef class Source3D(PannedSourceCommon):
     def __init__(self, context):
         cdef syz_Handle ctx = context._get_handle_checked(Context)      
         cdef syz_Handle out
-        _checked(syz_createSource3D(&out, ctx))
+        _checked(syz_createSource3D(&out, ctx, NULL, NULL))
         super().__init__(out)
 
     distance_model = enum_property(SYZ_P_DISTANCE_MODEL, lambda x: DistanceModel(x))
@@ -727,7 +727,7 @@ cdef class Buffer(_BaseObject):
         cdef char* path_c = path_b
         cdef syz_ErrorCode result
         with nogil:
-            result = syz_createBufferFromStreamParams(&handle, protocol_c, path_c, NULL)
+            result = syz_createBufferFromStreamParams(&handle, protocol_c, path_c, NULL, NULL, NULL)
         _checked(result)
         return Buffer(_handle=handle)
 
@@ -739,7 +739,7 @@ cdef class Buffer(_BaseObject):
         cdef char *path_c = path_b
         cdef syz_ErrorCode result
         with nogil:
-            result = syz_createBufferFromFile(&handle, path_c)
+            result = syz_createBufferFromFile(&handle, path_c, NULL, NULL)
         # This handles a bunch of stuff to do with converting errors.
         _checked(result)
         return Buffer(_handle=handle)
@@ -762,7 +762,7 @@ cdef class Buffer(_BaseObject):
             raise ValueError("Cannot safely pass empty arrays to Synthizer")
         ptr = <const char *>&data[0]
         with nogil:
-            result = syz_createBufferFromEncodedData(&handle, length, ptr)
+            result = syz_createBufferFromEncodedData(&handle, length, ptr, NULL, NULL)
         _checked(result)
         return Buffer(_handle=handle)
 
@@ -780,7 +780,7 @@ cdef class Buffer(_BaseObject):
             raise ValueError("The length of the buffer must be a multiple of the channel count")
         ptr = &data[0]
         with nogil:
-            result = syz_createBufferFromFloatArray(&handle, sr, channels, length // channels, ptr)
+            result = syz_createBufferFromFloatArray(&handle, sr, channels, length // channels, ptr, NULL, NULL)
         _checked(result)
         return Buffer(_handle=handle)
 
@@ -791,7 +791,7 @@ cdef class Buffer(_BaseObject):
         cdef syz_Handle stream_handle
         stream_handle = stream.handle
         with nogil:
-            result = syz_createBufferFromStreamHandle(&handle, stream_handle)
+            result = syz_createBufferFromStreamHandle(&handle, stream_handle, NULL, NULL)
         _checked(result)
         return Buffer(_handle=handle)
 
@@ -813,7 +813,7 @@ cdef class Buffer(_BaseObject):
 cdef class BufferGenerator(Generator):
     def __init__(self, context):
         cdef syz_Handle handle
-        _checked(syz_createBufferGenerator(&handle, context._get_handle_checked(Context)))
+        _checked(syz_createBufferGenerator(&handle, context._get_handle_checked(Context), NULL, NULL))
         super().__init__(handle)
 
     buffer = ObjectProperty(SYZ_P_BUFFER, Buffer)
@@ -829,7 +829,7 @@ class NoiseType(Enum):
 cdef class NoiseGenerator(Generator):
     def __init__(self, context, channels = 1):
         cdef syz_Handle handle
-        _checked(syz_createNoiseGenerator(&handle, context._get_handle_checked(Context), channels))
+        _checked(syz_createNoiseGenerator(&handle, context._get_handle_checked(Context), channels, NULL, NULL))
         super().__init__(handle)
 
     noise_type = enum_property(SYZ_P_NOISE_TYPE, lambda x: NoiseType(x))
@@ -857,7 +857,7 @@ cdef class EchoTapConfig:
 cdef class GlobalEcho(GlobalEffect):
     def __init__(self, context):
         cdef syz_Handle handle
-        _checked(syz_createGlobalEcho(&handle, context._get_handle_checked(Context)))
+        _checked(syz_createGlobalEcho(&handle, context._get_handle_checked(Context), NULL, NULL))
         super().__init__(handle)
 
     cpdef set_taps(self, taps):
@@ -885,7 +885,7 @@ cdef class GlobalEcho(GlobalEffect):
 cdef class GlobalFdnReverb(GlobalEffect):
     def __init__(self, context):
         cdef syz_Handle handle
-        _checked(syz_createGlobalFdnReverb(&handle, context._get_handle_checked(Context)))
+        _checked(syz_createGlobalFdnReverb(&handle, context._get_handle_checked(Context), NULL, NULL))
         super().__init__(handle)
 
     mean_free_path = DoubleProperty(SYZ_P_MEAN_FREE_PATH)

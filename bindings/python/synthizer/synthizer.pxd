@@ -101,9 +101,9 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_biquadDesignBandpass(syz_BiquadConfig* filter, double frequency, double bw)
 
-    syz_ErrorCode syz_createContext(syz_Handle* out)
+    syz_ErrorCode syz_createContext(syz_Handle* out, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
-    syz_ErrorCode syz_createContextHeadless(syz_Handle* out)
+    syz_ErrorCode syz_createContextHeadless(syz_Handle* out, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
     syz_ErrorCode syz_contextGetBlock(syz_Handle context, float* block)
 
@@ -111,11 +111,11 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_contextGetNextEvent(syz_Event* out, syz_Handle context, unsigned long long flags)
 
-    syz_ErrorCode syz_createStreamHandleFromStreamParams(syz_Handle* out, char* protocol, char* path, void* param)
+    syz_ErrorCode syz_createStreamHandleFromStreamParams(syz_Handle* out, char* protocol, char* path, void* param, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
-    syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle* out, unsigned long long data_len, char* data)
+    syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle* out, unsigned long long data_len, char* data, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
-    syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle* out, char* path)
+    syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle* out, char* path, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
     ctypedef int syz_StreamReadCallback(unsigned long long* read, unsigned long long requested, char* destination, void* userdata, char** err_msg)
 
@@ -133,27 +133,27 @@ cdef extern from "synthizer.h":
         long long length
         void* userdata
 
-    syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle* out, syz_CustomStreamDef* callbacks)
+    syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle* out, syz_CustomStreamDef* callbacks, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
     ctypedef int syz_StreamOpenCallback(syz_CustomStreamDef* callbacks, char* protocol, char* path, void* param, void* userdata, char** err_msg)
 
     syz_ErrorCode syz_registerStreamProtocol(char* protocol, syz_StreamOpenCallback* callback, void* userdata)
 
-    syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle* out, syz_Handle context, char* protocol, char* path, void* param)
+    syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle* out, syz_Handle context, char* protocol, char* path, void* param, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
-    syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle* out, syz_Handle context, char* path)
+    syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle* out, syz_Handle context, char* path, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
-    syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle* out, syz_Handle context, syz_Handle stream)
+    syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle* out, syz_Handle context, syz_Handle stream, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
-    syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle* out, char* protocol, char* path, void* param) nogil
+    syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle* out, char* protocol, char* path, void* param, void* userdata, syz_UserdataFreeCallback* userdata_free_callback) nogil
 
-    syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle* out, unsigned long long data_len, char* data) nogil
+    syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle* out, unsigned long long data_len, char* data, void* userdata, syz_UserdataFreeCallback* userdata_free_callback) nogil
 
-    syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle* out, unsigned int sr, unsigned int channels, unsigned long long frames, float* data) nogil
+    syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle* out, unsigned int sr, unsigned int channels, unsigned long long frames, float* data, void* userdata, syz_UserdataFreeCallback* userdata_free_callback) nogil
 
-    syz_ErrorCode syz_createBufferFromFile(syz_Handle* out, char* path) nogil
+    syz_ErrorCode syz_createBufferFromFile(syz_Handle* out, char* path, void* userdata, syz_UserdataFreeCallback* userdata_free_callback) nogil
 
-    syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle* out, syz_Handle stream) nogil
+    syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle* out, syz_Handle stream, void* userdata, syz_UserdataFreeCallback* userdata_free_callback) nogil
 
     syz_ErrorCode syz_bufferGetChannels(unsigned int* out, syz_Handle buffer)
 
@@ -161,19 +161,19 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_bufferGetLengthInSeconds(double* out, syz_Handle buffer)
 
-    syz_ErrorCode syz_createBufferGenerator(syz_Handle* out, syz_Handle context)
+    syz_ErrorCode syz_createBufferGenerator(syz_Handle* out, syz_Handle context, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
     syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle generator)
 
     syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle generator)
 
-    syz_ErrorCode syz_createDirectSource(syz_Handle* out, syz_Handle context)
+    syz_ErrorCode syz_createDirectSource(syz_Handle* out, syz_Handle context, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
-    syz_ErrorCode syz_createPannedSource(syz_Handle* out, syz_Handle context)
+    syz_ErrorCode syz_createPannedSource(syz_Handle* out, syz_Handle context, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
-    syz_ErrorCode syz_createSource3D(syz_Handle* out, syz_Handle context)
+    syz_ErrorCode syz_createSource3D(syz_Handle* out, syz_Handle context, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
-    syz_ErrorCode syz_createNoiseGenerator(syz_Handle* out, syz_Handle context, unsigned int channels)
+    syz_ErrorCode syz_createNoiseGenerator(syz_Handle* out, syz_Handle context, unsigned int channels, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
     cdef struct syz_RouteConfig:
         double gain
@@ -188,13 +188,13 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_effectReset(syz_Handle effect)
 
-    syz_ErrorCode syz_createGlobalEcho(syz_Handle* out, syz_Handle context)
+    syz_ErrorCode syz_createGlobalEcho(syz_Handle* out, syz_Handle context, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
     cdef struct syz_EchoTapConfig:
         double delay
         double gain_l
         double gain_r
 
-    syz_ErrorCode syz_globalEchoSetTaps(syz_Handle handle, unsigned int n_taps, const syz_EchoTapConfig* taps)
+    syz_ErrorCode syz_globalEchoSetTaps(syz_Handle handle, unsigned int n_taps, syz_EchoTapConfig* taps)
 
-    syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle* out, syz_Handle context)
+    syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle* out, syz_Handle context, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)

@@ -98,9 +98,9 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_initializeWithConfig(&library_config));
 
 	CHECKED(syz_registerStreamProtocol("custom", openCallback, NULL));
-	CHECKED(syz_createContext(&context));
-	CHECKED(syz_createDirectSource(&source, context));
-	CHECKED(syz_createStreamingGeneratorFromStreamParams(&generator, context, "custom", argv[1], NULL));
+	CHECKED(syz_createContext(&context, NULL, NULL));
+	CHECKED(syz_createDirectSource(&source, context, NULL, NULL));
+	CHECKED(syz_createStreamingGeneratorFromStreamParams(&generator, context, "custom", argv[1], NULL, NULL, NULL));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
 	printf("Press any key to quit...\n");

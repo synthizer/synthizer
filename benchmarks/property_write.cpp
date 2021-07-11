@@ -36,8 +36,8 @@ int main(int argc, char *argv[]) {
 	library_config.logging_backend = SYZ_LOGGING_BACKEND_STDERR;
 	CHECKED(syz_initializeWithConfig(&library_config));
 
-	CHECKED(syz_createContext(&context));
-	CHECKED(syz_createSource3D(&source, context));
+	CHECKED(syz_createContext(&context, NULL, NULL));
+	CHECKED(syz_createSource3D(&source, context, NULL, NULL));
 
 	t_start = clock.now();
 	for(unsigned int i = 0; i < iterations; i++) {
