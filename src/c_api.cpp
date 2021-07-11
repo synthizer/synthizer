@@ -114,6 +114,9 @@ SYZ_CAPI syz_ErrorCode syz_shutdown() {
 	/* Spin until we can uninitialize the library. */
 	int expected = 0;
 	while (is_initialized.compare_exchange_strong(expected, -2, std::memory_order_relaxed, std::memory_order_relaxed) != false) {
+		if (expected < 0) {
+			throw EUninitialized();
+		}
 		expected = 0;
 	}
 
