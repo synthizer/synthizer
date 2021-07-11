@@ -35,10 +35,6 @@ void setCThreadError(syz_ErrorCode error, const char *message) {
  * */
 std::atomic<int> is_initialized = -1;
 
-bool isInitialized() {
-	return is_initialized.load(std::memory_order_relaxed) > -1;
-}
-
 void beginInitializedCall(bool require_init) {
 	if (require_init == false) {
 		return;
@@ -152,9 +148,13 @@ SYZ_CAPI syz_ErrorCode syz_handleIncRef(syz_Handle handle) {
 	 * that case, we just assume that the handle exists from the user's perspective,
 	 * which allows languages like Rust to implement infallible cloning.
 	 * */
-	if (isInitialized() == false) {
-		return 0;
-	}
+	int expected = is_initialized.load(std::memory_order_relaxed);
+	do {
+		if (expected < 0) {
+			return 0;
+		}
+	} while (is_initialized.compare_exchange_strong(expected, expected + 1, std::memory_order_relaxed, std::memory_order_relaxed) == false);
+	auto _guard = AtScopeExit([]() { is_initialized.fetch_sub(1, std::memory_order_relaxed); });
 
 	auto h = fromC<CExposable>(handle);
 	h->incRef();
@@ -166,14 +166,17 @@ SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle) {
 	SYZ_PROLOGUE_UNINIT
 
 	/**
-	 * If the library is uninitialized, no handle can exist. But it is useful
-	 * for languages to be able to implement infallible freeing so, in that
-	 * case, just pretend that it did and succeed. Note that all other functions
-	 * will error, so the behavior of this handle existing or not is the same.
+	 * If the library is uninitialized, all other functions will return an error. In
+	 * that case, we just assume that the handle exists from the user's perspective,
+	 * which allows languages like Rust to implement infallible cloning.
 	 * */
-	if (isInitialized() == false) {
-		return 0;
-	}
+	int expected = is_initialized.load(std::memory_order_relaxed);
+	do {
+		if (expected < 0) {
+			return 0;
+		}
+	} while (is_initialized.compare_exchange_strong(expected, expected + 1, std::memory_order_relaxed, std::memory_order_relaxed) == false);
+	auto _guard = AtScopeExit([]() { is_initialized.fetch_sub(1, std::memory_order_relaxed); });
 
 	if (handle == 0) {
 		return 0;

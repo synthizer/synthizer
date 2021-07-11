@@ -10,11 +10,8 @@ namespace synthizer
  * Helper functions and macros for implementing the C API.
  * */
 
-	/* Is the library initialized? */
-	bool isInitialized();
-
-	/* Infrastructure for setting this thread's last C error code and message. */
-	void setCThreadError(syz_ErrorCode error, const char *message);
+/* Infrastructure for setting this thread's last C error code and message. */
+void setCThreadError(syz_ErrorCode error, const char *message);
 
 	template <typename C>
 	syz_ErrorCode cWrapper(C &&callable)
