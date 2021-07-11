@@ -26,12 +26,43 @@ void setCThreadError(syz_ErrorCode error, const char *message) {
 }
 
 /**
- * Set to 1 after the first library initializastion.
+ * Set to 0 after the first library initialization. Thereafter, incremented
+ * every time a function which requires Synthizer initialization enters the
+ * library and decremented when they exit.
+ *
+ * When the library is uninitialized, set to -2 to prevent double init per
+ * process.
  * */
-std::atomic<int> is_initialized = 0;
+std::atomic<int> is_initialized = -1;
 
 bool isInitialized() {
-	return is_initialized.load(std::memory_order_relaxed) != 0;
+	return is_initialized.load(std::memory_order_relaxed) > -1;
+}
+
+void beginInitializedCall(bool require_init) {
+	if (require_init == false) {
+		return;
+	}
+
+	int expected = is_initialized.load(std::memory_order_relaxed);
+
+	if (expected < 0) {
+		throw EUninitialized();
+	}
+
+	while (is_initialized.compare_exchange_strong(expected, expected + 1, std::memory_order_relaxed, std::memory_order_relaxed) == false) {
+		if (expected < 0) {
+			throw EUninitialized();
+		}
+	}
+}
+
+void endInitializedCall(bool require_init) {
+	if (require_init == false) {
+		return;
+	}
+
+	assert(is_initialized.fetch_sub(1, std::memory_order_relaxed) >= 0);
 }
 
 }
@@ -52,6 +83,10 @@ SYZ_CAPI syz_ErrorCode syz_initialize(void) {
 SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(const struct syz_LibraryConfig *config) {
 	SYZ_PROLOGUE_UNINIT
 
+	if (is_initialized.load(std::memory_order_relaxed) != -1) {
+		throw Error("Library has already been initialized in this process");
+	}
+
 	switch (config->logging_backend) {
 	case SYZ_LOGGING_BACKEND_NONE:
 		break;
@@ -71,7 +106,7 @@ SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(const struct syz_LibraryConfig *
 		loadLibsndfile(config->libsndfile_path);
 	}
 
-	is_initialized.store(1, std::memory_order_relaxed);
+	is_initialized.store(0, std::memory_order_relaxed);
 
 	return 0;
 	SYZ_EPILOGUE
@@ -79,6 +114,13 @@ SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(const struct syz_LibraryConfig *
 
 SYZ_CAPI syz_ErrorCode syz_shutdown() {
 	SYZ_PROLOGUE_UNINIT
+
+	/* Spin until we can uninitialize the library. */
+	int expected = 0;
+	while (is_initialized.compare_exchange_strong(expected, -2, std::memory_order_relaxed, std::memory_order_relaxed) != false) {
+		expected = 0;
+	}
+
 	is_initialized.store(0, std::memory_order_relaxed);
 
 	clearAllCHandles();
