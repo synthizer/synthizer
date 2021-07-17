@@ -65,6 +65,6 @@ SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle cont
 	auto ctx = fromC<Context>(context);
 	auto x = ctx->createObject<ExposedNoiseGenerator>(channels);
 	*out = toC(x);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }

@@ -250,7 +250,7 @@ cdef class _BaseObject:
         ubox = _UserdataBox()
         cdef PyObject *ud = <PyObject *>ubox
         Py_INCREF(ubox)
-        _checked(syz_setUserdata(self.handle, <void *>ud, userdataFree))
+        _checked(syz_handleSetUserdata(self.handle, <void *>ud, userdataFree))
 
     def dec_ref(self):
         """Decrement the reference count. Must be called in order to not leak Synthizer objects."""
@@ -266,7 +266,7 @@ cdef class _BaseObject:
 
     cdef object _get_userdata_box(self):
         cdef void *userdata
-        _checked(syz_getUserdata(&userdata, self.handle))
+        _checked(syz_handleGetUserdata(&userdata, self.handle))
         return <_UserdataBox>userdata
 
     cpdef get_userdata(self):

@@ -80,6 +80,6 @@ SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, v
 	std::shared_ptr<Source> src_ptr = ret;
 	ctx->registerSource(src_ptr);
 	*out = toC(ret);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }

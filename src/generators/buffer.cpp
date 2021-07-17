@@ -210,6 +210,6 @@ SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle con
 	auto ctx = fromC<Context>(context);
 	auto x = ctx->createObject<BufferGenerator>();
 	*out = toC(x);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }

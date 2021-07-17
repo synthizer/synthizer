@@ -145,9 +145,9 @@ SYZ_CAPI syz_ErrorCode syz_handleGetObjectType(int *out, syz_Handle handle);
  * values are rough worst cases, and it's usually faster. In particular, frequent updates to userdata will effectively batch frees, and the case wherein Synthizer keeps
  * large amounts of userdata alive beyond the next ~100ms or so due to this latency isn't possible.
  * */
-SYZ_CAPI syz_ErrorCode syz_getUserdata(void **out, syz_Handle handle);
+SYZ_CAPI syz_ErrorCode syz_handleGetUserdata(void **out, syz_Handle handle);
 typedef void syz_UserdataFreeCallback(void *);
-SYZ_CAPI syz_ErrorCode syz_setUserdata(syz_Handle handle, void *userdata, syz_UserdataFreeCallback *free_callback);
+SYZ_CAPI syz_ErrorCode syz_handleSetUserdata(syz_Handle handle, void *userdata, syz_UserdataFreeCallback *free_callback);
 
 /**
  * pause/play objects. Supported by everything that produces audio in some fashion: generators, sources, context, etc.

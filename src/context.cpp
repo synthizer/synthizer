@@ -341,7 +341,7 @@ SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out, void *userdata, syz_Us
 	auto ce = std::static_pointer_cast<CExposable>(ptr);
 	ce->stashInternalReference(ce);
 	*out = toC(ptr);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
@@ -354,7 +354,7 @@ SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out, void *userdata
 	auto ce = std::static_pointer_cast<CExposable>(ptr);
 	ce->stashInternalReference(ce);
 	*out = toC(ptr);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 

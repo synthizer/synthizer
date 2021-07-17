@@ -230,7 +230,7 @@ SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *
 	auto decoder = getDecoderForStreamParams(protocol, path, param);
 	auto generator = ctx->createObject<StreamingGenerator>(decoder);
 	*out = toC(generator);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
@@ -246,6 +246,6 @@ SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *
 	auto decoder = getDecoderForStream(bs);
 	auto generator = ctx->createObject<StreamingGenerator>(decoder);
 	*out = toC(generator);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }

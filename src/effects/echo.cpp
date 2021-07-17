@@ -32,7 +32,7 @@ SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context,
 	std::shared_ptr<GlobalEffect> e = x;
 	ctx->registerGlobalEffect(	e);
 	*out = toC(x);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 

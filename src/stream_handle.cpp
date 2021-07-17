@@ -42,7 +42,7 @@ SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromStreamParams(syz_Handle *out, c
 	SYZ_PROLOGUE
 	auto stream = getStreamForStreamParams(protocol, path, param);
 	*out = exposeStream(stream);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
@@ -50,7 +50,7 @@ SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle *out, unsigne
 	SYZ_PROLOGUE
 	auto stream = memoryStream(data_len, data);
 	*out = exposeStream(stream);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
@@ -62,6 +62,6 @@ SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle *out, s
 	SYZ_PROLOGUE
 	auto s = customStream(callbacks);
 	*out = exposeStream(s);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }

@@ -150,7 +150,7 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const c
 	SYZ_PROLOGUE
 	auto dec = getDecoderForStreamParams(protocol, path, param);
 	*out = bufferFromDecoder(dec);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
@@ -159,7 +159,7 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned
 	auto stream = memoryStream(data_len, data);
 	auto dec = getDecoderForStream(stream);
 	*out = bufferFromDecoder(dec);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
@@ -170,7 +170,7 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned 
 	}
 	auto dec = getRawDecoder(sr, channels, frames, data);
 	*out = bufferFromDecoder(dec);
-	return syz_setUserdata(*out, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
@@ -184,7 +184,7 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle *out, syz_Han
 	auto bs = consumeStreamHandle(s);
 	auto dec = getDecoderForStream(bs);
 	*out = bufferFromDecoder(dec);
-	return syz_setUserdata(0, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(0, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 

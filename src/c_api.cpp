@@ -203,7 +203,7 @@ SYZ_CAPI syz_ErrorCode syz_handleGetObjectType(int *out, syz_Handle handle) {
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_getUserdata(void **out, syz_Handle handle) {
+SYZ_CAPI syz_ErrorCode syz_handleGetUserdata(void **out, syz_Handle handle) {
 	SYZ_PROLOGUE
 	auto o = fromC<CExposable>(handle);
 	*out = o->getUserdata();
@@ -211,7 +211,7 @@ SYZ_CAPI syz_ErrorCode syz_getUserdata(void **out, syz_Handle handle) {
 	SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_setUserdata(syz_Handle handle, void *userdata, syz_UserdataFreeCallback *free_callback) {
+SYZ_CAPI syz_ErrorCode syz_handleSetUserdata(syz_Handle handle, void *userdata, syz_UserdataFreeCallback *free_callback) {
 	SYZ_PROLOGUE
 	auto o = fromC<CExposable>(handle);
 	o->setUserdata(userdata, free_callback);
