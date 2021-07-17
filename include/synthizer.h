@@ -24,34 +24,15 @@ extern "C" {
  * Other methods are in src/c_api.cpp (i.e. generic property setters, initialization, etc.).
  * */
 
-/*
- * A handle to any Synthizer object. Always nonzero.
- * */
 typedef unsigned long long syz_Handle;
-
-/*
- * An error. code. Specific error constants TBD. 0 means success.
- * */
 typedef int syz_ErrorCode;
-
-/*
- * Event payloads.
- *
- * Note to maintainers: pulling these out to a separate header breaks at least autopxd, and possibly other bindings generators.
- * */
 
 struct syz_Event {
 	int type;
 	syz_Handle source;
-	/**
-	 *  * Can be 0. The context of the event, if any.
-	 * */
 	syz_Handle context;
 };
 
-/**
- * Free any resources associated with an event.
- * */
 SYZ_CAPI void syz_eventDeinit(struct syz_Event *event);
 
 enum SYZ_LOGGING_BACKEND {
@@ -69,133 +50,48 @@ enum SYZ_LOG_LEVEL {
 struct syz_LibraryConfig {
 	unsigned int log_level;
 	unsigned int logging_backend;
-	/**
-	 * If non-NULL, load libsndfile from the specified path.
-	 * If libsndfile is requested and fails to load, initialization of the library also fails.
-	 * */
 	const char *libsndfile_path;
 };
 
-/**
- * Set the default values of the LibraryConfig struct, which are not necessarily all 0.
- * */
 SYZ_CAPI void syz_libraryConfigSetDefaults(struct syz_LibraryConfig *config);
 
-/*
- * Library initialization and shutdown.
- * */
 SYZ_CAPI syz_ErrorCode syz_initialize(void);	
 SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(const struct syz_LibraryConfig *config);
 SYZ_CAPI syz_ErrorCode syz_shutdown();
 
-/*
- * Get the current error code for this thread. This is like errno, except that functions also return their error codes.
- * 
- * If the last function succeeded, the return value is undefined.
- * */
 SYZ_CAPI syz_ErrorCode syz_getLastErrorCode(void);
-
-/*
- * Get the message associated with the last error for this thread. The pointer is valid only
- * until the next call into Synthizer by this thread.
- * 
- * If the last function succeeded, the return value is undefined.
- * */
 SYZ_CAPI const char *syz_getLastErrorMessage(void);
 
-/**
- * Increment and decrement the reference count on a C handle.
- * 
- * Handles are no longer valid when the reference count reaches 0.  All handles returned from a create function
- * have a reference count of 1.
- * */
 SYZ_CAPI syz_ErrorCode syz_handleIncRef(syz_Handle handle);
 SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle);
 
 struct syz_DeleteBehaviorConfig {
-	/**
-	 * Configure this object to linger.  For instance, causes
-	 * buffer generators to not delete themselves until they finish playing their current buffer. behavior
-	 * is object specific.
-	 * */
 	int linger;
-	/**
-	 * If nonzero, set the time the object is allowed to linger for. After this timeout,
-	 * the object is force deleted 
-	 * */
 	double linger_timeout;
 };
 
 SYZ_CAPI void syz_initDeleteBehaviorConfig(struct syz_DeleteBehaviorConfig *cfg);
 SYZ_CAPI syz_ErrorCode syz_configDeleteBehavior(syz_Handle object, struct syz_DeleteBehaviorConfig *cfg);
 
-/**
- * Query the type of a handle. Returns one of the SYZ_OTYPE constants.
- * */
 SYZ_CAPI syz_ErrorCode syz_handleGetObjectType(int *out, syz_Handle handle);
 
-/**
- * Userdata support. It is possible to use the following interface to associate arbitrary pointers with Synthizer objects.  If
- * the free_callback is non-NULL, Synthizer will call it on a background thread at the time of the object's death.
- * 
- * An example use for this interface is to associate game objects with Synthizer handles.
- * 
- * Note that there is a latency on the order of 50MS from syz_freeHandle to the userdata freeing callback being called, and latency on the order
- * of 20ms for calling the same callback when userdata is set to a different value. Both of these
- * values are rough worst cases, and it's usually faster. In particular, frequent updates to userdata will effectively batch frees, and the case wherein Synthizer keeps
- * large amounts of userdata alive beyond the next ~100ms or so due to this latency isn't possible.
- * */
 SYZ_CAPI syz_ErrorCode syz_handleGetUserdata(void **out, syz_Handle handle);
 typedef void syz_UserdataFreeCallback(void *);
 SYZ_CAPI syz_ErrorCode syz_handleSetUserdata(syz_Handle handle, void *userdata, syz_UserdataFreeCallback *free_callback);
 
-/**
- * pause/play objects. Supported by everything that produces audio in some fashion: generators, sources, context, etc.
- * */
 SYZ_CAPI syz_ErrorCode syz_pause(syz_Handle object);
 SYZ_CAPI syz_ErrorCode syz_play(syz_Handle object);
 
-/*
- * Property getters and setters.
- * 
- * See synthizer_constants.h for the constants, and the manual for property definitions.
- * 
- * Note: getters are slow and should only be used for debugging. Synthizer doesn't guarantee that the values returned by getters are what you most
- * immediately set; they are merely some recent value. More advanced library features which introduce deferred setting and transaction-like behavior will break even this guarantee if enabled.
- * If you need to compute values based off what you last set a property to, save it outside Synthizer and do the computation there.
- * */
-
-/* Integer. */
 SYZ_CAPI syz_ErrorCode syz_getI(int *out, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setI(syz_Handle target, int property, int value);
-/* Double. */
 SYZ_CAPI syz_ErrorCode syz_getD(double *out, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setD(syz_Handle target, int property, double value);
-/* Object properties. */
 SYZ_CAPI syz_ErrorCode syz_setO(syz_Handle target, int property, syz_Handle value);
-/*
- * double3 and double6 are used for positions and orientations respectively.
- * Double3 is { x, y, z }
- * Double6 is { forward, up }
- * Note that Synthizer's coordinate system is right-handed.
- * */
 SYZ_CAPI syz_ErrorCode syz_getD3(double *x, double *y, double *z, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setD3(syz_Handle target, int property, double x, double y, double z);
 SYZ_CAPI syz_ErrorCode syz_getD6(double *x1, double *y1, double *z1, double *x2, double *y2, double *z2, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle handle, int property, double x1, double y1, double z1, double x2, double y2, double z2);
 
-/*
- * Biquad properties are biquad filters from the audio eq cookbook.
- * 
- * Note to maintainers: the C API is in src/filter_properties.cpp (except for syz_setBiquad, in c_api.cpp with the other property setters).
- * */
-
-/*
- * Configuration for a filter. Currently this struct should be treated as opaque. It's exposed here
- * in order to allow allocating them on the stack.  Changes to the layout and fields may occur without warning.
- * 
- * To initialize this struct, use one of the syz_BiquadDesignXXX functions, below.
- * */
 struct syz_BiquadConfig {
 	double _b0, _b1, _b2;
 	double _a1, _a2;
@@ -206,26 +102,11 @@ struct syz_BiquadConfig {
 SYZ_CAPI syz_ErrorCode syz_getBiquad(struct syz_BiquadConfig *filter, syz_Handle target, int property);
 SYZ_CAPI syz_ErrorCode syz_setBiquad(syz_Handle target, int property, const struct syz_BiquadConfig *filter);
 
-/*
- * Biquad filter design functions.  See the audio eq cookbook in the manual's appendices for the specific mathematical formulas.
- *
- * q is a measure of resonance.  Generally q = 0.5 is a filter that doesn't resonate and q at or above 1 resonates too much to be useful.
- * q = 0.7071135624381276 gives second-order Butterworth lowpass and highpass filters, and is the suggested default.
- * 
- * Synthizer's Nyquist is 22050 HZ.
- * */
 SYZ_CAPI syz_ErrorCode syz_biquadDesignIdentity(struct syz_BiquadConfig *filter);
 SYZ_CAPI syz_ErrorCode syz_biquadDesignLowpass(struct syz_BiquadConfig *filter, double frequency, double q);
 SYZ_CAPI syz_ErrorCode syz_biquadDesignHighpass(struct syz_BiquadConfig *filter, double frequency, double q);
-
-/*
- * bw is the bandwidth between -3 db frequencies.
- * */
 SYZ_CAPI syz_ErrorCode syz_biquadDesignBandpass(struct syz_BiquadConfig *filter, double frequency, double bw);
 
-/*
- * Create a context. This represents the audio device itself, and all other Synthizer objects need one.
- * */
 SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 /*
@@ -240,237 +121,63 @@ SYZ_CAPI syz_ErrorCode syz_createContextHeadless(syz_Handle *out, void *userdata
  * */
 SYZ_CAPI syz_ErrorCode syz_contextGetBlock(syz_Handle context, float *block);
 
-/**
- * Event support.
- * */
-
-/**
- * Enable events for a context. Once enabled, failure to drain the event queue is effectively a memory leak as the
- * queue will continue to fill forever.
- * 
- * Once enabled, it is not possible to disable events.
- * */
 SYZ_CAPI syz_ErrorCode syz_contextEnableEvents(syz_Handle context);
-
-/**
- * Get an event from the queue. If the queue is empty, the event type
- * is SYZ_EVENT_TYPE_INVALID.
- * */
 SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle context, unsigned long long flags);
 
-/**
- * Stream infrastructure. See the manual for details on these functions.
- * 
- * Most objects provide a convenient shorthand helper for creating a stream handle and passing it into the object.
- * */
-SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
-SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle *out, unsigned long long data_len, const char *data, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
-SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle *out, const char *path, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
-
-/**
- * Custom streams.
- *
- * The callbacks here return a non-zero value to indicate an error, and may
- * assign a string to `err_msg` which must live until either:
- * - The end of the stream's lifetime; or
- * - The next time a callback associated with that stream is called.
- *
- * So, e.g., using a thread local to keep objects alive in bindings is fine.
- *
- * At the moment, these values are logged, but it is not possible to otherwise
- * recover them.
- * */
-
-/**
- * Read from a stream. Must always write as many bytes as are requested.  Writing
- * less indicates the end of stream.
- * */
 typedef int syz_StreamReadCallback(unsigned long long *read, unsigned long long requested, char *destination, void *userdata, const char ** err_msg);
-
-/**
- * Stream seek callback. Should be self-explanatory.
- * */
 typedef int syz_StreamSeekCallback(unsigned long long pos, void *userdata, const char **err_msg);
-
-/**
- * Close the stream.
- *
- * The stream lifetime actually ends when the destroy callback is called.  The
- * lifetime of err_msg must be at least as long as the duration until that
- * point.  Put simply:
- * - If you're a C developer, you can either ignore the destroy callback and
- *   free your resources in close (in which case err_msg must effectively be a
- *   static string) or free your resources in destroy (in which case err_msg is a
- *   thing you can free).
- * - If you're developing bindings, you can use the destroy callback to keep
- *   exception objects and byte buffers around.
- * */
 typedef int syz_StreamCloseCallback(void *userdata, const char **err_msg);
-
-/**
- * The stream destroy callback is optional and is called when the stream will
- * no longer be used.  This primarily exists for bindings developers so that
- * they can keep error messages alive long enough and make sure the stream always dies.  Note that this is called if `syz_createStreamHandleFromCustomStream` fails as well, in the calling thread.
- * */
 typedef void syz_StreamDestroyCallback(void *userdata);
 
-/**
- * Represents a custom stream.  If the length of the stream is unknown, set it to -1.  Note that internally Synthizer
- * treats streams of unknown length as unseekable even if the seek callback is set.
- * */
 struct syz_CustomStreamDef {
 	syz_StreamReadCallback *read_cb;
-	/**
-	 * Optional. If unset, this stream doesn't support seeking.
-	 * */
 	syz_StreamSeekCallback *seek_cb;
 	syz_StreamCloseCallback *close_cb;
-	/* Optional. Set to NULL if not using. */
 	syz_StreamDestroyCallback *destroy_cb;
 	long long length;
 	void *userdata;
 };
 
-/**
- * Get a stream handle from CustomStreamDef.
- *
- * If this function fails, the stream's close and destroy callbacks will be
- * called as if it had succeeded, in an arbitrary thread which may include the
- * caller.
- * */
-SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle *out, struct syz_CustomStreamDef *callbacks, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
-
-/**
- * Open a stream by filling out the callbacks struct.
- * 
- * Stream opening is done in the context of the calling thread, which means that the lifetime of err_msg only needs to be long enough that Synthizer can 
- * convert it to a SynthizerError.  Put another way, if calling `syz_streamHandleFromStreamParams`, this callback is called inline and the string will be cloned and communicated out through the usual Synthizer error
- * mechanism.
- * */
 typedef int syz_StreamOpenCallback(struct syz_CustomStreamDef *callbacks, const char *protocol, const char *path, void *param, void *userdata, const char **err_msg);
-
-/**
- * Register a protocol with the stream handler.
- * 
- * afterword, this can be used as `syz_streamHandleFromStreamParams(&handle, "myprotocol", "mypath", myparam)`.
- * 
- * It is not possible to unregister protocols.
- * */
 SYZ_CAPI syz_ErrorCode syz_registerStreamProtocol(const char *protocol, syz_StreamOpenCallback *callback, void *userdata);
 
-/*
- * Create a generator that represents reading from a stream.
- * users who wish to read from files should call syz_createStreamingGeneratorFromFile, which is more future-proof than this API and should not break between major releases.
- * 
- * @param protocol: The protocol. You probably want file.
- * @param path: The path.
- * @param param: an opaque void parameter for the underlying implementation; NULL for built-in protocols.
- * 
- * This will be documented better when there's a manual and more than one type of protocol.
- * 
- * This is a shortcut for creating the stream yourself and adding it to a DecodingGenerator; advanced use cases can use the alternate path for other optimizations in future.
- * 
- * Note to maintainers: lives in src/generators/decoding.cpp, because it's a shortcut for that.
- * */
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle *out, unsigned long long data_len, const char *data, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle *out, const char *path, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle *out, struct syz_CustomStreamDef *callbacks, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, void *param, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
-
-/*
- * Same as calling syz_createStreamingGeneratorFromStreamParams with the file protocol. Exists to future-proof the API.
- */
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
-
-/**
- * Create a StreamingGenerator from a stream handle.
- * */
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context, syz_Handle stream, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
-/*
- * A Buffer is decoded audio data.
- * 
- * This creates one from the 3 streaming parameters.
- * */
 SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path, void *param, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
-
-/**
- * Create a buffer from encoded audio data that's already
- * in memory.
- * */
 SYZ_CAPI syz_ErrorCode syz_createBufferFromEncodedData(syz_Handle *out, unsigned long long data_len, const char *data, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
-
-/**
- * Create a buffer from a float array in memory.
- * */
 SYZ_CAPI syz_ErrorCode syz_createBufferFromFloatArray(syz_Handle *out, unsigned int sr, unsigned int channels, unsigned long long frames, const float *data, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
-
-/**
- * Create a buffer from a file. Currently equivalent to:
- * syz_createBufferFromStreamParams(&out, "file", "the_path", NULL);
- *
- * Exists to future-proof the API.
- * */
 SYZ_CAPI syz_ErrorCode syz_createBufferFromFile(syz_Handle *out, const char *path, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
-
-/**
- * create a buffer from a stream handle.
- * */
 SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle *out, syz_Handle stream, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
-
 SYZ_CAPI syz_ErrorCode syz_bufferGetChannels(unsigned int *out, syz_Handle buffer);
 SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSamples(unsigned int *out, syz_Handle buffer);
 SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSeconds(double *out, syz_Handle buffer);
 
-/*
- * A buffer generator generates audio from a buffer.
- * */
 SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
-/*
- * Add/remove generators from a Source. The Source weak references the generators; they must be kept alive on the external side for the time being.
- * 
- * This will probably change as lifetimes get narrowed down, and as sources are extended with more functionality to manage their generators.
- * 
- * Each generator may only be added to a source once. Duplicate calls are ignored.
- * If a generator isn't on a source, the call silently does nothing.
- * */
 SYZ_CAPI syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle generator);
 SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle generator);
 
-/*
- * Create a DirectSource, which routes audio directly to speakers.
- * This is for music, for example.
- * */
 SYZ_CAPI syz_ErrorCode syz_createDirectSource(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
-/*
- * Create a panned source, a source with azimuth/elevation as the underlying panning strategy.
- * 
- * For spatialized audio like games, use Source3D, which has x/y/z and other interesting spatialization properties.
- * */
 SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
-/*
- * A Source3D has x/y/z, and distance model properties.
- * */
 SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
-/* Initialize with syz_initRouteConfig before using. */
 struct syz_RouteConfig {
 	double gain;
 	double fade_time;
 	struct syz_BiquadConfig filter;
 };
 
-/*
- * Initialize a syz_routeConfig with default values.
- * 
- * Should be called before using syz_RouteConfig for the first time.  Afterwords, it's fine to just reuse the already-initialized
- * config and change values in it, but some values in the struct need to be nonzero unless explicitly set to 0 by the user.
- * Though the struct is currently simple, it will shortly contain filters which must be properly initialized if audio is to play at all.
- * 
- * The defaults configure a gain of 1 and a fade_time of 0.03 seconds.
- * */
 SYZ_CAPI syz_ErrorCode syz_initRouteConfig(struct syz_RouteConfig *cfg);
 
 SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, const struct syz_RouteConfig *config);
