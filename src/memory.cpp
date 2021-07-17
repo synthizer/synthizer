@@ -92,24 +92,14 @@ static void deferredFreeWorker() {
 	is_deferred_free_thread = true;
 
 	while (deferred_free_thread_running.load(std::memory_order_relaxed)) {
-			processed += deferredFreeTick();
+		processed += deferredFreeTick();
 		/* Sleep for a bit so that we don't overload the system when we're not freeing. */
 		std::this_thread::sleep_for(std::chrono::milliseconds(30));
 	}
-
-	/**
-	 * Always drain the queue on the way out. This ensures that if the user calls syz_shutdown
-	 * before exiting their app by enough to matter, the queue always drains. User-facing pointers are exposed via this queue, so it is
-	 * necessary to make sure that users cannot see failures of the freeing thread to free.
-	 * */
-	processed += deferredFreeTick();
-
 	logDebug("Deferred free processed %zu frees in a background thread", processed);
 }
 
 void deferredFreeCallback(freeCallback *cb, void *value) {
-	thread_local decltype(deferred_free_queue)::producer_token_t token{deferred_free_queue};
-
 	if (deferred_free_thread_running.load() ==0 ) {
 		cb(value);
 		return;
@@ -119,7 +109,7 @@ void deferredFreeCallback(freeCallback *cb, void *value) {
 		return;
 	}
 
-	if (is_deferred_free_thread || deferred_free_queue.try_enqueue(token, { cb, value }) == false) {
+	if (is_deferred_free_thread || deferred_free_queue.try_enqueue({ cb, value }) == false) {
 		cb(value);
 	}
 }
@@ -146,6 +136,10 @@ void initializeMemorySubsystem() {
 void shutdownMemorySubsystem() {
 	deferred_free_thread_running.store(0);
 	deferred_free_thread.join();
+	/*
+	 * Now get rid of anything that might still be around.
+	 */
+	deferredFreeTick();
 }
 
 UserdataDef::~UserdataDef() {
