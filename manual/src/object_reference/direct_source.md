@@ -5,7 +5,7 @@
 ### `syz_createDirectSource`
 
 ```
-SYZ_CAPI syz_ErrorCode syz_createDirectSource(syz_Handle *out, syz_Handle context);
+SYZ_CAPI syz_ErrorCode syz_createDirectSource(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 ```
 
 Creates a direct source.

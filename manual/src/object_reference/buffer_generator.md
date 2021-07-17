@@ -5,7 +5,7 @@
 ### `syz_createBufferGenerator`
 
 ```
-SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context);
+SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 ```
 
 Creates a BufferGenerator. The buffer is set to NULL and the resulting generator

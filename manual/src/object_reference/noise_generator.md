@@ -7,7 +7,7 @@ Inherits from [Generator](./generator.md).
 ### `syz_createNoiseGenerator`
 
 ```
-SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels);
+SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 ```
 
 Creates a NoiseGenerator configured for uniform noise with the specified number

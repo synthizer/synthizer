@@ -9,7 +9,7 @@ Inherits from [GlobalEffect](./global_effect.md).
 ### `syz_createGlobalFdnReverb`
 
 ```
-SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle context);
+SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 ```
 
 Creates a global FDN reverb with default settings.

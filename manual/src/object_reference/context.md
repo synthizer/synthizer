@@ -5,7 +5,7 @@
 ### `syz_createContext`
 
 ```
-SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out);
+SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 ```
 
 Creates a context configured to play through the default output device.

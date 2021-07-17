@@ -5,7 +5,7 @@
 ### `syz_createStreamingGeneratorFromFile`
 
 ```
-SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path);
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 ```
 
 Create a StreamingGenerator from an UTF-8 encoded path.
@@ -13,7 +13,7 @@ Create a StreamingGenerator from an UTF-8 encoded path.
 ### `syz_createStreamingGeneratorFromStreamParams`
 
 ```
-SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, void *param);
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context, const char *protocol, const char *path, void *param, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 ```
 
 Create a StreamingGenerator from the standard [stream
@@ -22,7 +22,7 @@ parameters](../concepts/decoding.md).
 ### `syz_createStreamingGeneratorFromStreamHandle`
 
 ```
-SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context, syz_Handle stream);
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context, syz_Handle stream, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 ```
 
 Create a `StreamingGenerator` from a stream handle.

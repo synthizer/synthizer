@@ -5,7 +5,7 @@
 ### `syz_createSource3D`
 
 ```
-SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context);
+SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 ```
 
 Creates a source3d positioned at the origin and with no associated generators.
