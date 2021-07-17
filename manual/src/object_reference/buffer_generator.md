@@ -19,6 +19,10 @@ SYZ_P_BUFFER | Object | 0 | Any Buffer handle | The buffer to play
 SYZ_P_PLAYBACK_POSITION | double | 0.0 | value >= 0.0 | The position in the buffer.
 SYZ_P_LOOPING | int | 0 | 0 or 1 | Whether playback loops at the end of the buffer.
 
+## Linger behavior
+
+Disables looping and plays until the buffer ends.
+
 ## Remarks
 
 BufferGenerators play [Buffer](./buffer.md)s.  This is the most efficient way to

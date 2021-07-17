@@ -33,6 +33,10 @@ Enum | Type | Default Value | Range | Description
 SYZ_P_PLAYBACK_POSITION | double | 0.0 | value >= 0.0 | The position in of the stream.
 SYZ_P_LOOPING | int | 0 | 0 or 1 | Whether playback loops
 
+## Linger Behavior
+
+Disables looping and continues until the stream ends.
+
 ## Remarks
 
 `StreamingGenerator` plays streams, decoding and reading on demand.  The typical

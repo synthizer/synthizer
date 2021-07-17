@@ -14,6 +14,10 @@ Creates a direct source.
 
 Inherited from Source only.
 
+## Linger Behavior
+
+Lingers until the timeout or until all generators have been destroyed.
+
 ## Remarks
 
 A direct source is for music and other audio assets that don't wish to

@@ -14,12 +14,15 @@ Creates a NoiseGenerator configured for uniform noise with the specified number
 of output channels. The number of output channels cannot be configured at
 runtime.  Each channel produces decorrelated noise.
 
-
 ## Properties
 
 Enum | Type | Default Value | Range | Description
 --- | --- | --- | --- | ---
 SYZ_P_NOISE_TYPE | int | SYZ_NOISE_TYPE_UNIFORM | any SYZ_NOISE_TYPE | The type of noise to generate. See remarks.
+
+## Linger Behavior
+
+Fades out over a few milliseconds.
 
 ## Remarks
 

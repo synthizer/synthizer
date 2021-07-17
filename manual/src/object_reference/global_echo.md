@@ -31,6 +31,11 @@ seconds.  To clear the taps, set the echo to an array of 0 elements.
 
 None
 
+## Linger Behavior
+
+Lingers until the delay line is empty, that is until no more echoes can possibly
+be heard.
+
 ## Remarks
 
 This is a stereo tapped delay line, with a one-block crossfade when taps are

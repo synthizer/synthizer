@@ -22,6 +22,9 @@ SYZ_P_ROLLOFF | double | From Context | value >= 0.0 | The rolloff for this sour
 SYZ_P_CLOSENESS_BOOST | double | From Context | any finite double | The closeness boost for this source in DB.
 SYZ_P_CLOSENESS_BOOST_DISTANCE | double | From Context | value >= 0.0 | The closeness boost distance for this source.
 
+## Linger Behavior
+
+Lingers until all generators are destroyed.
 
 ## Remarks
 

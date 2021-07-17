@@ -36,6 +36,10 @@ SYZ_P_LATE_REFLECTIONS_MODULATION_DEPTH | double | 0.01 | 0.0 to 0.3 | The depth
 SYZ_P_LATE_REFLECTIONS_MODULATION_FREQUENCY | double | 0.5 | 0.01 to 100.0 | The frequency of the modulation of the delay lines inthe feedback paths.
 SYZ_P_LATE_REFLECTIONS_DELAY | double | 0.03 | 0.0 to 0.5 | The delay of the late reflections relative to the input in seconds.
 
+## Linger behavior
+
+Lingers for slightly longer than `t60`.
+
 ## Remarks
 
 This is a reverb composed of a feedback delay network with 8 internal delay

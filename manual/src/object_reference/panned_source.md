@@ -18,7 +18,11 @@ SYZ_P_AZIMUTH | double | 0.0 | 0.0 to 360.0 | The azimuth of the panner. See rem
 SYZ_P_ELEVATION | double | 0.0 | -90.0 to 90.0 | See remarks
 SYZ_P_PANNING_SCALAR | double | 0.0 | -1.0 to 1.0 | see remarks
 
-# Remarks
+## Linger Behavior
+
+Lingers until all generators have been destroyed.
+
+## Remarks
 
 The PannedSource gives direct control over a panner, which is either controlled
 via azimuth/elevation in degrees or a panning scalar.

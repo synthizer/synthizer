@@ -30,6 +30,10 @@ SYZ_P_DEFAULT_PANNER_STRATEGY | int | SYZ_PANNER_STRATEGY_STEREO | any SYZ_PANNE
 
 See [events](../concepts/events.md).
 
+## Linger Behavior
+
+None.
+
 ## Remarks
 
 The context is the main entrypoint to Synthizer, responsible for the following:
