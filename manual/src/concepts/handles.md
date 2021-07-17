@@ -9,22 +9,40 @@ SYZ_CAPI syz_ErrorCode syz_handleIncRef(syz_Handle handle);
 SYZ_CAPI syz_ErrorCode syz_handleDecRef(syz_Handle handle);
 SYZ_CAPI syz_ErrorCode syz_handleGetObjectType(int *out, syz_Handle handle);
 
-SYZ_CAPI syz_ErrorCode syz_getUserdata(void **out, syz_Handle handle);
+SYZ_CAPI syz_ErrorCode syz_handleGetUserdata(void **out, syz_Handle handle);
 typedef void syz_UserdataFreeCallback(void *);
-SYZ_CAPI syz_ErrorCode syz_setUserdata(syz_Handle handle, void *userdata, syz_UserdataFreeCallback *free_callback);
+SYZ_CAPI syz_ErrorCode syz_handleSetUserdata(syz_Handle handle, void *userdata, syz_UserdataFreeCallback *free_callback);
 ```
+
+## basics of Handles
 
 All Synthizer handles start with a reference count of 1.  When the reference
 count reaches 0, the object is scheduled for deletion, but may not be deleted
 immediately.  Uniquely among Synthizer functions, `syz_handleIncRef` and
 `syz_handleDecRef` can be called after library shutdown in order to allow
-languages like Rust to implement infallible cloning and freeing.
+languages like Rust to implement infallible cloning and freeing.  The issues
+introduced with respect to object lifetimes due to the fact that Synthizer
+objects may stay around for a while can be dealt with userdata support, as
+described below.
 
 Synthizer objects are like classes.  They have "methods" and "bases".  For
 example all generators support a common set of operations named with a
 `syz_generatorXXX` prefix.
 
-Getting and setting userdata pointers is done through `syz_getUserdata` and
+### Userdata
+
+Synthizer makes it possible to associate application data via a `void *` pointer
+which will share the object's actual lifetime rather than the lifetime of the
+handle to the object.  This is useful for allowing applications to store state,
+but also helps to deal with the lifetime issues introduced by the mismatch
+between the last reference count of the object dying and the object actually
+dying.  For example, the Rust and Python bindings use userdata to attach buffers
+to objects when streaming from memory, so that the actual underlying resource
+stays around until Synthizer is guaranteed to no longer use it.
+
+Getting and setting userdata pointers is done in one of two ways.  All Synthizer
+constructors take two additional parameters to set the userdata and the free
+callback.  Alternatively, an application can go through `syz_getUserdata` and
 `syz_setUserdata`.  These are a threadsafe interface which will associate a
 `void *` argument with the object.  This interface acts as if the operations
 were wrapped in a mutex internally, though they complete with no syscalls in all
