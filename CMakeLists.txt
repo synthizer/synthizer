@@ -223,10 +223,14 @@ if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
 	add_executable(test_generation_thread test/generation_thread.cpp)
 	target_link_libraries(test_generation_thread synthizer)
 
+	add_executable(test_double_refcount test/double_refcount.c)
+	target_link_libraries(test_double_refcount synthizer)
+
 	add_test(NAME delay_line COMMAND delay_line_test)
 	add_test(NAME latch COMMAND test_latch)
 	add_test(NAME verify_properties COMMAND test_verify_properties)
 	add_test(NAME generation_thread COMMAND test_generation_thread)
+	add_test(NAME double_refcount COMMAND test_double_refcount)
 endif()
 
 install(
