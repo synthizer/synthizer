@@ -71,7 +71,7 @@ struct syz_DeleteBehaviorConfig {
 };
 
 SYZ_CAPI void syz_initDeleteBehaviorConfig(struct syz_DeleteBehaviorConfig *cfg);
-SYZ_CAPI syz_ErrorCode syz_configDeleteBehavior(syz_Handle object, struct syz_DeleteBehaviorConfig *cfg);
+SYZ_CAPI syz_ErrorCode syz_configDeleteBehavior(syz_Handle object, const struct syz_DeleteBehaviorConfig *cfg);
 
 SYZ_CAPI syz_ErrorCode syz_handleGetObjectType(int *out, syz_Handle handle);
 
