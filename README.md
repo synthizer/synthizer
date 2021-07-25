@@ -40,6 +40,12 @@ ninja
 
 Suffices.  You may need manual intervention in order to set things such as the MSVC runtime, but all of that goes through the standard CMake processes.
 
+If you want to build a DLL under windows, use the following command in place of `cmake -G Ninja ..`:
+
+```
+cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL -DSYNTHIZER_LIB_TYPE=SHARED
+```
+
 For the Python bindings, one of the following applies:
 
 - use the Windows wheels.  This is the easiest path for Windows.
