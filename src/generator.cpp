@@ -72,7 +72,40 @@ GeneratorRef::GeneratorRef(const std::weak_ptr<Generator> &weak): ref(weak) {
 	}
 }
 
+GeneratorRef::GeneratorRef(const GeneratorRef &other) {
+	this->ref = other.ref;
+	auto s = this->ref.lock();
+	if (s) {
+		s->use_count.fetch_add(1, std::memory_order_relaxed);
+	}
+}
+
+GeneratorRef::GeneratorRef(GeneratorRef &&other) {
+	this->ref = other.ref;
+	other.ref = std::weak_ptr<Generator>();
+}
+
+GeneratorRef &GeneratorRef::operator=(const GeneratorRef& other) {
+	this->ref = other.ref;
+	auto s = this->ref.lock();
+	if (s) {
+		s->use_count.fetch_add(1, std::memory_order_relaxed);
+	}
+	return *this;
+}
+
+GeneratorRef &GeneratorRef::operator=(GeneratorRef &&other) {
+	this->decRef();
+	this->ref = other.ref;
+	other.ref = std::weak_ptr<Generator>();
+	return *this;
+}
+
 GeneratorRef::~GeneratorRef() {
+	this->decRef();
+}
+
+void GeneratorRef::decRef() {
 	auto s = this->ref.lock();
 	if (s) {
 		/**

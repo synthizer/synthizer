@@ -135,6 +135,7 @@ void Source::fillBlock(unsigned int channels) {
 	if (this->is_lingering && this->generators.empty()) {
 		this->linger_countdown--;
 		if (this->linger_countdown == 0) {
+			printf("Hi");
 			this->signalLingerStopPoint();
 		}
 	}

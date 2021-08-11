@@ -4,6 +4,7 @@
 		"chrono": "cpp",
 		"*.pyx": "python",
 	},
+	"editor.insertSpaces": false,
 	"[python]": {
 		"editor.insertSpaces": true,
 		"editor.tabSize": 4

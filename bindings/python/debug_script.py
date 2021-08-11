@@ -22,10 +22,20 @@ synthizer.initialize(
 ctx = synthizer.Context(enable_events=True)
 buffer = synthizer.Buffer.from_stream_params("file", sys.argv[1])
 gen = synthizer.BufferGenerator(ctx)
+gen2 = synthizer.BufferGenerator(ctx)
 #gen = synthizer.StreamingGenerator.from_file(ctx, sys.argv[1])
+#gen2 = synthizer.StreamingGenerator.from_file(ctx, sys.argv[1])
 
 gen.buffer = buffer
+gen2.buffer=buffer
 # ctx.panner_strategy = synthizer.PannerStrategy.HRTF
 src = synthizer.PannedSource(ctx)
 src.add_generator(gen)
-src.panner_strategy = synthizer.PannerStrategy.HRTF
+src.add_generator(gen2)
+gen.config_delete_behavior(linger=True)
+gen2.config_delete_behavior(linger=True)
+src.config_delete_behavior(linger=True)
+gen.dec_ref()
+gen2.dec_ref()
+src.dec_ref()
+#src.panner_strategy = synthizer.PannerStrategy.HRTF

@@ -101,12 +101,24 @@ class GeneratorRef {
 	GeneratorRef();
 	GeneratorRef(const std::shared_ptr<Generator> &generator);
 	GeneratorRef(const std::weak_ptr<Generator> &weak);
+	GeneratorRef(const GeneratorRef &other);
+	GeneratorRef(GeneratorRef &&other);
+
+	GeneratorRef &operator=(const GeneratorRef &other);
+	GeneratorRef &operator=(GeneratorRef &&other);
+
 	~GeneratorRef();
 
 	std::shared_ptr<Generator> lock() const;
 	bool expired() const;
 
 	private:
+	/**
+	 * Internal fucntion used to decrement the reference counts in the various
+	 * assignment operators.
+	 * */
+	void decRef();
+
 	std::weak_ptr<Generator> ref;
 };
 
