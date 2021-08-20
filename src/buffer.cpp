@@ -184,7 +184,7 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle *out, syz_Han
 	auto bs = consumeStreamHandle(s);
 	auto dec = getDecoderForStream(bs);
 	*out = bufferFromDecoder(dec);
-	return syz_handleSetUserdata(0, userdata, userdata_free_callback);
+	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
 
