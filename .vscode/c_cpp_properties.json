@@ -9,7 +9,6 @@
 				"${workspaceFolder}/third_party/wdl",
 				"${workspaceFolder}/third_party/miniaudio",
 				"${workspaceFolder}/third_party/plf_colony",
-				"${workspaceFolder}/third_party/stb",
 				"${workspaceFolder}/third_party/concurrentqueue"
             ],
             "defines": [

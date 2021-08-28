@@ -9,7 +9,7 @@
 			"type": "cppvsdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build/load_libsndfile.exe",
-			"args": ["corpus/test2.ogg", "C:/Program Files/Mega-Nerd/libsndfile/bin/libsndfile-1.dll"],
+			"args": ["corpus/ball.flac", "sndfile.dll"],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",
 			"environment": [],

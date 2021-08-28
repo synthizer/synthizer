@@ -52,5 +52,6 @@ end:
 	syz_handleDecRef(buffer);
 	syz_handleDecRef(source);
 	syz_handleDecRef(stream);
+	syz_shutdown();
 	return ecode;
 }

@@ -1,5 +1,6 @@
 {
-	"files.eol": "\n",,
+	"editor.rulers": [ 120 ],
+	"files.eol": "\n",
 	"files.associations": {
 		"chrono": "cpp",
 		"*.pyx": "python",

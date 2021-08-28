@@ -35,7 +35,7 @@ std::shared_ptr<AudioDecoder> getDecoderForStream(std::shared_ptr<ByteStream> st
 			}
 			logDebug("Handling stream with handler %s", d.name.c_str());
 			return tmp;
-		} catch(std::exception &e) {
+		} catch(const std::exception &e) {
 			logDebug("Format %s threw error %s", d.name.c_str(), e.what());
 			continue;
 		}

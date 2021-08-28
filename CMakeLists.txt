@@ -36,6 +36,9 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		/experimental:external
 		/external:W0
 		/external:anglebrackets
+		# Apparently we have to globally disable unreachable code warnings; MSVC isn'tletting us do it in a
+		# targeted fashion.
+		/wd4702
 	)
 endif()
 

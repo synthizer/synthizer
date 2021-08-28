@@ -15,11 +15,14 @@ namespace synthizer {
 	 * */
 class Error: public std::exception  {
 	public:
-	Error(std::string message);
+	Error(const std::string &message);
 	virtual const std::string &getMessage() const;
 	virtual ~Error() {}
 
-	const char *what() const noexcept { return this->message.c_str(); }
+	const char *what() const noexcept override {
+		return this->message.c_str();
+	}
+
 	/* Get the code for the C API. Will differentiate later. */
 	syz_ErrorCode cCode() { return 1; }
 
