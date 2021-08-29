@@ -55,11 +55,17 @@ class AutomationTimeline {
 	 * */
 	std::optional<double> getValue();
 
-	private:
-	/* current timeline-relative time in seconds. */
+	/**
+	 * Returns true when evaluating this timeline will never again produce a value.
+	 * */
+	bool isFinished() {
+		return this->finished;
+	}
+
+	/* current timeline-relative time in seconds. Public for testing. Otherwise internal to this class. */
 	double getTimeInSeconds();
 
-
+	private:
 	deferred_vector<AutomationPoint> points;
 	/**
 	 * Points at the next point which we may need to evaluate.
