@@ -6,8 +6,11 @@
 #include "synthizer/property_internals.hpp"
 
 #include <atomic>
+#include <memory>
 
 namespace synthizer {
+
+class AutomationTimeline;
 
 /* Forward declare the routing handles. */
 namespace router {
@@ -68,6 +71,16 @@ class BaseObject: public CExposable {
 		(void)value;
 
 		throw EInvalidProperty();
+	}
+
+	virtual void automateProperty(int property, const std::shared_ptr<AutomationTimeline> &timeline) {
+		// if we got here, we either don't have the properety or don't support automation.  But these lead to different
+		// errors.
+		if (this->hasProperty(property)) {
+			throw ENotSupported("This property doesn't support automation");
+		} else {
+			throw EInvalidProperty();
+		}
 	}
 
 	/* Virtual because context itself needs to override to always return itself. */

@@ -60,5 +60,6 @@ ERRDEF(ERange, "Value out of range");
 ERRDEF(EInvariant, "Invariant would be violated");
 ERRDEF(EValidation, "Validation error");
 ERRDEF(EInternal, "Internal library error");
+ERRDEF(ENotSupported, "Operation not supported");
 
 }
