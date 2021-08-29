@@ -81,10 +81,6 @@ void AutomationTimeline::tick() {
 	this->current_value = value;
 }
 
-std::optional<double> AutomationTimeline::getValue() {
-	return this->current_value;
-}
-
 double AutomationTimeline::getTimeInSeconds() {
 	return this->block_time * config::BLOCK_SIZE / (double)config::SR;
 }

@@ -447,8 +447,12 @@ void propSubsystemAdvanceAutomation() override {
 	auto t = this->getTimelineFor##N(); \
 	if (t) { \
 		t->tick(); \
+		auto val = t->getValue(); \
 		if (t->isFinished()) { \
 			this->setTimelineFor##N(nullptr); \
+		} \
+		if (val) { \
+			this->set##N(*val); \
 		} \
 	} \
 	return; \

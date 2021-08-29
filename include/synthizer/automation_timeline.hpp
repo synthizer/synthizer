@@ -53,7 +53,9 @@ class AutomationTimeline {
 	 * This function returns an empty option if the timeline hasn't started yet (e.g. is in the future) or has
 	 * already ended.  When it does so, properties are left alone.
 	 * */
-	std::optional<double> getValue();
+	std::optional<double> getValue() {
+		return this->current_value;
+	}
 
 	/**
 	 * Returns true when evaluating this timeline will never again produce a value.
