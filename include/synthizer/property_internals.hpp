@@ -5,6 +5,7 @@
 
 #include "synthizer/property_xmacros.hpp"
 
+#include "synthizer/automation_timeline.hpp"
 #include "synthizer/cells.hpp"
 
 #include <array>

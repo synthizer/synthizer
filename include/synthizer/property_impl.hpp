@@ -26,6 +26,8 @@
  *    last time this specific property was acquired. May block for object properties.
  * - markPropertyUnchanged: clear the changed status of a propperty. Used primarily from initInAudioThread for objects
  *   which need to see properties as not having been changed on their first tick.
+ * - getTimelineForProperty: return a raw pointer to the automation timeline for the specific property, mostly internal.
+ * - All the machinery to attach timelines to double properties.
  *
  * Note that blocking on object properties is required because we need to safely copy std::shared_ptr. We do so with a
  * simple spinlock, under the assumption that readers are rare.
@@ -101,7 +103,8 @@ class PROPCLASS_NAME {
 
 	/* DV is default value. */
 	#define INT_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV) IntProperty N{DV};
-	#define DOUBLE_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV) DoubleProperty N{DV};
+	#define DOUBLE_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV) DoubleProperty N{DV};\
+		std::shared_ptr<AutomationTimeline> N##_timeline;
 	#define DOUBLE3_P(IGNORED, N, IGNORED2, DV1, DV2, DV3) Double3Property N{{DV1, DV2, DV3}};
 	#define DOUBLE6_P(IGNORED, N, IGNORED2, DV1, DV2, DV3, DV4, DV5, DV6) Double6Property N{{DV1, DV2, DV3, DV4, DV5, DV6}};
 	#define OBJECT_P(IGNORED, N, IGNORED2, CLS) ObjectProperty<CLS> N;
@@ -128,7 +131,7 @@ if (track_change) this->PROPFIELD_NAME.propertyHasChanged(PROPERTY_CLASS##Props:
 
 #define STANDARD_ACQUIRE(F) \
 bool changed = this->PROPFIELD_NAME.acquireBit(PROPERTY_CLASS##Props::Bits::F##_BIT); \
-out = this->PROPFIELD_NAME.F.read(); \
+out = this->PROPFIELD_NAME.F##.read(); \
 return changed;
 
 #define STANDARD_UNCHANGED(F) \
@@ -410,6 +413,49 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 	default:
 		PROPERTY_BASE::setProperty(property, value);
 	}
+}
+
+#undef INT_P
+#undef DOUBLE_P
+#undef DOUBLE3_P
+#undef DOUBLE6_P
+#undef OBJECT_P
+#undef BIQUAD_P
+
+// All the automation stuff doesn't use these; leave them defined to empty until we're done.
+#define INT_P(...)
+#define DOUBLE3_P(...)
+#define DOUBLE6_P(...)
+#define OBJECT_P(...)
+#define BIQUAD_P(...)
+
+#define DOUBLE_P(IGNORED, UNDER_N, CAMEL_N, IGNORED3, IGNORED4, IGNORED5) \
+AutomationTimeline *getTimelineFor##CAMEL_N() { \
+	return this->PROPFIELD_NAME.UNDER_N##_timeline.get(); \
+} \
+\
+void setTimelineFor##CAMEL_N(const std::shared_ptr<AutomationTimeline> &timeline) { \
+	this->PROPFIELD_NAME.UNDER_N##_timeline = timeline; \
+}
+
+PROPERTY_LIST
+
+#undef DOUBLE_P
+
+void propSubsystemAdvanceAutomation() override {
+#define DOUBLE_P(C, IGNORED, N, MIN, MAX, DEF) { \
+	auto t = this->getTimelineFor##N(); \
+	if (t) { \
+		t->tick(); \
+		if (t->isFinished()) { \
+			this->setTimelineFor##N(nullptr); \
+		} \
+	} \
+	return; \
+}
+
+	PROPERTY_LIST
+	PROPERTY_BASE::propSubsystemAdvanceAutomation();
 }
 
 #undef PROPERTY_CLASS
