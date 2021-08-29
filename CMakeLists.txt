@@ -189,6 +189,7 @@ example(buffer_from_memory)
 example(buffer_from_raw_data)
 example(custom_stream)
 example(load_libsndfile)
+example(simple_automation)
 
 # The following won't work on Windows unless compiled against a static build of Synthizer because we don't want to expose the C++ internals from the DLL.
 # Since these are just test programs and not actual utilities, disable them on all platforms if the build isn't static.

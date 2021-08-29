@@ -131,7 +131,7 @@ if (track_change) this->PROPFIELD_NAME.propertyHasChanged(PROPERTY_CLASS##Props:
 
 #define STANDARD_ACQUIRE(F) \
 bool changed = this->PROPFIELD_NAME.acquireBit(PROPERTY_CLASS##Props::Bits::F##_BIT); \
-out = this->PROPFIELD_NAME.F##.read(); \
+out = this->PROPFIELD_NAME.F.read(); \
 return changed;
 
 #define STANDARD_UNCHANGED(F) \

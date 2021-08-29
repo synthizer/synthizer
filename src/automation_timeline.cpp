@@ -113,7 +113,7 @@ std::shared_ptr<AutomationTimeline> ExposedAutomationTimeline::buildTimeline() {
 using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_createAutomationTimeline(syz_Handle *out, unsigned int point_count,
-	unsigned long long flags, const struct syz_AutomationPoint *points, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
+	const struct syz_AutomationPoint *points, unsigned long long flags, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
 	SYZ_PROLOGUE
 	if (flags != 0) {
 		throw EValidation("flags is reserved");
