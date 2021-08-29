@@ -1,43 +1,47 @@
 /*
  * This is the property implementation machinery. To use:
- * 
- * At the top of the header defining your type:
- * #include "synthizer/property_internals.hpp"
- * which will define some types and bring in any headers this file needs.
- * 
+ *
+ * At the top of the header defining your type: #include "synthizer/property_internals.hpp" which will define some types
+ * and bring in any headers this file needs.
+ *
  * Then, in your class header, at the public access level, define the following macros:
+ *
+ * ```
  * #define PROPERTY_CLASS myclass
  * #define PROPERTY_LIST proplist
  * #define PROPERTY_BASE baseclass
- * 
- * Then include this header. Afterwords, the above macros will be undefined, you will be at public access level, and your class will have the following functionality inline:
- * 
- * - getProperty: read the property of the specified type. Can be used from any thread.
- *    makes no system calls but may block for object properties.
- *  - setProperty: Must be called from the audio thread. Sets the property.
- *    makes no system calls but may block for object properties.  Accepts a defaulted
- *   second parameter to disable change tracking, used from the audio
- *   thread in order to propagate changes out without creating cycles, e.g. exposing
- *   buffer position while also allowing it to be written without the audio thread's write
- *   counting.
+ * ```
+ *
+ * Then include this header. Afterwords, the above macros will be undefined, you will be at public access level, and
+ * your class will have the following functionality inline:
+ *
+ * - getProperty: read the property of the specified type. Can be used from any thread. makes no system calls but may
+ *    block for object properties.
+ *  - setProperty: Must be called from the audio thread. Sets the property. makes no system calls but may block for
+ *    object properties.  Accepts a defaulted second parameter to disable change tracking, used from the audio thread in
+ *    order to propagate changes out without creating cycles, e.g. exposing buffer position while also allowing it to be
+ *    written without the audio thread's write counting.
  *  - verifyProperty: Verifies the property is in range. Makes no system calls.  
- *  - acquireProperty(proptype &out): sets out to the value of property, and returns true if it has changed since the last time
- *    this specific property was acquired. May block for object properties.
- * - markPropertyUnchanged: clear the changed status of a propperty. Used primarily from initInAudioThread for objects which
- *   need to see properties as not having been changed on their first tick.
- * 
- * Note that blocking on object properties is required because we need to safely copy std::shared_ptr. We do so with a simple spinlock, under the assumption that readers are rare.
- * 
- * In the above, Property changes to match the name of the property. In addition to these functions,
- * this header defines a number of private types, adds a nested class named clasnameProps and field classname_props to your class at every level of the hierarchy that uses properties which you shouldn't access yourself, and
- * defines the standard property machinery to get/set via enum.
- * 
- * A weakness of this implementation is that it is not possible to validate properties with more complex logic. To get around this,
- * objects should either expose complicated properties as functions or force properties to valid values and potentially log in the audio tick.
- * Synthizer designs around not needing to perform such logic as a rule in order to avoid entangling things with the audio thread.
- * 
+ *  - acquireProperty(proptype &out): sets out to the value of property, and returns true if it has changed since the
+ *    last time this specific property was acquired. May block for object properties.
+ * - markPropertyUnchanged: clear the changed status of a propperty. Used primarily from initInAudioThread for objects
+ *   which need to see properties as not having been changed on their first tick.
+ *
+ * Note that blocking on object properties is required because we need to safely copy std::shared_ptr. We do so with a
+ * simple spinlock, under the assumption that readers are rare.
+ *
+ * In the above, Property changes to match the name of the property. In addition to these functions, this header defines
+ * a number of private types, adds a nested class named clasnameProps and field classname_props to your class at every
+ * level of the hierarchy that uses properties which you shouldn't access yourself, and defines the standard property
+ * machinery to get/set via enum.
+ *
+ * A weakness of this implementation is that it is not possible to validate properties with more complex logic. To get
+ * around this, objects should either expose complicated properties as functions or force properties to valid values and
+ * potentially log in the audio tick. Synthizer designs around not needing to perform such logic as a rule in order to
+ * avoid entangling things with the audio thread.
+ *
  * Also note that this implementation supports only 64 properties per level of the inheritance hierarchy.
- * 
+ *
  * Finally, note that properties count as changed on the first tick, unless markPropertyUnchanged is called.
  * */
 
