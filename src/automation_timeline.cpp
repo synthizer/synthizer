@@ -117,8 +117,12 @@ std::shared_ptr<AutomationTimeline> ExposedAutomationTimeline::buildTimeline() {
 using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_createAutomationTimeline(syz_Handle *out, unsigned int point_count,
-	const struct syz_AutomationPoint *points, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
+	unsigned long long flags, const struct syz_AutomationPoint *points, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
 	SYZ_PROLOGUE
+	if (flags != 0) {
+		throw EValidation("flags is reserved");
+	}
+
 	auto x = allocateSharedDeferred<ExposedAutomationTimeline>(point_count, points);
 	auto c = std::static_pointer_cast<CExposable>(x);
 	c->stashInternalReference(c);
@@ -126,7 +130,6 @@ SYZ_CAPI syz_ErrorCode syz_createAutomationTimeline(syz_Handle *out, unsigned in
 	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
-
 
 SYZ_CAPI syz_ErrorCode syz_automateD(syz_Handle object, int property, syz_Handle timeline) {
 	SYZ_PROLOGUE

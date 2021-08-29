@@ -116,7 +116,7 @@ struct syz_AutomationPoint {
 };
 
 SYZ_CAPI syz_ErrorCode syz_createAutomationTimeline(syz_Handle *out, unsigned int point_count,
-	const struct syz_AutomationPoint *points, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+	const struct syz_AutomationPoint *points, unsigned long long flags, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 SYZ_CAPI syz_ErrorCode syz_automateD(syz_Handle object, int property, syz_Handle timeline);
 
