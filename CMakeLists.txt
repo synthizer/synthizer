@@ -87,6 +87,7 @@ set_property(TARGET synthizer_single_file_libs PROPERTY POSITION_INDEPENDENT_COD
 
 set(SYNTHIZER_LIB_TYPE STATIC CACHE STRING "The build type for Synthizer. Either STATIC or SHARED")
 add_library(synthizer ${SYNTHIZER_LIB_TYPE}
+	src/automation_timeline.cpp
 	src/audio_output.cpp
 	src/background_thread.cpp
 	src/base_object.cpp

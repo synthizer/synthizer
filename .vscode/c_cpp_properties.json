@@ -3,13 +3,13 @@
         {
             "name": "Win32",
             "includePath": [
-				"${workspaceFolder}/include",
-				"${workspaceFolder}/third_party/cpp11-on-multicore/common",
-				"${workspaceFolder}/third_party/dr_libs",
-				"${workspaceFolder}/third_party/wdl",
-				"${workspaceFolder}/third_party/miniaudio",
-				"${workspaceFolder}/third_party/plf_colony",
-				"${workspaceFolder}/third_party/concurrentqueue"
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/third_party/cpp11-on-multicore/common",
+                "${workspaceFolder}/third_party/dr_libs",
+                "${workspaceFolder}/third_party/wdl",
+                "${workspaceFolder}/third_party/miniaudio",
+                "${workspaceFolder}/third_party/plf_colony",
+                "${workspaceFolder}/third_party/concurrentqueue"
             ],
             "defines": [
                 "_DEBUG",
@@ -17,10 +17,10 @@
                 "_UNICODE"
             ],
             "windowsSdkVersion": "10.0.18362.0",
-            "compilerPath": "C:/Program Files/LLVM/bin/clang.exe",
+            "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30037/bin/Hostx64/x64/cl.exe",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "clang-x64"
+            "intelliSenseMode": "windows-msvc-x64"
         }
     ],
     "version": 4

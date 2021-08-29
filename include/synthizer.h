@@ -19,8 +19,9 @@ extern "C" {
 #endif
 
 /*
- * Note to maintainers: C API methods that obviously go with  a type live in the main .cpp file for that type, even if it is necessary to introduce a cpp file for that type to hold the C API (i.e. pure abstract classes).
- * 
+ * Note to maintainers: C API methods that obviously go with  a type live in the main .cpp file for that type, even if
+ * it is necessary to introduce a cpp file for that type to hold the C API (i.e. pure abstract classes).
+ *
  * Other methods are in src/c_api.cpp (i.e. generic property setters, initialization, etc.).
  * */
 
@@ -106,6 +107,15 @@ SYZ_CAPI syz_ErrorCode syz_biquadDesignIdentity(struct syz_BiquadConfig *filter)
 SYZ_CAPI syz_ErrorCode syz_biquadDesignLowpass(struct syz_BiquadConfig *filter, double frequency, double q);
 SYZ_CAPI syz_ErrorCode syz_biquadDesignHighpass(struct syz_BiquadConfig *filter, double frequency, double q);
 SYZ_CAPI syz_ErrorCode syz_biquadDesignBandpass(struct syz_BiquadConfig *filter, double frequency, double bw);
+
+struct syz_AutomationPoint {
+	unsigned int interpolation_type;
+	double automation_time;
+	double value;
+};
+
+SYZ_CAPI syz_ErrorCode syz_createAutomationTimeline(syz_Handle *out, unsigned int point_count,
+	const struct syz_AutomationPoint *points, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
