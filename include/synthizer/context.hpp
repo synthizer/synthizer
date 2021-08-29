@@ -213,8 +213,8 @@ class Context: public Pausable, public BaseObject {
 
 	/* Helper methods used by various pieces of synthizer to grab global resources. */
 
-	/* Get the direct buffer, which is where things write when they want to bypass panning. This includes effects and direct sources, etc.
-	 * Inline because it's super inexpensive.
+	/* Get the direct buffer, which is where things write when they want to bypass panning. This includes effects and
+	 * direct sources, etc. Inline because it's super inexpensive.
 	 * */
 	float *getDirectBuffer() {
 		return &this->direct_buffer[0];

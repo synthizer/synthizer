@@ -94,6 +94,23 @@ class BaseObject: public CExposable {
 
 	void signalLingerStopPoint() override;
 
+	/**
+	 * Advance automation.  This internal method is for the property infrastructure, and ticks any associated timelines.
+	 * Should be called by tickAutomation, which can be overridden by subclasses to e.g. not run automation only once
+	 *
+	 * Only call once per generated block (e.g. it makes sense to call this if pitch bend has you doing two blocks for
+	 * one).
+	 * */
+	virtual void propSubsystemAdvanceAutomation() {}
+
+	/**
+	 * Tick property automation.  The default implementation just calls propSubsystemAdvanceAutomation, but subclasses
+	 * sometimes opt to short-circuit and not advance it at all (e.g. Pasuable).
+	 * */
+	virtual void tickAutomation() {
+		this->propSubsystemAdvanceAutomation();
+	}
+
 	protected:
 	std::shared_ptr<Context> context;
 };

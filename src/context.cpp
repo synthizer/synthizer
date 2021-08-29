@@ -157,13 +157,13 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 			rec.callback(rec.arg);
 		}
 
-
 		std::fill(destination, destination + channels * config::BLOCK_SIZE, 0.0f);
 
 		/**
-		 * This is the first safe place to actually pause: the output is definitely playing silence, and all commands have executed.
-		 * While we can pause the context, and pausing the context pauses everything undernneath, pausing the queues will cause unrecoverable deadlocks because it will be impossible
-		 * to unpause and the queues will eventually fill.
+		 * This is the first safe place to actually pause: the output is definitely playing silence, and all commands
+		 * have executed. While we can pause the context, and pausing the context pauses everything undernneath, pausing
+		 * the queues will cause unrecoverable deadlocks because it will be impossible to unpause and the queues will
+		 * eventually fill.
 		 * */
 		if (this->isPaused()) {
 			return;
@@ -171,16 +171,29 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 
 		std::fill(this->getDirectBuffer(), this->getDirectBuffer() + config::BLOCK_SIZE * channels, 0.0f);
 
-		auto i = this->sources.begin();
-		while (i != this->sources.end()) {
-			auto v = i->second;
-			auto s = v.lock();
-			if (s == nullptr) {
-				i = this->sources.erase(i);
-				continue;
+
+		/**
+		 * Do all the automation first, then run the sources.
+		 * */
+		{
+			auto i = this->sources.begin();
+			while (i != this->sources.end()) {
+				auto v = i->second;
+				auto s = v.lock();
+				if (s == nullptr) {
+					i = this->sources.erase(i);
+					continue;
+				}
+				s->tickAutomation();
+				i++;
 			}
-			s->run();
-			i++;
+		}
+
+		/**
+		 * We just handled deleting all the soures; this time, we don't need to worry about that.
+		 * */
+		for (auto s: this->sources) {
+			s.second.lock()->run();
 		}
 
 		this->source_panners->run(channels, destination);

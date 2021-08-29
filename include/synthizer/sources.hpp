@@ -35,6 +35,8 @@ class Source: public RouteOutput, public Pausable {
 
 	virtual ~Source() {}
 
+	virtual void tickAutomation() override;
+
 	/* Should write to appropriate places in the context on its own. */
 	virtual void run() = 0;
 

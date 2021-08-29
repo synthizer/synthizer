@@ -45,6 +45,18 @@ bool Source::hasGenerator(std::shared_ptr<Generator> &generator) {
 	return weak_vector::contains(this->generators, generator);
 }
 
+void Source::tickAutomation() {
+	if (this->isPaused()) {
+		return;
+	}
+
+	BaseObject::tickAutomation();
+
+	weak_vector::iterate_removing(this->generators, [](auto &g) {
+		g->tickAutomation();
+	});
+}
+
 void Source::fillBlock(unsigned int channels) {
 	auto premix_guard = acquireBlockBuffer();
 	float *premix = premix_guard;
