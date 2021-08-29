@@ -42,7 +42,7 @@ int main() {
 		if (v) {
 			auto x = *v;
 			if (floatCmp(x, exp) == false) {
-				printf("Expected %f but got %f at time %f\n", exp, v, timeline->getTimeInSeconds());
+				printf("Expected %f but got %f at time %f\n", exp, x, timeline->getTimeInSeconds());
 				return 1;
 			}
 		} else {
