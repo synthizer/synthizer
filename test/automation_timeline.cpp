@@ -15,10 +15,10 @@ bool floatCmp(double a, double b) {
 
 int main() {
 	std::vector<syz_AutomationPoint> points{{
-		{ SYZ_INTERPOLATION_TYPE_LINEAR, 0.0, 1.0 },
-		{ SYZ_INTERPOLATION_TYPE_LINEAR, 0.01, 0.5 },
-		{ SYZ_INTERPOLATION_TYPE_NONE, 0.02, 0.1 },
-		{ SYZ_INTERPOLATION_TYPE_LINEAR, 0.05, 0.0 },
+		{ SYZ_INTERPOLATION_TYPE_LINEAR, 0.0, { 1.0 }},
+		{ SYZ_INTERPOLATION_TYPE_LINEAR, 0.01, { 0.5 }},
+		{ SYZ_INTERPOLATION_TYPE_NONE, 0.02, { 0.1 }},
+		{ SYZ_INTERPOLATION_TYPE_LINEAR, 0.05, { 0.0 }},
 	}};
 
 	std::vector<double> expected{{

@@ -99,7 +99,7 @@ ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
 		AutomationPoint ap;
 		ap.automation_time = input_points[i].automation_time;
 		ap.interpolation_type = input_points[i].interpolation_type;
-		ap.value = input_points[i].value;
+		ap.value = input_points[i].values[0];
 		this->points.emplace_back(std::move(ap));
 	}
 
