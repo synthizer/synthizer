@@ -119,6 +119,7 @@ SYZ_CAPI syz_ErrorCode syz_createAutomationTimeline(syz_Handle *out, unsigned in
 	const struct syz_AutomationPoint *points, unsigned long long flags, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 SYZ_CAPI syz_ErrorCode syz_automationSetTimeline(syz_Handle object, int property, syz_Handle timeline);
+SYZ_CAPI syz_ErrorCode syz_automationClear(syz_Handle objeect, int property);
 
 SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 

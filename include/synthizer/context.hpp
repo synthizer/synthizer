@@ -198,8 +198,9 @@ class Context: public Pausable, public BaseObject {
 	void setDouble6Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 6> value);
 	void setBiquadProperty(std::shared_ptr<BaseObject> &obj, int property, const struct syz_BiquadConfig &value);
 
-	void automateDoubleProperty(std::shared_ptr<BaseObject> &obj, int property,
+	void automationSetTimeline(const std::shared_ptr<BaseObject> &obj, int property,
 		const std::shared_ptr<ExposedAutomationTimeline> &timeline);
+	void automationClear(const std::shared_ptr<BaseObject> &obj, int property);
 
 	/*
 	 * Ad a weak reference to the specified source.

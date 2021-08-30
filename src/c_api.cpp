@@ -357,12 +357,20 @@ SYZ_CAPI syz_ErrorCode syz_configDeleteBehavior(syz_Handle object, const struct 
 	SYZ_EPILOGUE
 }
 
-
 SYZ_CAPI syz_ErrorCode syz_automationSetTimeline(syz_Handle object, int property, syz_Handle timeline) {
 	SYZ_PROLOGUE
 	auto o = fromC<BaseObject>(object);
 	auto ctx = o->getContextRaw();
-	ctx->automateDoubleProperty(o, property, fromC<ExposedAutomationTimeline>(timeline));
+	ctx->automationSetTimeline(o, property, fromC<ExposedAutomationTimeline>(timeline));
+	return 0;
+	SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_automationClear(syz_Handle object, int property) {
+	SYZ_PROLOGUE
+	auto o = fromC<BaseObject>(object);
+	auto ctx = o->getContextRaw();
+	ctx->automationClear(o, property);
 	return 0;
 	SYZ_EPILOGUE
 }

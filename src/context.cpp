@@ -121,11 +121,17 @@ void Context::setBiquadProperty(std::shared_ptr<BaseObject> &obj, int property, 
 	this->propertySetter<syz_BiquadConfig>(obj, property, value);
 }
 
-void Context::automateDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, const std::shared_ptr<ExposedAutomationTimeline> &exposed_timeline) {
+void Context::automationSetTimeline(const std::shared_ptr<BaseObject> &obj, int property, const std::shared_ptr<ExposedAutomationTimeline> &exposed_timeline) {
 	auto timeline = exposed_timeline->buildTimeline();
-	obj->validateAutomation(property, timeline);
+	obj->validateAutomation(property);
 	std::weak_ptr<BaseObject> target = obj;
 	this->enqueueCallbackCommand(automatePropertyCmd, property, target, timeline);
+}
+
+void Context::automationClear(const std::shared_ptr<BaseObject> &obj, int property) {
+	obj->validateAutomation(property);
+	std::weak_ptr<BaseObject> target = obj;
+	this->enqueueCallbackCommand(automatePropertyCmd, property, target, nullptr);
 }
 
 void Context::registerSource(const std::shared_ptr<Source> &source) {

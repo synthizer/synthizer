@@ -74,9 +74,7 @@ class BaseObject: public CExposable {
 		throw EInvalidProperty();
 	}
 
-	virtual void validateAutomation(int property, const std::shared_ptr<AutomationTimeline> &timeline) {
-		(void)timeline;
-
+	virtual void validateAutomation(int property) {
 		// if we got here, we either don't have the properety or don't support automation.  But these lead to different
 		// errors.
 		if (this->hasProperty(property)) {

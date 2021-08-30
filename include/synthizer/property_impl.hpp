@@ -463,7 +463,7 @@ void propSubsystemAdvanceAutomation() override {
 
 #undef DOUBLE_P
 
-void PROPERTY_CLASS::validateAutomation(int property, const std::shared_ptr<AutomationTimeline> &timeline) override {
+void PROPERTY_CLASS::validateAutomation(int property) override {
 	#define DOUBLE_P(V, ...) case V: return;
 
 	switch(property) {
@@ -475,7 +475,7 @@ void PROPERTY_CLASS::validateAutomation(int property, const std::shared_ptr<Auto
 		break;
 	}
 
-	PROPERTY_BASE::validateAutomation(property, timeline);
+	PROPERTY_BASE::validateAutomation(property);
 }
 
 #undef DOUBLE_P
