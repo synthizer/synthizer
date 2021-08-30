@@ -6,6 +6,7 @@
 #include "synthizer/property_internals.hpp"
 
 #include <atomic>
+#include <cassert>
 #include <memory>
 
 namespace synthizer {
@@ -85,11 +86,14 @@ class BaseObject: public CExposable {
 		}
 	}
 
+	/**
+	 * Should only be called after automation.  The BaseObject version should be unreachable code, and asserts such.
+	 * */
 	virtual void automateProperty(int property, const std::shared_ptr<AutomationTimeline> &timeline) {
 		(void)property;
 		(void)timeline;
 
-		throw EInvariant("Unreachable code");
+		assert(false && "Unreachable");
 	}
 
 	/* Virtual because context itself needs to override to always return itself. */

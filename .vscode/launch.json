@@ -8,7 +8,7 @@
 			"name": "(Windows) Launch",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/load_libsndfile.exe",
+			"program": "${workspaceFolder}/build_noasan/simple_automation.exe",
 			"args": ["corpus/ball.flac", "sndfile.dll"],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",

@@ -10,16 +10,16 @@
 #include <stdlib.h>
 
 static const unsigned int SR = 9000;
-static const double FREQ = 300;
-static const unsigned int HARMONICS = 3;
+static const double FREQ = 100;
+static const unsigned int HARMONICS = 10;
 static const double PI = 3.141592653589793;
 
 static const struct syz_AutomationPoint POINTS[] = {
 	{ SYZ_INTERPOLATION_TYPE_LINEAR, 0.0, { 0.0 } },
-	{ SYZ_INTERPOLATION_TYPE_LINEAR, 0.1, { 0.8 } },
+	{ SYZ_INTERPOLATION_TYPE_LINEAR, 0.01, { 1.0 } },
 	{ SYZ_INTERPOLATION_TYPE_LINEAR, 0.4, { 0.5 } },
-	{ SYZ_INTERPOLATION_TYPE_LINEAR, 0.9, { 0.01 } },
-	{ SYZ_INTERPOLATION_TYPE_LINEAR, 1.0, { 0.0 } },
+	{ SYZ_INTERPOLATION_TYPE_LINEAR, 0.9, { 0.1 } },
+	{ SYZ_INTERPOLATION_TYPE_LINEAR, 2.0, { 0.0 } },
 };
 
 float *computeTriangle() {
@@ -28,13 +28,9 @@ float *computeTriangle() {
 	for (unsigned int i = 0; i < SR; i++) {
 		double acc = 0.0;
 		for (unsigned int h = 0; h < HARMONICS; h++) {
-			double hfreq = FREQ * h;
-			double hsin = 1.0;
-			if (i % 2 == 1) {
-				hsin = -1.0;
-			}
-			double hmul = 1.0 / (h * h);
-			acc += hsin * hmul * sin(2 * PI * FREQ * i / (double)SR);
+			unsigned int n = h + 1;
+			double hmul = 1.0 / (n * n);
+			acc += hmul * sin(2 * PI * n * FREQ * i / (double)SR);
 		}
 		acc *= 8 / (PI * PI);
 		ret[i] = acc;
@@ -66,9 +62,10 @@ int main() {
 	free(triangle);
 	triangle = NULL;
 
-	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer, NULL, NULL));
+	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_createAutomationTimeline(&timeline, sizeof(POINTS)/sizeof(POINTS[0]), POINTS, 0, NULL, NULL));
 	CHECKED(syz_automateD(generator, SYZ_P_GAIN, timeline));
+	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
 	printf("Press any key to exit\n");

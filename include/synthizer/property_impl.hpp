@@ -455,11 +455,42 @@ void propSubsystemAdvanceAutomation() override {
 			this->set##N(*val); \
 		} \
 	} \
-	return; \
 }
 
 	PROPERTY_LIST
 	PROPERTY_BASE::propSubsystemAdvanceAutomation();
+}
+
+#undef DOUBLE_P
+
+void PROPERTY_CLASS::validateAutomation(int property, const std::shared_ptr<AutomationTimeline> &timeline) override {
+	#define DOUBLE_P(V, ...) case V: return;
+
+	switch(property) {
+		PROPERTY_LIST
+		// Some objects don't have any properties; silence a warning.
+		// Also some objects don't have automatable properties.
+	case INT_MAX: 
+	default: 
+		break;
+	}
+
+	PROPERTY_BASE::validateAutomation(property, timeline);
+}
+
+#undef DOUBLE_P
+
+void PROPERTY_CLASS::automateProperty(int property, const std::shared_ptr<AutomationTimeline> &timeline) override {
+	#define DOUBLE_P(C, IGNORED, CAMEL_N, ...) case C: setTimelineFor##CAMEL_N(timeline); return;
+
+	switch (property) {
+		PROPERTY_LIST
+	case INT_MAX: 
+	default: 
+		break;
+	}
+
+	PROPERTY_BASE::automateProperty(property, timeline);
 }
 
 #undef PROPERTY_CLASS

@@ -47,6 +47,12 @@ void AutomationTimeline::tick() {
 		return;
 	}
 
+	// If we're exactly at the first point, start there; this is the common use case of specifying timelines that start
+	// at 0.
+	if (this->points.front().automation_time == time) {
+		this->current_value = this->points.front().value;
+	}
+
 	// If we're not past the first point yet, nothing to do.
 	if (this->next_point == 0) {
 		this->current_value = std::nullopt;
@@ -60,12 +66,13 @@ void AutomationTimeline::tick() {
 	// If the previous point's interpolation type is none, then we may not have jumped yet.  We can just unconditionally
 	// do that here, since jumping to the same value twice is not a big deal.
 	//
-	// If the next point is NONE, then we must also jump: we need to finish the previous linear interpolation becasue
+	// If the next point is NONE, then we must also jump: we need to finish the previous linear interpolation because
 	// the value between a linear point and a none point is the value of the linear point.
+	//
+	// We don't return here: if the prior point is NONE then we might be interpolating.
 	if (p1.interpolation_type == SYZ_INTERPOLATION_TYPE_NONE || p2.interpolation_type == SYZ_INTERPOLATION_TYPE_NONE) {
 		this->current_value = p1.value;
 	}
-
 
 	// If p2 is NONE, we don't do anything with it until we cross it.
 	if (p2.interpolation_type == SYZ_INTERPOLATION_TYPE_NONE) {

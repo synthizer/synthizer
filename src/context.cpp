@@ -125,7 +125,7 @@ void Context::automateDoubleProperty(std::shared_ptr<BaseObject> &obj, int prope
 	auto timeline = exposed_timeline->buildTimeline();
 	obj->validateAutomation(property, timeline);
 	std::weak_ptr<BaseObject> target = obj;
-	this->enqueueReferencingCallbackCommand(true, automatePropertyCmd, property, target, timeline);
+	this->enqueueCallbackCommand(automatePropertyCmd, property, target, timeline);
 }
 
 void Context::registerSource(const std::shared_ptr<Source> &source) {

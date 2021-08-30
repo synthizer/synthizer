@@ -116,8 +116,9 @@ class CallbackCommandPayload {
 
 /**
  * Take a pointer to a command and configure it to call a callable.
- * 
- * NOTE: it is very important that the following aren't references, including rvalue references. If they are, things don't copy and we get dangling references.
+ *
+ * NOTE: it is very important that the following aren't references, including rvalue references. If they are, things
+ * don't copy and we get dangling references.
  * */
 template<typename CB, typename ...ARGS>
 void _initCallbackCommandNoref(Command *cmd, CB callback, ARGS ...args) {

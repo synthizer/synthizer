@@ -10,7 +10,9 @@
 
 #include <array>
 #include <atomic>
+#include <cassert>
 #include <cstdint>
+#include <cstdio>
 #include <limits>
 #include <memory>
 #include <variant>
