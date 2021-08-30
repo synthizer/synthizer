@@ -415,7 +415,7 @@ void propSubsystemAdvanceAutomation() override {
 
 #undef DOUBLE_P
 
-void PROPERTY_CLASS::validateAutomation(int property) override {
+void validateAutomation(int property) override {
 #define DOUBLE_P(V, ...)                                                                                               \
   case V:                                                                                                              \
     return;
@@ -434,7 +434,7 @@ void PROPERTY_CLASS::validateAutomation(int property) override {
 
 #undef DOUBLE_P
 
-void PROPERTY_CLASS::automateProperty(int property, const std::shared_ptr<AutomationTimeline> &timeline) override {
+void automateProperty(int property, const std::shared_ptr<AutomationTimeline> &timeline) override {
 #define DOUBLE_P(C, IGNORED, CAMEL_N, ...)                                                                             \
   case C:                                                                                                              \
     setTimelineFor##CAMEL_N(timeline);                                                                                 \
