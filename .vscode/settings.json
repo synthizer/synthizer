@@ -1,18 +1,20 @@
 {
-	"editor.rulers": [ 120 ],
-	"files.eol": "\n",
-	"files.associations": {
-		"chrono": "cpp",
-		"*.pyx": "python",
-	},
-	"editor.insertSpaces": false,
-	"[python]": {
-		"editor.insertSpaces": true,
-		"editor.tabSize": 4
-	},
-	"[markdown]": {
-		"editor.wordWrap": "on",
-		"editor.quickSuggestions": false,
-		"editor.insertSpaces": true,
-	}
+  "editor.rulers": [
+    120
+  ],
+  "files.eol": "\n",
+  "files.associations": {
+    "chrono": "cpp",
+    "*.pyx": "python",
+  },
+  "[python]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4
+  },
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": false,
+    "editor.insertSpaces": true,
+  },
+  "editor.tabSize": 2
 }
