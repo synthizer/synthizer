@@ -4,6 +4,7 @@
 #include "synthizer/property_xmacros.hpp"
 
 #include "synthizer/audio_output.hpp"
+#include "synthizer/automation_timeline.hpp"
 #include "synthizer/at_scope_exit.hpp"
 #include "synthizer/background_thread.hpp"
 #include "synthizer/c_api.hpp"
@@ -118,6 +119,13 @@ void Context::setDouble6Property(std::shared_ptr<BaseObject> &obj, int property,
 
 void Context::setBiquadProperty(std::shared_ptr<BaseObject> &obj, int property, const struct syz_BiquadConfig &value) {
 	this->propertySetter<syz_BiquadConfig>(obj, property, value);
+}
+
+void Context::automateDoubleProperty(std::shared_ptr<BaseObject> &obj, int property, const std::shared_ptr<ExposedAutomationTimeline> &exposed_timeline) {
+	auto timeline = exposed_timeline->buildTimeline();
+	obj->validateAutomation(property, timeline);
+	std::weak_ptr<BaseObject> target = obj;
+	this->enqueueReferencingCallbackCommand(true, automatePropertyCmd, property, target, timeline);
 }
 
 void Context::registerSource(const std::shared_ptr<Source> &source) {

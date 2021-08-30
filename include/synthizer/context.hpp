@@ -32,6 +32,7 @@ namespace synthizer {
 
 class AudioOutput;
 class CExposable;
+class ExposedAutomationTimeline;
 class Source;
 class GlobalEffect;
 
@@ -196,6 +197,9 @@ class Context: public Pausable, public BaseObject {
 	void setDouble3Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 3> value);
 	void setDouble6Property(std::shared_ptr<BaseObject> &obj, int property, std::array<double, 6> value);
 	void setBiquadProperty(std::shared_ptr<BaseObject> &obj, int property, const struct syz_BiquadConfig &value);
+
+	void automateDoubleProperty(std::shared_ptr<BaseObject> &obj, int property,
+		const std::shared_ptr<ExposedAutomationTimeline> &timeline);
 
 	/*
 	 * Ad a weak reference to the specified source.

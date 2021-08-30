@@ -126,12 +126,3 @@ SYZ_CAPI syz_ErrorCode syz_createAutomationTimeline(syz_Handle *out, unsigned in
 	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
 	SYZ_EPILOGUE
 }
-
-SYZ_CAPI syz_ErrorCode syz_automateD(syz_Handle object, int property, syz_Handle timeline) {
-	SYZ_PROLOGUE
-	auto o = fromC<BaseObject>(object);
-	auto t = fromC<ExposedAutomationTimeline>(timeline);
-	o->automateProperty(property, t->buildTimeline());
-	return 0;
-	SYZ_EPILOGUE
-}

@@ -73,7 +73,7 @@ class BaseObject: public CExposable {
 		throw EInvalidProperty();
 	}
 
-	virtual void automateProperty(int property, const std::shared_ptr<AutomationTimeline> &timeline) {
+	virtual void validateAutomation(int property, const std::shared_ptr<AutomationTimeline> &timeline) {
 		(void)timeline;
 
 		// if we got here, we either don't have the properety or don't support automation.  But these lead to different
@@ -83,6 +83,13 @@ class BaseObject: public CExposable {
 		} else {
 			throw EInvalidProperty();
 		}
+	}
+
+	virtual void automateProperty(int property, const std::shared_ptr<AutomationTimeline> &timeline) {
+		(void)property;
+		(void)timeline;
+
+		throw EInvariant("Unreachable code");
 	}
 
 	/* Virtual because context itself needs to override to always return itself. */

@@ -13,4 +13,13 @@ void setPropertyCmd(	int property, std::weak_ptr<BaseObject> target_weak, proper
 	target->setProperty(property, value);
 }
 
+void automatePropertyCmd(int property, std::weak_ptr<BaseObject> target_weak,
+	std::shared_ptr<AutomationTimeline> timeline) {
+		auto strong = target_weak.lock();
+		if (strong == nullptr) {
+			return;
+		}
+		strong->automateProperty(property, timeline);
+}
+
 }

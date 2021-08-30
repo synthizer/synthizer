@@ -19,23 +19,24 @@ namespace synthizer {
 
 /*
  * Properties work through a DSL using X macros and a ton of magic. This file contains helpers for the magic.
- * 
- * To add a property, follow the instructions in synthizer_properties.h, then define the following macros and include property_impl.hpp (which can be done more than once per file).
- * 
+ *
+ * To add a property, follow the instructions in synthizer_properties.h, then define the following macros and include
+ * property_impl.hpp (which can be done more than once per file).
+ *
  * - PROPERTY_CLASS: the class to implement property functionality for.
  * - PROPERTY_BASE: the base class one level up
  * - PROPPERTY_LIST: the macro from synthizer_properties.h that has the properties for this class.
- * 
+ *
  * For example:
- * 
- * #define PROPERTY_CLASS PannedSource
- * #define PROPERTY_BASE Source
- * #define PROPERTY_LIST PANNED_SOURCE_PROPERTIES
+ *
+ * #define PROPERTY_CLASS PannedSource #define PROPERTY_BASE Source #define PROPERTY_LIST PANNED_SOURCE_PROPERTIES
  * #include "synthizer/property_impl.hpp"
- * 
- * the effect is to override a number of methods from the base (ultimately BaseObject) to provide a getProperty and setProperty that use variants which back onto getXXX and setXXX functions.
+ *
+ * the effect is to override a number of methods from the base (ultimately BaseObject) to provide a getProperty and
+ * setProperty that use variants which back onto getXXX and setXXX functions.
  * */
 
+class AutomationTimeline;
 class CExposable;
 class BaseObject;
 
@@ -148,5 +149,7 @@ class BiquadProperty: public LatchProperty<syz_BiquadConfig> {
  * Callable to be wrapped in a command which sets properties.
  * */
 void setPropertyCmd(	int property, std::weak_ptr<BaseObject> target_weak, property_impl::PropertyValue value);
+void automatePropertyCmd(int property, std::weak_ptr<BaseObject> target_weak,
+	std::shared_ptr<AutomationTimeline> timeline);
 
 }
