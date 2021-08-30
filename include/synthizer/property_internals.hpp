@@ -11,6 +11,7 @@
 #include <array>
 #include <atomic>
 #include <cassert>
+#include <climits>
 #include <cstdint>
 #include <cstdio>
 #include <limits>
