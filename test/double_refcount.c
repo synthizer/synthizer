@@ -6,16 +6,20 @@
 
 #include "synthizer.h"
 
-#define CHECK(X) if ((X) != 0) { printf("Failed: " #X); return 1; }
+#define CHECK(X)                                                                                                       \
+  if ((X) != 0) {                                                                                                      \
+    printf("Failed: " #X);                                                                                             \
+    return 1;                                                                                                          \
+  }
 
 int main() {
-	syz_Handle h;
+  syz_Handle h;
 
-	CHECK(syz_initialize());
-	CHECK(syz_createContext(&h, NULL, NULL));
-	CHECK(syz_handleIncRef(h));
-	CHECK(syz_handleDecRef(h));
-	CHECK(syz_handleDecRef(h));
-	CHECK(syz_shutdown());
-	return 0;
+  CHECK(syz_initialize());
+  CHECK(syz_createContext(&h, NULL, NULL));
+  CHECK(syz_handleIncRef(h));
+  CHECK(syz_handleDecRef(h));
+  CHECK(syz_handleDecRef(h));
+  CHECK(syz_shutdown());
+  return 0;
 }

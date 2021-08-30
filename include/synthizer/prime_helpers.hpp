@@ -18,8 +18,8 @@ unsigned int getClosestPrime(unsigned int input);
 
 /*
  * get the closest prime to a specified integer, excluding primes in the specified set.
- * 
+ *
  * This is used primarily by reverb, in order to avoid duplicate primes.
  * */
 unsigned int getClosestPrimeRestricted(unsigned int input, unsigned int set_size, unsigned int *set_values);
-}
+} // namespace synthizer

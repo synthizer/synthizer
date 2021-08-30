@@ -25,13 +25,15 @@ void setLogLevel(enum SYZ_LOG_LEVEL level);
 PRINTF_LIKE(2, 3)
 void log(enum SYZ_LOG_LEVEL level, const char *format, ...);
 
-#define logLazy(level, ...) do { \
- if ((level) <= getLogLevel()) log((level), __VA_ARGS__); \
-} while (0)
+#define logLazy(level, ...)                                                                                            \
+  do {                                                                                                                 \
+    if ((level) <= getLogLevel())                                                                                      \
+      log((level), __VA_ARGS__);                                                                                       \
+  } while (0)
 
 #define logError(...) logLazy(SYZ_LOG_LEVEL_ERROR, __VA_ARGS__)
 #define logWarn(...) logLazy(SYZ_LOG_LEVEL_WARN, __VA_ARGS__)
 #define logInfo(...) logLazy(SYZ_LOG_LEVEL_INFO, __VA_ARGS__)
 #define logDebug(...) logLazy(SYZ_LOG_LEVEL_DEBUG, __VA_ARGS__)
 
-}
+} // namespace synthizer

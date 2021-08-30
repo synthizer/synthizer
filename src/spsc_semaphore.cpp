@@ -6,6 +6,6 @@
 
 namespace synthizer {
 
-thread_local std::vector<Semaphore*> SPSCSemaphore::sema_pool{};
+thread_local std::vector<Semaphore *> SPSCSemaphore::sema_pool{};
 
 }

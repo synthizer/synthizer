@@ -4,22 +4,22 @@
 
 namespace synthizer {
 
-void setPropertyCmd(	int property, std::weak_ptr<BaseObject> target_weak, property_impl::PropertyValue value) {
-	auto target = target_weak.lock();
-	if (target == nullptr) {
-		return;
-	}
+void setPropertyCmd(int property, std::weak_ptr<BaseObject> target_weak, property_impl::PropertyValue value) {
+  auto target = target_weak.lock();
+  if (target == nullptr) {
+    return;
+  }
 
-	target->setProperty(property, value);
+  target->setProperty(property, value);
 }
 
 void automatePropertyCmd(int property, std::weak_ptr<BaseObject> target_weak,
-	std::shared_ptr<AutomationTimeline> timeline) {
-		auto strong = target_weak.lock();
-		if (strong == nullptr) {
-			return;
-		}
-		strong->automateProperty(property, timeline);
+                         std::shared_ptr<AutomationTimeline> timeline) {
+  auto strong = target_weak.lock();
+  if (strong == nullptr) {
+    return;
+  }
+  strong->automateProperty(property, timeline);
 }
 
-}
+} // namespace synthizer

@@ -10,27 +10,26 @@
 
 namespace synthizer {
 
-class ExposedGlobalFdnReverb: public FdnReverbEffect<GlobalEffect> {
-	public:
-	template<typename ...ARGS>
-	ExposedGlobalFdnReverb(ARGS&& ...args): FdnReverbEffect<GlobalEffect>(std::forward<ARGS>(args)...) {}
+class ExposedGlobalFdnReverb : public FdnReverbEffect<GlobalEffect> {
+public:
+  template <typename... ARGS>
+  ExposedGlobalFdnReverb(ARGS &&... args) : FdnReverbEffect<GlobalEffect>(std::forward<ARGS>(args)...) {}
 
-	int getObjectType() override {
-		return SYZ_OTYPE_GLOBAL_FDN_REVERB;
-	}
+  int getObjectType() override { return SYZ_OTYPE_GLOBAL_FDN_REVERB; }
 };
 
-}
+} // namespace synthizer
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle context, void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
-	SYZ_PROLOGUE
-	auto ctx = fromC<Context>(context);
-	auto x = ctx->createObject<ExposedGlobalFdnReverb>();
-	std::shared_ptr<GlobalEffect> e = x;
-	ctx->registerGlobalEffect(	e);
-	*out = toC(x);
-	return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
-	SYZ_EPILOGUE
+SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle context, void *userdata,
+                                                 syz_UserdataFreeCallback *userdata_free_callback) {
+  SYZ_PROLOGUE
+  auto ctx = fromC<Context>(context);
+  auto x = ctx->createObject<ExposedGlobalFdnReverb>();
+  std::shared_ptr<GlobalEffect> e = x;
+  ctx->registerGlobalEffect(e);
+  *out = toC(x);
+  return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
+  SYZ_EPILOGUE
 }

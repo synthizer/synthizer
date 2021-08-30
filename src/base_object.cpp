@@ -5,13 +5,12 @@
 
 namespace synthizer {
 
-
 void BaseObject::signalLingerStopPoint() {
-	if (this->linger_reference == nullptr) {
-		return;
-	}
+  if (this->linger_reference == nullptr) {
+    return;
+  }
 
-	this->context->enqueueLingerStop(std::static_pointer_cast<BaseObject>(this->linger_reference));
+  this->context->enqueueLingerStop(std::static_pointer_cast<BaseObject>(this->linger_reference));
 }
 
-}
+} // namespace synthizer
