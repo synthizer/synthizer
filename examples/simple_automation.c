@@ -64,7 +64,7 @@ int main() {
 
 	CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
 	CHECKED(syz_createAutomationTimeline(&timeline, sizeof(POINTS)/sizeof(POINTS[0]), POINTS, 0, NULL, NULL));
-	CHECKED(syz_automateProperty(generator, SYZ_P_GAIN, timeline));
+	CHECKED(syz_automationSetTimeline(generator, SYZ_P_GAIN, timeline));
 	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
 	CHECKED(syz_sourceAddGenerator(source, generator));
 
