@@ -5,8 +5,9 @@
 
 #include "synthizer/property_xmacros.hpp"
 
-#include "synthizer/automation_timeline.hpp"
+
 #include "synthizer/cells.hpp"
+#include "synthizer/property_automation_timeline.hpp"
 
 #include <array>
 #include <atomic>
@@ -39,7 +40,7 @@ namespace synthizer {
  * setProperty that use variants which back onto getXXX and setXXX functions.
  * */
 
-class AutomationTimeline;
+class PropertyAutomationTimeline;
 class CExposable;
 class BaseObject;
 
@@ -151,6 +152,6 @@ public:
  * */
 void setPropertyCmd(int property, std::weak_ptr<BaseObject> target_weak, property_impl::PropertyValue value);
 void automatePropertyCmd(int property, std::weak_ptr<BaseObject> target_weak,
-                         std::shared_ptr<AutomationTimeline> timeline);
+                         std::shared_ptr<PropertyAutomationTimeline> timeline);
 
 } // namespace synthizer

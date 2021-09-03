@@ -11,7 +11,7 @@
 
 namespace synthizer {
 
-class AutomationPoint {
+class PropertyAutomationPoint {
 public:
   unsigned int interpolation_type;
   double automation_time;
@@ -28,12 +28,12 @@ public:
  *
  * From the external perspective, this is exposed via a `Timeline` object which can be applied to properties and reused.
  * */
-class AutomationTimeline {
+class PropertyAutomationTimeline {
 public:
   /**
    * The points must be sorted.
    * */
-  AutomationTimeline(const std::vector<AutomationPoint> &_points);
+  PropertyAutomationTimeline(const std::vector<PropertyAutomationPoint> &_points);
 
   /**
    * Tick the timeline, updating the internally stored next value.
@@ -64,7 +64,7 @@ public:
   double getTimeInSeconds();
 
 private:
-  deferred_vector<AutomationPoint> points;
+  deferred_vector<PropertyAutomationPoint> points;
   /**
    * Points at the next point which we may need to evaluate.
    * */
@@ -82,11 +82,11 @@ class ExposedAutomationTimeline : public CExposable {
 public:
   ExposedAutomationTimeline(std::size_t points_len, const struct syz_AutomationPoint *input_points);
 
-  std::shared_ptr<AutomationTimeline> buildTimeline();
+  std::shared_ptr<PropertyAutomationTimeline> buildTimeline();
   int getObjectType() { return SYZ_OTYPE_AUTOMATION_TIMELINE; }
 
 private:
-  std::vector<AutomationPoint> points;
+  std::vector<PropertyAutomationPoint> points;
 };
 
 } // namespace synthizer

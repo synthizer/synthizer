@@ -100,7 +100,7 @@ public:
 #define INT_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV) IntProperty N{DV};
 #define DOUBLE_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV)                                                         \
   DoubleProperty N{DV};                                                                                                \
-  std::shared_ptr<AutomationTimeline> N##_timeline;
+  std::shared_ptr<PropertyAutomationTimeline> N##_timeline;
 #define DOUBLE3_P(IGNORED, N, IGNORED2, DV1, DV2, DV3) Double3Property N{{DV1, DV2, DV3}};
 #define DOUBLE6_P(IGNORED, N, IGNORED2, DV1, DV2, DV3, DV4, DV5, DV6) Double6Property N{{DV1, DV2, DV3, DV4, DV5, DV6}};
 #define OBJECT_P(IGNORED, N, IGNORED2, CLS) ObjectProperty<CLS> N;
@@ -383,9 +383,9 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 #define BIQUAD_P(...)
 
 #define DOUBLE_P(IGNORED, UNDER_N, CAMEL_N, IGNORED3, IGNORED4, IGNORED5)                                              \
-  AutomationTimeline *getTimelineFor##CAMEL_N() { return this->PROPFIELD_NAME.UNDER_N##_timeline.get(); }              \
+  PropertyAutomationTimeline *getTimelineFor##CAMEL_N() { return this->PROPFIELD_NAME.UNDER_N##_timeline.get(); }              \
                                                                                                                        \
-  void setTimelineFor##CAMEL_N(const std::shared_ptr<AutomationTimeline> &timeline) {                                  \
+  void setTimelineFor##CAMEL_N(const std::shared_ptr<PropertyAutomationTimeline> &timeline) {                                  \
     this->PROPFIELD_NAME.UNDER_N##_timeline = timeline;                                                                \
   }
 
@@ -434,7 +434,7 @@ void validateAutomation(int property) override {
 
 #undef DOUBLE_P
 
-void automateProperty(int property, const std::shared_ptr<AutomationTimeline> &timeline) override {
+void automateProperty(int property, const std::shared_ptr<PropertyAutomationTimeline> &timeline) override {
 #define DOUBLE_P(C, IGNORED, CAMEL_N, ...)                                                                             \
   case C:                                                                                                              \
     setTimelineFor##CAMEL_N(timeline);                                                                                 \

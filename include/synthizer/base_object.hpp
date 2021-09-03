@@ -89,7 +89,7 @@ public:
   /**
    * Should only be called after automation.  The BaseObject version should be unreachable code, and asserts such.
    * */
-  virtual void automateProperty(int property, const std::shared_ptr<AutomationTimeline> &timeline) {
+  virtual void automateProperty(int property, const std::shared_ptr<PropertyAutomationTimeline> &timeline) {
     (void)property;
     (void)timeline;
 

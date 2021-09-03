@@ -1,6 +1,7 @@
 #include "synthizer_constants.h"
 
-#include "synthizer/automation_timeline.hpp"
+#include "synthizer/property_automation_timeline.hpp"
+
 #include "synthizer/base_object.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
@@ -16,15 +17,15 @@
 
 namespace synthizer {
 
-AutomationTimeline::AutomationTimeline(const std::vector<AutomationPoint> &_points) {
+PropertyAutomationTimeline::PropertyAutomationTimeline(const std::vector<PropertyAutomationPoint> &_points) {
   if (_points.size() == 0) {
     throw Error("Automation timelines may not have 0 points");
   }
   // We have to manually copy across because of the mismatch in the allocators.
-  this->points = deferred_vector<AutomationPoint>(_points.begin(), _points.end());
+  this->points = deferred_vector<PropertyAutomationPoint>(_points.begin(), _points.end());
 }
 
-void AutomationTimeline::tick() {
+void PropertyAutomationTimeline::tick() {
   double time = this->getTimeInSeconds();
   this->block_time++;
 
@@ -59,8 +60,8 @@ void AutomationTimeline::tick() {
   }
 
   std::size_t last_point = this->next_point - 1;
-  const AutomationPoint &p1 = this->points[last_point];
-  const AutomationPoint &p2 = this->points[next_point];
+  const PropertyAutomationPoint &p1 = this->points[last_point];
+  const PropertyAutomationPoint &p2 = this->points[next_point];
 
   // If the previous point's interpolation type is none, then we may not have jumped yet.  We can just unconditionally
   // do that here, since jumping to the same value twice is not a big deal.
@@ -87,7 +88,7 @@ void AutomationTimeline::tick() {
   this->current_value = value;
 }
 
-double AutomationTimeline::getTimeInSeconds() { return this->block_time * config::BLOCK_SIZE / (double)config::SR; }
+double PropertyAutomationTimeline::getTimeInSeconds() { return this->block_time * config::BLOCK_SIZE / (double)config::SR; }
 
 ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
                                                      const struct syz_AutomationPoint *input_points) {
@@ -96,7 +97,7 @@ ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
   }
 
   for (std::size_t i = 0; i < points_len; i++) {
-    AutomationPoint ap;
+    PropertyAutomationPoint ap;
     ap.automation_time = input_points[i].automation_time;
     ap.interpolation_type = input_points[i].interpolation_type;
     ap.value = input_points[i].values[0];
@@ -107,8 +108,8 @@ ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
             [](const auto &a, const auto &b) { return a.automation_time < b.automation_time; });
 }
 
-std::shared_ptr<AutomationTimeline> ExposedAutomationTimeline::buildTimeline() {
-  return allocateSharedDeferred<AutomationTimeline>(this->points);
+std::shared_ptr<PropertyAutomationTimeline> ExposedAutomationTimeline::buildTimeline() {
+  return allocateSharedDeferred<PropertyAutomationTimeline>(this->points);
 }
 
 } // namespace synthizer

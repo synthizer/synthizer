@@ -88,7 +88,6 @@ set_property(TARGET synthizer_single_file_libs PROPERTY POSITION_INDEPENDENT_COD
 
 set(SYNTHIZER_LIB_TYPE STATIC CACHE STRING "The build type for Synthizer. Either STATIC or SHARED")
 add_library(synthizer ${SYNTHIZER_LIB_TYPE}
-	src/automation_timeline.cpp
 	src/audio_output.cpp
 	src/background_thread.cpp
 	src/base_object.cpp
@@ -116,6 +115,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/pausable.cpp
 	src/prime_helpers.cpp
 	src/property_internals.cpp
+	src/property_automation_timeline.cpp
 	src/routable.cpp
 	src/router.cpp
 	src/spsc_semaphore.cpp
@@ -237,15 +237,15 @@ if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
 	add_executable(test_double_refcount test/double_refcount.c)
 	target_link_libraries(test_double_refcount synthizer)
 
-	add_executable(test_automation_timeline test/automation_timeline.cpp)
-	target_link_libraries(test_automation_timeline synthizer)
+	add_executable(test_property_automation_timeline test/property_automation_timeline.cpp)
+	target_link_libraries(test_property_automation_timeline synthizer)
 
 	add_test(NAME delay_line COMMAND delay_line_test)
 	add_test(NAME latch COMMAND test_latch)
 	add_test(NAME verify_properties COMMAND test_verify_properties)
 	add_test(NAME generation_thread COMMAND test_generation_thread)
 	add_test(NAME double_refcount COMMAND test_double_refcount)
-	add_test(NAME automation_timeline COMMAND test_automation_timeline)
+	add_test(NAME property_automation_timeline COMMAND test_property_automation_timeline)
 endif()
 
 install(

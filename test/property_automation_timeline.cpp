@@ -1,7 +1,7 @@
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
-#include "synthizer/automation_timeline.hpp"
+#include "synthizer/property_automation_timeline.hpp"
 
 #include <cmath>
 #include <cstdio>
