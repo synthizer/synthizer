@@ -1,25 +1,25 @@
 # We disable all of these until they're needed for build size and speed.
 
 SET(WDL_FILES
-	#audiobuffercontainer.cpp
-	#blowfish.c
-	#convoengine.cpp
-	#des.cpp
-	#fft.c
-	#projectcontext.cpp
-	resample.cpp
-	#rfb_client.cpp
-	#rng.cpp
-	#scsrc.cpp
-	#sha.cpp
-	#shm_connection.cpp
-	#timing.c
-	#win32_utf8.c
+  #audiobuffercontainer.cpp
+  #blowfish.c
+  #convoengine.cpp
+  #des.cpp
+  #fft.c
+  #projectcontext.cpp
+  resample.cpp
+  #rfb_client.cpp
+  #rng.cpp
+  #scsrc.cpp
+  #sha.cpp
+  #shm_connection.cpp
+  #timing.c
+  #win32_utf8.c
 )
 
 list(TRANSFORM WDL_FILES PREPEND third_party/wdl/WDL/)
 
 add_library(wdl OBJECT ${WDL_FILES})
 target_compile_definitions(wdl PUBLIC
-	WDL_RESAMPLE_TYPE=float
+  WDL_RESAMPLE_TYPE=float
 )
