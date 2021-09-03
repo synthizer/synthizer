@@ -125,10 +125,20 @@ public:
    * Tick property automation.  The default implementation just calls propSubsystemAdvanceAutomation, but subclasses
    * sometimes opt to short-circuit and not advance it at all (e.g. Pasuable).
    * */
-  virtual void tickAutomation() { this->propSubsystemAdvanceAutomation(); }
+  virtual void tickAutomation() {
+    this->local_block_time += 1;
+    this->propSubsystemAdvanceAutomation();
+  }
+
+  /**
+   * Get the local automation time, which updates every time automation specifically for this object ticks.
+   *
+   * */
+  double getLocalAutomationTime() { return this->local_block_time * config::BLOCK_SIZE / (double)config::SR; }
 
 protected:
   std::shared_ptr<Context> context;
+  unsigned int local_block_time = 0;
 };
 
 } // namespace synthizer
