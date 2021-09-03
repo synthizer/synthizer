@@ -25,10 +25,7 @@ PropertyAutomationTimeline::PropertyAutomationTimeline(const std::vector<Propert
   this->points = deferred_vector<PropertyAutomationPoint>(_points.begin(), _points.end());
 }
 
-void PropertyAutomationTimeline::tick() {
-  double time = this->getTimeInSeconds();
-  this->block_time++;
-
+void PropertyAutomationTimeline::tick(double time) {
   if (this->finished) {
     this->current_value = std::nullopt;
     return;
@@ -87,8 +84,6 @@ void PropertyAutomationTimeline::tick() {
   double value = w1 * p1.value + w2 * p2.value;
   this->current_value = value;
 }
-
-double PropertyAutomationTimeline::getTimeInSeconds() { return this->block_time * config::BLOCK_SIZE / (double)config::SR; }
 
 ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
                                                      const struct syz_AutomationPoint *input_points) {

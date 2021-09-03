@@ -1,6 +1,7 @@
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
+#include "synthizer/config.hpp"
 #include "synthizer/property_automation_timeline.hpp"
 
 #include <cmath>
@@ -12,6 +13,9 @@ using namespace synthizer;
 bool floatCmp(double a, double b) { return std::abs(a - b) < 0.000001; }
 
 int main() {
+  double tick_delta = config::BLOCK_SIZE / (double)config::SR;
+  double time = 0.0;
+
   std::vector<syz_AutomationPoint> points{{
       {SYZ_INTERPOLATION_TYPE_LINEAR, 0.0, {1.0}},
       {SYZ_INTERPOLATION_TYPE_LINEAR, 0.01, {0.5}},
@@ -35,16 +39,17 @@ int main() {
   ExposedAutomationTimeline et(points.size(), &points[0]);
   auto timeline = et.buildTimeline();
   for (auto exp : expected) {
-    timeline->tick();
+    timeline->tick(time);
+    time += tick_delta;
     auto v = timeline->getValue();
     if (v) {
       auto x = *v;
       if (floatCmp(x, exp) == false) {
-        printf("Expected %f but got %f at time %f\n", exp, x, timeline->getTimeInSeconds());
+        printf("Expected %f but got %f at time %f\n", exp, x, time);
         return 1;
       }
     } else {
-      printf("Timeline ended early at time %f\n", timeline->getTimeInSeconds());
+      printf("Timeline ended early at time %f\n", time);
       return 1;
     }
   }
@@ -54,7 +59,7 @@ int main() {
     return 1;
   }
 
-  timeline->tick();
+  timeline->tick(time);
   if (timeline->getValue()) {
     printf("Finished timelines should no longer return values\n");
     return 1;

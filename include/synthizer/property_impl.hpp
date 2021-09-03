@@ -383,9 +383,9 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 #define BIQUAD_P(...)
 
 #define DOUBLE_P(IGNORED, UNDER_N, CAMEL_N, IGNORED3, IGNORED4, IGNORED5)                                              \
-  PropertyAutomationTimeline *getTimelineFor##CAMEL_N() { return this->PROPFIELD_NAME.UNDER_N##_timeline.get(); }              \
+  PropertyAutomationTimeline *getTimelineFor##CAMEL_N() { return this->PROPFIELD_NAME.UNDER_N##_timeline.get(); }      \
                                                                                                                        \
-  void setTimelineFor##CAMEL_N(const std::shared_ptr<PropertyAutomationTimeline> &timeline) {                                  \
+  void setTimelineFor##CAMEL_N(const std::shared_ptr<PropertyAutomationTimeline> &timeline) {                          \
     this->PROPFIELD_NAME.UNDER_N##_timeline = timeline;                                                                \
   }
 
@@ -398,7 +398,7 @@ void propSubsystemAdvanceAutomation() override {
   {                                                                                                                    \
     auto t = this->getTimelineFor##N();                                                                                \
     if (t) {                                                                                                           \
-      t->tick();                                                                                                       \
+      t->tick(this->getAutomationTime());                                                                              \
       auto val = t->getValue();                                                                                        \
       if (t->isFinished()) {                                                                                           \
         this->setTimelineFor##N(nullptr);                                                                              \

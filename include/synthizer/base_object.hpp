@@ -126,15 +126,16 @@ public:
    * sometimes opt to short-circuit and not advance it at all (e.g. Pasuable).
    * */
   virtual void tickAutomation() {
-    this->local_block_time += 1;
     this->propSubsystemAdvanceAutomation();
+    // Always do this second, so that time can start at 0.
+    this->local_block_time += 1;
   }
 
   /**
    * Get the local automation time, which updates every time automation specifically for this object ticks.
    *
    * */
-  double getLocalAutomationTime() { return this->local_block_time * config::BLOCK_SIZE / (double)config::SR; }
+  double getAutomationTime() { return this->local_block_time * config::BLOCK_SIZE / (double)config::SR; }
 
 protected:
   std::shared_ptr<Context> context;

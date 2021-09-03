@@ -39,8 +39,10 @@ public:
    * Tick the timeline, updating the internally stored next value.
    *
    * Needs to be called *before* each audio tick.
+   * 
+   * Time is in seconds and must be monatonically increasing.
    * */
-  void tick();
+  void tick(double time);
 
   /**
    * Get the value of the timeline at the current time.
@@ -60,9 +62,6 @@ public:
    * */
   bool isFinished() { return this->finished; }
 
-  /* current timeline-relative time in seconds. Public for testing. Otherwise internal to this class. */
-  double getTimeInSeconds();
-
 private:
   deferred_vector<PropertyAutomationPoint> points;
   /**
@@ -71,7 +70,6 @@ private:
   std::size_t next_point = 0;
   bool finished = false;
   std::optional<double> current_value = std::nullopt;
-  unsigned int block_time = 0;
 };
 
 /**
