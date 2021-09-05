@@ -41,7 +41,7 @@ public:
    * Tick the timeline, updating the internally stored next value.
    *
    * Needs to be called *before* each audio tick.
-   * 
+   *
    * Time is in seconds and must be monatonically increasing.
    * */
   void tick(double time);

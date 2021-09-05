@@ -8,8 +8,8 @@
 #include "synthizer/memory.hpp"
 #include "synthizer/types.hpp"
 
-#include <pdqsort.h>
 #include <concurrentqueue.h>
+#include <pdqsort.h>
 
 #include <algorithm>
 #include <array>
