@@ -102,7 +102,6 @@ int main() {
                                          &(struct syz_AutomationCommand){
                                              .type = SYZ_AUTOMATION_COMMAND_CLEAR_ALL,
                                              .target = generator,
-
                                          }));
   CHECKED(syz_automationBatchExecute(batch));
 
