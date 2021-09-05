@@ -19,6 +19,9 @@
 
 namespace synthizer {
 
+PropertyAutomationPoint::PropertyAutomationPoint(const struct syz_AutomationPoint *input)
+    : interpolation_type(input->interpolation_type), automation_time(input->automation_time), value(input->values[0]) {}
+
 PropertyAutomationTimeline::PropertyAutomationTimeline(const std::vector<PropertyAutomationPoint> &_points) {
   if (_points.size() == 0) {
     throw Error("Automation timelines may not have 0 points");
@@ -94,15 +97,11 @@ ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
   }
 
   for (std::size_t i = 0; i < points_len; i++) {
-    PropertyAutomationPoint ap;
-    ap.automation_time = input_points[i].automation_time;
-    ap.interpolation_type = input_points[i].interpolation_type;
-    ap.value = input_points[i].values[0];
-    this->points.emplace_back(std::move(ap));
+    this->points.emplace_back(PropertyAutomationPoint(&input_points[i]));
   }
 
   pdqsort_branchless(this->points.begin(), this->points.end(),
-            [](const auto &a, const auto &b) { return a.automation_time < b.automation_time; });
+                     [](const auto &a, const auto &b) { return a.automation_time < b.automation_time; });
 }
 
 std::shared_ptr<PropertyAutomationTimeline> ExposedAutomationTimeline::buildTimeline() {
