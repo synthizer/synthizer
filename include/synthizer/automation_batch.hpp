@@ -5,7 +5,7 @@
 
 #include <memory>
 
-struct syz_AutomationBatchCommand;
+struct syz_AutomationCommand;
 
 namespace synthizer {
 class BaseObject;
@@ -42,7 +42,7 @@ public:
   /**
    * Apply a batch of commands from the user.
    * */
-  void addCommands(std::size_t commands_len, const struct syz_AutomationBatchCommand *commands);
+  void addCommands(std::size_t commands_len, const struct syz_AutomationCommand *commands);
 
   /**
    * Lock this object so that it may never be executed again.

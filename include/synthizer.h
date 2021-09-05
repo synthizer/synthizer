@@ -141,6 +141,7 @@ struct syz_AutomationSendUserEventCommand {
 struct syz_AutomationCommand {
   syz_Handle target;
   double time;
+  int type;
   unsigned int flags;
   union {
     struct syz_AutomationAppendPropertyCommand append_to_property;

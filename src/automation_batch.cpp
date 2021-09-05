@@ -46,13 +46,25 @@ void AutomationBatch::clearProperty(const std::shared_ptr<BaseObject> &obj, int 
   found_vec->second.clear();
 }
 
-void AutomationBatch::addCommands(std::size_t commands_len, const struct syz_AutomationBatchCommand *commands) {
+void AutomationBatch::addCommands(std::size_t commands_len, const syz_AutomationCommand *commands) {
   this->throwIfConsumed();
 
-  (void)commands_len;
-  (void)commands;
+  for (std::size_t i = 0; i < commands_len; i++) {
+    const syz_AutomationCommand *cmd = commands + i;
+    std::shared_ptr<BaseObject> obj = fromC<BaseObject>(cmd->target);
 
-  throw ENotSupported("This command isn't supported yet");
+    switch (cmd->type) {
+    case SYZ_AUTOMATION_COMMAND_APPEND_PROPERTY:
+      this->automateProperty(obj, cmd->params.append_to_property.property,
+                             PropertyAutomationPoint(&cmd->params.append_to_property.point));
+      break;
+    case SYZ_AUTOMATION_COMMAND_CLEAR_PROPERTY:
+      this->clearProperty(obj, cmd->params.clear_property.property);
+      break;
+    default:
+      throw ENotSupported("This command isn't supported yet");
+    }
+  }
 }
 
 void AutomationBatch::executeOnContextThread() {
@@ -103,7 +115,7 @@ SYZ_CAPI syz_ErrorCode syz_createAutomationBatch(syz_Handle *out, syz_Handle con
 }
 
 SYZ_CAPI syz_ErrorCode syz_automationBatchAddCommands(syz_Handle batch, unsigned long long commands_len,
-                                                      const struct syz_AutomationBatchCommand *commands) {
+                                                      const struct syz_AutomationCommand *commands) {
   SYZ_PROLOGUE
   auto b = fromC<AutomationBatch>(batch);
   b->addCommands(commands_len, commands);
