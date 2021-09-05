@@ -88,19 +88,4 @@ private:
   std::optional<double> current_value = std::nullopt;
 };
 
-/**
- * The C exposed version of the AutomationTimeline, which contains a set of user-specified points and allows for
- * applying them to a property repeatedly by cloning the internally maintained timeline.
- * */
-class ExposedAutomationTimeline : public CExposable {
-public:
-  ExposedAutomationTimeline(std::size_t points_len, const struct syz_AutomationPoint *input_points);
-
-  void applyToTimeline(PropertyAutomationTimeline *timeline) const;
-  int getObjectType() { return SYZ_OTYPE_AUTOMATION_TIMELINE; }
-
-private:
-  std::vector<PropertyAutomationPoint> points;
-};
-
 } // namespace synthizer

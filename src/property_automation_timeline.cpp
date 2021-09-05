@@ -105,26 +105,4 @@ void PropertyAutomationTimeline::clear() {
   this->finished = true;
 }
 
-ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
-                                                     const struct syz_AutomationPoint *input_points) {
-  if (points_len == 0) {
-    throw EValidation("Timelines must have at least 1 point");
-  }
-
-  for (std::size_t i = 0; i < points_len; i++) {
-    this->points.emplace_back(PropertyAutomationPoint(&input_points[i]));
-  }
-
-  pdqsort_branchless(this->points.begin(), this->points.end(),
-                     [](const auto &a, const auto &b) { return a.automation_time < b.automation_time; });
-}
-
-void ExposedAutomationTimeline::applyToTimeline(PropertyAutomationTimeline *timeline) const {
-  timeline->clear();
-  for (auto &p : points)
-    timeline->addPoint(p);
-}
-
 } // namespace synthizer
-
-using namespace synthizer;

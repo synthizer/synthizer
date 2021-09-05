@@ -150,7 +150,5 @@ public:
  * Callable to be wrapped in a command which sets properties.
  * */
 void setPropertyCmd(int property, std::weak_ptr<BaseObject> target_weak, property_impl::PropertyValue value);
-void automatePropertyCmd(int property, std::weak_ptr<BaseObject> target_weak,
-                         std::shared_ptr<ExposedAutomationTimeline> timeline);
 
 } // namespace synthizer

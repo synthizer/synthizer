@@ -3,6 +3,7 @@
 #include "synthizer/memory.hpp"
 #include "synthizer/property_automation_timeline.hpp"
 
+#include <cstdint>
 #include <memory>
 
 struct syz_AutomationCommand;

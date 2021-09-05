@@ -36,9 +36,11 @@ int main() {
       0.000000,
   }};
 
-  ExposedAutomationTimeline et(points.size(), &points[0]);
   PropertyAutomationTimeline timeline{};
-  et.applyToTimeline(&timeline);
+  for (auto p : points) {
+    timeline.addPoint(PropertyAutomationPoint(&p));
+  }
+
   for (auto exp : expected) {
     timeline.tick(time);
     time += tick_delta;

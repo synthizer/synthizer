@@ -116,25 +116,6 @@ void Context::setBiquadProperty(std::shared_ptr<BaseObject> &obj, int property, 
   this->propertySetter<syz_BiquadConfig>(obj, property, value);
 }
 
-void Context::automationSetTimeline(const std::shared_ptr<BaseObject> &obj, int property,
-                                    const std::shared_ptr<ExposedAutomationTimeline> &exposed_timeline) {
-  obj->validateAutomation(property);
-  std::weak_ptr<BaseObject> target = obj;
-  this->enqueueCallbackCommand(automatePropertyCmd, property, target, exposed_timeline);
-}
-
-void Context::automationClear(const std::shared_ptr<BaseObject> &obj, int property) {
-  obj->validateAutomation(property);
-  std::weak_ptr<BaseObject> target = obj;
-  this->enqueueCallbackCommand(
-      [](auto &p, auto &t) {
-        auto strong = t.lock();
-        if (strong)
-          strong->clearAutomationForProperty(p);
-      },
-      property, target);
-}
-
 void Context::registerSource(const std::shared_ptr<Source> &source) {
   /* We can capture this because, in order to invoke the command, we have to still have the context around. */
   this->enqueueReferencingCallbackCommand(
