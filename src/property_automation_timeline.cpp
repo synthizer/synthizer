@@ -100,6 +100,11 @@ void PropertyAutomationTimeline::addPoint(const PropertyAutomationPoint &point) 
   this->finished = false;
 }
 
+void PropertyAutomationTimeline::clear() {
+  this->points.clear();
+  this->finished = true;
+}
+
 ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
                                                      const struct syz_AutomationPoint *input_points) {
   if (points_len == 0) {
@@ -116,7 +121,8 @@ ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
 
 std::shared_ptr<PropertyAutomationTimeline> ExposedAutomationTimeline::buildTimeline() {
   PropertyAutomationTimeline timeline{};
-  for (auto &p : this->points) timeline.addPoint(p);
+  for (auto &p : this->points)
+    timeline.addPoint(p);
   return allocateSharedDeferred<PropertyAutomationTimeline>(timeline);
 }
 

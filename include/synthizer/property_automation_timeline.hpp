@@ -65,6 +65,8 @@ public:
    * */
   bool isFinished() { return this->finished; }
 
+  void clear();
+
 private:
   void resortIfNeeded();
 
