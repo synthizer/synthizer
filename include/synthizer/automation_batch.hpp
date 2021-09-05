@@ -23,6 +23,11 @@ public:
    * */
   void automateProperty(const std::shared_ptr<BaseObject> &obj, int property, const PropertyAutomationPoint &point);
 
+  /**
+   * Should be called from the context thread only. Execute this batch.
+   * */
+  void execute();
+
 private:
   deferred_map<std::weak_ptr<BaseObject>, deferred_map<int, deferred_vector<PropertyAutomationPoint>>,
                std::owner_less<std::weak_ptr<BaseObject>>>

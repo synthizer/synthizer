@@ -22,4 +22,20 @@ void AutomationBatch::automateProperty(const std::shared_ptr<BaseObject> &obj, i
   this->property_automation[std::move(obj_weak)][property].push_back(point);
 }
 
+void AutomationBatch::execute() {
+  auto ctx = this->context.lock();
+  assert(ctx != nullptr && "Trying to execute code on the context's thread without the context running that thread");
+
+  for (auto &p : this->property_automation) {
+    auto strong = p.first.lock();
+    if (strong == nullptr) {
+      continue;
+    }
+
+    for (auto &prop : p.second) {
+      strong->applyPropertyAutomationPoints(prop.first, prop.second.size(), &prop.second[0]);
+    }
+  }
+}
+
 } // namespace synthizer
