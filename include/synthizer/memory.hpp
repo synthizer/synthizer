@@ -12,6 +12,7 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdlib>
+#include <map>
 #include <memory>
 #include <new>
 #include <optional>
@@ -96,7 +97,8 @@ template <typename T> bool operator==(const DeferredAllocator<T> &a, const Defer
  * weird casing is to match std and colony.
  * */
 template <typename T> using deferred_vector = std::vector<T, DeferredAllocator<T>>;
-
+template <class Key, class T, class Compare = std::less<Key>>
+using deferred_map = std::map<Key, T, Compare, DeferredAllocator<std::pair<const Key, T>>>;
 template <typename K, typename V, typename HASH = std::hash<K>, typename KE = std::equal_to<K>>
 using deferred_unordered_map = std::unordered_map<K, V, HASH, KE, DeferredAllocator<std::pair<const K, V>>>;
 

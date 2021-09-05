@@ -1,6 +1,7 @@
 #pragma once
 
 #include "synthizer.h"
+#include "synthizer_constants.h"
 
 #include "synthizer/memory.hpp"
 
