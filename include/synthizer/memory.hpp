@@ -16,6 +16,7 @@
 #include <memory>
 #include <new>
 #include <optional>
+#include <set>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -99,6 +100,8 @@ template <typename T> bool operator==(const DeferredAllocator<T> &a, const Defer
 template <typename T> using deferred_vector = std::vector<T, DeferredAllocator<T>>;
 template <class Key, class T, class Compare = std::less<Key>>
 using deferred_map = std::map<Key, T, Compare, DeferredAllocator<std::pair<const Key, T>>>;
+template <class Key, class Compare = std::less<Key>>
+using deferred_set = std::set<Key, Compare, DeferredAllocator<Key>>;
 template <typename K, typename V, typename HASH = std::hash<K>, typename KE = std::equal_to<K>>
 using deferred_unordered_map = std::unordered_map<K, V, HASH, KE, DeferredAllocator<std::pair<const K, V>>>;
 

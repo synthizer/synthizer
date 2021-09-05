@@ -22,9 +22,36 @@ void AutomationBatch::automateProperty(const std::shared_ptr<BaseObject> &obj, i
   this->property_automation[std::move(obj_weak)][property].push_back(point);
 }
 
+void AutomationBatch::clearProperty(const std::shared_ptr<BaseObject> &obj, int property) {
+  obj->validateAutomation(property);
+
+  std::weak_ptr<BaseObject> weak{obj};
+  this->cleared_properties[weak].insert(property);
+  auto found_obj = this->property_automation.find(weak);
+  if (found_obj == this->property_automation.end()) {
+    return;
+  }
+  auto found_vec = found_obj->second.find(property);
+  if (found_vec == found_obj->second.end()) {
+    return;
+  }
+  found_vec->second.clear();
+}
+
 void AutomationBatch::execute() {
   auto ctx = this->context.lock();
   assert(ctx != nullptr && "Trying to execute code on the context's thread without the context running that thread");
+
+  for (auto &[obj, props] : this->cleared_properties) {
+    auto strong = obj.lock();
+    if (strong == nullptr) {
+      continue;
+    }
+
+    for (auto prop : props) {
+      strong->clearAutomationForProperty(prop);
+    }
+  }
 
   for (auto &p : this->property_automation) {
     auto strong = p.first.lock();
@@ -39,4 +66,3 @@ void AutomationBatch::execute() {
 }
 
 } // namespace synthizer
-
