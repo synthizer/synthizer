@@ -32,10 +32,7 @@ public:
  * */
 class PropertyAutomationTimeline {
 public:
-  /**
-   * The points must be sorted.
-   * */
-  PropertyAutomationTimeline(const std::vector<PropertyAutomationPoint> &_points);
+  PropertyAutomationTimeline();
 
   /**
    * Tick the timeline, updating the internally stored next value.
@@ -46,6 +43,10 @@ public:
    * */
   void tick(double time);
 
+  /**
+   * Add a point to this timeline.
+   * */
+  void addPoint(const PropertyAutomationPoint &point);
   /**
    * Get the value of the timeline at the current time.
    *
@@ -65,12 +66,15 @@ public:
   bool isFinished() { return this->finished; }
 
 private:
+  void resortIfNeeded();
+
   deferred_vector<PropertyAutomationPoint> points;
   /**
    * Points at the next point which we may need to evaluate.
    * */
   std::size_t next_point = 0;
-  bool finished = false;
+  bool finished = true;
+  bool has_added_since_last_sort = true;
   std::optional<double> current_value = std::nullopt;
 };
 

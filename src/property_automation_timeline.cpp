@@ -22,15 +22,11 @@ namespace synthizer {
 PropertyAutomationPoint::PropertyAutomationPoint(const struct syz_AutomationPoint *input)
     : interpolation_type(input->interpolation_type), automation_time(input->automation_time), value(input->values[0]) {}
 
-PropertyAutomationTimeline::PropertyAutomationTimeline(const std::vector<PropertyAutomationPoint> &_points) {
-  if (_points.size() == 0) {
-    throw Error("Automation timelines may not have 0 points");
-  }
-  // We have to manually copy across because of the mismatch in the allocators.
-  this->points = deferred_vector<PropertyAutomationPoint>(_points.begin(), _points.end());
-}
+PropertyAutomationTimeline::PropertyAutomationTimeline() { this->points.reserve(1024); }
 
 void PropertyAutomationTimeline::tick(double time) {
+  this->resortIfNeeded();
+
   if (this->finished) {
     this->current_value = std::nullopt;
     return;
@@ -90,6 +86,20 @@ void PropertyAutomationTimeline::tick(double time) {
   this->current_value = value;
 }
 
+void PropertyAutomationTimeline::resortIfNeeded() {
+  if (this->has_added_since_last_sort) {
+    pdqsort_branchless(this->points.begin(), this->points.end(),
+                       [](auto &a, auto &b) { return a.automation_time < b.automation_time; });
+    this->has_added_since_last_sort = false;
+  }
+}
+
+void PropertyAutomationTimeline::addPoint(const PropertyAutomationPoint &point) {
+  this->points.push_back(point);
+  this->has_added_since_last_sort = true;
+  this->finished = false;
+}
+
 ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
                                                      const struct syz_AutomationPoint *input_points) {
   if (points_len == 0) {
@@ -105,7 +115,9 @@ ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
 }
 
 std::shared_ptr<PropertyAutomationTimeline> ExposedAutomationTimeline::buildTimeline() {
-  return allocateSharedDeferred<PropertyAutomationTimeline>(this->points);
+  PropertyAutomationTimeline timeline{};
+  for (auto &p : this->points) timeline.addPoint(p);
+  return allocateSharedDeferred<PropertyAutomationTimeline>(timeline);
 }
 
 } // namespace synthizer
