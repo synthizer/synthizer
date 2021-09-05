@@ -39,3 +39,4 @@ void AutomationBatch::execute() {
 }
 
 } // namespace synthizer
+

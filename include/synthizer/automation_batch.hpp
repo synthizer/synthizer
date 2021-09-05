@@ -5,7 +5,7 @@
 
 namespace synthizer {
 
-class baseObject;
+class BaseObject;
 class Context;
 
 /**
