@@ -17,6 +17,8 @@
 #include "synthizer/three_band_eq.hpp"
 #include "synthizer/types.hpp"
 
+#include <pdqsort.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -234,7 +236,7 @@ template <typename BASE> void FdnReverbEffect<BASE>::maybeRecomputeModel() {
    * In order to minimize clipping and/or other crossfading artifacts, keep the lines sorted from least
    * delay to greatest.
    * */
-  std::sort(this->delays.begin(), this->delays.end());
+  pdqsort_branchless(this->delays.begin(), this->delays.end());
 
   /*
    * The gain for each line is computed from t60, the time to decay to -60 DB.

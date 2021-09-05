@@ -8,6 +8,8 @@
 #include "synthizer/error.hpp"
 #include "synthizer/memory.hpp"
 
+#include <pdqsort.h>
+
 #include <algorithm>
 #include <cassert>
 #include <memory>
@@ -99,7 +101,7 @@ ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
     this->points.emplace_back(std::move(ap));
   }
 
-  std::sort(this->points.begin(), this->points.end(),
+  pdqsort_branchless(this->points.begin(), this->points.end(),
             [](const auto &a, const auto &b) { return a.automation_time < b.automation_time; });
 }
 

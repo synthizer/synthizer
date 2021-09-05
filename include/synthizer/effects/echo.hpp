@@ -8,6 +8,7 @@
 #include "synthizer/memory.hpp"
 #include "synthizer/types.hpp"
 
+#include <pdqsort.h>
 #include <concurrentqueue.h>
 
 #include <algorithm>
@@ -161,7 +162,7 @@ void EchoEffect<BASE>::runEffect(unsigned int block_time, unsigned int input_cha
 template <typename BASE> void EchoEffect<BASE>::resetEffect() { this->line.clear(); }
 
 template <typename BASE> void EchoEffect<BASE>::pushNewConfig(deferred_vector<EchoTapConfig> &&config) {
-  std::sort(config.begin(), config.end(), [](auto &a, auto &b) { return a.delay < b.delay; });
+  pdqsort_branchless(config.begin(), config.end(), [](auto &a, auto &b) { return a.delay < b.delay; });
   if (this->pending_configs.enqueue(std::move(config)) == false) {
     throw std::bad_alloc();
   }
