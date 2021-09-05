@@ -118,16 +118,18 @@ void Context::setBiquadProperty(std::shared_ptr<BaseObject> &obj, int property, 
 
 void Context::automationSetTimeline(const std::shared_ptr<BaseObject> &obj, int property,
                                     const std::shared_ptr<ExposedAutomationTimeline> &exposed_timeline) {
-  auto timeline = exposed_timeline->buildTimeline();
   obj->validateAutomation(property);
   std::weak_ptr<BaseObject> target = obj;
-  this->enqueueCallbackCommand(automatePropertyCmd, property, target, timeline);
+  this->enqueueCallbackCommand(automatePropertyCmd, property, target, exposed_timeline);
 }
 
 void Context::automationClear(const std::shared_ptr<BaseObject> &obj, int property) {
   obj->validateAutomation(property);
   std::weak_ptr<BaseObject> target = obj;
-  this->enqueueCallbackCommand(automatePropertyCmd, property, target, nullptr);
+  this->enqueueCallbackCommand([](auto &p, auto &t) {
+    auto strong = t.lock();
+    if (strong) strong->clearAutomationForProperty(p);
+  }, property, target);
 }
 
 void Context::registerSource(const std::shared_ptr<Source> &source) {

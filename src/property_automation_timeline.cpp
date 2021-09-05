@@ -119,11 +119,10 @@ ExposedAutomationTimeline::ExposedAutomationTimeline(std::size_t points_len,
                      [](const auto &a, const auto &b) { return a.automation_time < b.automation_time; });
 }
 
-std::shared_ptr<PropertyAutomationTimeline> ExposedAutomationTimeline::buildTimeline() {
-  PropertyAutomationTimeline timeline{};
-  for (auto &p : this->points)
-    timeline.addPoint(p);
-  return allocateSharedDeferred<PropertyAutomationTimeline>(timeline);
+void ExposedAutomationTimeline::applyToTimeline(PropertyAutomationTimeline *timeline) const {
+  timeline->clear();
+  for (auto &p : points)
+    timeline->addPoint(p);
 }
 
 } // namespace synthizer

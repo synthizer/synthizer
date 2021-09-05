@@ -11,7 +11,8 @@
 
 namespace synthizer {
 
-class AutomationTimeline;
+class ExposedAutomationTimeline;
+;
 
 /* Forward declare the routing handles. */
 namespace router {
@@ -89,12 +90,18 @@ public:
   /**
    * Should only be called after automation.  The BaseObject version should be unreachable code, and asserts such.
    * */
-  virtual void automateProperty(int property, const std::shared_ptr<PropertyAutomationTimeline> &timeline) {
+  virtual void automateProperty(int property, const std::shared_ptr<ExposedAutomationTimeline> &timeline) {
     (void)property;
     (void)timeline;
 
     assert(false && "Unreachable");
   }
+
+  /**
+   * Should also be called only after AutomateProperty. Is unreachable; we need this for the property infrastructure to
+   * always have a base class.
+   * */
+  virtual void clearAutomationForProperty(int property) { assert(false && "Unreachable"); }
 
   /* Virtual because context itself needs to override to always return itself. */
   virtual std::shared_ptr<Context> getContext() { return this->context; }

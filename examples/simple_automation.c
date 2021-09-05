@@ -69,11 +69,11 @@ int main() {
   CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
   CHECKED(syz_sourceAddGenerator(source, generator));
 
-  printf("Press any key to clear automation\n");
+  printf("Press enter key to clear automation\n");
   getchar();
   CHECKED(syz_automationClear(generator, SYZ_P_GAIN));
 
-  printf("Press any key to exit\n");
+  printf("Press enter key to exit\n");
   getchar();
 end:
   syz_handleDecRef(source);

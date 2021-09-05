@@ -88,7 +88,7 @@ class ExposedAutomationTimeline : public CExposable {
 public:
   ExposedAutomationTimeline(std::size_t points_len, const struct syz_AutomationPoint *input_points);
 
-  std::shared_ptr<PropertyAutomationTimeline> buildTimeline();
+  void applyToTimeline(PropertyAutomationTimeline *timeline) const;
   int getObjectType() { return SYZ_OTYPE_AUTOMATION_TIMELINE; }
 
 private:

@@ -100,7 +100,7 @@ public:
 #define INT_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV) IntProperty N{DV};
 #define DOUBLE_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV)                                                         \
   DoubleProperty N{DV};                                                                                                \
-  std::shared_ptr<PropertyAutomationTimeline> N##_timeline;
+  PropertyAutomationTimeline N##_timeline;
 #define DOUBLE3_P(IGNORED, N, IGNORED2, DV1, DV2, DV3) Double3Property N{{DV1, DV2, DV3}};
 #define DOUBLE6_P(IGNORED, N, IGNORED2, DV1, DV2, DV3, DV4, DV5, DV6) Double6Property N{{DV1, DV2, DV3, DV4, DV5, DV6}};
 #define OBJECT_P(IGNORED, N, IGNORED2, CLS) ObjectProperty<CLS> N;
@@ -383,11 +383,8 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 #define BIQUAD_P(...)
 
 #define DOUBLE_P(IGNORED, UNDER_N, CAMEL_N, IGNORED3, IGNORED4, IGNORED5)                                              \
-  PropertyAutomationTimeline *getTimelineFor##CAMEL_N() { return this->PROPFIELD_NAME.UNDER_N##_timeline.get(); }      \
-                                                                                                                       \
-  void setTimelineFor##CAMEL_N(const std::shared_ptr<PropertyAutomationTimeline> &timeline) {                          \
-    this->PROPFIELD_NAME.UNDER_N##_timeline = timeline;                                                                \
-  }
+  PropertyAutomationTimeline *getTimelineFor##CAMEL_N() { return &this->PROPFIELD_NAME.UNDER_N##_timeline; }           \
+  void clearTimelineFor##CAMEL_N() { this->PROPFIELD_NAME.UNDER_N##_timeline.clear(); }
 
 PROPERTY_LIST
 
@@ -397,15 +394,10 @@ void propSubsystemAdvanceAutomation() override {
 #define DOUBLE_P(C, IGNORED, N, MIN, MAX, DEF)                                                                         \
   {                                                                                                                    \
     auto t = this->getTimelineFor##N();                                                                                \
-    if (t) {                                                                                                           \
-      t->tick(this->getAutomationTime());                                                                              \
-      auto val = t->getValue();                                                                                        \
-      if (t->isFinished()) {                                                                                           \
-        this->setTimelineFor##N(nullptr);                                                                              \
-      }                                                                                                                \
-      if (val) {                                                                                                       \
-        this->set##N(*val);                                                                                            \
-      }                                                                                                                \
+    t->tick(this->getAutomationTime());                                                                                \
+    auto val = t->getValue();                                                                                          \
+    if (val) {                                                                                                         \
+      this->set##N(*val);                                                                                              \
     }                                                                                                                  \
   }
 
@@ -434,10 +426,10 @@ void validateAutomation(int property) override {
 
 #undef DOUBLE_P
 
-void automateProperty(int property, const std::shared_ptr<PropertyAutomationTimeline> &timeline) override {
+void automateProperty(int property, const std::shared_ptr<ExposedAutomationTimeline> &timeline) override {
 #define DOUBLE_P(C, IGNORED, CAMEL_N, ...)                                                                             \
   case C:                                                                                                              \
-    setTimelineFor##CAMEL_N(timeline);                                                                                 \
+    timeline->applyToTimeline(getTimelineFor##CAMEL_N());                                                              \
     return;
 
   switch (property) {
@@ -448,6 +440,24 @@ void automateProperty(int property, const std::shared_ptr<PropertyAutomationTime
   }
 
   PROPERTY_BASE::automateProperty(property, timeline);
+}
+
+#undef DOUBLE_P
+
+void clearAutomationForProperty(int property) override {
+#define DOUBLE_P(C, IGNORED, CAMEL_N, ...)                                                                             \
+  case C:                                                                                                              \
+    clearTimelineFor##CAMEL_N();                                                              \
+    return;
+
+  switch (property) {
+    PROPERTY_LIST
+  case INT_MAX:
+  default:
+    break;
+  }
+
+  PROPERTY_BASE::clearAutomationForProperty(property);
 }
 
 #undef PROPERTY_CLASS

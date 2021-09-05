@@ -37,11 +37,12 @@ int main() {
   }};
 
   ExposedAutomationTimeline et(points.size(), &points[0]);
-  auto timeline = et.buildTimeline();
+  PropertyAutomationTimeline timeline{};
+  et.applyToTimeline(&timeline);
   for (auto exp : expected) {
-    timeline->tick(time);
+    timeline.tick(time);
     time += tick_delta;
-    auto v = timeline->getValue();
+    auto v = timeline.getValue();
     if (v) {
       auto x = *v;
       if (floatCmp(x, exp) == false) {
@@ -54,13 +55,13 @@ int main() {
     }
   }
 
-  if (timeline->isFinished() == false) {
+  if (timeline.isFinished() == false) {
     printf("Timeline should be finished, but isn't\n");
     return 1;
   }
 
-  timeline->tick(time);
-  if (timeline->getValue()) {
+  timeline.tick(time);
+  if (timeline.getValue()) {
     printf("Finished timelines should no longer return values\n");
     return 1;
   }
