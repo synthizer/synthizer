@@ -28,10 +28,17 @@ extern "C" {
 typedef unsigned long long syz_Handle;
 typedef int syz_ErrorCode;
 
+struct syz_UserAutomationEvent {
+  unsigned long long param;
+};
+
 struct syz_Event {
   int type;
   syz_Handle source;
   syz_Handle context;
+  union {
+    struct syz_UserAutomationEvent user_automation;
+  } payload;
 };
 
 SYZ_CAPI void syz_eventDeinit(struct syz_Event *event);
@@ -117,6 +124,35 @@ struct syz_AutomationPoint {
   double values[6];
   unsigned long long flags;
 };
+
+struct syz_AutomationAppendPropertyCommand {
+  int property;
+  struct syz_AutomationPoint point;
+};
+
+struct syz_AutomationClearPropertyCommand {
+  int property;
+};
+
+struct syz_AutomationSendUserEventCommand {
+  unsigned long long param;
+};
+
+struct syz_AutomationCommand {
+  syz_Handle target;
+  double time;
+  unsigned int flags;
+  union {
+    struct syz_AutomationAppendPropertyCommand append_to_property;
+    struct syz_AutomationClearPropertyCommand clear_property;
+    struct syz_AutomationSendUserEventCommand send_user_event;
+  } params;
+};
+
+SYZ_CAPI syz_ErrorCode syz_createAutomationBatch(syz_Handle *out, syz_Handle context);
+SYZ_CAPI syz_ErrorCode syz_automationBatchAddCommands(syz_Handle batch, unsigned long long commands_len,
+                                                      const struct syz_AutomationBatchCommand *commands);
+SYZ_CAPI syz_ErrorCode syz_automationBatchClear(syz_Handle batch);
 
 SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out, void *userdata,
                                          syz_UserdataFreeCallback *userdata_free_callback);
