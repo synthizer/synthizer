@@ -96,7 +96,11 @@ void AutomationBatch::executeOnContextThread() {
 
 void AutomationBatch::consume() { this->consumed = true; }
 
-void AutomationBatch::throwIfConsumed() { throw ENotSupported("AutomationBatch cannot be reused after execution"); }
+void AutomationBatch::throwIfConsumed() {
+  if (this->consumed) {
+    throw ENotSupported("AutomationBatch cannot be reused after execution");
+  }
+}
 
 } // namespace synthizer
 

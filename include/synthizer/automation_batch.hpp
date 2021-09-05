@@ -58,7 +58,7 @@ public:
   /**
    * Get the context, returning nullptr if there isn't one.
    * */
-  std::shared_ptr<Context> getContext();
+  std::shared_ptr<Context> getContext() { return this->context.lock(); }
 
 private:
   deferred_map<std::weak_ptr<BaseObject>, deferred_map<int, deferred_vector<PropertyAutomationPoint>>,

@@ -36,6 +36,27 @@ float *computeTriangle() {
   return ret;
 }
 
+syz_ErrorCode createBatch(syz_Handle *out, syz_Handle context, syz_Handle target) {
+  unsigned int count = sizeof(POINTS) / sizeof(POINTS[0]);
+  struct syz_AutomationCommand *cmds = calloc(count, sizeof(struct syz_AutomationCommand));
+  for (unsigned int i = 0; i < count; i++) {
+    struct syz_AutomationCommand *c = cmds + i;
+    c->type = SYZ_AUTOMATION_COMMAND_APPEND_PROPERTY;
+    c->target = target;
+    c->params.append_to_property.point = POINTS[i];
+    c->params.append_to_property.property = SYZ_P_GAIN;
+  }
+  syz_ErrorCode ret = syz_createAutomationBatch(out, context, NULL, NULL);
+  if (ret != 0) {
+    goto end;
+  }
+  ret = syz_automationBatchAddCommands(*out, count, cmds);
+
+end:
+  free(cmds);
+  return ret;
+}
+
 #define CHECKED(x)                                                                                                     \
   do {                                                                                                                 \
     int ret = x;                                                                                                       \
@@ -49,7 +70,7 @@ float *computeTriangle() {
 int main() {
   int ecode = 0, initialized = 0;
   float *triangle = NULL;
-  syz_Handle context = 0, buffer = 0, generator = 0, source = 0, timeline = 0;
+  syz_Handle context = 0, buffer = 0, generator = 0, source = 0, batch = 0;
 
   CHECKED(syz_initialize());
   initialized = 1;
@@ -64,21 +85,33 @@ int main() {
   triangle = NULL;
 
   CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
-  CHECKED(syz_createAutomationTimeline(&timeline, sizeof(POINTS) / sizeof(POINTS[0]), POINTS, 0, NULL, NULL));
-  CHECKED(syz_automationSetTimeline(generator, SYZ_P_GAIN, timeline));
   CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
+
+  CHECKED(createBatch(&batch, context, generator));
+  CHECKED(syz_automationBatchExecute(batch));
+
   CHECKED(syz_sourceAddGenerator(source, generator));
 
   printf("Press enter key to clear automation\n");
   getchar();
-  CHECKED(syz_automationClear(generator, SYZ_P_GAIN));
+
+  syz_handleDecRef(batch);
+  batch = 0;
+  CHECKED(syz_createAutomationBatch(&batch, context, NULL, NULL));
+  CHECKED(syz_automationBatchAddCommands(batch, 1,
+                                         &(struct syz_AutomationCommand){.type = SYZ_AUTOMATION_COMMAND_CLEAR_PROPERTY,
+                                                                         .target = generator,
+                                                                         .params.clear_property = {
+                                                                             .property = SYZ_P_GAIN,
+                                                                         }}));
+  CHECKED(syz_automationBatchExecute(batch));
 
   printf("Press enter key to exit\n");
   getchar();
 end:
   syz_handleDecRef(source);
   syz_handleDecRef(buffer);
-  syz_handleDecRef(timeline);
+  syz_handleDecRef(batch);
   syz_handleDecRef(generator);
   syz_handleDecRef(context);
   if (initialized) {
