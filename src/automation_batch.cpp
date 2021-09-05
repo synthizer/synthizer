@@ -46,6 +46,13 @@ void AutomationBatch::clearProperty(const std::shared_ptr<BaseObject> &obj, int 
   found_vec->second.clear();
 }
 
+void AutomationBatch::clearAll(const std::shared_ptr<BaseObject> &obj) {
+  std::weak_ptr<BaseObject> weak{obj};
+  this->property_automation.erase(weak);
+  this->cleared_properties.erase(weak);
+  this->clear_all.insert(weak);
+}
+
 void AutomationBatch::addCommands(std::size_t commands_len, const syz_AutomationCommand *commands) {
   this->throwIfConsumed();
 
@@ -61,6 +68,9 @@ void AutomationBatch::addCommands(std::size_t commands_len, const syz_Automation
     case SYZ_AUTOMATION_COMMAND_CLEAR_PROPERTY:
       this->clearProperty(obj, cmd->params.clear_property.property);
       break;
+    case SYZ_AUTOMATION_COMMAND_CLEAR_ALL:
+      this->clearAll(obj);
+      break;
     default:
       throw ENotSupported("This command isn't supported yet");
     }
@@ -70,6 +80,14 @@ void AutomationBatch::addCommands(std::size_t commands_len, const syz_Automation
 void AutomationBatch::executeOnContextThread() {
   auto ctx = this->context.lock();
   assert(ctx != nullptr && "Trying to execute code on the context's thread without the context running that thread");
+
+  for (auto &obj : this->clear_all) {
+    auto strong = obj.lock();
+    if (strong == nullptr) {
+      continue;
+    }
+    strong->clearAllAutomation();
+  }
 
   for (auto &[obj, props] : this->cleared_properties) {
     auto strong = obj.lock();

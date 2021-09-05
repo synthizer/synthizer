@@ -35,6 +35,8 @@ public:
    * */
   void clearProperty(const std::shared_ptr<BaseObject> &obj, int property);
 
+  void clearAll(const std::shared_ptr<BaseObject> &obj);
+
   /**
    * Should be called from the context thread only. Execute this batch.
    * */
@@ -66,6 +68,8 @@ private:
       property_automation;
   deferred_map<std::weak_ptr<BaseObject>, deferred_set<int>, std::owner_less<std::weak_ptr<BaseObject>>>
       cleared_properties;
+  deferred_set<std::weak_ptr<BaseObject>, std::owner_less<std::weak_ptr<BaseObject>>> clear_all;
+
   std::weak_ptr<Context> context;
   // version of the context for faster validation.
   Context *context_validation_ptr = nullptr;

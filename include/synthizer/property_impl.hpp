@@ -462,6 +462,16 @@ void applyPropertyAutomationPoints(int property, std::size_t points_len, Propert
   PROPERTY_BASE::applyPropertyAutomationPoints(property, points_len, points);
 }
 
+#undef DOUBLE_P
+
+void clearAllPropertyAutomation() {
+#define DOUBLE_P(IGN, IGN2, CAMEL_N, ...) this->getTimelineFor##CAMEL_N()->clear();
+
+  PROPERTY_LIST
+
+  PROPERTY_BASE::clearAllPropertyAutomation();
+}
+
 #undef PROPERTY_CLASS
 #undef PROPERTY_BASE
 #undef PROPERTY_LIST

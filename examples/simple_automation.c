@@ -99,11 +99,11 @@ int main() {
   batch = 0;
   CHECKED(syz_createAutomationBatch(&batch, context, NULL, NULL));
   CHECKED(syz_automationBatchAddCommands(batch, 1,
-                                         &(struct syz_AutomationCommand){.type = SYZ_AUTOMATION_COMMAND_CLEAR_PROPERTY,
-                                                                         .target = generator,
-                                                                         .params.clear_property = {
-                                                                             .property = SYZ_P_GAIN,
-                                                                         }}));
+                                         &(struct syz_AutomationCommand){
+                                             .type = SYZ_AUTOMATION_COMMAND_CLEAR_ALL,
+                                             .target = generator,
+
+                                         }));
   CHECKED(syz_automationBatchExecute(batch));
 
   printf("Press enter key to exit\n");

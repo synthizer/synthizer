@@ -117,6 +117,10 @@ public:
     assert(false && "Unreachable");
   }
 
+  virtual void clearAllPropertyAutomation() {}
+
+  void clearAllAutomation() { this->clearAllPropertyAutomation(); }
+
   /* Virtual because context itself needs to override to always return itself. */
   virtual std::shared_ptr<Context> getContext() { return this->context; }
 
