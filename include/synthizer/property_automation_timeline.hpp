@@ -48,6 +48,13 @@ public:
    * Add a point to this timeline.
    * */
   void addPoint(const PropertyAutomationPoint &point);
+
+  template <typename IT> void addPoints(IT begin, IT end) {
+    for (auto i = begin; i < end; i++) {
+      addPoint(*i);
+    }
+  }
+
   /**
    * Get the value of the timeline at the current time.
    *

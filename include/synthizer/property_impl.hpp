@@ -461,6 +461,26 @@ void clearAutomationForProperty(int property) override {
   PROPERTY_BASE::clearAutomationForProperty(property);
 }
 
+#undef DOUBLE_P
+
+void applyPropertyAutomationPoints(int property, std::size_t points_len, PropertyAutomationPoint *points) override {
+#define DOUBLE_P(C, IGNORED, CAMEL_N, ...)                                                                             \
+  case C: {                                                                                                            \
+    auto t = getTimelineFor##CAMEL_N();                                                                                \
+    t->addPoints(points, points + points_len);                                                                         \
+    return;                                                                                                            \
+  }
+
+  switch (property) {
+    PROPERTY_LIST
+  case INT_MAX:
+  default:
+    break;
+  }
+
+  PROPERTY_BASE::applyPropertyAutomationPoints(property, points_len, points);
+}
+
 #undef PROPERTY_CLASS
 #undef PROPERTY_BASE
 #undef PROPERTY_LIST

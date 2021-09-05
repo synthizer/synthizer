@@ -12,7 +12,7 @@
 namespace synthizer {
 
 class ExposedAutomationTimeline;
-;
+class PropertyAutomationPoint;
 
 /* Forward declare the routing handles. */
 namespace router {
@@ -95,6 +95,13 @@ public:
     (void)timeline;
 
     assert(false && "Unreachable");
+  }
+
+  /**
+   * Unreachable. Apply a set of automation points to an object.
+   * */
+  virtual void applyPropertyAutomationPoints(int property, std::size_t points_len, PropertyAutomationPoint *points) {
+    assert(false && "Unreachable!");
   }
 
   /**
