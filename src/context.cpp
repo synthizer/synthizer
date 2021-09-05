@@ -126,10 +126,13 @@ void Context::automationSetTimeline(const std::shared_ptr<BaseObject> &obj, int 
 void Context::automationClear(const std::shared_ptr<BaseObject> &obj, int property) {
   obj->validateAutomation(property);
   std::weak_ptr<BaseObject> target = obj;
-  this->enqueueCallbackCommand([](auto &p, auto &t) {
-    auto strong = t.lock();
-    if (strong) strong->clearAutomationForProperty(p);
-  }, property, target);
+  this->enqueueCallbackCommand(
+      [](auto &p, auto &t) {
+        auto strong = t.lock();
+        if (strong)
+          strong->clearAutomationForProperty(p);
+      },
+      property, target);
 }
 
 void Context::registerSource(const std::shared_ptr<Source> &source) {

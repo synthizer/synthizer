@@ -429,7 +429,7 @@ void validateAutomation(int property) override {
 void automateProperty(int property, const std::shared_ptr<ExposedAutomationTimeline> &timeline) override {
 #define DOUBLE_P(C, IGNORED, CAMEL_N, ...)                                                                             \
   case C:                                                                                                              \
-  clearTimelineFor##CAMEL_N(); \
+    clearTimelineFor##CAMEL_N();                                                                                       \
     timeline->applyToTimeline(getTimelineFor##CAMEL_N());                                                              \
     return;
 
@@ -448,7 +448,7 @@ void automateProperty(int property, const std::shared_ptr<ExposedAutomationTimel
 void clearAutomationForProperty(int property) override {
 #define DOUBLE_P(C, IGNORED, CAMEL_N, ...)                                                                             \
   case C:                                                                                                              \
-    clearTimelineFor##CAMEL_N();                                                              \
+    clearTimelineFor##CAMEL_N();                                                                                       \
     return;
 
   switch (property) {
