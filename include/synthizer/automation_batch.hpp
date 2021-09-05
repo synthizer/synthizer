@@ -1,3 +1,5 @@
+#include "synthizer_constants.h"
+
 #include "synthizer/memory.hpp"
 #include "synthizer/property_automation_timeline.hpp"
 
@@ -16,10 +18,11 @@ class Context;
  * All functions except execute must be called outside the audio thread and throw exceptions on validation errors;
  * execute then applies the batch in the audio thread (put another way, everything but execute is called by the C API).
  * */
-class AutomationBatch : CExposable {
+class AutomationBatch : public CExposable {
 public:
   AutomationBatch(const std::shared_ptr<Context> &ctx);
 
+  int getObjectType() { return SYZ_OTYPE_AUTOMATION_BATCH; }
   /**
    * Append a property automation point to the batch.
    * */

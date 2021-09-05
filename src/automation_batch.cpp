@@ -1,5 +1,6 @@
 #include "synthizer/automation_batch.hpp"
 #include "synthizer/base_object.hpp"
+#include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/error.hpp"
 
@@ -66,3 +67,17 @@ void AutomationBatch::execute() {
 }
 
 } // namespace synthizer
+
+using namespace synthizer;
+
+SYZ_CAPI syz_ErrorCode syz_createAutomationBatch(syz_Handle *out, syz_Handle context, void *userdata,
+                                                 syz_UserdataFreeCallback *userdata_free_callback) {
+  SYZ_PROLOGUE
+  auto ctx = fromC<Context>(context);
+  auto batch = allocateSharedDeferred<AutomationBatch>(ctx);
+  auto ce = std::static_pointer_cast<CExposable>(batch);
+  ce->stashInternalReference(ce);
+  *out = toC(batch);
+  return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
+  SYZ_EPILOGUE
+}
