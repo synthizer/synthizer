@@ -1,3 +1,6 @@
+#include "synthizer.h"
+#include "synthizer_constants.h"
+
 #include "synthizer/automation_batch.hpp"
 #include "synthizer/base_object.hpp"
 #include "synthizer/c_api.hpp"
@@ -14,6 +17,8 @@ AutomationBatch::AutomationBatch(const std::shared_ptr<Context> &ctx)
 
 void AutomationBatch::automateProperty(const std::shared_ptr<BaseObject> &obj, int property,
                                        const PropertyAutomationPoint &point) {
+  this->throwIfConsumed();
+
   if (obj->getContextRaw() != this->context_validation_ptr) {
     throw EValidation("Object is from the wrong context");
   }
@@ -24,6 +29,8 @@ void AutomationBatch::automateProperty(const std::shared_ptr<BaseObject> &obj, i
 }
 
 void AutomationBatch::clearProperty(const std::shared_ptr<BaseObject> &obj, int property) {
+  this->throwIfConsumed();
+
   obj->validateAutomation(property);
 
   std::weak_ptr<BaseObject> weak{obj};
@@ -39,7 +46,16 @@ void AutomationBatch::clearProperty(const std::shared_ptr<BaseObject> &obj, int 
   found_vec->second.clear();
 }
 
-void AutomationBatch::execute() {
+void AutomationBatch::addCommands(std::size_t commands_len, const struct syz_AutomationBatchCommand *commands) {
+  this->throwIfConsumed();
+
+  (void)commands_len;
+  (void)commands;
+
+  throw ENotSupported("This command isn't supported yet");
+}
+
+void AutomationBatch::executeOnContextThread() {
   auto ctx = this->context.lock();
   assert(ctx != nullptr && "Trying to execute code on the context's thread without the context running that thread");
 
@@ -66,6 +82,10 @@ void AutomationBatch::execute() {
   }
 }
 
+void AutomationBatch::consume() { this->consumed = true; }
+
+void AutomationBatch::throwIfConsumed() { throw ENotSupported("AutomationBatch cannot be reused after execution"); }
+
 } // namespace synthizer
 
 using namespace synthizer;
@@ -79,5 +99,29 @@ SYZ_CAPI syz_ErrorCode syz_createAutomationBatch(syz_Handle *out, syz_Handle con
   ce->stashInternalReference(ce);
   *out = toC(batch);
   return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
+  SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_automationBatchAddCommands(syz_Handle batch, unsigned long long commands_len,
+                                                      const struct syz_AutomationBatchCommand *commands) {
+  SYZ_PROLOGUE
+  auto b = fromC<AutomationBatch>(batch);
+  b->addCommands(commands_len, commands);
+  return 0;
+  SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_automationBatchExecute(syz_Handle batch) {
+  SYZ_PROLOGUE
+  auto b = fromC<AutomationBatch>(batch);
+  b->throwIfConsumed();
+  b->consume();
+  auto c = b->getContext();
+  if (c == nullptr) {
+    return 0;
+  }
+  c->enqueueCallbackCommand([=]() { b->executeOnContextThread(); });
+
+  return 0;
   SYZ_EPILOGUE
 }

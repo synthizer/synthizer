@@ -149,11 +149,11 @@ struct syz_AutomationCommand {
   } params;
 };
 
-SYZ_CAPI syz_ErrorCode syz_createAutomationBatch(syz_Handle *out, syz_Handle context, void *userdata,
+SYZ_CAPI syz_ErrorCode syz_createAutomationBatch(syz_Handle *out, syz_Handle context, void *userdatha,
                                                  syz_UserdataFreeCallback *userdata_free_callback);
 SYZ_CAPI syz_ErrorCode syz_automationBatchAddCommands(syz_Handle batch, unsigned long long commands_len,
                                                       const struct syz_AutomationBatchCommand *commands);
-SYZ_CAPI syz_ErrorCode syz_automationBatchClear(syz_Handle batch);
+SYZ_CAPI syz_ErrorCode syz_automationBatchExecute(syz_Handle batch);
 
 SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out, void *userdata,
                                          syz_UserdataFreeCallback *userdata_free_callback);

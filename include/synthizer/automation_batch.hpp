@@ -5,8 +5,9 @@
 
 #include <memory>
 
-namespace synthizer {
+struct syz_AutomationBatchCommand;
 
+namespace synthizer {
 class BaseObject;
 class Context;
 
@@ -28,15 +29,35 @@ public:
    * */
   void automateProperty(const std::shared_ptr<BaseObject> &obj, int property, const PropertyAutomationPoint &point);
 
-  void clearProperty(const std::shared_ptr<BaseObject> &obj, int property);
-
   /**
    * Clear a property.
+   * */
+  void clearProperty(const std::shared_ptr<BaseObject> &obj, int property);
 
   /**
    * Should be called from the context thread only. Execute this batch.
    * */
-  void execute();
+  void executeOnContextThread();
+
+  /**
+   * Apply a batch of commands from the user.
+   * */
+  void addCommands(std::size_t commands_len, const struct syz_AutomationBatchCommand *commands);
+
+  /**
+   * Lock this object so that it may never be executed again.
+   * */
+  void consume();
+
+  /**
+   * Throw an exception if consumed.
+   * */
+  void throwIfConsumed();
+
+  /**
+   * Get the context, returning nullptr if there isn't one.
+   * */
+  std::shared_ptr<Context> getContext();
 
 private:
   deferred_map<std::weak_ptr<BaseObject>, deferred_map<int, deferred_vector<PropertyAutomationPoint>>,
@@ -47,6 +68,7 @@ private:
   std::weak_ptr<Context> context;
   // version of the context for faster validation.
   Context *context_validation_ptr = nullptr;
+  bool consumed = false;
 };
 
 } // namespace synthizer
