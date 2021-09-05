@@ -101,6 +101,10 @@ public:
    * Unreachable. Apply a set of automation points to an object.
    * */
   virtual void applyPropertyAutomationPoints(int property, std::size_t points_len, PropertyAutomationPoint *points) {
+    (void)property;
+    (void)points_len;
+    (void)points;
+
     assert(false && "Unreachable!");
   }
 
@@ -108,7 +112,10 @@ public:
    * Should also be called only after AutomateProperty. Is unreachable; we need this for the property infrastructure to
    * always have a base class.
    * */
-  virtual void clearAutomationForProperty(int property) { assert(false && "Unreachable"); }
+  virtual void clearAutomationForProperty(int property) {
+    (void)property;
+    assert(false && "Unreachable");
+  }
 
   /* Virtual because context itself needs to override to always return itself. */
   virtual std::shared_ptr<Context> getContext() { return this->context; }
