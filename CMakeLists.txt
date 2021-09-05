@@ -196,8 +196,8 @@ example(buffer_from_raw_data c)
 example(custom_stream c)
 example(events cpp)
 example(load_libsndfile c)
-example(simple_automation c)
 example(scalar_panned_source cpp)
+#example(simple_automation c)
 
 # The following won't work on Windows unless compiled against a static build of Synthizer because we don't want to expose the C++ internals from the DLL.
 # Since these are just test programs and not actual utilities, disable them on all platforms if the build isn't static.
