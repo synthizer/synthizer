@@ -79,6 +79,7 @@ include_directories(SYSTEM
   third_party/wdl
   third_party/plf_colony
   third_party/concurrentqueue
+  third_party/pdqsort
 )
 
 # Needs to be factored out so that -Wall doesn't apply to third-party deps.
