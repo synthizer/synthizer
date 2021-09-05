@@ -58,6 +58,7 @@ void PropertyAutomationTimeline::tick(double time) {
   }
 
   std::size_t last_point = this->next_point - 1;
+
   const PropertyAutomationPoint &p1 = this->points[last_point];
   const PropertyAutomationPoint &p2 = this->points[next_point];
 
@@ -73,17 +74,27 @@ void PropertyAutomationTimeline::tick(double time) {
   }
 
   // If p2 is NONE, we don't do anything with it until we cross it.
-  if (p2.interpolation_type == SYZ_INTERPOLATION_TYPE_NONE) {
-    return;
+  if (p2.interpolation_type != SYZ_INTERPOLATION_TYPE_NONE) {
+
+    double time_diff = p2.automation_time - p1.automation_time;
+    double delta = (time - p1.automation_time) / time_diff;
+    double w2 = delta;
+    double w1 = 1.0 - w2;
+    double value = w1 * p1.value + w2 * p2.value;
+    this->current_value = value;
   }
 
-  // Otherwise, we're fading to it.
-  double time_diff = p2.automation_time - p1.automation_time;
-  double delta = (time - p1.automation_time) / time_diff;
-  double w2 = delta;
-  double w1 = 1.0 - w2;
-  double value = w1 * p1.value + w2 * p2.value;
-  this->current_value = value;
+  // If last_point isn't 0, then we have points before last_point which we no longer need; roll back the future so that
+  // the timeline doesn't fill indefinitely.
+  //
+  // last_point is always 1 before the end, because otherwise we'd not have a next_point and/or the if statements above
+  // would have bailed.
+  if (last_point > 0) {
+    auto needed_begin = this->points.begin() + last_point;
+    std::copy(needed_begin, this->points.end(), this->points.begin());
+    // last_point is at the beginning, next_point is 1 after that.  Fix the next_point to be right.
+    this->next_point = 1;
+  }
 }
 
 void PropertyAutomationTimeline::resortIfNeeded() {
