@@ -397,7 +397,7 @@ void propSubsystemAdvanceAutomation() override {
     t->tick(this->getAutomationTime());                                                                                \
     auto val = t->getValue();                                                                                          \
     if (val) {                                                                                                         \
-      this->set##N(*val);                                                                                              \
+      this->set##N((*val)[0]);                                                                                              \
     }                                                                                                                  \
   }
 
@@ -411,7 +411,7 @@ void validateAutomation(int property, std::optional<const PropertyAutomationPoin
 #define DOUBLE_P(V, UNDER_N, CAMEL_N, ...)                                                                             \
   case V:                                                                                                              \
     if (point) {                                                                                                       \
-      this->validate##CAMEL_N((*point)->values);                                                                       \
+      this->validate##CAMEL_N((*point)->values[0]);                                                                       \
     }                                                                                                                  \
     return;
 

@@ -47,8 +47,8 @@ int main() {
     auto v = timeline.getValue();
     if (v) {
       auto x = *v;
-      if (floatCmp(x, exp) == false) {
-        printf("Expected %f but got %f at time %f\n", exp, x, time);
+      if (floatCmp(x[0], exp) == false) {
+        printf("Expected %f but got %f at time %f\n", exp, x[0], time);
         return 1;
       }
     } else {

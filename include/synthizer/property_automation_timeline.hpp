@@ -8,6 +8,7 @@
 #include <pdqsort.h>
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <memory>
@@ -22,7 +23,7 @@ public:
 
   unsigned int interpolation_type;
   double automation_time;
-  double values;
+  std::array<double, 6> values;
 };
 
 /**
@@ -70,7 +71,7 @@ public:
    * This function returns an empty option if the timeline hasn't started yet (e.g. is in the future) or has
    * already ended.  When it does so, properties are left alone.
    * */
-  std::optional<double> getValue() { return this->current_value; }
+  std::optional<std::array<double, 6>> getValue() { return this->current_value; }
 
   /**
    * Returns true when evaluating this timeline will never again produce a value.
@@ -89,7 +90,7 @@ private:
   std::size_t next_point = 0;
   bool finished = true;
   bool has_added_since_last_sort = true;
-  std::optional<double> current_value = std::nullopt;
+  std::optional<std::array<double, 6>> current_value = std::nullopt;
 };
 
 inline void PropertyAutomationTimeline::tick(double time) {
@@ -143,12 +144,14 @@ inline void PropertyAutomationTimeline::tick(double time) {
 
   // If p2 is NONE, we don't do anything with it until we cross it.
   if (p2.interpolation_type != SYZ_INTERPOLATION_TYPE_NONE) {
-
     double time_diff = p2.automation_time - p1.automation_time;
     double delta = (time - p1.automation_time) / time_diff;
     double w2 = delta;
     double w1 = 1.0 - w2;
-    double value = w1 * p1.values + w2 * p2.values;
+    std::array<double, 6> value;
+    for (unsigned int i = 0; i < 6; i++) {
+      value[i] = w1 * p1.values[i] + w2 * p2.values[i];
+    }
     this->current_value = value;
   }
 
