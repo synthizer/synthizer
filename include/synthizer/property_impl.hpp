@@ -407,9 +407,12 @@ void propSubsystemAdvanceAutomation() override {
 
 #undef DOUBLE_P
 
-void validateAutomation(int property) override {
-#define DOUBLE_P(V, ...)                                                                                               \
+void validateAutomation(int property, std::optional<const PropertyAutomationPoint *> point) override {
+#define DOUBLE_P(V, UNDER_N, CAMEL_N, ...)                                                                             \
   case V:                                                                                                              \
+    if (point) {                                                                                                       \
+      this->validate##CAMEL_N((*point)->value);                                                                        \
+    }                                                                                                                  \
     return;
 
   switch (property) {
@@ -421,7 +424,7 @@ void validateAutomation(int property) override {
     break;
   }
 
-  PROPERTY_BASE::validateAutomation(property);
+  PROPERTY_BASE::validateAutomation(property, point);
 }
 
 #undef DOUBLE_P

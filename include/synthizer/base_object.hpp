@@ -8,10 +8,10 @@
 #include <atomic>
 #include <cassert>
 #include <memory>
+#include <optional>
 
 namespace synthizer {
 
-class ExposedAutomationTimeline;
 class PropertyAutomationPoint;
 
 /* Forward declare the routing handles. */
@@ -77,7 +77,13 @@ public:
     throw EInvalidProperty();
   }
 
-  virtual void validateAutomation(int property) {
+ /**
+  * If no point is provided, only validate that we can automate the property. Lets' the function also be usedfor
+  * clearing.
+  * */
+  virtual void validateAutomation(int property, std::optional<const PropertyAutomationPoint *> point) {
+    (void)point;
+
     // if we got here, we either don't have the properety or don't support automation.  But these lead to different
     // errors.
     if (this->hasProperty(property)) {
@@ -85,16 +91,6 @@ public:
     } else {
       throw EInvalidProperty();
     }
-  }
-
-  /**
-   * Should only be called after automation.  The BaseObject version should be unreachable code, and asserts such.
-   * */
-  virtual void automateProperty(int property, const std::shared_ptr<ExposedAutomationTimeline> &timeline) {
-    (void)property;
-    (void)timeline;
-
-    assert(false && "Unreachable");
   }
 
   /**

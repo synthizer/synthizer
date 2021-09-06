@@ -23,7 +23,7 @@ void AutomationBatch::automateProperty(const std::shared_ptr<BaseObject> &obj, i
     throw EValidation("Object is from the wrong context");
   }
 
-  obj->validateAutomation(property);
+  obj->validateAutomation(property, &point);
   std::weak_ptr<BaseObject> obj_weak{obj};
   this->property_automation[std::move(obj_weak)][property].push_back(point);
 }
@@ -31,7 +31,7 @@ void AutomationBatch::automateProperty(const std::shared_ptr<BaseObject> &obj, i
 void AutomationBatch::clearProperty(const std::shared_ptr<BaseObject> &obj, int property) {
   this->throwIfConsumed();
 
-  obj->validateAutomation(property);
+  obj->validateAutomation(property, std::nullopt);
 
   std::weak_ptr<BaseObject> weak{obj};
   this->cleared_properties[weak].insert(property);
