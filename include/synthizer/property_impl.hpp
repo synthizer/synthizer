@@ -381,8 +381,6 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 
 // All the automation stuff doesn't use these; leave them defined to empty until we're done.
 #define INT_P(...)
-#define DOUBLE3_P(...)
-#define DOUBLE6_P(...)
 #define OBJECT_P(...)
 #define BIQUAD_P(...)
 
@@ -453,11 +451,9 @@ void validateAutomation(int property, std::optional<const PropertyAutomationPoin
 
 #undef DOUBLE_P
 #undef DOUBLE3_P
+#undef DOUBLE6_P
 #undef TMP
 #undef TMP2
-
-#define DOUBLE3_P(...)
-#define DOUBLE6_P(...)
 
 void clearAutomationForProperty(int property) override {
 #define CLEARER(C, IGNORED, CAMEL_N, ...)                                                                              \
