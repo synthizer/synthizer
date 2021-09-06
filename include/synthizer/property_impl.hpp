@@ -32,7 +32,7 @@
  * Note that blocking on object properties is required because we need to safely copy std::shared_ptr. We do so with a
  * simple spinlock, under the assumption that readers are rare.
  *
- * In the above, Property changes to match the name of the property. In addition to these functions, this header defines
+ * In the above, Property changes to mah the name of the property. In addition to these functions, this header defines
  * a number of private types, adds a nested class named clasnameProps and field classname_props to your class at every
  * level of the hierarchy that uses properties which you shouldn't access yourself, and defines the standard property
  * machinery to get/set via enum.
@@ -394,7 +394,7 @@ void propSubsystemAdvanceAutomation() override {
 #define DOUBLE_P(C, IGNORED, N, MIN, MAX, DEF)                                                                         \
   {                                                                                                                    \
     auto t = this->getTimelineFor##N();                                                                                \
-    t->tick(this->getAutomationTime());                                                                                \
+    t->template tick<1>(this->getAutomationTime());                                                                                \
     auto val = t->getValue();                                                                                          \
     if (val) {                                                                                                         \
       this->set##N((*val)[0]);                                                                                              \

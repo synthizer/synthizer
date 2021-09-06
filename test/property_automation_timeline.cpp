@@ -42,7 +42,7 @@ int main() {
   }
 
   for (auto exp : expected) {
-    timeline.tick(time);
+    timeline.tick<1>(time);
     time += tick_delta;
     auto v = timeline.getValue();
     if (v) {
@@ -62,7 +62,7 @@ int main() {
     return 1;
   }
 
-  timeline.tick(time);
+  timeline.tick<1>(time);
   if (timeline.getValue()) {
     printf("Finished timelines should no longer return values\n");
     return 1;

@@ -50,7 +50,7 @@ public:
    * The template parameter controls how many points to evaluate, and is usually set to 1, 3, or 6.  This is used to
    * differentiate between which kind of property the timeline is for.
    * */
-  template<unsigned int N = 1>
+  template<unsigned int N>
   void tick(double time);
 
   /**
