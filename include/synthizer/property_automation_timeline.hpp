@@ -83,6 +83,10 @@ public:
 
   void clear();
 
+  /**
+   * When we're this many points into the timeline, get rid of all the ones at the beginning that we no longer need.
+   * */
+  std::size_t COPY_BACK_THRESHOLD = 128;
 private:
   void resortIfNeeded();
 
@@ -165,7 +169,7 @@ template <unsigned int N> inline void PropertyAutomationTimeline::tick(double ti
   //
   // last_point is always 1 before the end, because otherwise we'd not have a next_point and/or the if statements above
   // would have bailed.
-  if (last_point > 0) {
+  if (last_point > PropertyAutomationTimeline::COPY_BACK_THRESHOLD) {
     auto needed_begin = this->points.begin() + last_point;
     std::copy(needed_begin, this->points.end(), this->points.begin());
     // last_point is at the beginning, next_point is 1 after that.  Fix the next_point to be right.
