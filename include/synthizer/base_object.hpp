@@ -77,10 +77,10 @@ public:
     throw EInvalidProperty();
   }
 
- /**
-  * If no point is provided, only validate that we can automate the property. Lets' the function also be usedfor
-  * clearing.
-  * */
+  /**
+   * If no point is provided, only validate that we can automate the property. Lets' the function also be usedfor
+   * clearing.
+   * */
   virtual void validateAutomation(int property, std::optional<const PropertyAutomationPoint *> point) {
     (void)point;
 
