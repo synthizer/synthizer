@@ -101,8 +101,12 @@ public:
 #define DOUBLE_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV)                                                         \
   DoubleProperty N{DV};                                                                                                \
   PropertyAutomationTimeline N##_timeline;
-#define DOUBLE3_P(IGNORED, N, IGNORED2, DV1, DV2, DV3) Double3Property N{{DV1, DV2, DV3}};
-#define DOUBLE6_P(IGNORED, N, IGNORED2, DV1, DV2, DV3, DV4, DV5, DV6) Double6Property N{{DV1, DV2, DV3, DV4, DV5, DV6}};
+#define DOUBLE3_P(IGNORED, N, IGNORED2, DV1, DV2, DV3)                                                                 \
+  Double3Property N{{DV1, DV2, DV3}};                                                                                  \
+  PropertyAutomationTimeline N##_timeline;
+#define DOUBLE6_P(IGNORED, N, IGNORED2, DV1, DV2, DV3, DV4, DV5, DV6)                                                  \
+  Double6Property N{{DV1, DV2, DV3, DV4, DV5, DV6}};                                                                   \
+  PropertyAutomationTimeline N##_timeline;
 #define OBJECT_P(IGNORED, N, IGNORED2, CLS) ObjectProperty<CLS> N;
 #define BIQUAD_P(IGNORED, N, ...) BiquadProperty N{};
 
@@ -382,38 +386,58 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 #define OBJECT_P(...)
 #define BIQUAD_P(...)
 
-#define DOUBLE_P(IGNORED, UNDER_N, CAMEL_N, IGNORED3, IGNORED4, IGNORED5)                                              \
+#define TIMELINE_PAIR(IGNORED, UNDER_N, CAMEL_N, ...)                                                                  \
   PropertyAutomationTimeline *getTimelineFor##CAMEL_N() { return &this->PROPFIELD_NAME.UNDER_N##_timeline; }           \
   void clearTimelineFor##CAMEL_N() { this->PROPFIELD_NAME.UNDER_N##_timeline.clear(); }
+#define DOUBLE_P(...) TIMELINE_PAIR(__VA_ARGS__)
+#define DOUBLE3_P(...) TIMELINE_PAIR(__VA_ARGS__)
+#define DOUBLE6_P(...) TIMELINE_PAIR(__VA_ARGS__)
 
 PROPERTY_LIST
 
 #undef DOUBLE_P
+#undef DOUBLE3_P
+#undef DOUBLE6_P
+#undef TIMELINE_PAIR
 
 void propSubsystemAdvanceAutomation() override {
-#define DOUBLE_P(C, IGNORED, N, MIN, MAX, DEF)                                                                         \
+#define ADVANCER(C, N, EXTR)                                                                                           \
   {                                                                                                                    \
     auto t = this->getTimelineFor##N();                                                                                \
     t->template tick<1>(this->getAutomationTime());                                                                    \
     auto val = t->getValue();                                                                                          \
     if (val) {                                                                                                         \
-      this->set##N((*val)[0]);                                                                                         \
+      EXTR this->set##N(v);                                                                                            \
     }                                                                                                                  \
   }
+#define DOUBLE_P(C, IGN, N, ...) ADVANCER(C, N, double v = (*val)[0];)
+#define TMP std::array<double, 3> v = {(*val)[0], (*val)[1], (*val)[2]};
+#define DOUBLE3_P(C, IGN, N, ...) ADVANCER(C, N, TMP)
+#define TMP2 std::array<double, 6> v = (*val);
+#define DOUBLE6_P(C, IGN, N, ...) ADVANCER(C, N, TMP2)
 
   PROPERTY_LIST
   PROPERTY_BASE::propSubsystemAdvanceAutomation();
 }
 
 #undef DOUBLE_P
+#undef DOUBLE3_P
+#undef DOUBLE6_P
+#undef TMP
+#undef TMP2
 
 void validateAutomation(int property, std::optional<const PropertyAutomationPoint *> point) override {
-#define DOUBLE_P(V, UNDER_N, CAMEL_N, ...)                                                                             \
+#define VAL_HELPER(V, CAMEL_N, EXTR)                                                                                   \
   case V:                                                                                                              \
     if (point) {                                                                                                       \
-      this->validate##CAMEL_N((*point)->values[0]);                                                                    \
+      EXTR this->validate##CAMEL_N(value);                                                                             \
     }                                                                                                                  \
     return;
+#define DOUBLE_P(C, IGN, CAMEL_N, ...) VAL_HELPER(C, CAMEL_N, double value = (*point)->values[0];)
+#define TMP std::array<double, 3> value{{(*point)->values[0], (*point)->values[1], (*point)->values[2]}};
+#define DOUBLE3_P(C, IGN, CAMEL_N, ...) VAL_HELPER(C, CAMEL_N, TMP)
+#define TMP2 std::array<double, 6> value = (*point)->values;
+#define DOUBLE6_P(C, IGN, CAMEL_N, ...) VAL_HELPER(C, CAMEL_N, TMP2)
 
   switch (property) {
     PROPERTY_LIST
@@ -428,12 +452,21 @@ void validateAutomation(int property, std::optional<const PropertyAutomationPoin
 }
 
 #undef DOUBLE_P
+#undef DOUBLE3_P
+#undef TMP
+#undef TMP2
+
+#define DOUBLE3_P(...)
+#define DOUBLE6_P(...)
 
 void clearAutomationForProperty(int property) override {
-#define DOUBLE_P(C, IGNORED, CAMEL_N, ...)                                                                             \
+#define CLEARER(C, IGNORED, CAMEL_N, ...)                                                                              \
   case C:                                                                                                              \
     clearTimelineFor##CAMEL_N();                                                                                       \
     return;
+#define DOUBLE_P(...) CLEARER(__VA_ARGS__)
+#define DOUBLE3_P(...) CLEARER(__VA_ARGS__)
+#define DOUBLE6_P(...) CLEARER(__VA_ARGS__)
 
   switch (property) {
     PROPERTY_LIST
@@ -446,14 +479,20 @@ void clearAutomationForProperty(int property) override {
 }
 
 #undef DOUBLE_P
+#undef DOUBLE3_P
+#undef DOUBLE6_P
+#undef CLEARER
 
 void applyPropertyAutomationPoints(int property, std::size_t points_len, PropertyAutomationPoint *points) override {
-#define DOUBLE_P(C, IGNORED, CAMEL_N, ...)                                                                             \
+#define APPLIER(C, IGNORED, CAMEL_N, ...)                                                                              \
   case C: {                                                                                                            \
     auto t = getTimelineFor##CAMEL_N();                                                                                \
     t->addPoints(points, points + points_len);                                                                         \
     return;                                                                                                            \
   }
+#define DOUBLE_P(...) APPLIER(__VA_ARGS__)
+#define DOUBLE3_P(...) APPLIER(__VA_ARGS__)
+#define DOUBLE6_P(...) APPLIER(__VA_ARGS__)
 
   switch (property) {
     PROPERTY_LIST
@@ -466,9 +505,15 @@ void applyPropertyAutomationPoints(int property, std::size_t points_len, Propert
 }
 
 #undef DOUBLE_P
+#undef DOUBLE3_P
+#undef DOUBLE6_P
+#undef APPLIER
 
 void clearAllPropertyAutomation() {
-#define DOUBLE_P(IGN, IGN2, CAMEL_N, ...) this->getTimelineFor##CAMEL_N()->clear();
+#define CLEARER(IGN, IGN2, CAMEL_N, ...) this->getTimelineFor##CAMEL_N()->clear();
+#define DOUBLE_P(...) CLEARER(__VA_ARGS__)
+#define DOUBLE3_P(...) CLEARER(__VA_ARGS__)
+#define DOUBLE6_P(...) CLEARER(__VA_ARGS__)
 
   PROPERTY_LIST
 
@@ -495,3 +540,4 @@ void clearAllPropertyAutomation() {
 #undef PROPERTY_CLASS
 #undef PROPERTY_LIST
 #undef PROPERTY_BASE
+#undef CLEARER
