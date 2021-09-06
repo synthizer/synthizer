@@ -394,10 +394,10 @@ void propSubsystemAdvanceAutomation() override {
 #define DOUBLE_P(C, IGNORED, N, MIN, MAX, DEF)                                                                         \
   {                                                                                                                    \
     auto t = this->getTimelineFor##N();                                                                                \
-    t->template tick<1>(this->getAutomationTime());                                                                                \
+    t->template tick<1>(this->getAutomationTime());                                                                    \
     auto val = t->getValue();                                                                                          \
     if (val) {                                                                                                         \
-      this->set##N((*val)[0]);                                                                                              \
+      this->set##N((*val)[0]);                                                                                         \
     }                                                                                                                  \
   }
 
@@ -411,7 +411,7 @@ void validateAutomation(int property, std::optional<const PropertyAutomationPoin
 #define DOUBLE_P(V, UNDER_N, CAMEL_N, ...)                                                                             \
   case V:                                                                                                              \
     if (point) {                                                                                                       \
-      this->validate##CAMEL_N((*point)->values[0]);                                                                       \
+      this->validate##CAMEL_N((*point)->values[0]);                                                                    \
     }                                                                                                                  \
     return;
 

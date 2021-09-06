@@ -50,8 +50,7 @@ public:
    * The template parameter controls how many points to evaluate, and is usually set to 1, 3, or 6.  This is used to
    * differentiate between which kind of property the timeline is for.
    * */
-  template<unsigned int N>
-  void tick(double time);
+  template <unsigned int N> void tick(double time);
 
   /**
    * Add a point to this timeline.
@@ -97,8 +96,7 @@ private:
   std::optional<std::array<double, 6>> current_value = std::nullopt;
 };
 
-template<unsigned int N>
-inline void PropertyAutomationTimeline::tick(double time) {
+template <unsigned int N> inline void PropertyAutomationTimeline::tick(double time) {
   static_assert(N > 0 && N <= 6, "N is out of range");
 
   this->resortIfNeeded();
