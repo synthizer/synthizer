@@ -20,7 +20,8 @@
 namespace synthizer {
 
 PropertyAutomationPoint::PropertyAutomationPoint(const struct syz_AutomationPoint *input)
-    : interpolation_type(input->interpolation_type), automation_time(input->automation_time), value(input->values[0]) {}
+    : interpolation_type(input->interpolation_type), automation_time(input->automation_time), values(input->values[0]) {
+}
 
 PropertyAutomationTimeline::PropertyAutomationTimeline() { this->points.reserve(1024); }
 

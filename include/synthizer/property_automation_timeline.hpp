@@ -22,7 +22,7 @@ public:
 
   unsigned int interpolation_type;
   double automation_time;
-  double value;
+  double values;
 };
 
 /**
@@ -108,7 +108,7 @@ inline void PropertyAutomationTimeline::tick(double time) {
   if (this->next_point >= this->points.size()) {
     // We'll become nullopt on the next time through, but we always want to make sure the last value of the
     // timeline is hit so that things always end up on a known state.
-    this->current_value = this->points.back().value;
+    this->current_value = this->points.back().values;
     this->finished = true;
     return;
   }
@@ -116,7 +116,7 @@ inline void PropertyAutomationTimeline::tick(double time) {
   // If we're exactly at the first point, start there; this is the common use case of specifying timelines that start
   // at 0.
   if (this->points.front().automation_time == time) {
-    this->current_value = this->points.front().value;
+    this->current_value = this->points.front().values;
   }
 
   // If we're not past the first point yet, nothing to do.
@@ -138,7 +138,7 @@ inline void PropertyAutomationTimeline::tick(double time) {
   //
   // We don't return here: if the prior point is NONE then we might be interpolating.
   if (p1.interpolation_type == SYZ_INTERPOLATION_TYPE_NONE || p2.interpolation_type == SYZ_INTERPOLATION_TYPE_NONE) {
-    this->current_value = p1.value;
+    this->current_value = p1.values;
   }
 
   // If p2 is NONE, we don't do anything with it until we cross it.
@@ -148,7 +148,7 @@ inline void PropertyAutomationTimeline::tick(double time) {
     double delta = (time - p1.automation_time) / time_diff;
     double w2 = delta;
     double w1 = 1.0 - w2;
-    double value = w1 * p1.value + w2 * p2.value;
+    double value = w1 * p1.values + w2 * p2.values;
     this->current_value = value;
   }
 

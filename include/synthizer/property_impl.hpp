@@ -411,7 +411,7 @@ void validateAutomation(int property, std::optional<const PropertyAutomationPoin
 #define DOUBLE_P(V, UNDER_N, CAMEL_N, ...)                                                                             \
   case V:                                                                                                              \
     if (point) {                                                                                                       \
-      this->validate##CAMEL_N((*point)->value);                                                                        \
+      this->validate##CAMEL_N((*point)->values);                                                                       \
     }                                                                                                                  \
     return;
 
