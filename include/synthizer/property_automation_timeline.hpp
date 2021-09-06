@@ -46,7 +46,11 @@ public:
    * Needs to be called *before* each audio tick.
    *
    * Time is in seconds and must be monatonically increasing.
+   *
+   * The template parameter controls how many points to evaluate, and is usually set to 1, 3, or 6.  This is used to
+   * differentiate between which kind of property the timeline is for.
    * */
+  template<unsigned int N = 1>
   void tick(double time);
 
   /**
@@ -93,7 +97,10 @@ private:
   std::optional<std::array<double, 6>> current_value = std::nullopt;
 };
 
+template<unsigned int N>
 inline void PropertyAutomationTimeline::tick(double time) {
+  static_assert(N > 0 && N <= 6, "N is out of range");
+
   this->resortIfNeeded();
 
   if (this->finished) {
@@ -149,7 +156,7 @@ inline void PropertyAutomationTimeline::tick(double time) {
     double w2 = delta;
     double w1 = 1.0 - w2;
     std::array<double, 6> value;
-    for (unsigned int i = 0; i < 6; i++) {
+    for (unsigned int i = 0; i < N; i++) {
       value[i] = w1 * p1.values[i] + w2 * p2.values[i];
     }
     this->current_value = value;
