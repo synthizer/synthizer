@@ -399,20 +399,20 @@ PROPERTY_LIST
 #undef TIMELINE_PAIR
 
 void propSubsystemAdvanceAutomation() override {
-#define ADVANCER(C, N, EXTR)                                                                                           \
+#define ADVANCER(C, N, NUM_VALS, EXTR)                                                                                           \
   {                                                                                                                    \
     auto t = this->getTimelineFor##N();                                                                                \
-    t->template tick<1>(this->getAutomationTime());                                                                    \
+    t->template tick<NUM_VALS>(this->getAutomationTime());                                                                    \
     auto val = t->getValue();                                                                                          \
     if (val) {                                                                                                         \
       EXTR this->set##N(v);                                                                                            \
     }                                                                                                                  \
   }
-#define DOUBLE_P(C, IGN, N, ...) ADVANCER(C, N, double v = (*val)[0];)
+#define DOUBLE_P(C, IGN, N, ...) ADVANCER(C, N, 1, double v = (*val)[0];)
 #define TMP std::array<double, 3> v = {(*val)[0], (*val)[1], (*val)[2]};
-#define DOUBLE3_P(C, IGN, N, ...) ADVANCER(C, N, TMP)
+#define DOUBLE3_P(C, IGN, N, ...) ADVANCER(C, N, 3, TMP)
 #define TMP2 std::array<double, 6> v = (*val);
-#define DOUBLE6_P(C, IGN, N, ...) ADVANCER(C, N, TMP2)
+#define DOUBLE6_P(C, IGN, N, ...) ADVANCER(C, N, 6, TMP2)
 
   PROPERTY_LIST
   PROPERTY_BASE::propSubsystemAdvanceAutomation();
