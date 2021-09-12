@@ -3,8 +3,11 @@
 /*
  * cpp11-on-multicore is broken and we need to bring errno into scope for it.
  * */
-#include "sema.h"
+// clang-format off
+// The header order is important here, so that we don't have to fork sema.h.
 #include <errno.h>
+#include "sema.h"
+// clang-format on
 
 #include <atomic>
 #include <vector>
