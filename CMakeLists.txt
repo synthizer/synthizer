@@ -27,7 +27,8 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		/wd4267
 		# Lets property generation work, namely property_impl.hpp
 		/Zc:preprocessor
-		# And now we need to silence a winbase.h warning because it's got a macro expanding to undefined somehow. Noe that this isn't our code:
+		# And now we need to silence a winbase.h warning because it's got a macro expanding to undefined somehow. Noe that
+		# this isn't our code:
 		/wd5105
 		# Not all compilers give us constexpr if, but MSVC likes to warn us when we can use it.
 		/wd4127
@@ -179,17 +180,18 @@ endif()
 add_custom_target(data
 python "${CMAKE_SOURCE_DIR}/data_processor/main.py")
 
-macro(example NAME)
-	add_executable(${NAME} ./examples/${NAME}.c)
+macro(example NAME EXT)
+	add_executable(${NAME} ./examples/${NAME}.${EXT})
 	target_link_libraries(${NAME} synthizer)
 endmacro()
 
-example(basic_stream_handle)
-example(buffer_from_memory)
-example(buffer_from_raw_data)
-example(custom_stream)
-example(load_libsndfile)
-example(simple_automation)
+example(basic_stream_handle c)
+example(buffer_from_memory c)
+example(buffer_from_raw_data c)
+example(custom_stream c)
+example(events cpp)
+example(load_libsndfile c)
+example(simple_automation c)
 
 # The following won't work on Windows unless compiled against a static build of Synthizer because we don't want to expose the C++ internals from the DLL.
 # Since these are just test programs and not actual utilities, disable them on all platforms if the build isn't static.
