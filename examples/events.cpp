@@ -57,6 +57,11 @@ int main(int argc, char *argv[]) {
       continue;
     }
 
+    /*
+     * You can deinit anywhere as long as something somewhere keeps the handles alive, but #75 had a bug that this
+     * example was used to uncover.
+     */
+    syz_eventDeinit(&event);
     printf("Got event type %i\n", event.type);
     CHECKED(syz_handleGetObjectType(&object_type, event.source));
     printf("Handle %llu is of type %i\n", event.source, object_type);
