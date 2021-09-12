@@ -224,6 +224,7 @@ public:
    * */
   unsigned int decRef() {
     unsigned int cur = this->reference_count.load(std::memory_order_relaxed);
+    assert(cur != 0 && "Too many reference count decrements");
     while (cur != 0) {
       if (this->reference_count.compare_exchange_strong(cur, cur - 1, std::memory_order_release,
                                                         std::memory_order_relaxed)) {
