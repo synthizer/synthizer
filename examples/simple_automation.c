@@ -47,11 +47,13 @@ float *computeTriangle() {
   } while (0)
 
 int main() {
-  int ecode = 0;
+  int ecode = 0, initialized = 0;
   float *triangle = NULL;
   syz_Handle context = 0, buffer = 0, generator = 0, source = 0, timeline = 0;
 
   CHECKED(syz_initialize());
+  initialized = 1;
+
   CHECKED(syz_createContext(&context, NULL, NULL));
   CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
   CHECKED(syz_createDirectSource(&source, context, NULL, NULL));
@@ -79,7 +81,10 @@ end:
   syz_handleDecRef(timeline);
   syz_handleDecRef(generator);
   syz_handleDecRef(context);
-  syz_shutdown();
+  if (initialized) {
+    syz_shutdown();
+  }
+
   free(triangle);
   return ecode;
 }

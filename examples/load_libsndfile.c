@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
   struct syz_LibraryConfig library_config;
   syz_Handle context = 0, generator = 0, source = 0, buffer = 0, stream = 0;
   /* Used by the CHECKED macro. */
-  int ecode = 0;
+  int ecode = 0, initialized = 0;
 
   if (argc != 3) {
     printf("Usage: load_libsndfile <path> <libsndfile_path>\n");
@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
   library_config.logging_backend = SYZ_LOGGING_BACKEND_STDERR;
   library_config.libsndfile_path = argv[2];
   CHECKED(syz_initializeWithConfig(&library_config));
+  initialized = 1;
 
   CHECKED(syz_createContext(&context, NULL, NULL));
   CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
@@ -53,6 +54,9 @@ end:
   syz_handleDecRef(buffer);
   syz_handleDecRef(source);
   syz_handleDecRef(stream);
-  syz_shutdown();
+  if (initialized) {
+    syz_shutdown();
+  }
+
   return ecode;
 }

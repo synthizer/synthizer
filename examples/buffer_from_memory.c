@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
   struct syz_LibraryConfig library_config;
   syz_Handle context = 0, generator = 0, source = 0, buffer = 0;
   /* Used by the CHECKED macro. */
-  int ecode = 0;
+  int ecode = 0, initialized = 0;
   char *data = NULL;
   unsigned long long data_len = 0;
   FILE *file = NULL;
@@ -35,6 +35,7 @@ int main(int argc, char *argv[]) {
   library_config.log_level = SYZ_LOG_LEVEL_DEBUG;
   library_config.logging_backend = SYZ_LOGGING_BACKEND_STDERR;
   CHECKED(syz_initializeWithConfig(&library_config));
+  initialized = 1;
 
   CHECKED(syz_createContext(&context, NULL, NULL));
   CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
@@ -87,8 +88,14 @@ end:
   syz_handleDecRef(buffer);
   syz_handleDecRef(generator);
   syz_handleDecRef(buffer);
+  if (initialized) {
+    syz_shutdown();
+  }
+
   free(data);
-  if (file != NULL)
+  if (file != NULL) {
     fclose(file);
+  }
+
   return ecode;
 }
