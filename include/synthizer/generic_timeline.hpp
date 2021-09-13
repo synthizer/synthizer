@@ -40,8 +40,8 @@ public:
    * */
   template <typename CB> void tick(double time, CB &&callback);
 
-  void appendItem(const T &item);
-  template <typename IT> void appendItems(IT first, IT last);
+  void addItem(const T &item);
+  template <typename IT> void addItems(IT first, IT last);
 
   /**
    * Returns true if this timeline will no longer yield new items.
@@ -63,7 +63,7 @@ private:
 };
 
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
-void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::appendItem(const T &item) {
+void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::addItem(const T &item) {
   this->items.push_back(item);
   if (this->items.size() > 1) {
     auto &last = this->items[this->items.size() - 1];
@@ -74,9 +74,9 @@ void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::appendItem(const T 
 
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
 template <typename IT>
-void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::appendItems(IT first, IT last) {
+void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::addItems(IT first, IT last) {
   for (; first < last; first++) {
-    this->appendItem(*first);
+    this->addItem(*first);
   }
 }
 
