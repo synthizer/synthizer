@@ -399,10 +399,10 @@ PROPERTY_LIST
 #undef TIMELINE_PAIR
 
 void propSubsystemAdvanceAutomation() override {
-#define ADVANCER(C, N, NUM_VALS, EXTR)                                                                                           \
+#define ADVANCER(C, N, NUM_VALS, EXTR)                                                                                 \
   {                                                                                                                    \
     auto t = this->getTimelineFor##N();                                                                                \
-    t->template tick<NUM_VALS>(this->getAutomationTime());                                                                    \
+    t->template tick<NUM_VALS>(this->getAutomationTime());                                                             \
     auto val = t->getValue();                                                                                          \
     if (val) {                                                                                                         \
       EXTR this->set##N(v);                                                                                            \

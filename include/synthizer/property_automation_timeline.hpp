@@ -3,6 +3,7 @@
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
+#include "synthizer/generic_timeline.hpp"
 #include "synthizer/memory.hpp"
 
 #include <pdqsort.h>
@@ -24,6 +25,9 @@ public:
   unsigned int interpolation_type;
   double automation_time;
   std::array<double, 6> values;
+
+  /* For GenericTimeline. */
+  double getTime() { return this->automation_time; }
 };
 
 /**
@@ -38,8 +42,6 @@ public:
  * */
 class PropertyAutomationTimeline {
 public:
-  PropertyAutomationTimeline();
-
   /**
    * Tick the timeline, updating the internally stored next value.
    *
@@ -71,109 +73,90 @@ public:
    * - Somewhere calls `tick()` for the start of this audio tick
    * - Somewhere else calls `getValue()`.
    *
-   * This function returns an empty option if the timeline hasn't started yet (e.g. is in the future) or has
-   * already ended.  When it does so, properties are left alone.
+   * This function returns an empty option if the timeline hasn't started yet (e.g. is in the future) or has already
+   * ended.  When it does so, properties are left alone.
+   *
+   * It is only valid to call this once per tick: we have to use it to finalize the timeline so that the timeline always
+   * hits the final value exactly, but without requiring an extra tick for the timeline to record itself as finished.
+   * Consequently, this function *isn't* pure.
    * */
-  std::optional<std::array<double, 6>> getValue() { return this->current_value; }
+  std::optional<std::array<double, 6>> getValue() {
+    auto ret = this->current_value;
+    if (this->inner.isFinished() & !this->is_finalized) {
+      this->is_finalized = true;
+      this->current_value = std::nullopt;
+    }
+    return ret;
+  }
 
   /**
    * Returns true when evaluating this timeline will never again produce a value.
    * */
-  bool isFinished() { return this->finished; }
+  bool isFinished() { return this->is_finalized && this->inner.isFinished(); }
 
   void clear();
 
-  /**
-   * When we're this many points into the timeline, get rid of all the ones at the beginning that we no longer need.
-   * */
-  std::size_t COPY_BACK_THRESHOLD = 128;
 private:
-  void resortIfNeeded();
-
-  deferred_vector<PropertyAutomationPoint> points;
-  /**
-   * Points at the next point which we may need to evaluate.
-   * */
-  std::size_t next_point = 0;
-  bool finished = true;
-  bool has_added_since_last_sort = true;
+  GenericTimeline<PropertyAutomationPoint, 1> inner;
   std::optional<std::array<double, 6>> current_value = std::nullopt;
+  /* false until the timeline has fianlized by writing the last value after the inner timeline finished. */
+  bool is_finalized = false;
 };
 
 template <unsigned int N> inline void PropertyAutomationTimeline::tick(double time) {
   static_assert(N > 0 && N <= 6, "N is out of range");
+  this->inner.tick(time);
+  if (this->inner.isFinished()) {
+    // Set the value to the last point we can get in inner, if possible.
+    auto l = this->inner.getItem(-1);
+    if (this->is_finalized == false && l) {
+      this->current_value = (*l)->values;
+    }
+    return;
+  }
+  this->is_finalized = false;
 
-  this->resortIfNeeded();
+  // If it's not finished there is always an item.
+  auto cur = *(this->inner.getItem(0));
+  auto maybe_last = this->inner.getItem(-1);
 
-  if (this->finished) {
+  // If there is no last point, then the timeline hasn't started yet.
+  if (!maybe_last) {
     this->current_value = std::nullopt;
     return;
   }
 
-  // Advance until we find a point to evaluate.
-  // We could binary search but it's almost always going to be the next point.
-  while (this->next_point < this->points.size() && this->points[this->next_point].automation_time <= time) {
-    this->next_point++;
-  }
-  if (this->next_point >= this->points.size()) {
-    // We'll become nullopt on the next time through, but we always want to make sure the last value of the
-    // timeline is hit so that things always end up on a known state.
-    this->current_value = this->points.back().values;
-    this->finished = true;
-    return;
-  }
-
-  // If we're exactly at the first point, start there; this is the common use case of specifying timelines that start
-  // at 0.
-  if (this->points.front().automation_time == time) {
-    this->current_value = this->points.front().values;
-  }
-
-  // If we're not past the first point yet, nothing to do.
-  if (this->next_point == 0) {
-    this->current_value = std::nullopt;
-    return;
-  }
-
-  std::size_t last_point = this->next_point - 1;
-
-  const PropertyAutomationPoint &p1 = this->points[last_point];
-  const PropertyAutomationPoint &p2 = this->points[next_point];
+  auto last = *maybe_last;
 
   // If the previous point's interpolation type is none, then we may not have jumped yet.  We can just unconditionally
   // do that here, since jumping to the same value twice is not a big deal.
   //
-  // If the next point is NONE, then we must also jump: we need to finish the previous linear interpolation because
-  // the value between a linear point and a none point is the value of the linear point.
+  // If the next point is NONE, then we must also jump to the value of the previous point: we need to finish the
+  // previous linear interpolation because the value between a linear point and a none point is the value of the linear
+  // point.
   //
   // We don't return here: if the prior point is NONE then we might be interpolating.
-  if (p1.interpolation_type == SYZ_INTERPOLATION_TYPE_NONE || p2.interpolation_type == SYZ_INTERPOLATION_TYPE_NONE) {
-    this->current_value = p1.values;
+  if (last->interpolation_type == SYZ_INTERPOLATION_TYPE_NONE ||
+      cur->interpolation_type == SYZ_INTERPOLATION_TYPE_NONE) {
+    this->current_value = last->values;
   }
 
-  // If p2 is NONE, we don't do anything with it until we cross it.
-  if (p2.interpolation_type != SYZ_INTERPOLATION_TYPE_NONE) {
-    double time_diff = p2.automation_time - p1.automation_time;
-    double delta = (time - p1.automation_time) / time_diff;
-    double w2 = delta;
-    double w1 = 1.0 - w2;
-    std::array<double, 6> value;
-    for (unsigned int i = 0; i < N; i++) {
-      value[i] = w1 * p1.values[i] + w2 * p2.values[i];
+  // If cur is NONE, we don't do anything with it until we cross it.
+  if (cur->interpolation_type != SYZ_INTERPOLATION_TYPE_NONE) {
+    double time_diff = cur->automation_time - last->automation_time;
+    if (time_diff <= 0) {
+      // math will go nuts; just use cur.
+      this->current_value = cur->values;
+    } else {
+      double delta = (time - last->automation_time) / time_diff;
+      double w2 = delta;
+      double w1 = 1.0 - w2;
+      std::array<double, 6> value;
+      for (unsigned int i = 0; i < N; i++) {
+        value[i] = w1 * last->values[i] + w2 * cur->values[i];
+      }
+      this->current_value = value;
     }
-    this->current_value = value;
-  }
-
-  // If last_point isn't 0, then we have points before last_point which we no longer need; roll back the future so that
-  // the timeline doesn't fill indefinitely.
-  //
-  // last_point is always 1 before the end, because otherwise we'd not have a next_point and/or the if statements above
-  // would have bailed.
-  if (last_point > PropertyAutomationTimeline::COPY_BACK_THRESHOLD) {
-    auto needed_begin = this->points.begin() + last_point;
-    std::copy(needed_begin, this->points.end(), this->points.begin());
-    // last_point is at the beginning, next_point is 1 after that.  Fix the next_point to be right.
-    this->next_point = 1;
   }
 }
 
