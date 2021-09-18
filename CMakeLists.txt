@@ -140,6 +140,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 	src/generators/noise.cpp
 	src/generators/streaming.cpp
 
+  src/sources/angular_panned_source.cpp
 	src/sources/direct_source.cpp
 	src/sources/panned_source.cpp
 	src/sources/source3d.cpp

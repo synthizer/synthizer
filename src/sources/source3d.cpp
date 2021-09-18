@@ -12,7 +12,8 @@
 
 namespace synthizer {
 
-Source3D::Source3D(std::shared_ptr<Context> context, int _panner_strategy) : PannedSource(context, _panner_strategy) {}
+Source3D::Source3D(std::shared_ptr<Context> context, int _panner_strategy)
+    : AngularPannedSource(context, _panner_strategy) {}
 
 void Source3D::initInAudioThread() {
   PannedSource::initInAudioThread();
@@ -64,7 +65,7 @@ void Source3D::preRun() {
   dp.distance = dist;
   this->setGain3D(mulFromDistanceParams(dp));
   assert(azimuth >= 0.0);
-  PannedSource::preRun();
+  AngularPannedSource::preRun();
 }
 
 } // namespace synthizer

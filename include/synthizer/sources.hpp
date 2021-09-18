@@ -101,28 +101,36 @@ public:
   PannedSource(std::shared_ptr<Context> context, int panner_straegy);
   void initInAudioThread() override;
 
-  int getObjectType() override;
-
   /* For 	Source3D. */
   void setGain3D(double gain);
 
   /**
    * Hook to let subclasses drive the panner and (optionally) the 3D gain.
    * */
-  virtual void preRun();
+  virtual void preRun() {}
   void run() override;
 
-#define PROPERTY_CLASS PannedSource
-#define PROPERTY_LIST PANNED_SOURCE_PROPERTIES
-#define PROPERTY_BASE Source
-#include "synthizer/property_impl.hpp"
-private:
+protected:
   std::shared_ptr<PannerLane> panner_lane = nullptr;
   int panner_strategy;
   double gain_3d = 1.0;
 };
 
-class Source3D : public PannedSource {
+class AngularPannedSource : public PannedSource {
+public:
+  AngularPannedSource(const std::shared_ptr<Context> &ctx, int panner_strategy);
+
+  int getObjectType() override;
+
+  void preRun() override;
+
+#define PROPERTY_CLASS PannedSource
+#define PROPERTY_LIST ANGULAR_PANNED_SOURCE_PROPERTIES
+#define PROPERTY_BASE Source
+#include "synthizer/property_impl.hpp"
+};
+
+class Source3D : public AngularPannedSource {
 public:
   Source3D(std::shared_ptr<Context> context, int panner_strategy);
   void initInAudioThread() override;
