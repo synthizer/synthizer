@@ -130,6 +130,20 @@ public:
 #include "synthizer/property_impl.hpp"
 };
 
+class ScalarPannedSource : public PannedSource {
+public:
+  ScalarPannedSource(const std::shared_ptr<Context> &ctx, int panner_strategy);
+
+  int getObjectType() override;
+
+  void preRun() override;
+
+#define PROPERTY_CLASS PannedSource
+#define PROPERTY_LIST ANGULAR_PANNED_SOURCE_PROPERTIES
+#define PROPERTY_BASE Source
+#include "synthizer/property_impl.hpp"
+};
+
 class Source3D : public AngularPannedSource {
 public:
   Source3D(std::shared_ptr<Context> context, int panner_strategy);

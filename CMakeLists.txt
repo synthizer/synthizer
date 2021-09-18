@@ -143,6 +143,8 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/sources/angular_panned_source.cpp
 	src/sources/direct_source.cpp
 	src/sources/panned_source.cpp
+  src/sources/scalar_panned_source.cpp
+
 	src/sources/source3d.cpp
 
 	src/streams/custom_stream.cpp
