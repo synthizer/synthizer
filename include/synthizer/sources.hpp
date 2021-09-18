@@ -98,7 +98,7 @@ public:
  * */
 class PannedSource : public Source {
 public:
-  PannedSource(std::shared_ptr<Context> context);
+  PannedSource(std::shared_ptr<Context> context, int panner_straegy);
   void initInAudioThread() override;
 
   int getObjectType() override;
@@ -114,12 +114,13 @@ public:
 #include "synthizer/property_impl.hpp"
 private:
   std::shared_ptr<PannerLane> panner_lane = nullptr;
+  int panner_strategy;
   double gain_3d = 1.0;
 };
 
 class Source3D : public PannedSource {
 public:
-  Source3D(std::shared_ptr<Context> context);
+  Source3D(std::shared_ptr<Context> context, int panner_strategy);
   void initInAudioThread() override;
 
   int getObjectType() override;

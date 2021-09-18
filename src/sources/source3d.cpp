@@ -12,7 +12,7 @@
 
 namespace synthizer {
 
-Source3D::Source3D(std::shared_ptr<Context> context) : PannedSource(context) {}
+Source3D::Source3D(std::shared_ptr<Context> context, int _panner_strategy) : PannedSource(context, _panner_strategy) {}
 
 void Source3D::initInAudioThread() {
   PannedSource::initInAudioThread();
@@ -79,7 +79,7 @@ SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, i
   }
 
   auto ctx = fromC<Context>(context);
-  auto ret = ctx->createObject<Source3D>();
+  auto ret = ctx->createObject<Source3D>(panner_strategy);
   std::shared_ptr<Source> src_ptr = ret;
   ctx->registerSource(src_ptr);
   *out = toC(ret);

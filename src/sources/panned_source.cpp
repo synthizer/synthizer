@@ -18,7 +18,8 @@
 
 namespace synthizer {
 
-PannedSource::PannedSource(const std::shared_ptr<Context> context) : Source(context) {}
+PannedSource::PannedSource(const std::shared_ptr<Context> context, int _panner_strategy)
+    : Source(context), panner_strategy(_panner_strategy) {}
 
 void PannedSource::initInAudioThread() {
   Source::initInAudioThread();
@@ -80,7 +81,7 @@ SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle contex
   }
 
   auto ctx = fromC<Context>(context);
-  auto ret = ctx->createObject<PannedSource>();
+  auto ret = ctx->createObject<PannedSource>(panner_strategy);
   std::shared_ptr<Source> src_ptr = ret;
   ctx->registerSource(src_ptr);
   *out = toC(ret);
