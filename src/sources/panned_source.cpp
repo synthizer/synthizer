@@ -75,8 +75,8 @@ void PannedSource::run() {
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_createPannedSource(syz_Handle *out, syz_Handle context, int panner_strategy, void *userdata,
-                                              syz_UserdataFreeCallback *userdata_free_callback) {
+SYZ_CAPI syz_ErrorCode syz_createAngularPannedSource(syz_Handle *out, syz_Handle context, int panner_strategy,
+                                                     void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
   SYZ_PROLOGUE
   if (panner_strategy >= SYZ_PANNER_STRATEGY_COUNT) {
     throw ERange("Invalid panner strategy");

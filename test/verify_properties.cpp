@@ -210,7 +210,7 @@ int main() {
 #define DOUBLE_P(...) DOUBLE_P_IMPL(__VA_ARGS__)
 
   objtype = "PannedSource";
-  if (syz_createPannedSource(&handle, ctx, SYZ_PANNER_STRATEGY_DELEGATE, NULL, NULL) != 0) {
+  if (syz_createAngularPannedSource(&handle, ctx, SYZ_PANNER_STRATEGY_DELEGATE, NULL, NULL) != 0) {
     printf("Couldn't create PannedSource ");
     printLastError();
     return 1;
