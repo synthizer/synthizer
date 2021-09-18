@@ -59,7 +59,9 @@ void endInitializedCall(bool require_init) {
     return;
   }
 
-  assert(is_initialized.fetch_sub(1, std::memory_order_relaxed) >= 0);
+  auto sub = is_initialized.fetch_sub(1, std::memory_order_relaxed);
+  (void)sub;
+  assert(sub >= 0);
 }
 
 } // namespace synthizer
