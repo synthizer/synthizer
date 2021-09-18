@@ -28,6 +28,8 @@ void PannedSource::initInAudioThread() {
     this->panner_strategy = this->getContextRaw()->getDefaultPannerStrategy();
   }
 
+  this->panner_lane = this->context->allocateSourcePannerLane((enum SYZ_PANNER_STRATEGY)this->panner_strategy);
+
   /*
    * PannedSource uses the changed status of properties to determine whether or not the user
    * is using azimuth/elevation or the panning scalar. Since the panner's default config is okay, mark them all
@@ -47,10 +49,6 @@ void PannedSource::run() {
 
   bool angles_changed = this->acquireAzimuth(azimuth) | this->acquireElevation(elevation);
   bool scalar_changed = this->acquirePanningScalar(panning_scalar);
-
-  if (this->panner_lane == nullptr) {
-    this->panner_lane = this->context->allocateSourcePannerLane((enum SYZ_PANNER_STRATEGY)this->panner_strategy);
-  }
 
   if (angles_changed) {
     this->panner_lane->setPanningAngles(azimuth, elevation);
