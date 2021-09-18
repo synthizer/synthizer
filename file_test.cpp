@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 	CHECKED(syz_setI(context, SYZ_P_DEFAULT_PANNER_STRATEGY, SYZ_PANNER_STRATEGY_HRTF));
 
 	CHECKED(syz_contextEnableEvents(context));
-	CHECKED(syz_createSource3D(&source, context, NULL, NULL));
+	CHECKED(syz_createSource3D(&source, context, SYZ_PANNER_STRATEGY_DELEGATE, NULL, NULL));
 	CHECKED(syz_createBufferFromStreamParams(&buffer, "file", argv[1], NULL, NULL, NULL));
 	CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
 	CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));

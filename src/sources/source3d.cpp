@@ -71,9 +71,13 @@ void Source3D::run() {
 
 using namespace synthizer;
 
-SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, void *userdata,
+SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, int panner_strategy, void *userdata,
                                           syz_UserdataFreeCallback *userdata_free_callback) {
   SYZ_PROLOGUE
+  if (panner_strategy >= SYZ_PANNER_STRATEGY_COUNT) {
+    throw ERange("Invalid panner strategy");
+  }
+
   auto ctx = fromC<Context>(context);
   auto ret = ctx->createObject<Source3D>();
   std::shared_ptr<Source> src_ptr = ret;

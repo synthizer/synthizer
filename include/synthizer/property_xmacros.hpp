@@ -43,7 +43,7 @@ extern "C" {
   DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0)                                                             \
   DOUBLE3_P(SYZ_P_POSITION, position, Position, 0.0, 0.0, 0.0)                                                         \
   DOUBLE6_P(SYZ_P_ORIENTATION, orientation, Orientation, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)                                 \
-  INT_P(SYZ_P_DEFAULT_PANNER_STRATEGY, default_panner_strategy, DefaultPannerStrategy, SYZ_PANNER_STRATEGY_HRTF,                              \
+  INT_P(SYZ_P_DEFAULT_PANNER_STRATEGY, default_panner_strategy, DefaultPannerStrategy, SYZ_PANNER_STRATEGY_HRTF,       \
         SYZ_PANNER_STRATEGY_COUNT - 1, SYZ_PANNER_STRATEGY_STEREO)                                                     \
   DISTANCE_MODEL_PROPERTIES(_DEFAULT_, default_, Default)
 
@@ -54,8 +54,8 @@ extern "C" {
   BIQUAD_P(SYZ_P_FILTER_EFFECTS, filter_effects, FilterEffects)
 
 #define PANNED_SOURCE_PROPERTIES                                                                                       \
-  INT_P(SYZ_P_PANNER_STRATEGY, panner_strategy, PannerStrategy, SYZ_PANNER_STRATEGY_HRTF, SYZ_PANNER_STRATEGY_COUNT - 1,                      \
-        SYZ_PANNER_STRATEGY_STEREO)                                                                                    \
+  INT_P(SYZ_P_PANNER_STRATEGY, panner_strategy, PannerStrategy, SYZ_PANNER_STRATEGY_HRTF,                              \
+        SYZ_PANNER_STRATEGY_COUNT - 1, SYZ_PANNER_STRATEGY_STEREO)                                                     \
   DOUBLE_P(SYZ_P_AZIMUTH, azimuth, Azimuth, 0.0f, 360.0f, 0.0)                                                         \
   DOUBLE_P(SYZ_P_ELEVATION, elevation, Elevation, -90.0f, 90.0f, 0.0)                                                  \
   DOUBLE_P(SYZ_P_PANNING_SCALAR, panning_scalar, PanningScalar, -1.0, 1.0, 0.0)
