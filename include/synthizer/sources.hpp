@@ -106,6 +106,10 @@ public:
   /* For 	Source3D. */
   void setGain3D(double gain);
 
+  /**
+   * Hook to let subclasses drive the panner and (optionally) the 3D gain.
+   * */
+  virtual void preRun();
   void run() override;
 
 #define PROPERTY_CLASS PannedSource
@@ -124,7 +128,8 @@ public:
   void initInAudioThread() override;
 
   int getObjectType() override;
-  void run() override;
+  void preRun() override;
+  // No run: PannedSource already handles that for us.
 
 #define PROPERTY_CLASS Source3D
 #define PROPERTY_BASE PannedSource

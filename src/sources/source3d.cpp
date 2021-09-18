@@ -21,7 +21,7 @@ void Source3D::initInAudioThread() {
 
 int Source3D::getObjectType() { return SYZ_OTYPE_SOURCE_3D; }
 
-void Source3D::run() {
+void Source3D::preRun() {
   auto ctx = this->getContext();
   auto listener_pos = ctx->getPosition();
   auto listener_orient = ctx->getOrientation();
@@ -64,7 +64,7 @@ void Source3D::run() {
   dp.distance = dist;
   this->setGain3D(mulFromDistanceParams(dp));
   assert(azimuth >= 0.0);
-  PannedSource::run();
+  PannedSource::preRun();
 }
 
 } // namespace synthizer

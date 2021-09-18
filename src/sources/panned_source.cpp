@@ -44,7 +44,7 @@ int PannedSource::getObjectType() { return SYZ_OTYPE_PANNED_SOURCE; }
 
 void PannedSource::setGain3D(double gain) { this->gain_3d = gain; }
 
-void PannedSource::run() {
+void PannedSource::preRun() {
   double azimuth, elevation, panning_scalar;
 
   bool angles_changed = this->acquireAzimuth(azimuth) | this->acquireElevation(elevation);
@@ -55,6 +55,10 @@ void PannedSource::run() {
   } else if (scalar_changed) {
     this->panner_lane->setPanningScalar(panning_scalar);
   }
+}
+
+void PannedSource::run() {
+  this->preRun();
 
   this->fillBlock(1);
   /* And output. */
