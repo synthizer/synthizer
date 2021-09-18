@@ -23,8 +23,12 @@ PannedSource::PannedSource(const std::shared_ptr<Context> context, int _panner_s
 
 void PannedSource::initInAudioThread() {
   Source::initInAudioThread();
-  /* Copy the default in from the context. */
-  this->setPannerStrategy(this->getContextRaw()->getDefaultPannerStrategy());
+  // Copy the default in from the context, if it wasn't overridden.
+  if (this->panner_strategy == SYZ_PANNER_STRATEGY_DELEGATE) {
+    this->setPannerStrategy(this->getContextRaw()->getDefaultPannerStrategy());
+  } else {
+    this->setPannerStrategy(this->panner_strategy);
+  }
 
   /*
    * PannedSource uses the changed status of properties to determine whether or not the user
