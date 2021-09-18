@@ -6,7 +6,7 @@ source:
 - The [DirectSource](../object_reference/direct_source.md) plays audio directly,
   and can be used for things like background music.  This is the only source
   type which won't convert audio to mono before using it.
-- The [PannedSource](../object_reference/panned_source.md) allows for manual
+- The [ScalarPannedSource and AngularPannedSource](../object_reference/panned_sources.md) allow for manual
   control over pan, either by azimuth/elevation or via a scalar from -1 to 1
   where -1 is all left and 1 is all right.
 - The [Source3D](../object_reference/source_3d.md) allows for positioning audio

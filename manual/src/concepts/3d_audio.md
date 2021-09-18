@@ -4,7 +4,7 @@
 
 Synthizer supports panning audio through two interfaces.
 
-First is [PannedSource](../object_reference/panned_source.md), which provides
+First is [AngularPannedSource and ScalarPannedSource](../object_reference/panned_sources.md), which provides
 simple azimuth/elevation controls and the ability to pan based off a scalar, a
 value between -1 (all left) and 1 (all right).  In this case the user
 application must compute these values itself.
@@ -39,7 +39,7 @@ reason you can move the source through the listener's head in the first place is
 that this isn't an easily detectable case.  If you aren't driving Synthizer in a
 way connected to physical reality--for example if you are attempting to use `x`
 as a way to pan sources from left to right and not linked to a position--then
-you probably want `PannedSource` instead.
+you probably want one of the raw panned sources instead.
 
 ## Setting Global Defaults
 
@@ -106,9 +106,11 @@ Strategy | Channels | Description
 SYZ_PANNER_STRATEGY_HRTF | 2 | An HRTF implementation, intended for use via headphones.
 SYZ_PANNER_STRATEGY_STEREO | 2 | A simple stereo panning strategy assuming speakers are at -90 and 90.
 
-When a  source is first created, it gets the panning strategy from
-`SYZ_P_DEFAULT_PANNER_STRATEGY` on the context.  Applications wishing to change
-the default should do so before creating sources.
+When  a source is created, the panning strategy it is to use is passed via the constructor function and cannot be
+changed.  A special value, `SYZ_PANNER_STRATEGY_DELEGATE` allows the source to delegate this to the context, and can be
+used in cases whre the context's configuration should be preferred.  A vast majority of applications will do this
+configuration via the context and `SYZ_PANNER_STRATEGY_DELEGATE`; other valeus should be safed for cases in which you
+wish to mix panning types.
 
 By default Synthizer is configured to use a stereo panning strategy, which
 simply pans between two speakers.  This is because stereo panning strategies

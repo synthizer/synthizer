@@ -128,8 +128,8 @@ all, and output.  Currently we have the following kinds of sources:
 - A `DirectSource` conneccts audio directly to the speakers, so that you can
   pass things through without collapsing them to mono.  This is what you want
   for music.
-- A `PannedSource` is manually controlled using azimuth and elevation or,
-  alternatively, a panning scalar where -1 is all left and 1 is all right.
+- A `AngularPannedSource` is manually controlled using azimuth and elevation angles.
+- A `ScalarPannedSource` is controlled by a scalar value from -1.0 (all left) to 1.0 (all right).
 - `Source3D` is a 3D environmental source with the usual things you'd expect:
   distance model, position, etc.
 
