@@ -53,14 +53,11 @@ extern "C" {
   BIQUAD_P(SYZ_P_FILTER_DIRECT, filter_direct, FilterDirect)                                                           \
   BIQUAD_P(SYZ_P_FILTER_EFFECTS, filter_effects, FilterEffects)
 
-#define PANNED_SOURCE_PROPERTIES                                                                                       \
-  DOUBLE_P(SYZ_P_AZIMUTH, azimuth, Azimuth, 0.0f, 360.0f, 0.0)                                                         \
-  DOUBLE_P(SYZ_P_ELEVATION, elevation, Elevation, -90.0f, 90.0f, 0.0)                                                  \
-  DOUBLE_P(SYZ_P_PANNING_SCALAR, panning_scalar, PanningScalar, -1.0, 1.0, 0.0)
-
 #define ANGULAR_PANNED_SOURCE_PROPERTIES                                                                               \
   DOUBLE_P(SYZ_P_AZIMUTH, azimuth, Azimuth, 0.0f, 360.0f, 0.0)                                                         \
   DOUBLE_P(SYZ_P_ELEVATION, elevation, Elevation, -90.0f, 90.0f, 0.0)
+
+#define SCALAR_PANNED_SOURCE_PROPERTIES DOUBLE_P(SYZ_P_PANNING_SCALAR, panning_scalar, PanningScalar, -1.0, 1.0, 0.0)
 
 #define SOURCE3D_PROPERTIES                                                                                            \
   DOUBLE3_P(SYZ_P_POSITION, position, Position, 0.0, 0.0, 0.0)                                                         \

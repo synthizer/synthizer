@@ -14,12 +14,10 @@ ScalarPannedSource::ScalarPannedSource(const std::shared_ptr<Context> &ctx, int 
 int ScalarPannedSource::getObjectType() { return SYZ_OTYPE_SCALAR_PANNED_SOURCE; }
 
 void ScalarPannedSource::preRun() {
-  double azimuth, elevation;
+  double scalar;
 
-  bool angles_changed = this->acquireAzimuth(azimuth) | this->acquireElevation(elevation);
-
-  if (angles_changed) {
-    this->panner_lane->setPanningAngles(azimuth, elevation);
+  if (this->acquirePanningScalar(scalar)) {
+    this->panner_lane->setPanningScalar(scalar);
   }
 }
 
