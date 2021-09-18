@@ -7,9 +7,8 @@ import synthizer
 with synthizer.initialized():
     ctx = synthizer.Context()
     src = synthizer.ScalarPannedSource(
-        ctx, panner_strategy=synthizer.PannerStrategy.HRTF
+        ctx, panner_strategy=synthizer.PannerStrategy.HRTF, panning_scalar=-1.0
     )
-    src.panning_scalar = -1.0
     gen = synthizer.BufferGenerator(ctx)
     src.add_generator(gen)
     gen.looping = True

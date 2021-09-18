@@ -209,8 +209,8 @@ int main() {
 #undef DOUBLE_P
 #define DOUBLE_P(...) DOUBLE_P_IMPL(__VA_ARGS__)
 
-  objtype = "PannedSource";
-  if (syz_createAngularPannedSource(&handle, ctx, SYZ_PANNER_STRATEGY_DELEGATE, NULL, NULL) != 0) {
+  objtype = "AngularPannedSource";
+  if (syz_createAngularPannedSource(&handle, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, NULL, NULL) != 0) {
     printf("Couldn't create PannedSource ");
     printLastError();
     return 1;
@@ -218,7 +218,7 @@ int main() {
   ANGULAR_PANNED_SOURCE_PROPERTIES;
 
   objtype = "Source3D";
-  if (syz_createSource3D(&handle, ctx, SYZ_PANNER_STRATEGY_DELEGATE, NULL, NULL) != 0) {
+  if (syz_createSource3D(&handle, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, 0.0, NULL, NULL) != 0) {
     printf("Couldn't create Source3D ");
     printLastError();
     return 1;

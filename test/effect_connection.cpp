@@ -38,9 +38,9 @@ int main() {
   // CHECKED(syz_createContextHeadless(&ctx));
   CHECKED(syz_createContext(&ctx, NULL, NULL));
 
-  CHECKED(syz_createSource3D(&source1, ctx, SYZ_PANNER_STRATEGY_DELEGATE, NULL, NULL));
-  CHECKED(syz_createSource3D(&source2, ctx, SYZ_PANNER_STRATEGY_DELEGATE, NULL, NULL));
-  CHECKED(syz_createSource3D(&source3, ctx, SYZ_PANNER_STRATEGY_DELEGATE, NULL, NULL));
+  CHECKED(syz_createSource3D(&source1, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, 0.0, NULL, NULL));
+  CHECKED(syz_createSource3D(&source2, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, 0.0, NULL, NULL));
+  CHECKED(syz_createSource3D(&source3, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, 0.0, NULL, NULL));
   CHECKED(syz_createGlobalFdnReverb(&reverb1, ctx, NULL, NULL));
   CHECKED(syz_createGlobalFdnReverb(&reverb2, ctx, NULL, NULL));
 

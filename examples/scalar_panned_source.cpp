@@ -47,8 +47,7 @@ int main(int argc, char *argv[]) {
 
   CHECKED(syz_createContext(&context, NULL, NULL));
   CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
-  CHECKED(syz_createScalarPannedSource(&source, context, SYZ_PANNER_STRATEGY_HRTF, NULL, NULL));
-  CHECKED(syz_setD(source, SYZ_P_PANNING_SCALAR, -1.0));
+  CHECKED(syz_createScalarPannedSource(&source, context, SYZ_PANNER_STRATEGY_HRTF, 0.0, NULL, NULL));
   CHECKED(syz_sourceAddGenerator(source, generator));
 
   CHECKED(syz_createBufferFromFile(&buffer, argv[1], NULL, NULL));

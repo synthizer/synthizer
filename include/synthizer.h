@@ -213,13 +213,14 @@ SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle g
 SYZ_CAPI syz_ErrorCode syz_createDirectSource(syz_Handle *out, syz_Handle context, void *userdata,
                                               syz_UserdataFreeCallback *userdata_free_callback);
 
-SYZ_CAPI syz_ErrorCode syz_createlannedSource(syz_Handle *out, syz_Handle context, int panner_strategy,
-                                                     void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+SYZ_CAPI syz_ErrorCode syz_createAngularPannedSource(syz_Handle *out, syz_Handle context, int panner_strategy,
+                                                     double azimuth, double elevation, void *userdata,
+                                                     syz_UserdataFreeCallback *userdata_free_callback);
 SYZ_CAPI syz_ErrorCode syz_createScalarPannedSource(syz_Handle *out, syz_Handle context, int panner_strategy,
-                                                    void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
-
-SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, int panner_strategy, void *userdata,
-                                          syz_UserdataFreeCallback *userdata_free_callback);
+                                                    double panning_scalar, void *userdata,
+                                                    syz_UserdataFreeCallback *userdata_free_callback);
+SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, int panner_strategy, double x, double y,
+                                          double z, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
 
 SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels,
                                                 void *userdata, syz_UserdataFreeCallback *userdata_free_callback);

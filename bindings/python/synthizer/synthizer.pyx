@@ -672,20 +672,20 @@ cdef class DirectSource(Source) :
         super().__init__(out)
 
 cdef class AngularPannedSource(Source):
-    def __init__(self, context, panner_strategy = PannerStrategy.DELEGATE):
+    def __init__(self, context, panner_strategy = PannerStrategy.DELEGATE, azimuth=0.0, elevation=0.0):
         cdef syz_Handle ctx = context._get_handle_checked(Context)      
         cdef syz_Handle out
-        _checked(syz_createAngularPannedSource(&out, ctx, panner_strategy.value, NULL, NULL))
+        _checked(syz_createAngularPannedSource(&out, ctx, panner_strategy.value, azimuth, elevation, NULL, NULL))
         super().__init__(out)
 
     azimuth = DoubleProperty(SYZ_P_AZIMUTH)
     elevation = DoubleProperty(SYZ_P_ELEVATION)
 
 cdef class ScalarPannedSource(Source):
-    def __init__(self, context, panner_strategy=PannerStrategy.DELEGATE):
+    def __init__(self, context, panner_strategy=PannerStrategy.DELEGATE, panning_scalar=0.0):
         cdef syz_Handle ctx = context._get_handle_checked(Context)      
         cdef syz_Handle out
-        _checked(syz_createScalarPannedSource(&out, ctx, panner_strategy.value, NULL, NULL))
+        _checked(syz_createScalarPannedSource(&out, ctx, panner_strategy.value, panning_scalar, NULL, NULL))
         super().__init__(out)
 
     panning_scalar = DoubleProperty(SYZ_P_PANNING_SCALAR)
@@ -693,10 +693,10 @@ cdef class ScalarPannedSource(Source):
 cdef class Source3D(Source):
     """A source with 3D parameters."""
 
-    def __init__(self, context, panner_strategy=PannerStrategy.DELEGATE):
+    def __init__(self, context, panner_strategy=PannerStrategy.DELEGATE, position=(0.0, 0.0, 0.0)):
         cdef syz_Handle ctx = context._get_handle_checked(Context)      
         cdef syz_Handle out
-        _checked(syz_createSource3D(&out, ctx, panner_strategy.value, NULL, NULL))
+        _checked(syz_createSource3D(&out, ctx, panner_strategy.value, position[0], position[1], position[2], NULL, NULL))
         super().__init__(out)
 
     distance_model = enum_property(SYZ_P_DISTANCE_MODEL, lambda x: DistanceModel(x))
