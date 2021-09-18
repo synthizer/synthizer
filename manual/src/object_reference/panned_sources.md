@@ -26,9 +26,9 @@ Creates a scalar panned source, controlled via the panning scalar.
 
 Enum | Type | Default | Range | Description
 --- | --- | --- | --- | ---
-SYZ_P_AZIMUTH | double | 0.0 | 0.0 to 360.0 | The azimuth of the panner. See remarks.
-SYZ_P_ELEVATION | double | 0.0 | -90.0 to 90.0 | See remarks
-SYZ_P_PANNING_SCALAR | double | 0.0 | -1.0 to 1.0 | see remarks
+SYZ_P_AZIMUTH | double | from constructor | 0.0 to 360.0 | The azimuth of the panner. See remarks.
+SYZ_P_ELEVATION | double | from constructor | -90.0 to 90.0 | See remarks
+SYZ_P_PANNING_SCALAR | double | from constructor | -1.0 to 1.0 | see remarks
 
 ## Linger Behavior
 

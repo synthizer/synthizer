@@ -12,9 +12,10 @@ SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, i
 Creates a source3d positioned at the origin and with no associated generators.
 
 ## Properties
+
 Enum | Type | Default | Range | Description
 --- | --- | --- | --- | ---
-SYZ_P_POSITION | double3 | (0, 0, 0) | any | The position of the source.
+SYZ_P_POSITION | double3 | from constructor | any | The position of the source.
 SYZ_P_ORIENTATION | double6 | (0, 1, 0, 0, 0, 1) | Two packed unit vectors | The orientation of the source as `(atx, aty, atz, upx, upy, upz)`. Currently unused.
 SYZ_P_DISTANCE_MODEL | int | from Context | any SYZ_DISTANCE_MODEL | The distance model for this source.
 SYZ_P_DISTANCE_REF | double | From Context | value >= 0.0 | The reference distance.
