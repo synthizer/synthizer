@@ -6,6 +6,7 @@ import sys
 
 import synthizer
 
+
 class CustomStream:
     def __init__(self, path):
         self.file = open(path, "rb")
@@ -25,8 +26,10 @@ class CustomStream:
         self.file.seek(pos)
         return len
 
+
 def factory(protocol, path, param):
     return CustomStream(path)
+
 
 with synthizer.initialized(
     log_level=synthizer.LogLevel.DEBUG, logging_backend=synthizer.LoggingBackend.STDERR

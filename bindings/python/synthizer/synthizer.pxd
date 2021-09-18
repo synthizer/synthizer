@@ -48,7 +48,7 @@ cdef extern from "synthizer.h":
 
     void syz_initDeleteBehaviorConfig(syz_DeleteBehaviorConfig* cfg)
 
-    syz_ErrorCode syz_configDeleteBehavior(syz_Handle object, const syz_DeleteBehaviorConfig* cfg)
+    syz_ErrorCode syz_configDeleteBehavior(syz_Handle object, syz_DeleteBehaviorConfig* cfg)
 
     syz_ErrorCode syz_handleGetObjectType(int* out, syz_Handle handle)
 
@@ -101,6 +101,18 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_biquadDesignBandpass(syz_BiquadConfig* filter, double frequency, double bw)
 
+    cdef struct syz_AutomationPoint:
+        unsigned int interpolation_type
+        double automation_time
+        double values[6]
+        unsigned long long flags
+
+    syz_ErrorCode syz_createAutomationTimeline(syz_Handle* out, unsigned int point_count, syz_AutomationPoint* points, unsigned long long flags, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
+
+    syz_ErrorCode syz_automationSetTimeline(syz_Handle object, int property, syz_Handle timeline)
+
+    syz_ErrorCode syz_automationClear(syz_Handle objeect, int property)
+
     syz_ErrorCode syz_createContext(syz_Handle* out, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
     syz_ErrorCode syz_createContextHeadless(syz_Handle* out, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
@@ -110,12 +122,6 @@ cdef extern from "synthizer.h":
     syz_ErrorCode syz_contextEnableEvents(syz_Handle context)
 
     syz_ErrorCode syz_contextGetNextEvent(syz_Event* out, syz_Handle context, unsigned long long flags)
-
-    syz_ErrorCode syz_createStreamHandleFromStreamParams(syz_Handle* out, char* protocol, char* path, void* param, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
-
-    syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle* out, unsigned long long data_len, char* data, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
-
-    syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle* out, char* path, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
     ctypedef int syz_StreamReadCallback(unsigned long long* read, unsigned long long requested, char* destination, void* userdata, char** err_msg)
 
@@ -133,11 +139,17 @@ cdef extern from "synthizer.h":
         long long length
         void* userdata
 
-    syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle* out, syz_CustomStreamDef* callbacks, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
-
     ctypedef int syz_StreamOpenCallback(syz_CustomStreamDef* callbacks, char* protocol, char* path, void* param, void* userdata, char** err_msg)
 
     syz_ErrorCode syz_registerStreamProtocol(char* protocol, syz_StreamOpenCallback* callback, void* userdata)
+
+    syz_ErrorCode syz_createStreamHandleFromStreamParams(syz_Handle* out, char* protocol, char* path, void* param, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
+
+    syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle* out, unsigned long long data_len, char* data, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
+
+    syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle* out, char* path, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
+
+    syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle* out, syz_CustomStreamDef* callbacks, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
     syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle* out, syz_Handle context, char* protocol, char* path, void* param, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
@@ -169,9 +181,11 @@ cdef extern from "synthizer.h":
 
     syz_ErrorCode syz_createDirectSource(syz_Handle* out, syz_Handle context, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
-    syz_ErrorCode syz_createPannedSource(syz_Handle* out, syz_Handle context, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
+    syz_ErrorCode syz_createAngularPannedSource(syz_Handle* out, syz_Handle context, int panner_strategy, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
-    syz_ErrorCode syz_createSource3D(syz_Handle* out, syz_Handle context, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
+    syz_ErrorCode syz_createScalarPannedSource(syz_Handle* out, syz_Handle context, int panner_strategy, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
+
+    syz_ErrorCode syz_createSource3D(syz_Handle* out, syz_Handle context, int panner_strategy, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 
     syz_ErrorCode syz_createNoiseGenerator(syz_Handle* out, syz_Handle context, unsigned int channels, void* userdata, syz_UserdataFreeCallback* userdata_free_callback)
 

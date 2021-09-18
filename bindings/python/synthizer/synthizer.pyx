@@ -202,6 +202,7 @@ def initialized(*args, **kwargs):
         shutdown()
 
 class PannerStrategy(Enum):
+    DELEGATE = SYZ_PANNER_STRATEGY_DELEGATE
     HRTF = SYZ_PANNER_STRATEGY_HRTF
     STEREO = SYZ_PANNER_STRATEGY_STEREO
 
@@ -670,32 +671,32 @@ cdef class DirectSource(Source) :
         _checked(syz_createDirectSource(&out, ctx, NULL, NULL))
         super().__init__(out)
 
-cdef class PannedSourceCommon(Source):
-    """Properties common to PannedSource and Source3D"""
-    panner_strategy = enum_property(SYZ_P_PANNER_STRATEGY, lambda x: PannerStrategy(x))
-
-
-cdef class PannedSource(PannedSourceCommon):
-    """A source with azimuth and elevation panning done by hand."""
-
-    def __init__(self, context):
+cdef class AngularPannedSource(Source):
+    def __init__(self, context, panner_strategy = PannerStrategy.DELEGATE):
         cdef syz_Handle ctx = context._get_handle_checked(Context)      
         cdef syz_Handle out
-        _checked(syz_createPannedSource(&out, ctx, NULL, NULL))
+        _checked(syz_createAngularPannedSource(&out, ctx, panner_strategy.value, NULL, NULL))
         super().__init__(out)
 
     azimuth = DoubleProperty(SYZ_P_AZIMUTH)
     elevation = DoubleProperty(SYZ_P_ELEVATION)
-    panning_scalar = DoubleProperty(SYZ_P_PANNING_SCALAR)
 
-
-cdef class Source3D(PannedSourceCommon):
-    """A source with 3D parameters."""
-
-    def __init__(self, context):
+cdef class ScalarPannedSource(Source):
+    def __init__(self, context, panner_strategy=PannerStrategy.DELEGATE):
         cdef syz_Handle ctx = context._get_handle_checked(Context)      
         cdef syz_Handle out
-        _checked(syz_createSource3D(&out, ctx, NULL, NULL))
+        _checked(syz_createScalarPannedSource(&out, ctx, panner_strategy.value, NULL, NULL))
+        super().__init__(out)
+
+    panning_scalar = DoubleProperty(SYZ_P_PANNING_SCALAR)
+
+cdef class Source3D(Source):
+    """A source with 3D parameters."""
+
+    def __init__(self, context, panner_strategy=PannerStrategy.DELEGATE):
+        cdef syz_Handle ctx = context._get_handle_checked(Context)      
+        cdef syz_Handle out
+        _checked(syz_createSource3D(&out, ctx, panner_strategy.value, NULL, NULL))
         super().__init__(out)
 
     distance_model = enum_property(SYZ_P_DISTANCE_MODEL, lambda x: DistanceModel(x))
