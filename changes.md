@@ -1,3 +1,17 @@
+## 0.11.0
+
+## Changes in this Rlease
+
+- `PannedSource` has been split into `ScalarPannedSource` and `AngularPannedSOurce`.
+  - This prevents regressions with respect to being able to use panning scalars.
+  - Use `AngularPannedSource` for azimuth/elevation and `ScalarPannedSource` for the panning scalar.
+- All sources which do panning require their panning strategy to be set up front via their constructor function.
+  - A new `SYZ_PANNER_STRATEGY_DELEGATE` value may be used to instruct a source to use the context's default strategy,
+    and is probably what most applications will want to use.
+- All sources which do panning require that their panning related values be passed in via their constructors as well.
+  These are the initial values you would otherwise have to set in the related properties.
+  - Makes it possible to tweak crossfading stuff later.
+
 # 0.10.0
 
 ## Changes in this Release
@@ -182,9 +196,9 @@ comes after a write to read a stale value, so code shouldn't have been relying o
 this reservation for the above performance increases, and may break code that incorrectly relied on the old behavior.
 
 Synthizer has also changed the default panner strategy to `SYZ_PANNER_STRATEGY_STEREO`.  To re-enable HRTF, set this on
-a per-source basis.  The ability to set this default on a per-context basis will be introduced in the 0.8.x series.
-This change was made because HRTF is only useful for headphone users, and it is not possible for Synthizer to reliably
-detect that case.  In general, stereo panning is safe on every audio configuration including surround sound systems.
+a per-source basis.  The ability to set this default on a per-context basis will be introduced in the 0.8.x series. This
+change was made because HRTF is only useful for headphone users, and it is not possible for Synthizer to reliably detect
+that case.  In general, stereo panning is safe on every audio configuration including surround sound systems.
 
 ## Patch Notes
 
