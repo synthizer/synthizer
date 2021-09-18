@@ -124,9 +124,9 @@ public:
 
   void preRun() override;
 
-#define PROPERTY_CLASS PannedSource
+#define PROPERTY_CLASS AngularPannedSource
 #define PROPERTY_LIST ANGULAR_PANNED_SOURCE_PROPERTIES
-#define PROPERTY_BASE Source
+#define PROPERTY_BASE PannedSource
 #include "synthizer/property_impl.hpp"
 };
 
@@ -138,9 +138,9 @@ public:
 
   void preRun() override;
 
-#define PROPERTY_CLASS PannedSource
-#define PROPERTY_LIST ANGULAR_PANNED_SOURCE_PROPERTIES
-#define PROPERTY_BASE Source
+#define PROPERTY_CLASS ScalarPannedSource
+#define PROPERTY_LIST SCALAR_PANNED_SOURCE_PROPERTIES
+#define PROPERTY_BASE PannedSource
 #include "synthizer/property_impl.hpp"
 };
 

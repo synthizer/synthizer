@@ -215,7 +215,7 @@ int main() {
     printLastError();
     return 1;
   }
-  PANNED_SOURCE_PROPERTIES;
+  ANGULAR_PANNED_SOURCE_PROPERTIES;
 
   objtype = "Source3D";
   if (syz_createSource3D(&handle, ctx, SYZ_PANNER_STRATEGY_DELEGATE, NULL, NULL) != 0) {
