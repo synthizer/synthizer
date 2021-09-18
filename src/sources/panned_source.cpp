@@ -25,9 +25,7 @@ void PannedSource::initInAudioThread() {
   Source::initInAudioThread();
   // Copy the default in from the context, if it wasn't overridden.
   if (this->panner_strategy == SYZ_PANNER_STRATEGY_DELEGATE) {
-    this->setPannerStrategy(this->getContextRaw()->getDefaultPannerStrategy());
-  } else {
-    this->setPannerStrategy(this->panner_strategy);
+    this->panner_strategy = this->getContextRaw()->getDefaultPannerStrategy();
   }
 
   /*
@@ -45,18 +43,16 @@ int PannedSource::getObjectType() { return SYZ_OTYPE_PANNED_SOURCE; }
 void PannedSource::setGain3D(double gain) { this->gain_3d = gain; }
 
 void PannedSource::run() {
-  int panner_strategy;
   double azimuth, elevation, panning_scalar;
 
-  bool invalid_lane = this->acquirePannerStrategy(panner_strategy);
   bool angles_changed = this->acquireAzimuth(azimuth) | this->acquireElevation(elevation);
   bool scalar_changed = this->acquirePanningScalar(panning_scalar);
 
-  if (invalid_lane) {
-    this->panner_lane = this->context->allocateSourcePannerLane((enum SYZ_PANNER_STRATEGY)panner_strategy);
+  if (this->panner_lane == nullptr) {
+    this->panner_lane = this->context->allocateSourcePannerLane((enum SYZ_PANNER_STRATEGY)this->panner_strategy);
   }
 
-  if (angles_changed || invalid_lane) {
+  if (angles_changed) {
     this->panner_lane->setPanningAngles(azimuth, elevation);
   } else if (scalar_changed) {
     this->panner_lane->setPanningScalar(panning_scalar);

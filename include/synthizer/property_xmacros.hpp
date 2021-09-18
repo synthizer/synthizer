@@ -54,8 +54,6 @@ extern "C" {
   BIQUAD_P(SYZ_P_FILTER_EFFECTS, filter_effects, FilterEffects)
 
 #define PANNED_SOURCE_PROPERTIES                                                                                       \
-  INT_P(SYZ_P_PANNER_STRATEGY, panner_strategy, PannerStrategy, SYZ_PANNER_STRATEGY_HRTF,                              \
-        SYZ_PANNER_STRATEGY_COUNT - 1, SYZ_PANNER_STRATEGY_STEREO)                                                     \
   DOUBLE_P(SYZ_P_AZIMUTH, azimuth, Azimuth, 0.0f, 360.0f, 0.0)                                                         \
   DOUBLE_P(SYZ_P_ELEVATION, elevation, Elevation, -90.0f, 90.0f, 0.0)                                                  \
   DOUBLE_P(SYZ_P_PANNING_SCALAR, panning_scalar, PanningScalar, -1.0, 1.0, 0.0)
