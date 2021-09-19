@@ -1,6 +1,18 @@
 ## 0.11.0
 
-## Changes in this Rlease
+## Changes in this Release
+
+### Python Bindings Need Maintainers
+
+I have moved on to Rust and don't have time to keep maintaining the Python bindings if I am going to ever be able to do
+my own projects with Synthizer.  To that end, the Python bindings now live
+[here](https://github.com/synthizer/synthizer-python) with instructions on how to update them.  I'll be keeping the
+responsibility of PR review and release management, but won't necessarily keep them up to date.
+
+They statically link a vendored version of Synthizer, so this only means that they'll fall behind unless someone steps
+up to help.
+
+### Other Changes in this Release
 
 - `PannedSource` has been split into `ScalarPannedSource` and `AngularPannedSOurce`.
   - This prevents regressions with respect to being able to use panning scalars.
