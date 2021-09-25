@@ -106,7 +106,7 @@ void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::copyBackIfNeeded() 
 
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
 void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::tick(double time) {
-  this->tick(time, [](auto x) {});
+  this->tick(time, [](auto x) { (void)x; });
 }
 
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
