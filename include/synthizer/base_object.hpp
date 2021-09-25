@@ -162,6 +162,16 @@ public:
    * */
   double getAutomationTime() { return this->local_block_time * config::BLOCK_SIZE / (double)config::SR; }
 
+  /**
+   * Schedule an event at a specific time, which will be dispatched to the user.
+   * */
+  void automationScheduleEvent(double time, unsigned long long param) {
+    ScheduledEvent e{time, param};
+    this->scheduled_events.addItem(e);
+  }
+
+  void automationClearScheduledEvents() { this->scheduled_events.clear(); }
+
 protected:
   std::shared_ptr<Context> context;
   unsigned int local_block_time = 0;

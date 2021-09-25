@@ -100,7 +100,7 @@ int main() {
   CHECKED(syz_createAutomationBatch(&batch, context, NULL, NULL));
   CHECKED(syz_automationBatchAddCommands(batch, 1,
                                          &(struct syz_AutomationCommand){
-                                             .type = SYZ_AUTOMATION_COMMAND_CLEAR_ALL,
+                                             .type = SYZ_AUTOMATION_COMMAND_CLEAR_ALL_PROPERTIES,
                                              .target = generator,
                                          }));
   CHECKED(syz_automationBatchExecute(batch));

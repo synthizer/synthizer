@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <tuple>
 
 struct syz_AutomationCommand;
 
@@ -35,7 +36,9 @@ public:
    * */
   void clearProperty(const std::shared_ptr<BaseObject> &obj, int property);
 
-  void clearAll(const std::shared_ptr<BaseObject> &obj);
+  void clearAllProperties(const std::shared_ptr<BaseObject> &obj);
+  void sendUserEvent(const std::shared_ptr<BaseObject> &obj, double time, unsigned long long param);
+  void clearEvents(const std::shared_ptr<BaseObject> &obj);
 
   /**
    * Should be called from the context thread only. Execute this batch.
@@ -66,9 +69,13 @@ private:
   deferred_map<std::weak_ptr<BaseObject>, deferred_map<int, deferred_vector<PropertyAutomationPoint>>,
                std::owner_less<std::weak_ptr<BaseObject>>>
       property_automation;
+  deferred_map<std::weak_ptr<BaseObject>, deferred_vector<std::tuple<double, unsigned long long>>,
+               std::owner_less<std::weak_ptr<BaseObject>>>
+      scheduled_events;
   deferred_map<std::weak_ptr<BaseObject>, deferred_set<int>, std::owner_less<std::weak_ptr<BaseObject>>>
       cleared_properties;
-  deferred_set<std::weak_ptr<BaseObject>, std::owner_less<std::weak_ptr<BaseObject>>> clear_all;
+  deferred_set<std::weak_ptr<BaseObject>, std::owner_less<std::weak_ptr<BaseObject>>> clear_all_properties;
+  deferred_set<std::weak_ptr<BaseObject>, std::owner_less<std::weak_ptr<BaseObject>>> clear_events;
 
   std::weak_ptr<Context> context;
   // version of the context for faster validation.

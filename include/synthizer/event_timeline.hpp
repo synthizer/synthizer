@@ -30,6 +30,9 @@ public:
 
   void tick(const std::shared_ptr<Context> &ctx, const std::shared_ptr<BaseObject> &source, double time);
 
+  void addItem(const ScheduledEvent &e);
+  void clear();
+
 private:
   GenericTimeline<ScheduledEvent, 1> timeline;
 };

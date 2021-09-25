@@ -46,11 +46,21 @@ void AutomationBatch::clearProperty(const std::shared_ptr<BaseObject> &obj, int 
   found_vec->second.clear();
 }
 
-void AutomationBatch::clearAll(const std::shared_ptr<BaseObject> &obj) {
+void AutomationBatch::clearAllProperties(const std::shared_ptr<BaseObject> &obj) {
   std::weak_ptr<BaseObject> weak{obj};
   this->property_automation.erase(weak);
   this->cleared_properties.erase(weak);
-  this->clear_all.insert(weak);
+  this->clear_all_properties.insert(weak);
+}
+
+void AutomationBatch::sendUserEvent(const std::shared_ptr<BaseObject> &obj, double time, unsigned long long param) {
+  this->scheduled_events[std::weak_ptr<BaseObject>(obj)].emplace_back(std::make_tuple(time, param));
+}
+
+void AutomationBatch::clearEvents(const std::shared_ptr<BaseObject> &obj) {
+  std::weak_ptr<BaseObject> weak{obj};
+  this->scheduled_events.erase(weak);
+  this->clear_events.insert(weak);
 }
 
 void AutomationBatch::addCommands(std::size_t commands_len, const syz_AutomationCommand *commands) {
@@ -68,8 +78,14 @@ void AutomationBatch::addCommands(std::size_t commands_len, const syz_Automation
     case SYZ_AUTOMATION_COMMAND_CLEAR_PROPERTY:
       this->clearProperty(obj, cmd->params.clear_property.property);
       break;
-    case SYZ_AUTOMATION_COMMAND_CLEAR_ALL:
-      this->clearAll(obj);
+    case SYZ_AUTOMATION_COMMAND_CLEAR_ALL_PROPERTIES:
+      this->clearAllProperties(obj);
+      break;
+    case SYZ_AUTOMATION_COMMAND_SEND_USER_EVENT:
+      this->sendUserEvent(obj, cmd->time, cmd->params.send_user_event.param);
+      break;
+    case SYZ_AUTOMATION_COMMAND_CLEAR_EVENTS:
+      this->clearEvents(obj);
       break;
     default:
       throw ENotSupported("This command isn't supported yet");
@@ -81,12 +97,20 @@ void AutomationBatch::executeOnContextThread() {
   auto ctx = this->context.lock();
   assert(ctx != nullptr && "Trying to execute code on the context's thread without the context running that thread");
 
-  for (auto &obj : this->clear_all) {
+  for (auto &obj : this->clear_all_properties) {
     auto strong = obj.lock();
     if (strong == nullptr) {
       continue;
     }
     strong->clearAllAutomation();
+  }
+
+  for (auto &obj : this->clear_events) {
+    auto strong = obj.lock();
+    if (!strong) {
+      continue;
+    }
+    strong->automationClearScheduledEvents();
   }
 
   for (auto &[obj, props] : this->cleared_properties) {
@@ -108,6 +132,17 @@ void AutomationBatch::executeOnContextThread() {
 
     for (auto &prop : p.second) {
       strong->applyPropertyAutomationPoints(prop.first, prop.second.size(), &prop.second[0]);
+    }
+  }
+
+  for (auto &[obj, evts] : this->scheduled_events) {
+    auto strong = obj.lock();
+    if (!strong) {
+      continue;
+    }
+
+    for (auto [time, param] : evts) {
+      strong->automationScheduleEvent(time, param);
     }
   }
 }
