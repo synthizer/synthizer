@@ -120,6 +120,7 @@ int main(int argc, char *argv[]) {
     } while (evt.type != SYZ_EVENT_TYPE_USER_AUTOMATION);
 
     iters_so_far = evt.payload.user_automation.param;
+    syz_eventDeinit(&evt);
   }
 
 end:
