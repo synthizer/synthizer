@@ -135,7 +135,7 @@ bool GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::isFinished() {
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
 std::optional<T *> GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::getItem(int offset) {
   int actual = static_cast<int>(this->current_item) + offset;
-  if (actual < 0 || actual > this->items.size()) {
+  if (actual < 0 || actual > (int)this->items.size()) {
     return std::nullopt;
   }
 
