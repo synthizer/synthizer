@@ -1,5 +1,6 @@
 #include "synthizer/base_object.hpp"
 #include "synthizer/context.hpp"
+#include "synthizer/event_timeline.hpp"
 
 #include <memory>
 

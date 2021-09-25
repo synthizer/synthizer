@@ -1,3 +1,5 @@
+#pragma once
+
 #include "synthizer/memory.hpp"
 
 #include "pdqsort.h"

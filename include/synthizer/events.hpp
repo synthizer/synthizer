@@ -109,6 +109,10 @@ public:
   syz_Handle translateHandle(const std::weak_ptr<CExposable> &object);
   void setType(int type);
 
+  /* These overloads set the payload, and the type that goes with that payload when the type is known. */
+
+  void setPayload(const syz_UserAutomationEvent &payload);
+
   void dispatch(EventSender *sender);
 
 private:
@@ -129,5 +133,7 @@ private:
  * */
 void sendFinishedEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<CExposable> &source);
 void sendLoopedEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<CExposable> &source);
+void sendUserAutomationEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<BaseObject> &source,
+                             unsigned long long param);
 
 } // namespace synthizer

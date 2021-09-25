@@ -2,6 +2,7 @@
 #include "synthizer.h"
 
 #include "synthizer/error.hpp"
+#include "synthizer/event_timeline.hpp"
 #include "synthizer/memory.hpp"
 #include "synthizer/property_internals.hpp"
 
@@ -150,6 +151,9 @@ public:
     this->propSubsystemAdvanceAutomation();
     // Always do this second, so that time can start at 0.
     this->local_block_time += 1;
+    // Then tick events, which we want to happen before their scheduled time, enver after.
+    this->scheduled_events.tick(this->context, std::static_pointer_cast<BaseObject>(this->shared_from_this()),
+                                this->getAutomationTime());
   }
 
   /**
@@ -161,6 +165,7 @@ public:
 protected:
   std::shared_ptr<Context> context;
   unsigned int local_block_time = 0;
+  EventTimeline scheduled_events;
 };
 
 } // namespace synthizer

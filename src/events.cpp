@@ -107,6 +107,11 @@ syz_Handle EventBuilder::translateHandle(const std::weak_ptr<CExposable> &object
 
 void EventBuilder::setType(int type) { this->event.type = type; }
 
+void EventBuilder::setPayload(const struct syz_UserAutomationEvent &payload) {
+  this->event.payload.user_automation = payload;
+  this->event.type = SYZ_EVENT_TYPE_USER_AUTOMATION;
+}
+
 void EventBuilder::dispatch(EventSender *sender) {
   if (this->will_send == false) {
     return;
@@ -145,6 +150,16 @@ void sendLoopedEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<
     builder->setSource(std::static_pointer_cast<CExposable>(source));
     builder->setContext(ctx);
     builder->setType(SYZ_EVENT_TYPE_LOOPED);
+  });
+}
+
+void sendUserAutomationEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<BaseObject> &source,
+                             unsigned long long param) {
+  ctx->sendEvent([&](auto *builder) {
+    builder->setSource(source);
+    builder->setContext(ctx);
+    builder->setType(SYZ_EVENT_TYPE_USER_AUTOMATION);
+    builder->setPayload({param});
   });
 }
 
