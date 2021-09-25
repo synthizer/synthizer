@@ -12,15 +12,21 @@ using namespace synthizer;
 
 bool floatCmp(double a, double b) { return std::abs(a - b) < 0.000001; }
 
+struct Point {
+  int type;
+  double time;
+  double value;
+};
+
 int main() {
   double tick_delta = config::BLOCK_SIZE / (double)config::SR;
   double time = 0.0;
 
-  std::vector<syz_AutomationPoint> points{{
-      {SYZ_INTERPOLATION_TYPE_LINEAR, 0.0, {1.0}},
-      {SYZ_INTERPOLATION_TYPE_LINEAR, 0.01, {0.5}},
-      {SYZ_INTERPOLATION_TYPE_NONE, 0.02, {0.1}},
-      {SYZ_INTERPOLATION_TYPE_LINEAR, 0.05, {0.0}},
+  std::vector<Point> points{{
+      {SYZ_INTERPOLATION_TYPE_LINEAR, 0.0, 1.0},
+      {SYZ_INTERPOLATION_TYPE_LINEAR, 0.01, 0.5},
+      {SYZ_INTERPOLATION_TYPE_NONE, 0.02, 0.1},
+      {SYZ_INTERPOLATION_TYPE_LINEAR, 0.05, 0.0},
   }};
 
   std::vector<double> expected{{
@@ -37,8 +43,11 @@ int main() {
   }};
 
   PropertyAutomationTimeline timeline{};
-  for (auto p : points) {
-    timeline.addPoint(PropertyAutomationPoint(&p));
+  for (auto i : points) {
+    struct syz_AutomationPoint p {};
+    p.interpolation_type = i.type;
+    p.values[0] = i.value;
+    timeline.addPoint(PropertyAutomationPoint(i.time, &p));
   }
 
   for (auto exp : expected) {

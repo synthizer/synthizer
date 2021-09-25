@@ -20,7 +20,7 @@ namespace synthizer {
 
 class PropertyAutomationPoint {
 public:
-  PropertyAutomationPoint(const struct syz_AutomationPoint *input);
+  PropertyAutomationPoint(double time, const struct syz_AutomationPoint *input);
 
   unsigned int interpolation_type;
   double automation_time;

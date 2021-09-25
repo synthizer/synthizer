@@ -52,7 +52,6 @@ int enqueueAutomation(syz_Handle context, syz_Handle source, unsigned int iters_
 
     unsigned int iter = iters_so_far + i;
 
-    point.automation_time = iter * DUR_PER_STEP;
     point.values[0] = 10.0 * sin(iter * DEGS_PER_STEP * PI / 180.0);
     point.values[1] = 10.0 * cos(iter * DEGS_PER_STEP * PI / 180.0);
 

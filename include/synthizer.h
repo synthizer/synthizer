@@ -120,7 +120,6 @@ SYZ_CAPI syz_ErrorCode syz_biquadDesignBandpass(struct syz_BiquadConfig *filter,
 
 struct syz_AutomationPoint {
   unsigned int interpolation_type;
-  double automation_time;
   double values[6];
   unsigned long long flags;
 };

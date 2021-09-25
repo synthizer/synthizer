@@ -73,7 +73,7 @@ void AutomationBatch::addCommands(std::size_t commands_len, const syz_Automation
     switch (cmd->type) {
     case SYZ_AUTOMATION_COMMAND_APPEND_PROPERTY:
       this->automateProperty(obj, cmd->params.append_to_property.property,
-                             PropertyAutomationPoint(&cmd->params.append_to_property.point));
+                             PropertyAutomationPoint(cmd->time, &cmd->params.append_to_property.point));
       break;
     case SYZ_AUTOMATION_COMMAND_CLEAR_PROPERTY:
       this->clearProperty(obj, cmd->params.clear_property.property);

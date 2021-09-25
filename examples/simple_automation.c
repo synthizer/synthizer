@@ -14,10 +14,15 @@ static const double FREQ = 100;
 static const unsigned int HARMONICS = 10;
 static const double PI = 3.141592653589793;
 
-static const struct syz_AutomationPoint POINTS[] = {
-    {SYZ_INTERPOLATION_TYPE_LINEAR, 0.0, {0.0}}, {SYZ_INTERPOLATION_TYPE_LINEAR, 0.01, {1.0}},
-    {SYZ_INTERPOLATION_TYPE_LINEAR, 0.4, {0.5}}, {SYZ_INTERPOLATION_TYPE_LINEAR, 0.9, {0.1}},
-    {SYZ_INTERPOLATION_TYPE_LINEAR, 2.0, {0.0}},
+static const struct {
+
+  int interpolation_type;
+  double time;
+  double value;
+} POINTS[] = {
+    {SYZ_INTERPOLATION_TYPE_LINEAR, 0.0, 0.0}, {SYZ_INTERPOLATION_TYPE_LINEAR, 0.01, 1.0},
+    {SYZ_INTERPOLATION_TYPE_LINEAR, 0.4, 0.5}, {SYZ_INTERPOLATION_TYPE_LINEAR, 0.9, 0.1},
+    {SYZ_INTERPOLATION_TYPE_LINEAR, 2.0, 0.0},
 };
 
 float *computeTriangle() {
@@ -43,8 +48,10 @@ syz_ErrorCode createBatch(syz_Handle *out, syz_Handle context, syz_Handle target
     struct syz_AutomationCommand *c = cmds + i;
     c->type = SYZ_AUTOMATION_COMMAND_APPEND_PROPERTY;
     c->target = target;
-    c->params.append_to_property.point = POINTS[i];
+    c->params.append_to_property.point.values[0] = POINTS[i].value;
+    c->params.append_to_property.point.interpolation_type = POINTS[i].interpolation_type;
     c->params.append_to_property.property = SYZ_P_GAIN;
+    c->time = POINTS[i].time;
   }
   syz_ErrorCode ret = syz_createAutomationBatch(out, context, NULL, NULL);
   if (ret != 0) {
