@@ -191,6 +191,7 @@ macro(example NAME EXT)
   target_link_libraries(${NAME} synthizer)
 endmacro()
 
+example(automation_circle cpp)
 example(basic_stream_handle c)
 example(buffer_from_memory c)
 example(buffer_from_raw_data c)
