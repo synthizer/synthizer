@@ -24,7 +24,10 @@ PropertyAutomationPoint::PropertyAutomationPoint(double time, const struct syz_A
       automation_time(time), values{input->values[0], input->values[1], input->values[2],
                                     input->values[3], input->values[4], input->values[5]} {}
 
-void PropertyAutomationTimeline::addPoint(const PropertyAutomationPoint &point) { this->inner.addItem(point); }
+void PropertyAutomationTimeline::addPoint(const PropertyAutomationPoint &point) {
+  this->inner.addItem(point);
+  this->is_finalized = false;
+}
 
 void PropertyAutomationTimeline::clear() { this->inner.clear(); }
 

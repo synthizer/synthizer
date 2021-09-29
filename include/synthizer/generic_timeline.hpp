@@ -72,6 +72,7 @@ void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::addItem(const T &it
     auto &cur = this->items.back();
     this->is_sorted = last.getTime() <= cur.getTime();
   }
+  this->finished = false;
 }
 
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
