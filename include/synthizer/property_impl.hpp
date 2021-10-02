@@ -83,12 +83,11 @@ public:
 PROPCLASS_NAME PROPFIELD_NAME{};
 
 #define STANDARD_READ(F) return this->PROPFIELD_NAME.F.read();
-
 #define STANDARD_WRITE(F) this->PROPFIELD_NAME.F.write(val, track_change);
-
 #define STANDARD_ACQUIRE(F) return this->PROPFIELD_NAME.F.acquire(&out);
-
 #define STANDARD_UNCHANGED(F) this->PROPFIELD_NAME.F.markUnchanged();
+
+#define AUTOMATED_WRITE(F) this->PROPFIELD_NAME.F.write(this->getAutomationTimeInSamples(), val, track_change);
 
 /* Now, define all the methods. */
 #define INT_P(E, UNDERSCORE_NAME, CAMEL_NAME, MIN, MAX, DV)                                                            \
@@ -109,7 +108,7 @@ PROPCLASS_NAME PROPFIELD_NAME{};
 #define DOUBLE_P(E, UNDERSCORE_NAME, CAMEL_NAME, MIN, MAX, DV)                                                         \
   double get##CAMEL_NAME() const { STANDARD_READ(UNDERSCORE_NAME) }                                                    \
                                                                                                                        \
-  void set##CAMEL_NAME(double val, bool track_change = true) { STANDARD_WRITE(UNDERSCORE_NAME) }                       \
+  void set##CAMEL_NAME(double val, bool track_change = true) { AUTOMATED_WRITE(UNDERSCORE_NAME) }                      \
                                                                                                                        \
   void validate##CAMEL_NAME(const double value) const {                                                                \
     if (value < MIN || value > MAX) {                                                                                  \
@@ -124,7 +123,9 @@ PROPCLASS_NAME PROPFIELD_NAME{};
 #define DOUBLE3_P(E, UNDERSCORE_NAME, CAMEL_NAME, ...)                                                                 \
   std::array<double, 3> get##CAMEL_NAME() const { STANDARD_READ(UNDERSCORE_NAME) }                                     \
                                                                                                                        \
-  void set##CAMEL_NAME(const std::array<double, 3> &val, bool track_change = true) { STANDARD_WRITE(UNDERSCORE_NAME) } \
+  void set##CAMEL_NAME(const std::array<double, 3> &val, bool track_change = true) {                                   \
+    AUTOMATED_WRITE(UNDERSCORE_NAME)                                                                                   \
+  }                                                                                                                    \
                                                                                                                        \
   void validate##CAMEL_NAME(const std::array<double, 3> &value) const {                                                \
     (void)value;                                                                                                       \
@@ -138,7 +139,9 @@ PROPCLASS_NAME PROPFIELD_NAME{};
 #define DOUBLE6_P(E, UNDERSCORE_NAME, CAMEL_NAME, ...)                                                                 \
   std::array<double, 6> get##CAMEL_NAME() const { STANDARD_READ(UNDERSCORE_NAME) }                                     \
                                                                                                                        \
-  void set##CAMEL_NAME(const std::array<double, 6> &val, bool track_change = true) { STANDARD_WRITE(UNDERSCORE_NAME) } \
+  void set##CAMEL_NAME(const std::array<double, 6> &val, bool track_change = true) {                                   \
+    AUTOMATED_WRITE(UNDERSCORE_NAME)                                                                                   \
+  }                                                                                                                    \
                                                                                                                        \
   void validate##CAMEL_NAME(const std::array<double, 6> &value) const {                                                \
     (void)value;                                                                                                       \
