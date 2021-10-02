@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <limits>
 #include <memory>
+#include <tuple>
 #include <variant>
 
 namespace synthizer {
@@ -59,6 +60,14 @@ const auto double_min = std::numeric_limits<double>::lowest();
 const auto double_max = std::numeric_limits<double>::max();
 } // namespace property_impl
 
+/* By default C++17 doesn't give us comparison for structs. */
+inline bool operator==(const struct syz_BiquadConfig &l, const struct syz_BiquadConfig &r) {
+  return std::tie(l._b0, l._b1, l._b2, l._a1, l._a2, l._gain, l._is_wire) ==
+         std::tie(r._b0, r._b1, r._b2, r._a1, r._a2, r._gain, r._is_wire);
+}
+
+inline bool operator!=(const struct syz_BiquadConfig &l, const struct syz_BiquadConfig &r) { return !(l == r); }
+
 /*
  * these are property containers which orchestrate the storage/retrieval of properties in a threadsafe manner, assuming
  * that write is only ever called from one thread at a time.
@@ -70,8 +79,9 @@ public:
 
   T read() const { return this->field.load(std::memory_order_acquire); }
   void write(T value, bool track_change = true) {
+    auto old = this->field.load(std::memory_order_relaxed);
     this->field.store(value, std::memory_order_release);
-    if (track_change) {
+    if (track_change && old != value) {
       this->changed = true;
     }
   }
@@ -86,6 +96,7 @@ public:
 
 private:
   std::atomic<T> field{};
+  T last_tracked_changed_value;
   bool changed = true;
 };
 
@@ -111,8 +122,9 @@ public:
 
   T read() const { return this->field.read(); }
   void write(const T &value, bool track_change = true) {
+    auto old = this->read();
     this->field.write(value);
-    if (track_change) {
+    if (track_change && old != value) {
       this->changed = true;
     }
   }
