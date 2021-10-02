@@ -18,13 +18,15 @@
 
 namespace synthizer {
 
-class PropertyAutomationPoint {
+template <std::size_t N> class PropertyAutomationPoint {
 public:
+  static_assert(N == 1 || N == 3 || N == 6);
+
   PropertyAutomationPoint(double time, const struct syz_AutomationPoint *input);
 
   unsigned int interpolation_type;
   double automation_time;
-  std::array<double, 6> values;
+  std::array<double, N> values;
 
   /* For GenericTimeline. */
   double getTime() { return this->automation_time; }
@@ -40,7 +42,7 @@ public:
  *
  * From the external perspective, this is exposed via a `Timeline` object which can be applied to properties and reused.
  * */
-class PropertyAutomationTimeline {
+template <std::size_t N = 6> class PropertyAutomationTimeline {
 public:
   /**
    * Tick the timeline, updating the internally stored next value.
@@ -52,12 +54,12 @@ public:
    * The template parameter controls how many points to evaluate, and is usually set to 1, 3, or 6.  This is used to
    * differentiate between which kind of property the timeline is for.
    * */
-  template <unsigned int N> void tick(double time);
+  void tick(double time);
 
   /**
    * Add a point to this timeline.
    * */
-  void addPoint(const PropertyAutomationPoint &point);
+  void addPoint(const PropertyAutomationPoint<N> &point);
 
   template <typename IT> void addPoints(IT begin, IT end) {
     for (auto i = begin; i < end; i++) {
@@ -80,7 +82,7 @@ public:
    * hits the final value exactly, but without requiring an extra tick for the timeline to record itself as finished.
    * Consequently, this function *isn't* pure.
    * */
-  std::optional<std::array<double, 6>> getValue() {
+  std::optional<std::array<double, N>> getValue() {
     auto ret = this->current_value;
     if (this->inner.isFinished() & !this->is_finalized) {
       this->is_finalized = true;
@@ -97,26 +99,27 @@ public:
   void clear();
 
 private:
-  GenericTimeline<PropertyAutomationPoint, 1> inner;
-  std::optional<std::array<double, 6>> current_value = std::nullopt;
+  GenericTimeline<PropertyAutomationPoint<N>, 1> inner;
+  std::optional<std::array<double, N>> current_value = std::nullopt;
   /* false until the timeline has fianlized by writing the last value after the inner timeline finished. */
   bool is_finalized = false;
 };
 
-inline PropertyAutomationPoint::PropertyAutomationPoint(double time, const struct syz_AutomationPoint *input)
-    : interpolation_type(input->interpolation_type),
-      automation_time(time), values{input->values[0], input->values[1], input->values[2],
-                                    input->values[3], input->values[4], input->values[5]} {}
+template <std::size_t N>
+inline PropertyAutomationPoint<N>::PropertyAutomationPoint(double time, const struct syz_AutomationPoint *input)
+    : interpolation_type(input->interpolation_type), automation_time(time) {
+  for (std::size_t i = 0; i < N; i++)
+    this->values[i] = input->values[i];
+}
 
-inline void PropertyAutomationTimeline::addPoint(const PropertyAutomationPoint &point) {
+template <std::size_t N> inline void PropertyAutomationTimeline<N>::addPoint(const PropertyAutomationPoint<N> &point) {
   this->inner.addItem(point);
   this->is_finalized = false;
 }
 
-inline void PropertyAutomationTimeline::clear() { this->inner.clear(); }
+template <std::size_t N> inline void PropertyAutomationTimeline<N>::clear() { this->inner.clear(); }
 
-template <unsigned int N> inline void PropertyAutomationTimeline::tick(double time) {
-  static_assert(N > 0 && N <= 6, "N is out of range");
+template <std::size_t N> inline void PropertyAutomationTimeline<N>::tick(double time) {
   this->inner.tick(time);
   if (this->inner.isFinished()) {
     // Set the value to the last point we can get in inner, if possible.

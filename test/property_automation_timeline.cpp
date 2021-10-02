@@ -47,11 +47,11 @@ int main() {
     struct syz_AutomationPoint p {};
     p.interpolation_type = i.type;
     p.values[0] = i.value;
-    timeline.addPoint(PropertyAutomationPoint(i.time, &p));
+    timeline.addPoint(PropertyAutomationPoint<6>(i.time, &p));
   }
 
   for (auto exp : expected) {
-    timeline.tick<1>(time);
+    timeline.tick(time);
     time += tick_delta;
     auto v = timeline.getValue();
     if (v) {
@@ -71,7 +71,7 @@ int main() {
     return 1;
   }
 
-  timeline.tick<1>(time);
+  timeline.tick(time);
   if (timeline.getValue()) {
     printf("Finished timelines should no longer return values\n");
     return 1;

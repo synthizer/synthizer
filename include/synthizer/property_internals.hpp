@@ -3,6 +3,7 @@
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
+#include "synthizer/property_automation_timeline.hpp"
 #include "synthizer/property_xmacros.hpp"
 
 #include "synthizer/cells.hpp"
@@ -40,7 +41,6 @@ namespace synthizer {
  * setProperty that use variants which back onto getXXX and setXXX functions.
  * */
 
-class PropertyAutomationTimeline;
 class CExposable;
 class BaseObject;
 
@@ -106,10 +106,10 @@ class DoubleProperty : public AtomicProperty<double> {
 public:
   DoubleProperty(double dv) : AtomicProperty<double>(dv) {}
 
-  PropertyAutomationTimeline *getTimeline() { return &this->timeline; }
+  PropertyAutomationTimeline<6> *getTimeline() { return &this->timeline; }
 
 private:
-  PropertyAutomationTimeline timeline;
+  PropertyAutomationTimeline<6> timeline;
 };
 
 /**
@@ -145,20 +145,20 @@ class Double3Property : public LatchProperty<std::array<double, 3>> {
 public:
   Double3Property(const std::array<double, 3> &dv) : LatchProperty<std::array<double, 3>>(dv) {}
 
-  PropertyAutomationTimeline *getTimeline() { return &this->timeline; }
+  PropertyAutomationTimeline<6> *getTimeline() { return &this->timeline; }
 
 private:
-  PropertyAutomationTimeline timeline{};
+  PropertyAutomationTimeline<6> timeline{};
 };
 
 class Double6Property : public LatchProperty<std::array<double, 6>> {
 public:
   Double6Property(const std::array<double, 6> &dv) : LatchProperty<std::array<double, 6>>(dv) {}
 
-  PropertyAutomationTimeline *getTimeline() { return &this->timeline; }
+  PropertyAutomationTimeline<6> *getTimeline() { return &this->timeline; }
 
 private:
-  PropertyAutomationTimeline timeline{};
+  PropertyAutomationTimeline<6> timeline{};
 };
 
 /*

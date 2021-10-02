@@ -16,7 +16,7 @@ AutomationBatch::AutomationBatch(const std::shared_ptr<Context> &ctx)
     : context(ctx), context_validation_ptr(ctx.get()) {}
 
 void AutomationBatch::automateProperty(const std::shared_ptr<BaseObject> &obj, int property,
-                                       const PropertyAutomationPoint &point) {
+                                       const PropertyAutomationPoint<6> &point) {
   this->throwIfConsumed();
 
   if (obj->getContextRaw() != this->context_validation_ptr) {
@@ -73,7 +73,7 @@ void AutomationBatch::addCommands(std::size_t commands_len, const syz_Automation
     switch (cmd->type) {
     case SYZ_AUTOMATION_COMMAND_APPEND_PROPERTY:
       this->automateProperty(obj, cmd->params.append_to_property.property,
-                             PropertyAutomationPoint(cmd->time, &cmd->params.append_to_property.point));
+                             PropertyAutomationPoint<6>(cmd->time, &cmd->params.append_to_property.point));
       break;
     case SYZ_AUTOMATION_COMMAND_CLEAR_PROPERTY:
       this->clearProperty(obj, cmd->params.clear_property.property);

@@ -29,7 +29,7 @@ public:
   /**
    * Append a property automation point to the batch.
    * */
-  void automateProperty(const std::shared_ptr<BaseObject> &obj, int property, const PropertyAutomationPoint &point);
+  void automateProperty(const std::shared_ptr<BaseObject> &obj, int property, const PropertyAutomationPoint<6> &point);
 
   /**
    * Clear a property.
@@ -66,7 +66,7 @@ public:
   std::shared_ptr<Context> getContext() { return this->context.lock(); }
 
 private:
-  deferred_map<std::weak_ptr<BaseObject>, deferred_map<int, deferred_vector<PropertyAutomationPoint>>,
+  deferred_map<std::weak_ptr<BaseObject>, deferred_map<int, deferred_vector<PropertyAutomationPoint<6>>>,
                std::owner_less<std::weak_ptr<BaseObject>>>
       property_automation;
   deferred_map<std::weak_ptr<BaseObject>, deferred_vector<std::tuple<double, unsigned long long>>,

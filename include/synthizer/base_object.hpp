@@ -4,6 +4,7 @@
 #include "synthizer/error.hpp"
 #include "synthizer/event_timeline.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/property_automation_timeline.hpp"
 #include "synthizer/property_internals.hpp"
 
 #include <atomic>
@@ -12,8 +13,6 @@
 #include <optional>
 
 namespace synthizer {
-
-class PropertyAutomationPoint;
 
 /* Forward declare the routing handles. */
 namespace router {
@@ -82,7 +81,7 @@ public:
    * If no point is provided, only validate that we can automate the property. Lets' the function also be usedfor
    * clearing.
    * */
-  virtual void validateAutomation(int property, std::optional<const PropertyAutomationPoint *> point) {
+  virtual void validateAutomation(int property, std::optional<const PropertyAutomationPoint<6> *> point) {
     (void)point;
 
     // if we got here, we either don't have the properety or don't support automation.  But these lead to different
@@ -97,7 +96,7 @@ public:
   /**
    * Unreachable. Apply a set of automation points to an object.
    * */
-  virtual void applyPropertyAutomationPoints(int property, std::size_t points_len, PropertyAutomationPoint *points) {
+  virtual void applyPropertyAutomationPoints(int property, std::size_t points_len, PropertyAutomationPoint<6> *points) {
     (void)property;
     (void)points_len;
     (void)points;
