@@ -42,7 +42,7 @@ int main() {
       0.000000,
   }};
 
-  PropertyAutomationTimeline timeline{};
+  PropertyAutomationTimeline<6> timeline{};
   for (auto i : points) {
     struct syz_AutomationPoint p {};
     p.interpolation_type = i.type;

@@ -42,7 +42,7 @@ public:
  *
  * From the external perspective, this is exposed via a `Timeline` object which can be applied to properties and reused.
  * */
-template <std::size_t N = 6> class PropertyAutomationTimeline {
+template <std::size_t N> class PropertyAutomationTimeline {
 public:
   /**
    * Tick the timeline, updating the internally stored next value.
