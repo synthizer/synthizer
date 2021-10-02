@@ -32,7 +32,7 @@
  * Note that blocking on object properties is required because we need to safely copy std::shared_ptr. We do so with a
  * simple spinlock, under the assumption that readers are rare.
  *
- * In the above, Property changes to mah the name of the property. In addition to these functions, this header defines
+ * In the above, Property changes to match the name of the property. In addition to these functions, this header defines
  * a number of private types, adds a nested class named clasnameProps and field classname_props to your class at every
  * level of the hierarchy that uses properties which you shouldn't access yourself, and defines the standard property
  * machinery to get/set via enum.
@@ -41,8 +41,6 @@
  * around this, objects should either expose complicated properties as functions or force properties to valid values and
  * potentially log in the audio tick. Synthizer designs around not needing to perform such logic as a rule in order to
  * avoid entangling things with the audio thread.
- *
- * Also note that this implementation supports only 64 properties per level of the inheritance hierarchy.
  *
  * Finally, note that properties count as changed on the first tick, unless markPropertyUnchanged is called.
  * */
@@ -65,37 +63,6 @@
 /* This class holds the property fields themselves. */
 class PROPCLASS_NAME {
 public:
-/* Define bits for all the properties. */
-#define INT_P(IGNORED, N, ...) N##_BIT,
-#define DOUBLE_P(IGNORRED, N, ...) N##_BIT,
-#define DOUBLE3_P(IGNORED, N, ...) N##_BIT,
-#define DOUBLE6_P(IGNORED, N, ...) N##_BIT,
-#define OBJECT_P(IGNORED, N, ...) N##_BIT,
-#define BIQUAD_P(IGNORED, N, ...) N##_BIT,
-
-  enum class Bits : unsigned int { PROPERTY_LIST COUNT };
-  static_assert((unsigned int)Bits::COUNT <= 64,
-                "Can only declare at most 64 properties at one level of the class hierarchy");
-
-#undef INT_P
-#undef DOUBLE_P
-#undef DOUBLE3_P
-#undef DOUBLE6_P
-#undef OBJECT_P
-#undef BIQUAD_P
-
-  std::uint64_t changed_bitset = UINT64_MAX;
-
-  /* Mark a property as having changed. */
-  void propertyHasChanged(Bits bit) { this->changed_bitset |= ((std::uint64_t)1 << (std::uint64_t)bit); }
-
-  /* Read the bitset to see if a property changed, and clear the bit. */
-  bool acquireBit(Bits bit) {
-    bool changed = this->changed_bitset & ((std::uint64_t)1 << (std::uint64_t)bit);
-    this->changed_bitset &= ~(1 << (unsigned int)bit);
-    return changed;
-  }
-
 /* DV is default value. */
 #define INT_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV) IntProperty N{DV};
 #define DOUBLE_P(IGNORED, N, IGNORED2, IGNORED3, IGNORED4, DV)                                                         \
@@ -124,19 +91,11 @@ PROPCLASS_NAME PROPFIELD_NAME{};
 
 #define STANDARD_READ(F) return this->PROPFIELD_NAME.F.read();
 
-#define STANDARD_WRITE(F)                                                                                              \
-  this->PROPFIELD_NAME.F.write(val);                                                                                   \
-  if (track_change)                                                                                                    \
-    this->PROPFIELD_NAME.propertyHasChanged(PROPERTY_CLASS##Props::Bits::F##_BIT);
+#define STANDARD_WRITE(F) this->PROPFIELD_NAME.F.write(val, track_change);
 
-#define STANDARD_ACQUIRE(F)                                                                                            \
-  bool changed = this->PROPFIELD_NAME.acquireBit(PROPERTY_CLASS##Props::Bits::F##_BIT);                                \
-  out = this->PROPFIELD_NAME.F.read();                                                                                 \
-  return changed;
+#define STANDARD_ACQUIRE(F) return this->PROPFIELD_NAME.F.acquire(&out);
 
-#define STANDARD_UNCHANGED(F)                                                                                          \
-  this->PROPFIELD_NAME.changed_bitset &=                                                                               \
-      ~(decltype(this->PROPFIELD_NAME.changed_bitset))(1 << (unsigned int)PROPERTY_CLASS##Props::Bits::F##_BIT);
+#define STANDARD_UNCHANGED(F) this->PROPFIELD_NAME.F.markUnchanged();
 
 /* Now, define all the methods. */
 #define INT_P(E, UNDERSCORE_NAME, CAMEL_NAME, MIN, MAX, DV)                                                            \

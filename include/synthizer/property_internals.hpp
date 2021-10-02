@@ -69,25 +69,55 @@ public:
   explicit AtomicProperty(const T &&value) : field(value) {}
 
   T read() const { return this->field.load(std::memory_order_acquire); }
-  void write(T value) { this->field.store(value, std::memory_order_release); }
+  void write(T value, bool track_change = true) {
+    this->field.store(value, std::memory_order_release);
+    if (track_change) {
+      this->changed = true;
+    }
+  }
+
+  bool acquire(T *out) {
+    *out = this->read();
+    bool changed = this->changed;
+    this->changed = false;
+    return changed;
+  }
+  void markUnchanged() { this->changed = false; }
 
 private:
   std::atomic<T> field{};
+  bool changed = true;
 };
 
 using IntProperty = AtomicProperty<int>;
 using DoubleProperty = AtomicProperty<double>;
 
+/**
+ * A property backed by LatchCell. Everything but read must be called from the audio thread.
+ * */
 template <typename T> class LatchProperty {
 public:
   LatchProperty() : LatchProperty(T()) {}
   LatchProperty(const T &&value) : field(value) {}
 
   T read() const { return this->field.read(); }
-  void write(const T &value) { this->field.write(value); }
+  void write(const T &value, bool track_change = true) {
+    this->field.write(value);
+    if (track_change) {
+      this->changed = true;
+    }
+  }
+  bool acquire(T *out) {
+    *out = this->read();
+    bool changed = this->changed;
+    this->changed = false;
+    return changed;
+  }
+  void markUnchanged() { this->changed = false; }
 
 private:
   mutable LatchCell<T> field;
+  bool changed = true;
 };
 
 using Double3Property = LatchProperty<std::array<double, 3>>;
@@ -108,11 +138,23 @@ public:
     return out;
   }
 
-  void write(const std::weak_ptr<T> &value) {
+  void write(const std::weak_ptr<T> &value, bool track_change = true) {
     this->lock();
     this->field = value;
     this->unlock();
+    if (track_change) {
+      this->changed = true;
+    }
   }
+
+  bool acquire(std::weak_ptr<T> *out) {
+    *out = this->read();
+    bool changed = this->changed;
+    this->changed = false;
+    return changed;
+  }
+
+  void markUnchanged() { this->changed = false; }
 
 private:
   void lock() const {
@@ -128,6 +170,7 @@ private:
 
   mutable std::atomic<int> spinlock = 0;
   std::weak_ptr<T> field{};
+  bool changed = true;
 };
 
 class BiquadProperty : public LatchProperty<syz_BiquadConfig> {
