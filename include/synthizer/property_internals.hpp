@@ -102,9 +102,14 @@ private:
 
 using IntProperty = AtomicProperty<int>;
 
-class DoubleProperty : public AtomicProperty<double> {
+class DoubleProperty : AtomicProperty<double> {
 public:
   DoubleProperty(double dv) : AtomicProperty<double>(dv) {}
+
+  double read() const { return AtomicProperty::read(); }
+  void write(double val, bool track_changes = false) { AtomicProperty::write(val, track_changes); }
+  bool acquire(double *val) { return AtomicProperty::acquire(val); }
+  void markUnchanged() { AtomicProperty::markUnchanged(); }
 
   PropertyAutomationTimeline<1> *getTimeline() { return &this->timeline; }
 
@@ -149,9 +154,14 @@ private:
   bool changed = true;
 };
 
-class Double3Property : public LatchProperty<std::array<double, 3>> {
+class Double3Property : LatchProperty<std::array<double, 3>> {
 public:
   Double3Property(const std::array<double, 3> &dv) : LatchProperty<std::array<double, 3>>(dv) {}
+
+  std::array<double, 3> read() const { return LatchProperty::read(); }
+  void write(const std::array<double, 3> &val, bool track_changes = false) { LatchProperty::write(val, track_changes); }
+  bool acquire(std::array<double, 3> *val) { return LatchProperty::acquire(val); }
+  void markUnchanged() { LatchProperty::markUnchanged(); }
 
   PropertyAutomationTimeline<3> *getTimeline() { return &this->timeline; }
 
@@ -168,9 +178,14 @@ private:
   PropertyAutomationTimeline<3> timeline{};
 };
 
-class Double6Property : public LatchProperty<std::array<double, 6>> {
+class Double6Property : LatchProperty<std::array<double, 6>> {
 public:
   Double6Property(const std::array<double, 6> &dv) : LatchProperty<std::array<double, 6>>(dv) {}
+
+  std::array<double, 6> read() const { return LatchProperty::read(); }
+  void write(const std::array<double, 6> &val, bool track_changes = false) { LatchProperty::write(val, track_changes); }
+  bool acquire(std::array<double, 6> *val) { return LatchProperty::acquire(val); }
+  void markUnchanged() { LatchProperty::markUnchanged(); }
 
   PropertyAutomationTimeline<6> *getTimeline() { return &this->timeline; }
 
