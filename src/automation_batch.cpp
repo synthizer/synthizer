@@ -54,7 +54,7 @@ void AutomationBatch::clearAllProperties(const std::shared_ptr<BaseObject> &obj)
 }
 
 void AutomationBatch::sendUserEvent(const std::shared_ptr<BaseObject> &obj, double time, unsigned long long param) {
-  this->scheduled_events[std::weak_ptr<BaseObject>(obj)].emplace_back(std::make_tuple(time, param));
+  this->scheduled_events[std::weak_ptr<BaseObject>(obj)].emplace_back(std::make_tuple(time * config::SR, param));
 }
 
 void AutomationBatch::clearEvents(const std::shared_ptr<BaseObject> &obj) {
@@ -73,7 +73,7 @@ void AutomationBatch::addCommands(std::size_t commands_len, const syz_Automation
     switch (cmd->type) {
     case SYZ_AUTOMATION_COMMAND_APPEND_PROPERTY:
       this->automateProperty(obj, cmd->params.append_to_property.property,
-                             PropertyAutomationPoint<6>(cmd->time, &cmd->params.append_to_property.point));
+                             PropertyAutomationPoint<6>(cmd->time * config::SR, &cmd->params.append_to_property.point));
       break;
     case SYZ_AUTOMATION_COMMAND_CLEAR_PROPERTY:
       this->clearProperty(obj, cmd->params.clear_property.property);

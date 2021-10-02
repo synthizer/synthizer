@@ -159,7 +159,7 @@ public:
    * Get the local automation time, which updates every time automation specifically for this object ticks.
    *
    * */
-  double getAutomationTimeInSamples() { return this->local_block_time * config::BLOCK_SIZE / (double)config::SR; }
+  double getAutomationTimeInSamples() { return (double)this->local_block_time * config::BLOCK_SIZE; }
 
   /**
    * Schedule an event at a specific time, which will be dispatched to the user.
