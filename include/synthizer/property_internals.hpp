@@ -106,10 +106,8 @@ public:
   DoubleProperty(double dv) : AtomicProperty<double>(dv) {}
 
   double read() const { return AtomicProperty::read(); }
-  void write(double automation_time, double val, bool track_changes = true) {
-    (void)automation_time;
-    AtomicProperty::write(val, track_changes);
-  }
+  void write(double val, bool track_changes = true) { AtomicProperty::write(val, track_changes); }
+  void writeAutomated(double automation_time, double val) { this->write(val); }
   bool acquire(double *val) { return AtomicProperty::acquire(val); }
   void markUnchanged() { AtomicProperty::markUnchanged(); }
 
@@ -119,7 +117,7 @@ public:
     this->timeline.tick(time);
     auto val = this->timeline.getValue();
     if (val) {
-      this->write(time, (*val)[0]);
+      this->write((*val)[0]);
     }
   }
 
@@ -161,10 +159,8 @@ public:
   Double3Property(const std::array<double, 3> &dv) : LatchProperty<std::array<double, 3>>(dv) {}
 
   std::array<double, 3> read() const { return LatchProperty::read(); }
-  void write(double automation_time, const std::array<double, 3> &val, bool track_changes = true) {
-    (void)automation_time;
-    LatchProperty::write(val, track_changes);
-  }
+  void write(const std::array<double, 3> &val, bool track_changes = true) { LatchProperty::write(val, track_changes); }
+  void writeAutomated(double automation_time, const std::array<double, 3> &val) { this->write(val); }
   bool acquire(std::array<double, 3> *val) { return LatchProperty::acquire(val); }
   void markUnchanged() { LatchProperty::markUnchanged(); }
 
@@ -175,7 +171,7 @@ public:
     auto val = this->timeline.getValue();
     if (val) {
       auto [a, b, c] = *val;
-      this->write(time, {a, b, c});
+      this->write({a, b, c});
     }
   }
 
@@ -188,10 +184,8 @@ public:
   Double6Property(const std::array<double, 6> &dv) : LatchProperty<std::array<double, 6>>(dv) {}
 
   std::array<double, 6> read() const { return LatchProperty::read(); }
-  void write(double automation_time, const std::array<double, 6> &val, bool track_changes = true) {
-    (void)automation_time;
-    LatchProperty::write(val, track_changes);
-  }
+  void write(const std::array<double, 6> &val, bool track_changes = true) { LatchProperty::write(val, track_changes); }
+  void writeAutomated(double automation_time, const std::array<double, 6> &val) { this->write(val); }
   bool acquire(std::array<double, 6> *val) { return LatchProperty::acquire(val); }
   void markUnchanged() { LatchProperty::markUnchanged(); }
 
@@ -202,7 +196,7 @@ public:
     auto val = this->timeline.getValue();
     if (val) {
       auto [a, b, c, d, e, f] = *val;
-      this->write(time, {a, b, c, d, e, f});
+      this->write({a, b, c, d, e, f});
     }
   }
 
