@@ -103,6 +103,18 @@ private:
   bool is_finalized = false;
 };
 
+inline PropertyAutomationPoint::PropertyAutomationPoint(double time, const struct syz_AutomationPoint *input)
+    : interpolation_type(input->interpolation_type),
+      automation_time(time), values{input->values[0], input->values[1], input->values[2],
+                                    input->values[3], input->values[4], input->values[5]} {}
+
+inline void PropertyAutomationTimeline::addPoint(const PropertyAutomationPoint &point) {
+  this->inner.addItem(point);
+  this->is_finalized = false;
+}
+
+inline void PropertyAutomationTimeline::clear() { this->inner.clear(); }
+
 template <unsigned int N> inline void PropertyAutomationTimeline::tick(double time) {
   static_assert(N > 0 && N <= 6, "N is out of range");
   this->inner.tick(time);

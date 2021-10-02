@@ -119,7 +119,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/pausable.cpp
   src/prime_helpers.cpp
   src/property_internals.cpp
-  src/property_automation_timeline.cpp
   src/routable.cpp
   src/router.cpp
   src/spsc_semaphore.cpp
