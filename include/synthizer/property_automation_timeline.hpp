@@ -23,6 +23,11 @@ public:
   static_assert(N == 1 || N == 3 || N == 6);
 
   PropertyAutomationPoint(double time, const struct syz_AutomationPoint *input);
+  /**
+   * In order to use virtual functions, we have to start with PropertyAutomationTimeline<6> everywhere, then convert
+   * down as needed.
+   * */
+  PropertyAutomationPoint(const PropertyAutomationPoint<6> &other);
 
   unsigned int interpolation_type;
   double automation_time;
@@ -112,6 +117,14 @@ inline PropertyAutomationPoint<N>::PropertyAutomationPoint(double time, const st
     this->values[i] = input->values[i];
 }
 
+template <std::size_t N>
+inline PropertyAutomationPoint<N>::PropertyAutomationPoint(const PropertyAutomationPoint<6> &other)
+    : interpolation_type(other.interpolation_type), automation_time(other.automation_time) {
+  for (std::size_t i = 0; i < N; i++) {
+    this->values[i] = other.values[i];
+  }
+}
+
 template <std::size_t N> inline void PropertyAutomationTimeline<N>::addPoint(const PropertyAutomationPoint<N> &point) {
   this->inner.addItem(point);
   this->is_finalized = false;
@@ -166,7 +179,7 @@ template <std::size_t N> inline void PropertyAutomationTimeline<N>::tick(double 
       double delta = (time - last->automation_time) / time_diff;
       double w2 = delta;
       double w1 = 1.0 - w2;
-      std::array<double, 6> value;
+      std::array<double, N> value;
       for (unsigned int i = 0; i < N; i++) {
         value[i] = w1 * last->values[i] + w2 * cur->values[i];
       }

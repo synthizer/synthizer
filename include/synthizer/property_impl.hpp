@@ -26,8 +26,7 @@
  *    last time this specific property was acquired. May block for object properties.
  * - markPropertyUnchanged: clear the changed status of a propperty. Used primarily from initInAudioThread for objects
  *   which need to see properties as not having been changed on their first tick.
- * - getTimelineForProperty: return a raw pointer to the automation timeline for the specific property, mostly internal.
- * - All the machinery to attach timelines to double properties.
+ * - All the automation machinery.
  *
  * Note that blocking on object properties is required because we need to safely copy std::shared_ptr. We do so with a
  * simple spinlock, under the assumption that readers are rare.
@@ -337,35 +336,12 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 #define OBJECT_P(...)
 #define BIQUAD_P(...)
 
-#define TIMELINE_PAIR(IGNORED, UNDER_N, CAMEL_N, ...)                                                                  \
-  PropertyAutomationTimeline<6> *getTimelineFor##CAMEL_N() { return this->PROPFIELD_NAME.UNDER_N.getTimeline(); }      \
-  void clearTimelineFor##CAMEL_N() { this->PROPFIELD_NAME.UNDER_N.getTimeline()->clear(); }
-#define DOUBLE_P(...) TIMELINE_PAIR(__VA_ARGS__)
-#define DOUBLE3_P(...) TIMELINE_PAIR(__VA_ARGS__)
-#define DOUBLE6_P(...) TIMELINE_PAIR(__VA_ARGS__)
-
-PROPERTY_LIST
-
-#undef DOUBLE_P
-#undef DOUBLE3_P
-#undef DOUBLE6_P
-#undef TIMELINE_PAIR
-
 void propSubsystemAdvanceAutomation() override {
-#define ADVANCER(C, N, EXTR)                                                                                           \
-  {                                                                                                                    \
-    auto t = this->getTimelineFor##N();                                                                                \
-    t->tick(this->getAutomationTime());                                                                                \
-    auto val = t->getValue();                                                                                          \
-    if (val) {                                                                                                         \
-      EXTR this->set##N(v);                                                                                            \
-    }                                                                                                                  \
-  }
-#define DOUBLE_P(C, IGN, N, ...) ADVANCER(C, N, double v = (*val)[0];)
-#define TMP std::array<double, 3> v = {(*val)[0], (*val)[1], (*val)[2]};
-#define DOUBLE3_P(C, IGN, N, ...) ADVANCER(C, N, TMP)
-#define TMP2 std::array<double, 6> v = (*val);
-#define DOUBLE6_P(C, IGN, N, ...) ADVANCER(C, N, TMP2)
+#define ADVANCER(N) this->PROPFIELD_NAME.N.tickAutomation(this->getAutomationTime());
+
+#define DOUBLE_P(C, N, ...) ADVANCER(N)
+#define DOUBLE3_P(C, N, ...) ADVANCER(N)
+#define DOUBLE6_P(C, N, ...) ADVANCER(N)
 
   PROPERTY_LIST
   PROPERTY_BASE::propSubsystemAdvanceAutomation();
@@ -409,9 +385,9 @@ void validateAutomation(int property, std::optional<const PropertyAutomationPoin
 #undef TMP2
 
 void clearAutomationForProperty(int property) override {
-#define CLEARER(C, IGNORED, CAMEL_N, ...)                                                                              \
+#define CLEARER(C, UNDER_N, ...)                                                                                       \
   case C:                                                                                                              \
-    clearTimelineFor##CAMEL_N();                                                                                       \
+    this->PROPFIELD_NAME.UNDER_N.getTimeline()->clear();                                                               \
     return;
 #define DOUBLE_P(...) CLEARER(__VA_ARGS__)
 #define DOUBLE3_P(...) CLEARER(__VA_ARGS__)
@@ -433,9 +409,9 @@ void clearAutomationForProperty(int property) override {
 #undef CLEARER
 
 void applyPropertyAutomationPoints(int property, std::size_t points_len, PropertyAutomationPoint<6> *points) override {
-#define APPLIER(C, IGNORED, CAMEL_N, ...)                                                                              \
+#define APPLIER(C, UNDER_N, ...)                                                                                       \
   case C: {                                                                                                            \
-    auto t = getTimelineFor##CAMEL_N();                                                                                \
+    auto t = this->PROPFIELD_NAME.UNDER_N.getTimeline();                                                               \
     t->addPoints(points, points + points_len);                                                                         \
     return;                                                                                                            \
   }
@@ -459,7 +435,7 @@ void applyPropertyAutomationPoints(int property, std::size_t points_len, Propert
 #undef APPLIER
 
 void clearAllPropertyAutomation() {
-#define CLEARER(IGN, IGN2, CAMEL_N, ...) this->getTimelineFor##CAMEL_N()->clear();
+#define CLEARER(IGN, UNDER_N, ...) this->PROPFIELD_NAME.UNDER_N.getTimeline()->clear();
 #define DOUBLE_P(...) CLEARER(__VA_ARGS__)
 #define DOUBLE3_P(...) CLEARER(__VA_ARGS__)
 #define DOUBLE6_P(...) CLEARER(__VA_ARGS__)

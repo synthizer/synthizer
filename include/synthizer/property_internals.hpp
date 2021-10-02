@@ -106,10 +106,18 @@ class DoubleProperty : public AtomicProperty<double> {
 public:
   DoubleProperty(double dv) : AtomicProperty<double>(dv) {}
 
-  PropertyAutomationTimeline<6> *getTimeline() { return &this->timeline; }
+  PropertyAutomationTimeline<1> *getTimeline() { return &this->timeline; }
+
+  void tickAutomation(double time) {
+    this->timeline.tick(time);
+    auto val = this->timeline.getValue();
+    if (val) {
+      this->write((*val)[0]);
+    }
+  }
 
 private:
-  PropertyAutomationTimeline<6> timeline;
+  PropertyAutomationTimeline<1> timeline;
 };
 
 /**
@@ -145,10 +153,19 @@ class Double3Property : public LatchProperty<std::array<double, 3>> {
 public:
   Double3Property(const std::array<double, 3> &dv) : LatchProperty<std::array<double, 3>>(dv) {}
 
-  PropertyAutomationTimeline<6> *getTimeline() { return &this->timeline; }
+  PropertyAutomationTimeline<3> *getTimeline() { return &this->timeline; }
+
+  void tickAutomation(double time) {
+    this->timeline.tick(time);
+    auto val = this->timeline.getValue();
+    if (val) {
+      auto [a, b, c] = *val;
+      this->write({a, b, c});
+    }
+  }
 
 private:
-  PropertyAutomationTimeline<6> timeline{};
+  PropertyAutomationTimeline<3> timeline{};
 };
 
 class Double6Property : public LatchProperty<std::array<double, 6>> {
@@ -156,6 +173,15 @@ public:
   Double6Property(const std::array<double, 6> &dv) : LatchProperty<std::array<double, 6>>(dv) {}
 
   PropertyAutomationTimeline<6> *getTimeline() { return &this->timeline; }
+
+  void tickAutomation(double time) {
+    this->timeline.tick(time);
+    auto val = this->timeline.getValue();
+    if (val) {
+      auto [a, b, c, d, e, f] = *val;
+      this->write({a, b, c, d, e, f});
+    }
+  }
 
 private:
   PropertyAutomationTimeline<6> timeline{};
