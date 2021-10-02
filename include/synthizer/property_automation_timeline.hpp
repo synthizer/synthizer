@@ -28,6 +28,7 @@ public:
    * down as needed.
    * */
   PropertyAutomationPoint(const PropertyAutomationPoint<6> &other);
+  PropertyAutomationPoint(double _time, unsigned int _interpolation_type, const std::array<double, N> &_values);
 
   unsigned int interpolation_type;
   double automation_time;
@@ -106,6 +107,11 @@ inline PropertyAutomationPoint<N>::PropertyAutomationPoint(const PropertyAutomat
     this->values[i] = other.values[i];
   }
 }
+
+template <std::size_t N>
+PropertyAutomationPoint<N>::PropertyAutomationPoint(double _time, unsigned int _interpolation_type,
+                                                    const std::array<double, N> &_values)
+    : time(_time), interpolation_type(_interpolation_type), values(_values) {}
 
 template <std::size_t N> inline void PropertyAutomationTimeline<N>::addPoint(const PropertyAutomationPoint<N> &point) {
   this->inner.addItem(point);
