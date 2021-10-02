@@ -66,7 +66,7 @@ const auto double_max = std::numeric_limits<double>::max();
 template <typename T> class AtomicProperty {
 public:
   AtomicProperty() : AtomicProperty(T()) {}
-  explicit AtomicProperty(const T &&value) : field(value) {}
+  explicit AtomicProperty(const T &value) : field(value) {}
 
   T read() const { return this->field.load(std::memory_order_acquire); }
   void write(T value, bool track_change = true) {
@@ -90,7 +90,16 @@ private:
 };
 
 using IntProperty = AtomicProperty<int>;
-using DoubleProperty = AtomicProperty<double>;
+
+class DoubleProperty : public AtomicProperty<double> {
+public:
+  DoubleProperty(double dv) : AtomicProperty<double>(dv) {}
+
+  PropertyAutomationTimeline *getTimeline() { return &this->timeline; }
+
+private:
+  PropertyAutomationTimeline timeline;
+};
 
 /**
  * A property backed by LatchCell. Everything but read must be called from the audio thread.
@@ -98,7 +107,7 @@ using DoubleProperty = AtomicProperty<double>;
 template <typename T> class LatchProperty {
 public:
   LatchProperty() : LatchProperty(T()) {}
-  LatchProperty(const T &&value) : field(value) {}
+  explicit LatchProperty(const T &value) : field(value) {}
 
   T read() const { return this->field.read(); }
   void write(const T &value, bool track_change = true) {
@@ -120,8 +129,25 @@ private:
   bool changed = true;
 };
 
-using Double3Property = LatchProperty<std::array<double, 3>>;
-using Double6Property = LatchProperty<std::array<double, 6>>;
+class Double3Property : public LatchProperty<std::array<double, 3>> {
+public:
+  Double3Property(const std::array<double, 3> &dv) : LatchProperty<std::array<double, 3>>(dv) {}
+
+  PropertyAutomationTimeline *getTimeline() { return &this->timeline; }
+
+private:
+  PropertyAutomationTimeline timeline{};
+};
+
+class Double6Property : public LatchProperty<std::array<double, 6>> {
+public:
+  Double6Property(const std::array<double, 6> &dv) : LatchProperty<std::array<double, 6>>(dv) {}
+
+  PropertyAutomationTimeline *getTimeline() { return &this->timeline; }
+
+private:
+  PropertyAutomationTimeline timeline{};
+};
 
 /*
  * This is threadsafe, and we have kept that functionality even though we don't expose it publicly.

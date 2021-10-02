@@ -344,8 +344,8 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 #define BIQUAD_P(...)
 
 #define TIMELINE_PAIR(IGNORED, UNDER_N, CAMEL_N, ...)                                                                  \
-  PropertyAutomationTimeline *getTimelineFor##CAMEL_N() { return &this->PROPFIELD_NAME.UNDER_N##_timeline; }           \
-  void clearTimelineFor##CAMEL_N() { this->PROPFIELD_NAME.UNDER_N##_timeline.clear(); }
+  PropertyAutomationTimeline *getTimelineFor##CAMEL_N() { return this->PROPFIELD_NAME.UNDER_N.getTimeline(); }         \
+  void clearTimelineFor##CAMEL_N() { this->PROPFIELD_NAME.UNDER_N.getTimeline()->clear(); }
 #define DOUBLE_P(...) TIMELINE_PAIR(__VA_ARGS__)
 #define DOUBLE3_P(...) TIMELINE_PAIR(__VA_ARGS__)
 #define DOUBLE6_P(...) TIMELINE_PAIR(__VA_ARGS__)
