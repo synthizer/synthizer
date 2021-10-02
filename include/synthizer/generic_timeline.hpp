@@ -107,7 +107,6 @@ void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::copyBackIfNeeded() 
     return;
   }
 
-  std::size_t after_current = this->items.size() - current_item;
   std::size_t can_lose = this->current_item - HISTORY_LENGTH;
   auto keep_start = this->items.begin() + can_lose;
   std::copy(keep_start, this->items.end(), this->items.begin());

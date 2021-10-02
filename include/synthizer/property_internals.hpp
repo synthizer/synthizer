@@ -88,9 +88,9 @@ public:
 
   bool acquire(T *out) {
     *out = this->read();
-    bool changed = this->changed;
+    bool _changed = this->changed;
     this->changed = false;
-    return changed;
+    return _changed;
   }
   void markUnchanged() { this->changed = false; }
 
@@ -146,9 +146,9 @@ public:
   }
   bool acquire(T *out) {
     *out = this->read();
-    bool changed = this->changed;
+    bool _changed = this->changed;
     this->changed = false;
-    return changed;
+    return _changed;
   }
   void markUnchanged() { this->changed = false; }
 
@@ -239,9 +239,9 @@ public:
 
   bool acquire(std::weak_ptr<T> *out) {
     *out = this->read();
-    bool changed = this->changed;
+    bool _changed = this->changed;
     this->changed = false;
-    return changed;
+    return _changed;
   }
 
   void markUnchanged() { this->changed = false; }
