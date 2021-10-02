@@ -111,7 +111,7 @@ inline PropertyAutomationPoint<N>::PropertyAutomationPoint(const PropertyAutomat
 template <std::size_t N>
 PropertyAutomationPoint<N>::PropertyAutomationPoint(double _time, unsigned int _interpolation_type,
                                                     const std::array<double, N> &_values)
-    : time(_time), interpolation_type(_interpolation_type), values(_values) {}
+    : automation_time(_time), interpolation_type(_interpolation_type), values(_values) {}
 
 template <std::size_t N> inline void PropertyAutomationTimeline<N>::addPoint(const PropertyAutomationPoint<N> &point) {
   this->inner.addItem(point);

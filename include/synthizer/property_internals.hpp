@@ -107,7 +107,10 @@ public:
 
   double read() const { return AtomicProperty::read(); }
   void write(double val, bool track_changes = true) { AtomicProperty::write(val, track_changes); }
-  void writeAutomated(double automation_time, double val) { this->write(val); }
+  void writeAutomated(double automation_time, double val) {
+    PropertyAutomationPoint<1> point{automation_time, SYZ_INTERPOLATION_TYPE_NONE, std::array<double, 1>{{val}}};
+    this->timeline.addPoint(point);
+  }
   bool acquire(double *val) { return AtomicProperty::acquire(val); }
   void markUnchanged() { AtomicProperty::markUnchanged(); }
 
@@ -160,7 +163,10 @@ public:
 
   std::array<double, 3> read() const { return LatchProperty::read(); }
   void write(const std::array<double, 3> &val, bool track_changes = true) { LatchProperty::write(val, track_changes); }
-  void writeAutomated(double automation_time, const std::array<double, 3> &val) { this->write(val); }
+  void writeAutomated(double automation_time, const std::array<double, 3> &val) {
+    PropertyAutomationPoint<3> point{automation_time, SYZ_INTERPOLATION_TYPE_NONE, val};
+    this->timeline.addPoint(point);
+  }
   bool acquire(std::array<double, 3> *val) { return LatchProperty::acquire(val); }
   void markUnchanged() { LatchProperty::markUnchanged(); }
 
@@ -185,7 +191,10 @@ public:
 
   std::array<double, 6> read() const { return LatchProperty::read(); }
   void write(const std::array<double, 6> &val, bool track_changes = true) { LatchProperty::write(val, track_changes); }
-  void writeAutomated(double automation_time, const std::array<double, 6> &val) { this->write(val); }
+  void writeAutomated(double automation_time, const std::array<double, 6> &val) {
+    PropertyAutomationPoint<6> point{automation_time, SYZ_INTERPOLATION_TYPE_NONE, val};
+    this->timeline.addPoint(point);
+  }
   bool acquire(std::array<double, 6> *val) { return LatchProperty::acquire(val); }
   void markUnchanged() { LatchProperty::markUnchanged(); }
 
