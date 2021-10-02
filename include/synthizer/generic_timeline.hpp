@@ -56,19 +56,25 @@ private:
   /* Drop items as necessary. */
   void copyBackIfNeeded();
 
-  deferred_vector<T> items{};
+  struct Entry {
+    T item;
+    unsigned int tie_breaker;
+  };
+  deferred_vector<Entry> items{};
   unsigned int current_item = 0;
   /* Empty timelines are sorted. */
   bool is_sorted = true;
+  /* Used to make pdqsort stable. */
+  unsigned int insert_counter = 0;
 };
 
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
 void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::addItem(const T &item) {
-  this->items.push_back(item);
+  this->items.push_back({item, this->insert_counter++});
   if (this->items.size() > 1) {
     auto &last = this->items[this->items.size() - 1];
     auto &cur = this->items.back();
-    this->is_sorted = last.getTime() <= cur.getTime();
+    this->is_sorted = last.item.getTime() <= cur.item.getTime();
   }
 }
 
@@ -86,8 +92,13 @@ void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::sortIfNeeded() {
     return;
   }
 
-  pdqsort_branchless(this->items.begin(), this->items.end(),
-                     [](auto &a, auto &b) { return a.getTime() < b.getTime(); });
+  pdqsort_branchless(this->items.begin(), this->items.end(), [](auto &a, auto &b) {
+    // This is a stable comparison that uses the insert counter to break ties. Stable comparisons give us defined
+    // behavior when users specify points at the same time: the later insert wins.  it may seem like this is uncommon,
+    // but user-specified writes to properties desugar to timeline oeprations and so multiuple sets in the same tick can
+    // lead to this behavior.
+    return std::tie(a.item.getTime(), a.tie_breaker) < std::tie(b.item.getTime(), b.tie_breaker);
+  });
 }
 
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
@@ -112,8 +123,8 @@ void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::tick(double time) {
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
 template <typename CB>
 void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::tick(double time, CB &&callback) {
-  while (this->current_item < this->items.size() && this->items[this->current_item].getTime() <= time) {
-    callback(&this->items[this->current_item]);
+  while (this->current_item < this->items.size() && this->items[this->current_item].item.getTime() <= time) {
+    callback(&(this->items[this->current_item].item));
     this->current_item++;
   }
 
@@ -129,7 +140,7 @@ std::optional<T *> GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::getIt
     return std::nullopt;
   }
 
-  return &this->items[actual];
+  return &this->items[actual].item;
 }
 
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
