@@ -236,7 +236,16 @@ PROPERTY_LIST
     this->set##CAMEL_NAME(CONV(*ptr));                                                                                 \
   } break;
 
+#define SET_CONV_AUTOMATED_(T, P, CAMEL_NAME, CONV, ...)                                                               \
+  case (P): {                                                                                                          \
+    auto ptr = std::get_if<T>(&value);                                                                                 \
+    if (ptr == nullptr)                                                                                                \
+      throw EPropertyType();                                                                                           \
+    this->set##CAMEL_NAME##Automated(CONV(*ptr));                                                                      \
+  } break;
+
 #define SET_(T, P, CAMEL_NAME) SET_CONV_(T, P, CAMEL_NAME, [](auto &v) { return v; })
+#define SET_AUTOMATED_(T, P, CAMEL_NAME) SET_CONV_AUTOMATED_(T, P, CAMEL_NAME, [](auto &v) { return v; })
 
 /* Now implement the methods. */
 
@@ -311,14 +320,14 @@ void validateProperty(int property, const property_impl::PropertyValue &value) o
 #undef BIQUAD_P
 
 #define INT_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(int, P, CAMEL_NAME)
-#define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(double, P, CAMEL_NAME)
+#define DOUBLE_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_AUTOMATED_(double, P, CAMEL_NAME)
 #define OBJECT_P(P, UNDERSCORE_NAME, CAMEL_NAME, CLS)                                                                  \
   SET_CONV_(std::shared_ptr<CExposable>, P, CAMEL_NAME, ([](auto &v) -> auto {                                         \
               /* validated by the validator; guaranteed to be valid here. */                                           \
               return std::static_pointer_cast<CLS>(v);                                                                 \
             }))
-#define DOUBLE3_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(property_impl::arrayd3, P, CAMEL_NAME)
-#define DOUBLE6_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_(property_impl::arrayd6, P, CAMEL_NAME)
+#define DOUBLE3_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_AUTOMATED_(property_impl::arrayd3, P, CAMEL_NAME)
+#define DOUBLE6_P(P, UNDERSCORE_NAME, CAMEL_NAME, ...) SET_AUTOMATED_(property_impl::arrayd6, P, CAMEL_NAME)
 #define BIQUAD_P(P, UNDERSCORE_NAME, CAMEL_NAME) SET_(struct syz_BiquadConfig, P, CAMEL_NAME)
 
 void setProperty(int property, const property_impl::PropertyValue &value) override {
