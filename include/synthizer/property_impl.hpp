@@ -337,7 +337,7 @@ void setProperty(int property, const property_impl::PropertyValue &value) overri
 #define BIQUAD_P(...)
 
 void propSubsystemAdvanceAutomation() override {
-#define ADVANCER(N) this->PROPFIELD_NAME.N.tickAutomation(this->getAutomationTime());
+#define ADVANCER(N) this->PROPFIELD_NAME.N.tickAutomation(this->getAutomationTimeInSamples());
 
 #define DOUBLE_P(C, N, ...) ADVANCER(N)
 #define DOUBLE3_P(C, N, ...) ADVANCER(N)

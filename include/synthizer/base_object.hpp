@@ -152,14 +152,14 @@ public:
     this->local_block_time += 1;
     // Then tick events, which we want to happen before their scheduled time, enver after.
     this->scheduled_events.tick(this->context, std::static_pointer_cast<BaseObject>(this->shared_from_this()),
-                                this->getAutomationTime());
+                                this->getAutomationTimeInSamples());
   }
 
   /**
    * Get the local automation time, which updates every time automation specifically for this object ticks.
    *
    * */
-  double getAutomationTime() { return this->local_block_time * config::BLOCK_SIZE / (double)config::SR; }
+  double getAutomationTimeInSamples() { return this->local_block_time * config::BLOCK_SIZE / (double)config::SR; }
 
   /**
    * Schedule an event at a specific time, which will be dispatched to the user.
