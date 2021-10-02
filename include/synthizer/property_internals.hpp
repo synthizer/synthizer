@@ -96,7 +96,6 @@ public:
 
 private:
   std::atomic<T> field{};
-  T last_tracked_changed_value;
   bool changed = true;
 };
 
