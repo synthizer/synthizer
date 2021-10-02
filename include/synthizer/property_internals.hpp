@@ -106,7 +106,7 @@ public:
   DoubleProperty(double dv) : AtomicProperty<double>(dv) {}
 
   double read() const { return AtomicProperty::read(); }
-  void write(double automation_time, double val, bool track_changes = false) {
+  void write(double automation_time, double val, bool track_changes = true) {
     (void)automation_time;
     AtomicProperty::write(val, track_changes);
   }
@@ -161,7 +161,7 @@ public:
   Double3Property(const std::array<double, 3> &dv) : LatchProperty<std::array<double, 3>>(dv) {}
 
   std::array<double, 3> read() const { return LatchProperty::read(); }
-  void write(double automation_time, const std::array<double, 3> &val, bool track_changes = false) {
+  void write(double automation_time, const std::array<double, 3> &val, bool track_changes = true) {
     (void)automation_time;
     LatchProperty::write(val, track_changes);
   }
@@ -188,7 +188,7 @@ public:
   Double6Property(const std::array<double, 6> &dv) : LatchProperty<std::array<double, 6>>(dv) {}
 
   std::array<double, 6> read() const { return LatchProperty::read(); }
-  void write(double automation_time, const std::array<double, 6> &val, bool track_changes = false) {
+  void write(double automation_time, const std::array<double, 6> &val, bool track_changes = true) {
     (void)automation_time;
     LatchProperty::write(val, track_changes);
   }
