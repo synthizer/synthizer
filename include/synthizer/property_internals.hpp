@@ -106,9 +106,7 @@ public:
   DoubleProperty(double dv) : AtomicProperty<double>(dv) {}
 
   double read() const { return AtomicProperty::read(); }
-  void write(double val, bool track_changes = true) {
-    AtomicProperty::write(val, track_changes);
-  }
+  void write(double val, bool track_changes = true) { AtomicProperty::write(val, track_changes); }
   void writeAutomated(double automation_time, double val) {
     PropertyAutomationPoint<1> point{automation_time, SYZ_INTERPOLATION_TYPE_NONE, std::array<double, 1>{{val}}};
     this->timeline.addPoint(point);
