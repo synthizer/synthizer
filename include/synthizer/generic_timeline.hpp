@@ -21,6 +21,10 @@ namespace synthizer {
  * or past the current time, e.g. it "isn't late", but it is up to the caller to determine if the item should be used.
  * Time must be monatonically increasing for now.
  *
+ * One special case of `getItem()` is that it will hold at the end of the timeline if the timeline is finished, even if
+ * the item at the end of the timeline is before the current time; users can and should check for this case, which
+ * allows them to make sure that they set themselves to the final value of the timeline.
+ *
  * The third template parameter controls how often the timeline copies items back and should probably be left at the
  * default unless `HISTORY_LENGT` should for some reason need to be longer than it.
  * */
@@ -45,11 +49,6 @@ public:
   void addItem(const T &item);
   template <typename IT> void addItems(IT first, IT last);
 
-  /**
-   * Returns true if this timeline will no longer yield new items.
-   * */
-  bool isFinished();
-
   void clear();
 
 private:
@@ -61,7 +60,6 @@ private:
   unsigned int current_item = 0;
   /* Empty timelines are sorted. */
   bool is_sorted = true;
-  bool finished = true;
 };
 
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
@@ -72,7 +70,6 @@ void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::addItem(const T &it
     auto &cur = this->items.back();
     this->is_sorted = last.getTime() <= cur.getTime();
   }
-  this->finished = false;
 }
 
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
@@ -120,23 +117,15 @@ void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::tick(double time, C
     this->current_item++;
   }
 
-  this->finished = (this->current_item >= this->items.size());
-  if (this->finished) {
-    return;
-  }
-
   this->copyBackIfNeeded();
 }
 
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
-bool GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::isFinished() {
-  return this->finished;
-}
-
-template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
 std::optional<T *> GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::getItem(int offset) {
-  int actual = static_cast<int>(this->current_item) + offset;
-  if (actual < 0 || actual > (int)this->items.size()) {
+  // Bump down by 1 if we're past the end.
+  unsigned int effective_item = this->current_item - (this->current_item == this->items.size());
+  int actual = static_cast<int>(effective_item) + offset;
+  if (actual < 0 || actual >= (int)this->items.size()) {
     return std::nullopt;
   }
 
@@ -146,7 +135,6 @@ std::optional<T *> GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::getIt
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>
 void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::clear() {
   this->current_item = 0;
-  this->finished = true;
   this->is_sorted = true;
   this->items.clear();
 }

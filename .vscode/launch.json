@@ -8,7 +8,7 @@
 			"name": "(Windows) Launch",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/automation_circle.exe",
+			"program": "${workspaceFolder}/build/test_verify_properties.exe",
 			"args": ["corpus/ball.flac"],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",

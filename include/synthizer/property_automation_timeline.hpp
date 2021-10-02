@@ -80,34 +80,16 @@ public:
    * - Somewhere calls `tick()` for the start of this audio tick
    * - Somewhere else calls `getValue()`.
    *
-   * This function returns an empty option if the timeline hasn't started yet (e.g. is in the future) or has already
-   * ended.  When it does so, properties are left alone.
-   *
-   * It is only valid to call this once per tick: we have to use it to finalize the timeline so that the timeline always
-   * hits the final value exactly, but without requiring an extra tick for the timeline to record itself as finished.
-   * Consequently, this function *isn't* pure.
+   * This function returns an empty option if the timeline hasn't started yet (e.g. is in the future).  We rely on
+   * properties optimizing their writes and always return the ending value once past the end of the timeline.
    * */
-  std::optional<std::array<double, N>> getValue() {
-    auto ret = this->current_value;
-    if (this->inner.isFinished() & !this->is_finalized) {
-      this->is_finalized = true;
-      this->current_value = std::nullopt;
-    }
-    return ret;
-  }
-
-  /**
-   * Returns true when evaluating this timeline will never again produce a value.
-   * */
-  bool isFinished() { return this->is_finalized && this->inner.isFinished(); }
+  std::optional<std::array<double, N>> getValue() { return this->current_value; }
 
   void clear();
 
 private:
   GenericTimeline<PropertyAutomationPoint<N>, 1> inner;
   std::optional<std::array<double, N>> current_value = std::nullopt;
-  /* false until the timeline has fianlized by writing the last value after the inner timeline finished. */
-  bool is_finalized = false;
 };
 
 template <std::size_t N>
@@ -127,28 +109,33 @@ inline PropertyAutomationPoint<N>::PropertyAutomationPoint(const PropertyAutomat
 
 template <std::size_t N> inline void PropertyAutomationTimeline<N>::addPoint(const PropertyAutomationPoint<N> &point) {
   this->inner.addItem(point);
-  this->is_finalized = false;
 }
 
-template <std::size_t N> inline void PropertyAutomationTimeline<N>::clear() { this->inner.clear(); }
+template <std::size_t N> inline void PropertyAutomationTimeline<N>::clear() {
+  this->inner.clear();
+  this->current_value = std::nullopt;
+}
 
 template <std::size_t N> inline void PropertyAutomationTimeline<N>::tick(double time) {
   this->inner.tick(time);
-  if (this->inner.isFinished()) {
-    // Set the value to the last point we can get in inner, if possible.
-    auto l = this->inner.getItem(-1);
-    if (this->is_finalized == false && l) {
-      this->current_value = (*l)->values;
-    }
+
+  auto maybe_cur = this->inner.getItem(0);
+  if (!maybe_cur) {
+    // Timeline is empty.
     return;
   }
-  this->is_finalized = false;
+  auto cur = *maybe_cur;
 
-  // If it's not finished there is always an item.
-  auto cur = *(this->inner.getItem(0));
   auto maybe_last = this->inner.getItem(-1);
 
-  // If there is no last point, then the timeline hasn't started yet.
+  // If we're ahead of cur, we're done with the timeline; apply and hold the value.
+  if (cur->automation_time <= time) {
+    this->current_value = cur->values;
+    return;
+  }
+
+  // If there is no last point, then the timeline hasn't started or was cleared.
+  // Don't do anything; we'll pick up new values next time someone sets something.
   if (!maybe_last) {
     this->current_value = std::nullopt;
     return;
@@ -173,18 +160,20 @@ template <std::size_t N> inline void PropertyAutomationTimeline<N>::tick(double 
   if (cur->interpolation_type != SYZ_INTERPOLATION_TYPE_NONE) {
     double time_diff = cur->automation_time - last->automation_time;
     if (time_diff <= 0) {
-      // math will go nuts; just use cur.
+      // Possible due to either rounding error or overlapping points. Just use the latter point.
       this->current_value = cur->values;
-    } else {
-      double delta = (time - last->automation_time) / time_diff;
-      double w2 = delta;
-      double w1 = 1.0 - w2;
-      std::array<double, N> value;
-      for (unsigned int i = 0; i < N; i++) {
-        value[i] = w1 * last->values[i] + w2 * cur->values[i];
-      }
-      this->current_value = value;
+      return;
     }
+
+    // We're between cur and last, do an interpolation.
+    double delta = (time - last->automation_time) / time_diff;
+    double w2 = delta;
+    double w1 = 1.0 - w2;
+    std::array<double, N> value;
+    for (unsigned int i = 0; i < N; i++) {
+      value[i] = w1 * last->values[i] + w2 * cur->values[i];
+    }
+    this->current_value = value;
   }
 }
 

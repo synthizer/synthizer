@@ -66,17 +66,6 @@ int main() {
     }
   }
 
-  if (timeline.isFinished() == false) {
-    printf("Timeline should be finished, but isn't\n");
-    return 1;
-  }
-
-  timeline.tick(time);
-  if (timeline.getValue()) {
-    printf("Finished timelines should no longer return values\n");
-    return 1;
-  }
-
   printf("Success\n");
   return 0;
 }
