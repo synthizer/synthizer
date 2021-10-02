@@ -107,7 +107,6 @@ public:
 
   double read() const { return AtomicProperty::read(); }
   void write(double val, bool track_changes = true) {
-    printf("%f\n", val);
     AtomicProperty::write(val, track_changes);
   }
   void writeAutomated(double automation_time, double val) {

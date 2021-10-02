@@ -128,6 +128,7 @@ template <std::size_t N> inline void PropertyAutomationTimeline<N>::tick(double 
   auto maybe_cur = this->inner.getItem(0);
   if (!maybe_cur) {
     // Timeline is empty.
+    this->current_value = std::nullopt;
     return;
   }
   auto cur = *maybe_cur;
