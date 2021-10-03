@@ -76,7 +76,7 @@ void verifyInt(syz_Handle ctx, syz_Handle handle, int property, int min, int max
     ERR_MSG("Value != max");
   }
   if (min > INT_MIN && syz_setI(handle, property, min - 1) == 0) {
-    ERR_MSG("SHouldn't be able to set below minimum");
+    ERR_MSG("Shouldn't be able to set below minimum");
   }
   if (max < INT_MAX && syz_setI(handle, property, max + 1) == 0) {
     ERR_MSG("Was able to set above maximum");
@@ -182,7 +182,7 @@ void verifyDouble6(syz_Handle ctx, syz_Handle handle, int property, double dx, d
   verifyDouble6(ctx, handle, E, DV1, DV2, DV3, DV4, DV5, DV6, objtype, #N);
 
 int main() {
-  syz_Handle ctx, handle;
+  syz_Handle ctx, source, handle;
   const char *objtype;
 
   syz_initialize();
@@ -194,8 +194,19 @@ int main() {
   }
   handle = ctx;
 
+
   objtype = "Context";
   CONTEXT_PROPERTIES;
+
+
+  objtype = "AngularPannedSource";
+  if (syz_createAngularPannedSource(&source, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, NULL, NULL) != 0) {
+    printf("Couldn't create PannedSource ");
+    printLastError();
+    return 1;
+  }
+  handle = source;
+  ANGULAR_PANNED_SOURCE_PROPERTIES;
 
   objtype = "BufferGenerator";
   if (syz_createBufferGenerator(&handle, ctx, NULL, NULL) != 0) {
@@ -203,19 +214,17 @@ int main() {
     printLastError();
     return 1;
   }
+  if (syz_sourceAddGenerator(source, handle) != 0) {
+    printf("Couldn't attach generator to source\n");
+    printLastError();
+    return 1;
+  }
+
 #undef DOUBLE_P
 #define DOUBLE_P(...)
   BUFFER_GENERATOR_PROPERTIES;
 #undef DOUBLE_P
 #define DOUBLE_P(...) DOUBLE_P_IMPL(__VA_ARGS__)
-
-  objtype = "AngularPannedSource";
-  if (syz_createAngularPannedSource(&handle, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, NULL, NULL) != 0) {
-    printf("Couldn't create PannedSource ");
-    printLastError();
-    return 1;
-  }
-  ANGULAR_PANNED_SOURCE_PROPERTIES;
 
   objtype = "Source3D";
   if (syz_createSource3D(&handle, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, 0.0, NULL, NULL) != 0) {
