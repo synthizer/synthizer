@@ -194,10 +194,8 @@ int main() {
   }
   handle = ctx;
 
-
   objtype = "Context";
   CONTEXT_PROPERTIES;
-
 
   objtype = "AngularPannedSource";
   if (syz_createAngularPannedSource(&source, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, NULL, NULL) != 0) {

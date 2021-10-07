@@ -27,6 +27,8 @@ public:
 #pragma clang diagnostic pop
 
   void run(unsigned int dest_channels, float *destination) {
+    this->tickAutomation();
+
     syz_BiquadConfig biquad_cfg;
 
     if ((this->biquad_filter == nullptr || this->channels != this->last_channels) && this->channels != 0) {
