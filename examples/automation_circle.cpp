@@ -73,8 +73,6 @@ int main(int argc, char *argv[]) {
   struct syz_LibraryConfig library_config;
   syz_Handle context = 0, generator = 0, source = 0, buffer = 0;
   int object_type;
-  /* Used by the CHECKED macro. */
-  int ecode = 0, initialized = 0;
   unsigned int iters_so_far = 0;
   struct syz_Event evt;
 
@@ -87,7 +85,6 @@ int main(int argc, char *argv[]) {
   library_config.log_level = SYZ_LOG_LEVEL_DEBUG;
   library_config.logging_backend = SYZ_LOGGING_BACKEND_STDERR;
   CHECKED(syz_initializeWithConfig(&library_config));
-  initialized = 1;
 
   CHECKED(syz_createContext(&context, NULL, NULL));
   CHECKED(syz_setD6(context, SYZ_P_ORIENTATION, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0));
@@ -115,14 +112,11 @@ int main(int argc, char *argv[]) {
     syz_eventDeinit(&evt);
   }
 
-end:
   syz_handleDecRef(context);
   syz_handleDecRef(generator);
   syz_handleDecRef(buffer);
   syz_handleDecRef(source);
-  if (initialized) {
-    syz_shutdown();
-  }
+  syz_shutdown();
 
-  return ecode;
+  return 0;
 }

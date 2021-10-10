@@ -67,12 +67,10 @@ end:
 }
 
 int main() {
-  int ecode = 0, initialized = 0;
   float *triangle = NULL;
   syz_Handle context = 0, buffer = 0, generator = 0, source = 0, batch = 0;
 
   CHECKED(syz_initialize());
-  initialized = 1;
 
   CHECKED(syz_createContext(&context, NULL, NULL));
   CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
@@ -106,16 +104,14 @@ int main() {
 
   printf("Press enter key to exit\n");
   getchar();
-end:
+
   syz_handleDecRef(source);
   syz_handleDecRef(buffer);
   syz_handleDecRef(batch);
   syz_handleDecRef(generator);
   syz_handleDecRef(context);
-  if (initialized) {
-    syz_shutdown();
-  }
+  syz_shutdown();
 
   free(triangle);
-  return ecode;
+  return 0;
 }

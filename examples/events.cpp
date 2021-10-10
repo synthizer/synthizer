@@ -18,8 +18,6 @@ int main(int argc, char *argv[]) {
   syz_Handle context = 0, generator = 0, source = 0, buffer = 0, stream = 0;
   struct syz_Event event;
   int object_type;
-  /* Used by the CHECKED macro. */
-  int ecode = 0, initialized = 0;
 
   if (argc != 2) {
     printf("Usage: %s <path>\n", argv[0]);
@@ -30,7 +28,6 @@ int main(int argc, char *argv[]) {
   library_config.log_level = SYZ_LOG_LEVEL_DEBUG;
   library_config.logging_backend = SYZ_LOGGING_BACKEND_STDERR;
   CHECKED(syz_initializeWithConfig(&library_config));
-  initialized = 1;
 
   CHECKED(syz_createContext(&context, NULL, NULL));
   CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
@@ -64,15 +61,12 @@ int main(int argc, char *argv[]) {
     }
   }
 
-end:
   syz_handleDecRef(context);
   syz_handleDecRef(generator);
   syz_handleDecRef(buffer);
   syz_handleDecRef(source);
   syz_handleDecRef(stream);
-  if (initialized) {
-    syz_shutdown();
-  }
+  syz_shutdown();
 
-  return ecode;
+  return 0;
 }

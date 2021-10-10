@@ -78,8 +78,6 @@ int openCallback(struct syz_CustomStreamDef *def, const char *protocol, const ch
 int main(int argc, char *argv[]) {
   struct syz_LibraryConfig library_config;
   syz_Handle context = 0, generator = 0, source = 0;
-  /* Used by the CHECKED macro. */
-  int ecode = 0, initialized = 0;
 
   if (argc != 2) {
     printf("Usage: buffer_from_memory <path>\n");
@@ -90,7 +88,6 @@ int main(int argc, char *argv[]) {
   library_config.log_level = SYZ_LOG_LEVEL_DEBUG;
   library_config.logging_backend = SYZ_LOGGING_BACKEND_STDERR;
   CHECKED(syz_initializeWithConfig(&library_config));
-  initialized = 1;
 
   CHECKED(syz_registerStreamProtocol("custom", openCallback, NULL));
   CHECKED(syz_createContext(&context, NULL, NULL));
@@ -101,13 +98,9 @@ int main(int argc, char *argv[]) {
   printf("Press any key to quit...\n");
   getchar();
 
-end:
   syz_handleDecRef(context);
   syz_handleDecRef(generator);
+  syz_shutdown();
 
-  if (initialized) {
-    syz_shutdown();
-  }
-
-  return ecode;
+  return 0;
 }
