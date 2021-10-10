@@ -149,7 +149,7 @@ public:
   virtual void tickAutomation() {
     this->propSubsystemAdvanceAutomation();
     // Always do this second, so that time can start at 0.
-    this->local_block_time += 1;
+    this->local_block_time.fetch_add(1, std::memory_order_relaxed);
     // Then tick events, which we want to happen before their scheduled time, enver after.
     this->scheduled_events.tick(this->context, std::static_pointer_cast<BaseObject>(this->shared_from_this()),
                                 this->getAutomationTimeInSamples());
@@ -173,7 +173,8 @@ public:
 
 protected:
   std::shared_ptr<Context> context;
-  unsigned int local_block_time = 0;
+  /* incremented every block. Read by the user on non-audio threads when asking for time properties. */
+  std::atomic<unsigned int> local_block_time = 0;
   EventTimeline scheduled_events;
 };
 
