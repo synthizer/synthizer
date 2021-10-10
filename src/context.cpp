@@ -143,6 +143,7 @@ void Context::generateAudio(unsigned int channels, float *destination) {
   /* No exception should happen without programmer error, but if it does we want to fail loudly. */
   try {
     this->runCommands();
+
     // And now that we've done that, run our own automation, which doesn't run otherwise.
     this->tickAutomation();
 
