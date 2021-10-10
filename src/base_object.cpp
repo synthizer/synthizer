@@ -17,17 +17,34 @@ bool BaseObject::hasProperty(int property) {
 
   return false;
 }
+
 property_impl::PropertyValue BaseObject::getProperty(int property) {
   (void)property;
 
-  throw EInvalidProperty();
+  switch (property) {
+  case SYZ_P_CURRENT_TIME:
+    return this->getAutomationTimeInSamples() / config::SR;
+  // Add around 100ms to the current time. We might do a more complex algorithm later.
+  case SYZ_P_SUGGESTED_AUTOMATION_TIME:
+    return this->getAutomationTimeInSamples() / config::SR + 0.1;
+  default:
+    throw EInvalidProperty();
+  }
 }
 
 void BaseObject::validateProperty(int property, const property_impl::PropertyValue &value) {
   (void)property;
   (void)value;
 
-  throw EInvalidProperty();
+  switch (property) {
+  case SYZ_P_CURRENT_TIME:
+    throw EValidation("SYZ_P_CURRENT_TIME cannot be set");
+  case SYZ_P_SUGGESTED_AUTOMATION_TIME:
+    throw EValidation("SYZ_P_SUGGESTED_AUTOMATION_TIME cannot be set");
+  default:
+    // Don't give a special message.
+    throw EInvalidProperty();
+  }
 }
 
 void BaseObject::setProperty(int property, const property_impl::PropertyValue &value) {
