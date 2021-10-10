@@ -1,6 +1,8 @@
 /**
  * Demonstrate simple use of the automation API by synthesizing a tone and playing beeps using an ADSR envelope.
  * */
+#include "example_common.h"
+
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
@@ -63,16 +65,6 @@ end:
   free(cmds);
   return ret;
 }
-
-#define CHECKED(x)                                                                                                     \
-  do {                                                                                                                 \
-    int ret = x;                                                                                                       \
-    if (ret) {                                                                                                         \
-      printf(#x ": Synthizer error code %i message %s\n", ret, syz_getLastErrorMessage());                             \
-      ecode = 1;                                                                                                       \
-      goto end;                                                                                                        \
-    }                                                                                                                  \
-  } while (0)
 
 int main() {
   int ecode = 0, initialized = 0;

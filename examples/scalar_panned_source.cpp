@@ -4,6 +4,8 @@
  *
  * Uses C++ because MSVC doesn't support threads.h and we need to sleep.
  * */
+#include "example_common.h"
+
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
@@ -11,16 +13,6 @@
 #include <thread>
 
 #include <stdio.h>
-
-#define CHECKED(x)                                                                                                     \
-  do {                                                                                                                 \
-    int ret = x;                                                                                                       \
-    if (ret) {                                                                                                         \
-      printf(#x ": Synthizer error code %i message %s\n", ret, syz_getLastErrorMessage());                             \
-      ecode = 1;                                                                                                       \
-      goto end;                                                                                                        \
-    }                                                                                                                  \
-  } while (0)
 
 const unsigned int ITERATIONS_PER_CYCLE = 200;
 const unsigned int HALF_CYCLE = ITERATIONS_PER_CYCLE / 2;

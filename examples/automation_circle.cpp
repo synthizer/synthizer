@@ -8,6 +8,8 @@
  * trigonometry then by enqueueing an event that contains the number of iterations we've done so far.  This isn't a
  * particularly practical example, but demonstrates most of the automation API's surface area.
  * */
+#include "example_common.h"
+
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
@@ -17,16 +19,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-
-#define CHECKED(x)                                                                                                     \
-  do {                                                                                                                 \
-    int ret = x;                                                                                                       \
-    if (ret) {                                                                                                         \
-      printf(#x ": Synthizer error code %i message %s\n", ret, syz_getLastErrorMessage());                             \
-      ecode = 1;                                                                                                       \
-      goto end;                                                                                                        \
-    }                                                                                                                  \
-  } while (0)
 
 static const unsigned int STEPS_BEFORE_WAIT = 10;
 static const double DUR_PER_STEP = 0.1;

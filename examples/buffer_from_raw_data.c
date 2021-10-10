@@ -1,6 +1,7 @@
 /**
  * Demonstrate reading raw data into a buffer using some sine generation.
  * */
+#include "example_common.h"
 
 #include "synthizer.h"
 #include "synthizer_constants.h"
@@ -12,16 +13,6 @@
 const unsigned int SR = 44100;
 const unsigned int FREQ_LEFT = 200;
 const unsigned int FREQ_RIGHT = 400;
-
-#define CHECKED(x)                                                                                                     \
-  do {                                                                                                                 \
-    int ret = x;                                                                                                       \
-    if (ret) {                                                                                                         \
-      printf(#x ": Synthizer error code %i message %s\n", ret, syz_getLastErrorMessage());                             \
-      ecode = 1;                                                                                                       \
-      goto end;                                                                                                        \
-    }                                                                                                                  \
-  } while (0)
 
 #define PI 3.141592653589793f
 

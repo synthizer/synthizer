@@ -1,21 +1,13 @@
 /**
  * Demonstrate reading a buffer from in-memory encoded audio assets.
  * */
+#include "example_common.h"
+
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#define CHECKED(x)                                                                                                     \
-  do {                                                                                                                 \
-    int ret = x;                                                                                                       \
-    if (ret) {                                                                                                         \
-      printf(#x ": Synthizer error code %i message %s\n", ret, syz_getLastErrorMessage());                             \
-      ecode = 1;                                                                                                       \
-      goto end;                                                                                                        \
-    }                                                                                                                  \
-  } while (0)
 
 int main(int argc, char *argv[]) {
   struct syz_LibraryConfig library_config;

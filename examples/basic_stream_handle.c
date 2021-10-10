@@ -6,20 +6,12 @@
  *
  * Mostly, this exists as a runnable test of the functionality; it's only a one line change from basic file reading.
  * */
+#include "example_common.h"
+
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
 #include <stdio.h>
-
-#define CHECKED(x)                                                                                                     \
-  do {                                                                                                                 \
-    int ret = x;                                                                                                       \
-    if (ret) {                                                                                                         \
-      printf(#x ": Synthizer error code %i message %s\n", ret, syz_getLastErrorMessage());                             \
-      ecode = 1;                                                                                                       \
-      goto end;                                                                                                        \
-    }                                                                                                                  \
-  } while (0)
 
 int main(int argc, char *argv[]) {
   struct syz_LibraryConfig library_config;

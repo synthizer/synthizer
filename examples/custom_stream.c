@@ -4,21 +4,13 @@
  * This just wraps the C file API, but similar techniques can be used
  * to hook into anything else that can be abstracted as callbacks.
  * */
+#include "example_common.h"
+
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#define CHECKED(x)                                                                                                     \
-  do {                                                                                                                 \
-    int ret = x;                                                                                                       \
-    if (ret) {                                                                                                         \
-      printf(#x ": Synthizer error code %i message %s\n", ret, syz_getLastErrorMessage());                             \
-      ecode = 1;                                                                                                       \
-      goto end;                                                                                                        \
-    }                                                                                                                  \
-  } while (0)
 
 int readCallback(unsigned long long *wrote, unsigned long long requested, char *destination, void *userdata,
                  const char **err_msg) {
