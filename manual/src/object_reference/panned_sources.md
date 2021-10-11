@@ -6,7 +6,7 @@
 
 ```
 SYZ_CAPI syz_ErrorCode syz_createAngularPannedSource(syz_Handle *out, syz_Handle context, int panner_strategy,
-                                                     double azimuth, double elevation, void *userdata,
+                                                     double azimuth, double elevation, void *config, void *userdata,
                                                      syz_UserdataFreeCallback *userdata_free_callback);
 ```
 
@@ -16,7 +16,7 @@ Creates an angular panned source, which can be controled through azimuth and ele
 
 ```
 SYZ_CAPI syz_ErrorCode syz_createScalarPannedSource(syz_Handle *out, syz_Handle context, int panner_strategy,
-                                                    double panning_scalar, void *userdata,
+                                                    double panning_scalar, void *config, void *userdata,
                                                     syz_UserdataFreeCallback *userdata_free_callback);
 ```
 

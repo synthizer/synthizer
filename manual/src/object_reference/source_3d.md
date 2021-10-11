@@ -6,7 +6,8 @@
 
 ```
 SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, int panner_strategy, double x, double y,
-                                          double z, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+                                          double z, void *config, void *userdata,
+                                          syz_UserdataFreeCallback *userdata_free_callback);
 ```
 
 Creates a source3d positioned at the origin and with no associated generators.
