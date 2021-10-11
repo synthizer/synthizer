@@ -14,7 +14,8 @@ up to help.
 
 ### Other Changes in this Release
 
-- `PannedSource` has been split into `ScalarPannedSource` and `AngularPannedSOurce`.
+- An automation API is now available to change properties over time, e.g. for crossfades and fadeouts.
+- `PannedSource` has been split into `ScalarPannedSource` and `AngularPannedSource`.
   - This prevents regressions with respect to being able to use panning scalars.
   - Use `AngularPannedSource` for azimuth/elevation and `ScalarPannedSource` for the panning scalar.
 - All sources which do panning require their panning strategy to be set up front via their constructor function.
@@ -23,8 +24,9 @@ up to help.
 - All sources which do panning require that their panning related values be passed in via their constructors as well.
   These are the initial values you would otherwise have to set in the related properties.
   - Makes it possible to tweak crossfading stuff later.
-
-# 0.10.0
+- All constructors for audio objects take a `config` argument, which is reserved primarily for use in the future to
+  improve automation.
+  # 0.10.0
 
 ## Changes in this Release
 
