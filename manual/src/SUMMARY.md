@@ -33,6 +33,7 @@
   - [Filters](./concepts/filters.md)
   - [Effects and Effect Routing](./concepts/effects.md)
 - [Events](./concepts/events.md)
+- [The Automation API](./concepts/automation.md)
 - [Stability Guarantees](./concepts/stability.md)
 
 # The Object Reference
