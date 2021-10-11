@@ -197,6 +197,7 @@ example(buffer_from_raw_data c)
 example(custom_stream c)
 example(events cpp)
 example(load_libsndfile c)
+example(play_note c)
 example(scalar_panned_source cpp)
 example(simple_automation c)
 
