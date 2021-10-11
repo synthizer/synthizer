@@ -51,7 +51,7 @@ static void automateEnvelope(syz_Handle context, syz_Handle target, double time)
   syz_Handle batch;
 
   CHECKED(syz_createAutomationBatch(&batch, context, NULL, NULL));
-  CHECKED(syz_automationBatchAddCommands(batch, sizeof(commands) / sizeof(commands[0]), &commands));
+  CHECKED(syz_automationBatchAddCommands(batch, sizeof(commands) / sizeof(commands[0]), commands));
   CHECKED(syz_automationBatchExecute(batch));
   syz_handleDecRef(batch);
 }
