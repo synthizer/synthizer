@@ -113,15 +113,17 @@ void BaseObject::tickAutomation() {
                               this->getAutomationTimeInSamples());
 }
 
-double BaseObject::getAutomationTimeInSamples() {
+unsigned int BaseObject::getAutomationTimeInBlocks() {
   if (this->context_relative_automation.load(std::memory_order_relaxed)) {
     // Context automation has to tick before everything else, which means it's always ahead by one block.  We need to
     // recompute off the block time, which increments at the end since it tracks the current block.
-    return (double)(this->getContextRaw()->getBlockTime() * config::BLOCK_SIZE);
+    return this->getContextRaw()->getBlockTime();
   }
 
-  return (double)this->local_block_time.load(std::memory_order_relaxed) * config::BLOCK_SIZE;
+  return this->local_block_time.load(std::memory_order_relaxed);
 }
+
+double BaseObject::getAutomationTimeInSamples() { return this->getAutomationTimeInBlocks() * config::BLOCK_SIZE; }
 
 void BaseObject::automationScheduleEvent(double time, unsigned long long param) {
   ScheduledEvent e{time, param};

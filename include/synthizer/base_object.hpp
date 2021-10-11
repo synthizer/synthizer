@@ -118,6 +118,7 @@ public:
    *
    * */
   double getAutomationTimeInSamples();
+  unsigned int getAutomationTimeInBlocks();
 
   /**
    * Schedule an event at a specific time, which will be dispatched to the user.
