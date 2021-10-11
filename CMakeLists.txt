@@ -5,6 +5,9 @@ project(synthizer VERSION 0.1.0 LANGUAGES C CXX)
 # really hard to tell which.
 set(CMAKE_CXX_STANDARD 17)
 
+# Synthizer version.
+add_compile_definitions(SYZ_MAJOR=0 SYZ_MINOR=11 SYZ_PATCH=0)
+
 include(CTest)
 include(CheckCXXSourceRuns)
 enable_testing()
@@ -38,7 +41,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     /experimental:external
     /external:W0
     /external:anglebrackets
-    # Apparently we have to globally disable unreachable code warnings; MSVC isn'tletting us do it in a
+    # Apparently we have to globally disable unreachable code warnings; MSVC isn't letting us do it in a
     # targeted fashion.
     /wd4702
   )
@@ -102,10 +105,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/channel_mixing.cpp
   src/context.cpp
   src/decoding.cpp
-  src/shared_object.cpp
-  src/effects/echo.cpp
-  src/effects/effects.cpp
-  src/effects/fdn_reverb.cpp
   src/error.cpp
   src/event_timeline.cpp
   src/events.cpp
@@ -121,11 +120,13 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/property_internals.cpp
   src/routable.cpp
   src/router.cpp
-  src/spsc_semaphore.cpp
+  src/shared_object.cpp
   src/source.cpp
   src/spatialization_math.cpp
+  src/spsc_semaphore.cpp
   src/stereo_panner.cpp
   src/stream_handle.cpp
+  src/version.cpp
 
   src/data/arrays.cpp
   src/data/hrtf.cpp
@@ -135,6 +136,10 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/decoders/mp3.cpp
   src/decoders/raw_decoder.cpp
   src/decoders/wav.cpp
+
+  src/effects/echo.cpp
+  src/effects/effects.cpp
+  src/effects/fdn_reverb.cpp
 
   src/filters/audio_eq_cookbook.cpp
   src/filters/simple_filters.cpp
@@ -198,6 +203,7 @@ example(custom_stream c)
 example(events cpp)
 example(load_libsndfile c)
 example(play_note c)
+example(print_version c)
 example(scalar_panned_source cpp)
 example(simple_automation c)
 

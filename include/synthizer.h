@@ -25,6 +25,8 @@ extern "C" {
  * Other methods are in src/c_api.cpp (i.e. generic property setters, initialization, etc.).
  * */
 
+SYZ_CAPI void syz_getVersion(unsigned int *major, unsigned int *minor, unsigned int *patch);
+
 typedef unsigned long long syz_Handle;
 typedef int syz_ErrorCode;
 
