@@ -9,14 +9,6 @@
 
 namespace synthizer {
 
-void Generator::tickAutomation() {
-  if (this->isPaused()) {
-    return;
-  }
-
-  BaseObject::tickAutomation();
-}
-
 void Generator::run(float *output) {
   double new_gain;
 

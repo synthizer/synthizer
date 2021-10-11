@@ -37,8 +37,6 @@ public:
   /* Return the number of channels this generator wants to output on the next block. */
   virtual unsigned int getChannels() = 0;
 
-  virtual void tickAutomation() override;
-
   /**
    * Non-virtual internal callback. Implements pausing, gain, etc.
    *

@@ -90,6 +90,12 @@ router::OutputHandle *BaseObject::getOutputHandle() { return nullptr; }
 
 void BaseObject::propSubsystemAdvanceAutomation() {}
 void BaseObject::tickAutomation() {
+  // If we're pausable and paused, don't advance automation.
+  auto p = dynamic_cast<Pausable *>(this);
+  if (p != nullptr && p->isPaused() == true) {
+    return;
+  }
+
   this->propSubsystemAdvanceAutomation();
   // Always do this second, so that time can start at 0.
   this->local_block_time.fetch_add(1, std::memory_order_relaxed);
