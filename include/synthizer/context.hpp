@@ -173,7 +173,7 @@ public:
    *
    * This is used for crossfading and other applications.
    * */
-  unsigned int getBlockTime() { return this->block_time; }
+  unsigned int getBlockTime() { return this->block_time.load(std::memory_order_relaxed); }
 
   /*
    * Helpers for the C API. to set properties in the context's thread.
@@ -316,7 +316,7 @@ private:
   MpscRing<Command, 10000> command_queue;
   template <typename T> void propertySetter(const std::shared_ptr<BaseObject> &obj, int property, const T &value);
 
-  unsigned int block_time = 0;
+  std::atomic<unsigned int> block_time = 0;
 
   /* Collections of objects that require execution: sources, etc. all go here eventually. */
 

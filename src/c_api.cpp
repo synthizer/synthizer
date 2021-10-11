@@ -357,11 +357,3 @@ SYZ_CAPI syz_ErrorCode syz_configDeleteBehavior(syz_Handle object, const struct 
   return 0;
   SYZ_EPILOGUE
 }
-
-SYZ_CAPI syz_ErrorCode syz_automationBecomeContextRelative(syz_Handle handle) {
-  SYZ_PROLOGUE
-  auto x = fromC<BaseObject>(handle);
-  x->automationBecomeContextRelative();
-  return 0;
-  SYZ_EPILOGUE
-}

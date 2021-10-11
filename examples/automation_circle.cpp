@@ -29,10 +29,8 @@ static const double PI = 3.141592653589793;
  * Enqueue some automation including the event to drive things forward.  Uses iters_so_far to maintain state, which we
  * read back from the event this schedules.
  * */
-int enqueueAutomation(syz_Handle context, syz_Handle source, unsigned int iters_so_far) {
+int enqueueAutomation(syz_Handle context, syz_Handle source, double timebase, unsigned int iters_so_far) {
   syz_Handle batch = 0;
-  /* Dummy variable to leet us reuse CHECKED. */
-  int ecode = 0;
   syz_AutomationCommand cmd;
   syz_AutomationPoint point;
 
@@ -48,7 +46,7 @@ int enqueueAutomation(syz_Handle context, syz_Handle source, unsigned int iters_
     point.values[1] = 10.0 * cos(iter * DEGS_PER_STEP * PI / 180.0);
 
     cmd.type = SYZ_AUTOMATION_COMMAND_APPEND_PROPERTY;
-    cmd.time = iter * DUR_PER_STEP;
+    cmd.time = timebase + iter * DUR_PER_STEP;
     cmd.params.append_to_property.property = SYZ_P_POSITION;
     cmd.params.append_to_property.point = point;
     cmd.target = source;
@@ -64,9 +62,8 @@ int enqueueAutomation(syz_Handle context, syz_Handle source, unsigned int iters_
   CHECKED(syz_automationBatchAddCommands(batch, 1, &cmd));
   CHECKED(syz_automationBatchExecute(batch));
 
-end:
   syz_handleDecRef(batch);
-  return ecode;
+  return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -75,6 +72,7 @@ int main(int argc, char *argv[]) {
   int object_type;
   unsigned int iters_so_far = 0;
   struct syz_Event evt;
+  double timebase;
 
   if (argc != 2) {
     printf("Usage: %s <path>\n", argv[0]);
@@ -99,9 +97,11 @@ int main(int argc, char *argv[]) {
 
   CHECKED(syz_contextEnableEvents(context));
 
+  // Grab a time to start automating at.
+  CHECKED(syz_getD(&timebase, generator, SYZ_P_SUGGESTED_AUTOMATION_TIME));
   for (;;) {
     printf("Beginning iteration %u\n", iters_so_far);
-    CHECKED(enqueueAutomation(context, source, iters_so_far));
+    CHECKED(enqueueAutomation(context, source, timebase, iters_so_far));
 
     do {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));

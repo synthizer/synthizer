@@ -43,7 +43,7 @@ float *computeTriangle() {
   return ret;
 }
 
-syz_ErrorCode createBatch(syz_Handle *out, syz_Handle context, syz_Handle target) {
+syz_ErrorCode createBatch(syz_Handle *out, syz_Handle context, syz_Handle target, double timebase) {
   unsigned int count = sizeof(POINTS) / sizeof(POINTS[0]);
   struct syz_AutomationCommand *cmds = calloc(count, sizeof(struct syz_AutomationCommand));
   for (unsigned int i = 0; i < count; i++) {
@@ -53,7 +53,7 @@ syz_ErrorCode createBatch(syz_Handle *out, syz_Handle context, syz_Handle target
     c->params.append_to_property.point.values[0] = POINTS[i].value;
     c->params.append_to_property.point.interpolation_type = POINTS[i].interpolation_type;
     c->params.append_to_property.property = SYZ_P_GAIN;
-    c->time = POINTS[i].time;
+    c->time = timebase + POINTS[i].time;
   }
   syz_ErrorCode ret = syz_createAutomationBatch(out, context, NULL, NULL);
   if (ret != 0) {
@@ -69,6 +69,7 @@ end:
 int main() {
   float *triangle = NULL;
   syz_Handle context = 0, buffer = 0, generator = 0, source = 0, batch = 0;
+  double timebase;
 
   CHECKED(syz_initialize());
 
@@ -84,7 +85,8 @@ int main() {
   CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
   CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
 
-  CHECKED(createBatch(&batch, context, generator));
+  CHECKED(syz_getD(&timebase, generator, SYZ_P_SUGGESTED_AUTOMATION_TIME));
+  CHECKED(createBatch(&batch, context, generator, timebase));
   CHECKED(syz_automationBatchExecute(batch));
 
   CHECKED(syz_sourceAddGenerator(source, generator));

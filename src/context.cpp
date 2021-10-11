@@ -208,14 +208,14 @@ void Context::generateAudio(unsigned int channels, float *destination) {
     double new_gain;
     if (this->acquireGain(new_gain) || this->shouldIncorporatePausableGain()) {
       new_gain *= this->getPausableGain();
-      this->gain_driver.setValue(this->block_time, new_gain);
+      this->gain_driver.setValue(this->getBlockTime(), new_gain);
     }
     /**
      * Can tick the pausable here.
      * */
     this->tickPausable();
 
-    this->gain_driver.drive(this->block_time, [&](auto &gain_cb) {
+    this->gain_driver.drive(this->getBlockTime(), [&](auto &gain_cb) {
       for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
         float g = gain_cb(i);
         for (unsigned int ch = 0; ch < channels; ch++) {
@@ -237,7 +237,7 @@ void Context::generateAudio(unsigned int channels, float *destination) {
       return obj.expired();
     });
 
-    this->block_time++;
+    this->block_time.fetch_add(1, std::memory_order_relaxed);
   } catch (...) {
     logError("Got an exception in the audio callback");
   }

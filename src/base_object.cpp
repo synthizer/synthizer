@@ -88,39 +88,19 @@ Context *BaseObject::getContextRaw() { return this->context.get(); }
 router::InputHandle *BaseObject::getInputHandle() { return nullptr; }
 router::OutputHandle *BaseObject::getOutputHandle() { return nullptr; }
 
-void BaseObject::automationBecomeContextRelative() {
-  // if we are a context, no-op.
-  if (dynamic_cast<Context *>(this)) {
-    return;
-  }
-
-  this->context_relative_automation.store(1, std::memory_order_relaxed);
-}
-
 void BaseObject::propSubsystemAdvanceAutomation() {}
-void BaseObject::tickAutomation() {
-  // If we're pausable and paused, don't advance automation.
-  auto p = dynamic_cast<Pausable *>(this);
-  if (p != nullptr && p->isPaused() == true && this->context_relative_automation.load(std::memory_order_relaxed)) {
-    return;
-  }
 
+void BaseObject::tickAutomation() {
   this->propSubsystemAdvanceAutomation();
-  // Always do this second, so that time can start at 0.
-  this->local_block_time.fetch_add(1, std::memory_order_relaxed);
   // Then tick events, which we want to happen before their scheduled time, enver after.
   this->scheduled_events.tick(this->context, std::static_pointer_cast<BaseObject>(this->shared_from_this()),
                               this->getAutomationTimeInSamples());
 }
 
 unsigned int BaseObject::getAutomationTimeInBlocks() {
-  if (this->context_relative_automation.load(std::memory_order_relaxed)) {
-    // Context automation has to tick before everything else, which means it's always ahead by one block.  We need to
-    // recompute off the block time, which increments at the end since it tracks the current block.
-    return this->getContextRaw()->getBlockTime();
-  }
-
-  return this->local_block_time.load(std::memory_order_relaxed);
+  // Context automation has to tick before everything else, which means it's always ahead by one block.  We need to
+  // recompute off the block time, which increments at the end since it tracks the current block.
+  return this->getContextRaw()->getBlockTime();
 }
 
 double BaseObject::getAutomationTimeInSamples() { return this->getAutomationTimeInBlocks() * config::BLOCK_SIZE; }
