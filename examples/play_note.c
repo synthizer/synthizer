@@ -8,6 +8,7 @@
 #include "synthizer_constants.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 
 static const unsigned int SR = 9000;
