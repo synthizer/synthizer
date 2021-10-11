@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 
 	CHECKED(syz_createContext(&context, NULL, NULL));
 	
-  (syz_createSource3D(&source, context, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, 0.0, NULL, NULL));
+  CHECKED(syz_createSource3D(&source, context, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, 0.0, NULL, NULL, NULL));
 
 	t_start = clock.now();
 	for(unsigned int i = 0; i < iterations; i++) {

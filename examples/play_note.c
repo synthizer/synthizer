@@ -64,8 +64,8 @@ int main() {
   CHECKED(syz_initialize());
 
   CHECKED(syz_createContext(&context, NULL, NULL));
-  CHECKED(syz_createDirectSource(&source, context, NULL, NULL));
-  CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
+  CHECKED(syz_createDirectSource(&source, context, NULL, NULL, NULL));
+  CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL, NULL));
 
   wave = computeTriangle();
   CHECKED(syz_createBufferFromFloatArray(&buffer, SR, 1, SR, wave, NULL, NULL));

@@ -56,8 +56,10 @@ std::optional<double> ExposedNoiseGenerator::startGeneratorLingering() {
 using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels,
-                                                void *userdata, syz_UserdataFreeCallback *userdata_free_callback) {
-  SYZ_PROLOGUE
+                                                void *config, void *userdata,
+                                                syz_UserdataFreeCallback *userdata_free_callback) {
+  SYZ_PROLOGUE(void) config;
+
   if (channels == 0) {
     throw ERange("NoiseGenerator must have at least 1 channel");
   }

@@ -87,8 +87,8 @@ int main(int argc, char *argv[]) {
   CHECKED(syz_createContext(&context, NULL, NULL));
   CHECKED(syz_setD6(context, SYZ_P_ORIENTATION, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0));
 
-  CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
-  CHECKED(syz_createSource3D(&source, context, SYZ_PANNER_STRATEGY_HRTF, 0.0, 1.0, 0.0, NULL, NULL));
+  CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL, NULL));
+  CHECKED(syz_createSource3D(&source, context, SYZ_PANNER_STRATEGY_HRTF, 0.0, 1.0, 0.0, NULL, NULL, NULL));
   CHECKED(syz_sourceAddGenerator(source, generator));
 
   CHECKED(syz_createBufferFromFile(&buffer, argv[1], NULL, NULL));

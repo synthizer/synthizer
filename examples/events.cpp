@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
   CHECKED(syz_initializeWithConfig(&library_config));
 
   CHECKED(syz_createContext(&context, NULL, NULL));
-  CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL));
-  CHECKED(syz_createDirectSource(&source, context, NULL, NULL));
+  CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL, NULL));
+  CHECKED(syz_createDirectSource(&source, context, NULL, NULL, NULL));
   CHECKED(syz_sourceAddGenerator(source, generator));
 
   CHECKED(syz_createBufferFromFile(&buffer, argv[1], NULL, NULL));

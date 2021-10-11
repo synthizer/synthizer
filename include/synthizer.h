@@ -208,13 +208,13 @@ SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle *out, s
 
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context,
                                                                     const char *protocol, const char *path, void *param,
-                                                                    void *userdata,
+                                                                    void *config, void *userdata,
                                                                     syz_UserdataFreeCallback *userdata_free_callback);
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path,
-                                                            void *userdata,
+                                                            void *config, void *userdata,
                                                             syz_UserdataFreeCallback *userdata_free_callback);
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context,
-                                                                    syz_Handle stream, void *userdata,
+                                                                    syz_Handle stream, void *config, void *userdata,
                                                                     syz_UserdataFreeCallback *userdata_free_callback);
 
 SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamParams(syz_Handle *out, const char *protocol, const char *path,
@@ -234,26 +234,28 @@ SYZ_CAPI syz_ErrorCode syz_bufferGetChannels(unsigned int *out, syz_Handle buffe
 SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSamples(unsigned int *out, syz_Handle buffer);
 SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSeconds(double *out, syz_Handle buffer);
 
-SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context, void *userdata,
+SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context, void *config, void *userdata,
                                                  syz_UserdataFreeCallback *userdata_free_callback);
 
 SYZ_CAPI syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle generator);
 SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle generator);
 
-SYZ_CAPI syz_ErrorCode syz_createDirectSource(syz_Handle *out, syz_Handle context, void *userdata,
+SYZ_CAPI syz_ErrorCode syz_createDirectSource(syz_Handle *out, syz_Handle context, void *config, void *userdata,
                                               syz_UserdataFreeCallback *userdata_free_callback);
 
 SYZ_CAPI syz_ErrorCode syz_createAngularPannedSource(syz_Handle *out, syz_Handle context, int panner_strategy,
-                                                     double azimuth, double elevation, void *userdata,
+                                                     double azimuth, double elevation, void *config, void *userdata,
                                                      syz_UserdataFreeCallback *userdata_free_callback);
 SYZ_CAPI syz_ErrorCode syz_createScalarPannedSource(syz_Handle *out, syz_Handle context, int panner_strategy,
-                                                    double panning_scalar, void *userdata,
+                                                    double panning_scalar, void *config, void *userdata,
                                                     syz_UserdataFreeCallback *userdata_free_callback);
 SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, int panner_strategy, double x, double y,
-                                          double z, void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+                                          double z, void *config, void *userdata,
+                                          syz_UserdataFreeCallback *userdata_free_callback);
 
 SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels,
-                                                void *userdata, syz_UserdataFreeCallback *userdata_free_callback);
+                                                void *config, void *userdata,
+                                                syz_UserdataFreeCallback *userdata_free_callback);
 
 struct syz_RouteConfig {
   double gain;
@@ -269,7 +271,7 @@ SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle out
 
 SYZ_CAPI syz_ErrorCode syz_effectReset(syz_Handle effect);
 
-SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context, void *userdata,
+SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context, void *config, void *userdata,
                                             syz_UserdataFreeCallback *userdata_free_callback);
 
 struct syz_EchoTapConfig {
@@ -281,7 +283,7 @@ struct syz_EchoTapConfig {
 SYZ_CAPI syz_ErrorCode syz_globalEchoSetTaps(syz_Handle handle, unsigned int n_taps,
                                              const struct syz_EchoTapConfig *taps);
 
-SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle context, void *userdata,
+SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle context, void *config, void *userdata,
                                                  syz_UserdataFreeCallback *userdata_free_callback);
 
 #ifdef __cplusplus

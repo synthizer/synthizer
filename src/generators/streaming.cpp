@@ -223,9 +223,10 @@ using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context,
                                                                     const char *protocol, const char *path, void *param,
-                                                                    void *userdata,
+                                                                    void *config, void *userdata,
                                                                     syz_UserdataFreeCallback *userdata_free_callback) {
-  SYZ_PROLOGUE
+  SYZ_PROLOGUE(void) config;
+
   auto ctx = fromC<Context>(context);
   auto decoder = getDecoderForStreamParams(protocol, path, param);
   auto generator = ctx->createObject<StreamingGenerator>(decoder);
@@ -235,16 +236,17 @@ SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *
 }
 
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path,
-                                                            void *userdata,
+                                                            void *config, void *userdata,
                                                             syz_UserdataFreeCallback *userdata_free_callback) {
-  return syz_createStreamingGeneratorFromStreamParams(out, context, "file", path, NULL, userdata,
+  return syz_createStreamingGeneratorFromStreamParams(out, context, "file", path, NULL, config, userdata,
                                                       userdata_free_callback);
 }
 
 SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context,
-                                                                    syz_Handle stream, void *userdata,
+                                                                    syz_Handle stream, void *config, void *userdata,
                                                                     syz_UserdataFreeCallback *userdata_free_callback) {
-  SYZ_PROLOGUE
+  SYZ_PROLOGUE(void) config;
+
   auto ctx = fromC<Context>(context);
   auto s = fromC<StreamHandle>(stream);
   auto bs = consumeStreamHandle(s);
