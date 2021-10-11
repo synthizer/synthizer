@@ -134,21 +134,6 @@ jobs:
         # get it out of the way so that the uploads don't freak out.
         rm -rf ~/artifacts/manual
         ls ~/artifacts
-    - name: Download Windows Wheels 32-bit
-      uses: actions/download-artifact@v2
-      with:
-        name: python-wheels-win32
-        path: ~/artifacts
-    - name: Download Windows Wheels 64-bit
-      uses: actions/download-artifact@v2
-      with:
-        name: python-wheels-win64
-        path: ~/artifacts
-    - name: Download Python sdist
-      uses: actions/download-artifact@v2
-      with:
-        name: python-sdist
-        path: ~/artifacts
     - name: Create Release
       uses: actions/create-release@v1
       env:
