@@ -101,7 +101,7 @@ void BaseObject::propSubsystemAdvanceAutomation() {}
 void BaseObject::tickAutomation() {
   // If we're pausable and paused, don't advance automation.
   auto p = dynamic_cast<Pausable *>(this);
-  if (p != nullptr && p->isPaused() == true) {
+  if (p != nullptr && p->isPaused() == true && this->context_relative_automation.load(std::memory_order_relaxed)) {
     return;
   }
 
@@ -115,7 +115,9 @@ void BaseObject::tickAutomation() {
 
 double BaseObject::getAutomationTimeInSamples() {
   if (this->context_relative_automation.load(std::memory_order_relaxed)) {
-    return this->getContextRaw()->getAutomationTimeInSamples();
+    // Context automation has to tick before everything else, which means it's always ahead by one block.  We need to
+    // recompute off the block time, which increments at the end since it tracks the current block.
+    return (double)(this->getContextRaw()->getBlockTime() * config::BLOCK_SIZE);
   }
 
   return (double)this->local_block_time.load(std::memory_order_relaxed) * config::BLOCK_SIZE;
