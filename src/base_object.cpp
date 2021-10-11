@@ -88,6 +88,15 @@ Context *BaseObject::getContextRaw() { return this->context.get(); }
 router::InputHandle *BaseObject::getInputHandle() { return nullptr; }
 router::OutputHandle *BaseObject::getOutputHandle() { return nullptr; }
 
+void BaseObject::automationBecomeContextRelative() {
+  // if we are a context, no-op.
+  if (dynamic_cast<Context *>(this)) {
+    return;
+  }
+
+  this->context_relative_automation.store(1, std::memory_order_relaxed);
+}
+
 void BaseObject::propSubsystemAdvanceAutomation() {}
 void BaseObject::tickAutomation() {
   // If we're pausable and paused, don't advance automation.
@@ -104,7 +113,13 @@ void BaseObject::tickAutomation() {
                               this->getAutomationTimeInSamples());
 }
 
-double BaseObject::getAutomationTimeInSamples() { return (double)this->local_block_time * config::BLOCK_SIZE; }
+double BaseObject::getAutomationTimeInSamples() {
+  if (this->context_relative_automation.load(std::memory_order_relaxed)) {
+    return this->getContextRaw()->getAutomationTimeInSamples();
+  }
+
+  return (double)this->local_block_time.load(std::memory_order_relaxed) * config::BLOCK_SIZE;
+}
 
 void BaseObject::automationScheduleEvent(double time, unsigned long long param) {
   ScheduledEvent e{time, param};

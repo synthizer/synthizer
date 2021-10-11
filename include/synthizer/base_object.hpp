@@ -95,6 +95,9 @@ public:
 
   void signalLingerStopPoint() override;
 
+  /* Make this object's automation time relative to the context. */
+  void automationBecomeContextRelative();
+
   /**
    * Advance automation.  This internal method is for the property infrastructure, and ticks any associated timelines.
    * Should be called by tickAutomation, which can be overridden by subclasses to e.g. not run automation only once
@@ -127,6 +130,8 @@ protected:
   std::shared_ptr<Context> context;
   /* incremented every block. Read by the user on non-audio threads when asking for time properties. */
   std::atomic<unsigned int> local_block_time = 0;
+  /* Whether or not this object's automation time is relative to the context. */
+  std::atomic<unsigned int> context_relative_automation = 0;
   EventTimeline scheduled_events;
 };
 

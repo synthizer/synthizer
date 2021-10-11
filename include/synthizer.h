@@ -155,6 +155,8 @@ SYZ_CAPI syz_ErrorCode syz_automationBatchAddCommands(syz_Handle batch, unsigned
                                                       const struct syz_AutomationCommand *commands);
 SYZ_CAPI syz_ErrorCode syz_automationBatchExecute(syz_Handle batch);
 
+SYZ_CAPI syz_ErrorCode syz_automationBecomeContextRelative(syz_Handle handle);
+
 SYZ_CAPI syz_ErrorCode syz_createContext(syz_Handle *out, void *userdata,
                                          syz_UserdataFreeCallback *userdata_free_callback);
 
