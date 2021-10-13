@@ -139,16 +139,18 @@ struct syz_AutomationSendUserEventCommand {
   unsigned long long param;
 };
 
+union syz_AutomationCommandParams {
+  struct syz_AutomationAppendPropertyCommand append_to_property;
+  struct syz_AutomationClearPropertyCommand clear_property;
+  struct syz_AutomationSendUserEventCommand send_user_event;
+};
+
 struct syz_AutomationCommand {
   syz_Handle target;
   double time;
   int type;
   unsigned int flags;
-  union {
-    struct syz_AutomationAppendPropertyCommand append_to_property;
-    struct syz_AutomationClearPropertyCommand clear_property;
-    struct syz_AutomationSendUserEventCommand send_user_event;
-  } params;
+  union syz_AutomationCommandParams params;
 };
 
 SYZ_CAPI syz_ErrorCode syz_createAutomationBatch(syz_Handle *out, syz_Handle context, void *userdata,
