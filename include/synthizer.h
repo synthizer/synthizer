@@ -121,7 +121,7 @@ SYZ_CAPI syz_ErrorCode syz_biquadDesignHighpass(struct syz_BiquadConfig *filter,
 SYZ_CAPI syz_ErrorCode syz_biquadDesignBandpass(struct syz_BiquadConfig *filter, double frequency, double bw);
 
 struct syz_AutomationPoint {
-  unsigned int interpolation_type;
+  int interpolation_type;
   double values[6];
   unsigned long long flags;
 };
