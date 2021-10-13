@@ -120,11 +120,7 @@ PROPCLASS_NAME PROPFIELD_NAME{};
                                                                                                                        \
   bool acquire##CAMEL_NAME(double &out) { STANDARD_ACQUIRE(UNDERSCORE_NAME) }                                          \
                                                                                                                        \
-  void mark##CAMEL_NAME##Unchanged() { STANDARD_UNCHANGED(UNDERSCORE_NAME); }                                          \
-                                                                                                                       \
-  std::optional<double> get##CAMEL_NAME##NextBlockValue() {                                                            \
-    return this->PROPFIELD_NAME.UNDERSCORE_NAME.getValueForNextBlock();                                                \
-  }
+  void mark##CAMEL_NAME##Unchanged() { STANDARD_UNCHANGED(UNDERSCORE_NAME); }
 
 #define DOUBLE3_P(E, UNDERSCORE_NAME, CAMEL_NAME, ...)                                                                 \
   std::array<double, 3> get##CAMEL_NAME() const { STANDARD_READ(UNDERSCORE_NAME) }                                     \

@@ -117,11 +117,6 @@ public:
 
   PropertyAutomationTimeline<1> *getTimeline() { return &this->timeline; }
 
-  // Relies on the time which is passed to be one block, and to always advance by one block (e.g. time must be an
-  // integer number of samples and a multiple of config::BLOCK_SIZE).
-  //
-  // This isn't ideal, but automation is complicated and we need to be able to give callers the value of the property at
-  // the next block, so they can fade properly.
   void tickAutomation(double time) {
     this->timeline.tick(time);
     auto val = this->timeline.getValue();
@@ -131,23 +126,11 @@ public:
 
     if (this->timeline.isFinished()) {
       this->timeline.clear();
-      return;
-    }
-
-    this->timeline.tick(time + config::BLOCK_SIZE);
-    this->next_block_value = std::nullopt;
-    auto maybe_v = this->timeline.getValue();
-    if (maybe_v) {
-      this->next_block_value = (*maybe_v)[0];
     }
   }
 
-  // nullopt if the next block doesn't have a value yet because automation is finished.
-  std::optional<double> getValueForNextBlock() { return this->next_block_value; }
-
 private:
   PropertyAutomationTimeline<1> timeline;
-  std::optional<double> next_block_value;
 };
 
 /**
