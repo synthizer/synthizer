@@ -129,6 +129,11 @@ public:
       this->write((*val)[0]);
     }
 
+    if (this->timeline.isFinished()) {
+      this->timeline.clear();
+      return;
+    }
+
     this->timeline.tick(time + config::BLOCK_SIZE);
     this->next_block_value = std::nullopt;
     auto maybe_v = this->timeline.getValue();
@@ -196,6 +201,10 @@ public:
       auto [a, b, c] = *val;
       this->write({a, b, c});
     }
+
+    if (this->timeline.isFinished()) {
+      this->timeline.clear();
+    }
   }
 
 private:
@@ -223,6 +232,10 @@ public:
     if (val) {
       auto [a, b, c, d, e, f] = *val;
       this->write({a, b, c, d, e, f});
+    }
+
+    if (this->timeline.isFinished()) {
+      this->timeline.clear();
     }
   }
 

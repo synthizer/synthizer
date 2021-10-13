@@ -250,6 +250,10 @@ if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
   add_executable(test_property_automation_timeline test/property_automation_timeline.cpp)
   target_link_libraries(test_property_automation_timeline synthizer)
 
+
+  add_executable(test_seeking test/seeking.cpp)
+  target_link_libraries(test_seeking synthizer)
+
   add_test(NAME delay_line COMMAND delay_line_test)
   add_test(NAME latch COMMAND test_latch)
   add_test(NAME verify_properties COMMAND test_verify_properties)

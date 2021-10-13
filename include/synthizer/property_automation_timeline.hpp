@@ -88,9 +88,21 @@ public:
 
   void clear();
 
+  /**
+   * Return whether the timeline is finished. Finished is defined as "won't change value anymore" and can go to false if
+   * the user appends more points.
+   *
+   * This value is updated when the timeline ticks, not when points are added.  It exists to solve the feedback loop
+   * between user-set properties and synthizer-set properties, where the user-supplied value "locks" the synthizer-side
+   * value in an infinite feedback loop.  For example, this can happen with SYZ_P_PLAYBACK_POSITION, which will "hold"
+   * at whatever the user last set it to, and cause the node to seek forever.
+   * */
+  bool isFinished() { return this->finished; }
+
 private:
   GenericTimeline<PropertyAutomationPoint<N>, 1> inner;
   std::optional<std::array<double, N>> current_value = std::nullopt;
+  bool finished;
 };
 
 template <std::size_t N>
@@ -123,11 +135,14 @@ template <std::size_t N> inline void PropertyAutomationTimeline<N>::clear() {
 }
 
 template <std::size_t N> inline void PropertyAutomationTimeline<N>::tick(double time) {
+  this->finished = false;
+
   this->inner.tick(time);
 
   auto maybe_cur = this->inner.getItem(0);
   if (!maybe_cur) {
     // Timeline is empty.
+    this->finished = true;
     this->current_value = std::nullopt;
     return;
   }
@@ -137,6 +152,7 @@ template <std::size_t N> inline void PropertyAutomationTimeline<N>::tick(double 
 
   // If we're ahead of cur, we're done with the timeline; apply and hold the value.
   if (cur->automation_time <= time) {
+    this->finished = true;
     this->current_value = cur->values;
     return;
   }
@@ -144,6 +160,7 @@ template <std::size_t N> inline void PropertyAutomationTimeline<N>::tick(double 
   // If there is no last point, then the timeline hasn't started or was cleared.
   // Don't do anything; we'll pick up new values next time someone sets something.
   if (!maybe_last) {
+    this->finished = true;
     this->current_value = std::nullopt;
     return;
   }
