@@ -1,3 +1,7 @@
+## 0.11.2 (2020-10-13)
+
+- Fix seeking and other related feedback loops where Synthizer sets a property and gets stuck in an infinite loop
+
 ## 0.11.0 (2020-10-11)
 
 ## Changes in this Release
