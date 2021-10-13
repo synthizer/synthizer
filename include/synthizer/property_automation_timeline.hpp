@@ -160,7 +160,6 @@ template <std::size_t N> inline void PropertyAutomationTimeline<N>::tick(double 
   // If there is no last point, then the timeline hasn't started or was cleared.
   // Don't do anything; we'll pick up new values next time someone sets something.
   if (!maybe_last) {
-    this->finished = true;
     this->current_value = std::nullopt;
     return;
   }
