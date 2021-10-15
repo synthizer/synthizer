@@ -1,3 +1,7 @@
+## 0.11.3 (2020-15-2021
+
+- Fix a bug where adding points to automation timelines in the future would drop those points.
+
 ## 0.11.2 (2020-10-13)
 
 - Fix seeking and other related feedback loops where Synthizer sets a property and gets stuck in an infinite loop

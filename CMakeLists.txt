@@ -6,7 +6,7 @@ project(synthizer VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 
 # Synthizer version.
-add_compile_definitions(SYZ_MAJOR=0 SYZ_MINOR=11 SYZ_PATCH=2)
+add_compile_definitions(SYZ_MAJOR=0 SYZ_MINOR=11 SYZ_PATCH=3)
 
 include(CTest)
 include(CheckCXXSourceRuns)
