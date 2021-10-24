@@ -1,4 +1,4 @@
-## 0.11.4 (WIP)
+## 0.11.4 (2020-10-24)
 
 - Add `syz_bufferGetSizeInBytes`, to get a buffer's size in bytes.  This is useful for caching/memory tracking purposes.
 
