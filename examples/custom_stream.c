@@ -72,6 +72,7 @@ int openCallback(struct syz_CustomStreamDef *def, const char *protocol, const ch
   def->close_cb = closeCallback;
   def->seek_cb = seekCallback;
   def->userdata = (void *)f;
+
   return 0;
 }
 

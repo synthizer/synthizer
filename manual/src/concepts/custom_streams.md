@@ -147,9 +147,8 @@ more.  If it reads less bytes than were requested, Synthizer treats this as an
 end-of-stream condition.  If the end of the stream has already been reached, the
 read callback should claim it read no bytes.
 
-The seek callback is optional.  Streams don't need to support seeking, but (1)
-this disables seeking in `StreamingGenerator` and (2) this disables support for
-Libsndfile if Libsndfile was loaded.  In order to be seekable, a stream must:
+The seek callback is optional.  Streams don't need to support seeking, but this disables seeking in `StreamingGenerator`. it also disables support for
+Libsndfile if Libsndfile was loaded, and additionally support for decoding wav files.  In order to be seekable, a stream must:
 
 - Have a seek callback; and
 - Fill out the `length` field with a positive value, the length of the stream in

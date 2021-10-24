@@ -82,21 +82,29 @@ private:
 unsigned long long MemoryLookaheadStream::read(unsigned long long count, char *destination) {
   unsigned long long got = 0;
   while (got < count) {
-    if (this->blocks.size() > this->current_block) {
+    if (this->current_block < this->blocks.size()) {
       auto &cur = this->blocks[this->current_block];
-      char *d = cur->data.data();
-      unsigned long long needed = std::min<unsigned long long>(got - count, cur->count - this->current_block_pos);
+      char *d = cur->data.data() + this->current_block_pos;
+      unsigned long long needed = std::min<unsigned long long>(count - got, cur->count - this->current_block_pos);
       std::copy(d, d + needed, destination);
       destination += needed;
       this->current_block_pos += needed;
-      if (this->current_block_pos == LOOKAHEAD_BLOCK_SIZE)
+      if (this->current_block_pos == cur->count) {
+        this->current_block_pos = 0;
         this->current_block++;
+      }
       got += needed;
     } else {
       /* No more blocks are recorded, so we need to do a read. */
+      if (this->recording == false) {
+        // We're past the recorded data; just do normal reads.
+        got += this->stream->read(count - got, destination);
+        return got;
+      }
+
       std::array<char, LOOKAHEAD_BLOCK_SIZE> data;
       unsigned long long got_this_time;
-      got_this_time = this->read(LOOKAHEAD_BLOCK_SIZE, data.data());
+      got_this_time = this->stream->read(LOOKAHEAD_BLOCK_SIZE, data.data());
       if (got_this_time == 0)
         break; // we reached the end.
       auto block = std::make_shared<LookaheadBytes>();
@@ -111,7 +119,7 @@ unsigned long long MemoryLookaheadStream::read(unsigned long long count, char *d
 }
 
 void MemoryLookaheadStream::reset() {
-  assert(this->recording == false);
+  assert(this->recording == true);
   this->current_block = 0;
   this->current_block_pos = 0;
 }

@@ -1,3 +1,9 @@
+## 0.11.5 (WIP)
+
+- Fix the ability to use non-seekable streams.
+  - NOTE: contrary to docs (updated in this release), dr_wav doesn't support non-seekable wav streams; mp3 and flac work
+    fine.
+
 ## 0.11.4 (2020-10-24)
 
 - Add `syz_bufferGetSizeInBytes`, to get a buffer's size in bytes.  This is useful for caching/memory tracking purposes.

@@ -113,12 +113,15 @@ unsigned long long WavDecoder::getLength() { return this->wav.totalPCMFrameCount
 std::shared_ptr<AudioDecoder> decodeWav(std::shared_ptr<LookaheadByteStream> stream) {
   drwav test_wav;
   drwav_uint32 flags = 0;
+  auto seek_callback = seek_cb;
 
   /* Disable seeking if necessary. */
-  if (stream->supportsSeek() == false)
+  if (stream->supportsSeek() == false) {
     flags = DRWAV_SEQUENTIAL;
+    seek_callback = nullptr;
+  }
 
-  if (drwav_init_ex(&test_wav, read_cb, seek_cb, NULL, (void *)stream.get(), NULL, flags, NULL) == DRWAV_FALSE)
+  if (drwav_init_ex(&test_wav, read_cb, seek_callback, NULL, (void *)stream.get(), NULL, flags, NULL) == DRWAV_FALSE)
     return nullptr;
 
   drwav_uninit(&test_wav);
