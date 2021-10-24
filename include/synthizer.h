@@ -237,6 +237,7 @@ SYZ_CAPI syz_ErrorCode syz_createBufferFromStreamHandle(syz_Handle *out, syz_Han
 SYZ_CAPI syz_ErrorCode syz_bufferGetChannels(unsigned int *out, syz_Handle buffer);
 SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSamples(unsigned int *out, syz_Handle buffer);
 SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSeconds(double *out, syz_Handle buffer);
+SYZ_CAPI syz_ErrorCode syz_bufferGetSizeInBytes(unsigned long long *size, syz_Handle buffer);
 
 SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context, void *config, void *userdata,
                                                  syz_UserdataFreeCallback *userdata_free_callback);

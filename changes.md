@@ -1,3 +1,7 @@
+## 0.11.4 (WIP)
+
+- Add `syz_bufferGetSizeInBytes`, to get a buffer's size in bytes.  This is useful for caching/memory tracking purposes.
+
 ## 0.11.3 (2020-15-2021
 
 - Fix a bug where adding points to automation timelines in the future would drop those points.

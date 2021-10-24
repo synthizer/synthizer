@@ -216,3 +216,11 @@ SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSeconds(double *out, syz_Handle buff
   return 0;
   SYZ_EPILOGUE
 }
+
+SYZ_CAPI syz_ErrorCode syz_bufferGetSizeInBytes(unsigned long long *size, syz_Handle buffer) {
+  SYZ_PROLOGUE
+  auto buf = fromC<Buffer>(buffer);
+  *size = buf->getLength() * buf->getChannels() * 2;
+  return 0;
+  SYZ_EPILOGUE
+}

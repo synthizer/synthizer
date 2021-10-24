@@ -56,6 +56,12 @@ int main(int argc, char *argv[]) {
   CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
   CHECKED(syz_sourceAddGenerator(source, generator));
 
+  {
+    unsigned long long len;
+    CHECKED(syz_bufferGetSizeInBytes(&len, buffer));
+    printf("Buffer size is: %llu\n", len);
+  }
+
   CHECKED(syz_initRouteConfig(&route_config));
   CHECKED(syz_createGlobalFdnReverb(&effect, context, NULL, NULL, NULL));
   CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
