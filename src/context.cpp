@@ -166,9 +166,6 @@ void Context::generateAudio(unsigned int channels, float *destination) {
 
     std::fill(this->getDirectBuffer(), this->getDirectBuffer() + config::BLOCK_SIZE * channels, 0.0f);
 
-    /**
-     * Do all the automation first, then run the sources.
-     * */
     {
       auto i = this->sources.begin();
       while (i != this->sources.end()) {
@@ -179,15 +176,9 @@ void Context::generateAudio(unsigned int channels, float *destination) {
           continue;
         }
         s->tickAutomation();
+        s->run();
         i++;
       }
-    }
-
-    /**
-     * We just handled deleting all the soures; this time, we don't need to worry about that.
-     * */
-    for (auto s : this->sources) {
-      s.second.lock()->run();
     }
 
     this->source_panners->run(channels, destination);
