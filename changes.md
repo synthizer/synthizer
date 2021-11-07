@@ -3,6 +3,9 @@
 - Fix the ability to use non-seekable streams.
   - NOTE: contrary to docs (updated in this release), dr_wav doesn't support non-seekable wav streams; mp3 and flac work
     fine.
+- Fix a race condition which could result in a crash when dropping the last reference to sources while audio is being
+  generated.
+- Small fixes to synthizer.h for const correctness and more valid C.
 
 ## 0.11.4 (2020-10-24)
 
