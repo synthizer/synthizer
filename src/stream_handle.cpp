@@ -60,7 +60,8 @@ SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle *out, const cha
   return syz_createStreamHandleFromStreamParams(out, "file", path, NULL, userdata, userdata_free_callback);
 }
 
-SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle *out, struct syz_CustomStreamDef *callbacks,
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle *out,
+                                                              const struct syz_CustomStreamDef *callbacks,
                                                               void *userdata,
                                                               syz_UserdataFreeCallback *userdata_free_callback) {
   SYZ_PROLOGUE

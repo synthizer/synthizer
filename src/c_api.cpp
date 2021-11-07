@@ -109,7 +109,7 @@ SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(const struct syz_LibraryConfig *
   SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_shutdown() {
+SYZ_CAPI syz_ErrorCode syz_shutdown(void) {
   SYZ_PROLOGUE_UNINIT
 
   /* Spin until we can uninitialize the library. */

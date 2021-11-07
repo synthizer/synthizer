@@ -165,6 +165,6 @@ std::shared_ptr<ByteStream> memoryStream(std::size_t size, const char *data);
 /* file stream. Throws EByteStreamNotFound. */
 std::shared_ptr<ByteStream> fileStream(const char *path, void *param);
 
-std::shared_ptr<ByteStream> customStream(struct syz_CustomStreamDef *def);
+std::shared_ptr<ByteStream> customStream(const struct syz_CustomStreamDef *def);
 
 } // namespace synthizer

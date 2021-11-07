@@ -67,7 +67,7 @@ SYZ_CAPI void syz_libraryConfigSetDefaults(struct syz_LibraryConfig *config);
 
 SYZ_CAPI syz_ErrorCode syz_initialize(void);
 SYZ_CAPI syz_ErrorCode syz_initializeWithConfig(const struct syz_LibraryConfig *config);
-SYZ_CAPI syz_ErrorCode syz_shutdown();
+SYZ_CAPI syz_ErrorCode syz_shutdown(void);
 
 SYZ_CAPI syz_ErrorCode syz_getLastErrorCode(void);
 SYZ_CAPI const char *syz_getLastErrorMessage(void);
@@ -206,7 +206,8 @@ SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromMemory(syz_Handle *out, unsigne
                                                         syz_UserdataFreeCallback *userdata_free_callback);
 SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromFile(syz_Handle *out, const char *path, void *userdata,
                                                       syz_UserdataFreeCallback *userdata_free_callback);
-SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle *out, struct syz_CustomStreamDef *callbacks,
+SYZ_CAPI syz_ErrorCode syz_createStreamHandleFromCustomStream(syz_Handle *out,
+                                                              const struct syz_CustomStreamDef *callbacks,
                                                               void *userdata,
                                                               syz_UserdataFreeCallback *userdata_free_callback);
 

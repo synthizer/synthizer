@@ -99,7 +99,7 @@ void CustomByteStream::seek(unsigned long long pos) {
   this->position = pos;
 }
 
-std::shared_ptr<ByteStream> customStream(struct syz_CustomStreamDef *def) {
+std::shared_ptr<ByteStream> customStream(const struct syz_CustomStreamDef *def) {
   if (def->read_cb == nullptr) {
     throw EValidation("Missing read callback");
   }
