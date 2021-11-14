@@ -212,6 +212,7 @@ example(simple_automation c)
 if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
   add_executable(delay_line_test test/delay_line.cpp)
   target_link_libraries(delay_line_test synthizer)
+  add_test(NAME delay_line COMMAND delay_line_test)
 
   add_executable(file_test file_test.cpp)
   target_link_libraries(file_test synthizer)
@@ -233,9 +234,11 @@ if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
 
   add_executable(test_latch test/latch.cpp)
   target_link_libraries(test_latch synthizer)
+  add_test(NAME latch COMMAND test_latch)
 
   add_executable(test_verify_properties test/verify_properties.cpp)
   target_link_libraries(test_verify_properties synthizer)
+  add_test(NAME verify_properties COMMAND test_verify_properties)
 
   # can't be an actual unit test until we have silent contexts.
   add_executable(test_effect_connection test/effect_connection.cpp)
@@ -243,23 +246,18 @@ if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
 
   add_executable(test_generation_thread test/generation_thread.cpp)
   target_link_libraries(test_generation_thread synthizer)
+  add_test(NAME generation_thread COMMAND test_generation_thread)
 
   add_executable(test_double_refcount test/double_refcount.c)
   target_link_libraries(test_double_refcount synthizer)
+  add_test(NAME double_refcount COMMAND test_double_refcount)
 
   add_executable(test_property_automation_timeline test/property_automation_timeline.cpp)
   target_link_libraries(test_property_automation_timeline synthizer)
-
+  add_test(NAME property_automation_timeline COMMAND test_property_automation_timeline)
 
   add_executable(test_seeking test/seeking.cpp)
   target_link_libraries(test_seeking synthizer)
-
-  add_test(NAME delay_line COMMAND delay_line_test)
-  add_test(NAME latch COMMAND test_latch)
-  add_test(NAME verify_properties COMMAND test_verify_properties)
-  add_test(NAME generation_thread COMMAND test_generation_thread)
-  add_test(NAME double_refcount COMMAND test_double_refcount)
-  add_test(NAME property_automation_timeline COMMAND test_property_automation_timeline)
 endif()
 
 install(
