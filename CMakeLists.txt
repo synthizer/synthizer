@@ -258,6 +258,9 @@ if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
 
   add_executable(test_seeking test/seeking.cpp)
   target_link_libraries(test_seeking synthizer)
+
+  add_executable(test_fast_sine_accuracy test/fast_sine_accuracy.cpp)
+  target_link_libraries(test_fast_sine_accuracy synthizer)
 endif()
 
 install(
