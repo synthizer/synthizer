@@ -100,6 +100,8 @@ extern "C" {
            LateReflectionsModulationFrequency, 0.01, 100.0, 0.5)                                                       \
   DOUBLE_P(SYZ_P_LATE_REFLECTIONS_DELAY, late_reflections_delay, LateReflectionsDelay, 0.0, 0.5, 0.03)
 
+#define SINE_BANK_GENERATOR_PROPERTIES DOUBLE_P(SYZ_P_FREQUENCY, frequency, Frequency, 0.0, P_DOUBLE_MAX, 440.0)
+
 #ifdef __cplusplus
 }
 #endif

@@ -41,6 +41,7 @@ public:
   FastSineBank(double _frequency) : frequency(_frequency) {}
   void addWave(const SineWaveConfig &wave);
   void clearWaves();
+  void setFrequency(double frequency);
 
   /* Fill a block of `SAMPLES` length with the output from this generator. */
   template <std::size_t SAMPLES, bool ADD = true> void fillBlock(float *out);
@@ -106,5 +107,6 @@ template <std::size_t SAMPLES, bool ADD> void FastSineBank::fillBlock(float *out
 
 void FastSineBank::addWave(const SineWaveConfig &wave) { this->waves.push_back(wave); }
 void FastSineBank::clearWaves() { this->waves.clear(); }
+void FastSineBank::setFrequency(double _frequency) { this->frequency = _frequency; }
 
 } // namespace synthizer
