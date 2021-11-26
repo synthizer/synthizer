@@ -30,7 +30,9 @@ int SineBankGenerator::getObjectType() { return SYZ_OTYPE_SINE_BANK_GENERATOR; }
 
 unsigned int SineBankGenerator::getChannels() { return 1; }
 
-void SineBankGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
+// The weird parameter name gd is due to what is basically a false positive warning from MSVC, which doesn't like that
+// the base class has a private member called gain_driver.
+void SineBankGenerator::generateBlock(float *output, FadeDriver *gd) {
   // For now, we round-trip through a temporary buffer unconditionally to apply the gain; in future, this restriction
   // may be lifted due to improvements in the underlying fade architecture.  Note that as is standard with Synthizer
   // objects, the bank adds.
@@ -39,7 +41,7 @@ void SineBankGenerator::generateBlock(float *output, FadeDriver *gain_driver) {
   this->bank.setFrequency(this->getFrequency());
   this->bank.fillBlock<config::BLOCK_SIZE>(tmp_buffer);
 
-  gain_driver->drive(this->getContextRaw()->getBlockTime(), [&](auto &&gain_cb) {
+  gd->drive(this->getContextRaw()->getBlockTime(), [&](auto &&gain_cb) {
     for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
       output[i] += tmp_buffer[i] * gain_cb(i);
     }
