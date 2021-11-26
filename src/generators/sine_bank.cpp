@@ -109,6 +109,38 @@ static std::vector<syz_SineBankWave> buildSquareSeries(unsigned int partials) {
   return out;
 }
 
+static std::vector<syz_SineBankWave> buildTriangleSeries(unsigned int partials) {
+  std::vector<syz_SineBankWave> out;
+
+  double sign = 1.0;
+  for (unsigned int i = 0; i < partials; i++) {
+    double n = 2 * i + 1;
+    out.emplace_back(syz_SineBankWave{(double)n, 0.0, sign / (n * n)});
+    sign *= -1.0;
+  }
+
+  // Don't sigma approximate: it makes things much worse audibly at low partial counts.
+  normalizeSeries(&out);
+  return out;
+}
+
+static std::vector<syz_SineBankWave> buildSawtoothSeries(unsigned int partials) {
+  std::vector<syz_SineBankWave> out;
+
+  // `$ x(t)=-{\frac {2}{\pi }}\sum _{k=1}^{\infty }{\frac {{\left(-1\right)}^{k}}{k}}\sin \left(2\pi kt\right) $`
+  // but we move the outer negation into the sum and let our normalizer handle the multiple on the gain.
+
+  double sign = -1.0;
+  for (unsigned int i = 1; i <= partials; i++) {
+    out.emplace_back(syz_SineBankWave{(double)i, 0.0, sign / (double)i});
+    sign *= -1.0;
+  }
+
+  // Don't sigma approximate: it makes things much worse audibly at low partial counts.
+  normalizeSeries(&out);
+  return out;
+}
+
 } // namespace synthizer
 
 using namespace synthizer;
@@ -155,6 +187,28 @@ SYZ_CAPI syz_ErrorCode syz_createSineBankGeneratorSquareWave(syz_Handle *out, sy
                                                              syz_UserdataFreeCallback *userdata_free_callback) {
   SYZ_PROLOGUE(void) config;
   auto waves = buildSquareSeries(partials);
+  return createSineBankFromVec(out, context, initial_frequency, &waves, userdata, userdata_free_callback);
+
+  SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_createSineBankGeneratorTriangleWave(syz_Handle *out, syz_Handle context,
+                                                               double initial_frequency, unsigned int partials,
+                                                               void *config, void *userdata,
+                                                               syz_UserdataFreeCallback *userdata_free_callback) {
+  SYZ_PROLOGUE(void) config;
+  auto waves = buildTriangleSeries(partials);
+  return createSineBankFromVec(out, context, initial_frequency, &waves, userdata, userdata_free_callback);
+
+  SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_createSineBankGeneratorSawtoothWave(syz_Handle *out, syz_Handle context,
+                                                               double initial_frequency, unsigned int partials,
+                                                               void *config, void *userdata,
+                                                               syz_UserdataFreeCallback *userdata_free_callback) {
+  SYZ_PROLOGUE(void) config;
+  auto waves = buildSawtoothSeries(partials);
   return createSineBankFromVec(out, context, initial_frequency, &waves, userdata, userdata_free_callback);
 
   SYZ_EPILOGUE

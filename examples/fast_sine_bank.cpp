@@ -35,7 +35,21 @@ int main() {
   generator = 0;
 
   printf("Square partials=10\n");
-  CHECKED(syz_createSineBankGeneratorSquareWave(&generator, context, 220.0, 10, NULL, NULL, NULL));
+  CHECKED(syz_createSineBankGeneratorSquareWave(&generator, context, 300.0, 10, NULL, NULL, NULL));
+  CHECKED(syz_sourceAddGenerator(source, generator));
+  driveGenerator(generator);
+  syz_handleDecRef(generator);
+  generator = 0;
+
+  printf("triangle partials=10\n");
+  CHECKED(syz_createSineBankGeneratorTriangleWave(&generator, context, 300.0, 10, NULL, NULL, NULL));
+  CHECKED(syz_sourceAddGenerator(source, generator));
+  driveGenerator(generator);
+  syz_handleDecRef(generator);
+  generator = 0;
+
+  printf("sawtooth partials=30\n");
+  CHECKED(syz_createSineBankGeneratorSawtoothWave(&generator, context, 300.0, 30, NULL, NULL, NULL));
   CHECKED(syz_sourceAddGenerator(source, generator));
   driveGenerator(generator);
   syz_handleDecRef(generator);
