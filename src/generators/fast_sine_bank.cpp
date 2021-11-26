@@ -1,4 +1,4 @@
-#include "synthizer/generators/sine_bank.hpp"
+#include "synthizer/generators/fast_sine_bank.hpp"
 
 #include "synthizer.h"
 
@@ -15,7 +15,7 @@
 
 namespace synthizer {
 
-SineBankGenerator::SineBankGenerator(const std::shared_ptr<Context> &context, const syz_SineBankConfig *cfg)
+FastSineBankGenerator::FastSineBankGenerator(const std::shared_ptr<Context> &context, const syz_SineBankConfig *cfg)
     : Generator(context), bank(cfg->initial_frequency) {
   for (unsigned int i = 0; i < cfg->wave_count; i++) {
     SineWaveConfig wave{cfg->waves[i].frequency_mul, cfg->waves[i].phase, cfg->waves[i].gain};
@@ -26,13 +26,13 @@ SineBankGenerator::SineBankGenerator(const std::shared_ptr<Context> &context, co
   this->setFrequency(cfg->initial_frequency, false);
 }
 
-int SineBankGenerator::getObjectType() { return SYZ_OTYPE_SINE_BANK_GENERATOR; }
+int FastSineBankGenerator::getObjectType() { return SYZ_OTYPE_FAST_SINE_BANK_GENERATOR; }
 
-unsigned int SineBankGenerator::getChannels() { return 1; }
+unsigned int FastSineBankGenerator::getChannels() { return 1; }
 
 // The weird parameter name gd is due to what is basically a false positive warning from MSVC, which doesn't like that
 // the base class has a private member called gain_driver.
-void SineBankGenerator::generateBlock(float *output, FadeDriver *gd) {
+void FastSineBankGenerator::generateBlock(float *output, FadeDriver *gd) {
   // For now, we round-trip through a temporary buffer unconditionally to apply the gain; in future, this restriction
   // may be lifted due to improvements in the underlying fade architecture.  Note that as is standard with Synthizer
   // objects, the bank adds.
@@ -48,7 +48,7 @@ void SineBankGenerator::generateBlock(float *output, FadeDriver *gd) {
   });
 }
 
-std::optional<double> SineBankGenerator::startGeneratorLingering() {
+std::optional<double> FastSineBankGenerator::startGeneratorLingering() {
   this->setGain(0.0);
   return 2 * (config::BLOCK_SIZE / (double)config::SR);
 }
@@ -149,18 +149,19 @@ using namespace synthizer;
 
 SYZ_CAPI void syz_initSineBankConfig(struct syz_SineBankConfig *cfg) { *cfg = syz_SineBankConfig{}; }
 
-SYZ_CAPI syz_ErrorCode syz_createSineBankGenerator(syz_Handle *out, syz_Handle context,
-                                                   struct syz_SineBankConfig *bank_config, void *config, void *userdata,
-                                                   syz_UserdataFreeCallback *userdata_free_callback) {
+SYZ_CAPI syz_ErrorCode syz_createFastSineBankGenerator(syz_Handle *out, syz_Handle context,
+                                                       struct syz_SineBankConfig *bank_config, void *config,
+                                                       void *userdata,
+                                                       syz_UserdataFreeCallback *userdata_free_callback) {
   SYZ_PROLOGUE(void) config;
   auto ctx = fromC<Context>(context);
-  auto x = ctx->createObject<SineBankGenerator>(bank_config);
+  auto x = ctx->createObject<FastSineBankGenerator>(bank_config);
   *out = toC(x);
   return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
   SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_createSineBankGeneratorSineWave(syz_Handle *out, syz_Handle context,
+SYZ_CAPI syz_ErrorCode syz_createFastSineBankGeneratorSine(syz_Handle *out, syz_Handle context,
                                                            double initial_frequency, void *config, void *userdata,
                                                            syz_UserdataFreeCallback *userdata_free_callback) {
   static const struct syz_SineBankWave wave { 1.0, 0.0, 1.0 };
@@ -169,7 +170,7 @@ SYZ_CAPI syz_ErrorCode syz_createSineBankGeneratorSineWave(syz_Handle *out, syz_
   cfg.waves = &wave;
   cfg.wave_count = 1;
   cfg.initial_frequency = initial_frequency;
-  return syz_createSineBankGenerator(out, context, &cfg, config, userdata, userdata_free_callback);
+  return syz_createFastSineBankGenerator(out, context, &cfg, config, userdata, userdata_free_callback);
 }
 
 static syz_ErrorCode createSineBankFromVec(syz_Handle *out, syz_Handle context, double initial_frequency,
@@ -180,10 +181,10 @@ static syz_ErrorCode createSineBankFromVec(syz_Handle *out, syz_Handle context, 
   cfg.waves = &(*waves)[0];
   cfg.wave_count = waves->size();
   cfg.initial_frequency = initial_frequency;
-  return syz_createSineBankGenerator(out, context, &cfg, NULL, userdata, userdata_free_callback);
+  return syz_createFastSineBankGenerator(out, context, &cfg, NULL, userdata, userdata_free_callback);
 }
 
-SYZ_CAPI syz_ErrorCode syz_createSineBankGeneratorSquareWave(syz_Handle *out, syz_Handle context,
+SYZ_CAPI syz_ErrorCode syz_createFastSineBankGeneratorSquare(syz_Handle *out, syz_Handle context,
                                                              double initial_frequency, unsigned int partials,
                                                              void *config, void *userdata,
                                                              syz_UserdataFreeCallback *userdata_free_callback) {
@@ -194,7 +195,7 @@ SYZ_CAPI syz_ErrorCode syz_createSineBankGeneratorSquareWave(syz_Handle *out, sy
   SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_createSineBankGeneratorTriangleWave(syz_Handle *out, syz_Handle context,
+SYZ_CAPI syz_ErrorCode syz_createFastSineBankGeneratorTriangle(syz_Handle *out, syz_Handle context,
                                                                double initial_frequency, unsigned int partials,
                                                                void *config, void *userdata,
                                                                syz_UserdataFreeCallback *userdata_free_callback) {
@@ -205,10 +206,9 @@ SYZ_CAPI syz_ErrorCode syz_createSineBankGeneratorTriangleWave(syz_Handle *out, 
   SYZ_EPILOGUE
 }
 
-SYZ_CAPI syz_ErrorCode syz_createSineBankGeneratorSawtoothWave(syz_Handle *out, syz_Handle context,
-                                                               double initial_frequency, unsigned int partials,
-                                                               void *config, void *userdata,
-                                                               syz_UserdataFreeCallback *userdata_free_callback) {
+SYZ_CAPI syz_ErrorCode syz_createFastSineBankGeneratorSaw(syz_Handle *out, syz_Handle context, double initial_frequency,
+                                                          unsigned int partials, void *config, void *userdata,
+                                                          syz_UserdataFreeCallback *userdata_free_callback) {
   SYZ_PROLOGUE(void) config;
   auto waves = buildSawtoothSeries(partials);
   return createSineBankFromVec(out, context, initial_frequency, &waves, userdata, userdata_free_callback);

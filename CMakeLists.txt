@@ -145,8 +145,8 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/filters/simple_filters.cpp
 
   src/generators/buffer.cpp
+  src/generators/fast_sine_bank.cpp
   src/generators/noise.cpp
-  src/generators/sine_bank.cpp
   src/generators/streaming.cpp
 
   src/sources/angular_panned_source.cpp

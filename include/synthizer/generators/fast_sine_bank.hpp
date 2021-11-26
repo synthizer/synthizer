@@ -13,9 +13,9 @@ namespace synthizer {
 
 class Context;
 
-class SineBankGenerator : public Generator {
+class FastSineBankGenerator : public Generator {
 public:
-  SineBankGenerator(const std::shared_ptr<Context> &context, const syz_SineBankConfig *cfg);
+  FastSineBankGenerator(const std::shared_ptr<Context> &context, const syz_SineBankConfig *cfg);
 
   int getObjectType() override;
   unsigned int getChannels() override;
