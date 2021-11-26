@@ -280,10 +280,14 @@ SYZ_CAPI void syz_initSineBankConfig(struct syz_SineBankConfig *cfg);
 SYZ_CAPI syz_ErrorCode syz_createSineBankGenerator(syz_Handle *out, syz_Handle context,
                                                    struct syz_SineBankConfig *bank_config, void *config, void *userdata,
                                                    syz_UserdataFreeCallback *userdata_free_callback);
-
 SYZ_CAPI syz_ErrorCode syz_createSineBankGeneratorSineWave(syz_Handle *out, syz_Handle context,
                                                            double initial_frequency, void *config, void *userdata,
                                                            syz_UserdataFreeCallback *userdata_free_callback);
+
+SYZ_CAPI syz_ErrorCode syz_createSineBankGeneratorSquareWave(syz_Handle *out, syz_Handle context,
+                                                             double initial_frequency, unsigned int partials,
+                                                             void *config, void *userdata,
+                                                             syz_UserdataFreeCallback *userdata_free_callback);
 
 struct syz_RouteConfig {
   double gain;

@@ -15,8 +15,10 @@
  *
  * SR is hardcoded at the Synthizer samplerate, as per usual.
  * */
+
 #include <algorithm>
 #include <math.h> // Older gcc doesn't like cmath because sinf and cosf don't exist.
+#include <vector>
 
 #include "synthizer/config.hpp"
 #include "synthizer/math.hpp"
@@ -38,7 +40,7 @@ public:
 
 class FastSineBank {
 public:
-  FastSineBank(double _frequency) : frequency(_frequency) {}
+  FastSineBank(double _frequency);
   void addWave(const SineWaveConfig &wave);
   void clearWaves();
   void setFrequency(double frequency);
@@ -47,28 +49,44 @@ public:
   template <std::size_t SAMPLES, bool ADD = true> void fillBlock(float *out);
 
 private:
-  template <std::size_t SAMPLES, std::size_t WAVES> void fillBlockHelper(float *out, const SineWaveConfig *waves);
+  template <std::size_t SAMPLES, std::size_t WAVES> void fillBlockHelper(float *out, std::size_t start);
   deferred_vector<SineWaveConfig> waves;
-  /* In the range 0.0 to 1.0. */
-  double time = 0.0;
   double frequency;
+
+  // To allow for frequency changes without artifacts or fading, we must store time on a per-wave basis.
+  class WaveState {
+  public:
+    WaveState(double _time) : time(_time) {}
+
+    // Time for this wave specifically in the range 0.0 to 1.0.
+    double time = 0.0;
+  };
+
+  std::vector<WaveState> wave_states;
 };
-template <std::size_t SAMPLES, std::size_t WAVES>
-void FastSineBank::fillBlockHelper(float *out, const SineWaveConfig *waves) {
+
+FastSineBank::FastSineBank(double _frequency) : frequency(_frequency) {}
+
+template <std::size_t SAMPLES, std::size_t WAVES> void FastSineBank::fillBlockHelper(float *out, std::size_t start) {
   /* sa=sin(a), ca=cos(a), etc. */
   float sa[WAVES], ca[WAVES], sb[WAVES], cb[WAVES], gains[WAVES];
 
   // Initialize our variables using real values.
   for (std::size_t i = 0; i < WAVES; i++) {
-    double freq = waves[i].freq_mul * this->frequency;
-    double t = 2 * PI * (freq * this->time + waves[i].phase);
+    std::size_t wave_ind = i + start;
+    double freq = this->waves[wave_ind].freq_mul * this->frequency;
+    double t = 2 * PI * this->wave_states[wave_ind].time;
+    // Advance the wave's time.
+    this->wave_states[wave_ind].time =
+        fmod(this->wave_states[wave_ind].time + freq * (SAMPLES / (double)config::SR), 1.0);
+
     sa[i] = sinf(t);
     ca[i] = cosf(t);
     // How many radians does this wave advance by per sample?
     double b = 2 * PI * freq / config::SR;
     sb[i] = sinf(b);
     cb[i] = cosf(b);
-    gains[i] = waves[i].gain;
+    gains[i] = waves[wave_ind].gain;
   }
 
   for (std::size_t s = 0; s < SAMPLES; s++) {
@@ -91,7 +109,7 @@ template <std::size_t SAMPLES, bool ADD> void FastSineBank::fillBlock(float *out
   std::size_t i = 0;
 #define BLOCK(X)                                                                                                       \
   for (; i < this->waves.size() / X * X; i += X) {                                                                     \
-    this->fillBlockHelper<SAMPLES, X>(out, this->waves.data() + i);                                                    \
+    this->fillBlockHelper<SAMPLES, X>(out, i);                                                                         \
   }
 
   BLOCK(32)
@@ -101,12 +119,18 @@ template <std::size_t SAMPLES, bool ADD> void FastSineBank::fillBlock(float *out
   BLOCK(1)
 
 #undef BLOCK
-
-  this->time = fmod(this->time + SAMPLES / (double)config::SR, 1.0);
 }
 
-void FastSineBank::addWave(const SineWaveConfig &wave) { this->waves.push_back(wave); }
-void FastSineBank::clearWaves() { this->waves.clear(); }
+void FastSineBank::addWave(const SineWaveConfig &wave) {
+  this->waves.push_back(wave);
+  this->wave_states.emplace_back(FastSineBank::WaveState{wave.phase});
+}
+
+void FastSineBank::clearWaves() {
+  this->waves.clear();
+  this->wave_states.clear();
+}
+
 void FastSineBank::setFrequency(double _frequency) { this->frequency = _frequency; }
 
 } // namespace synthizer
