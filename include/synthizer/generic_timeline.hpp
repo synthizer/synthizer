@@ -107,11 +107,13 @@ void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::copyBackIfNeeded() 
     return;
   }
 
-  std::size_t can_lose = this->current_item - HISTORY_LENGTH;
-  auto keep_start = this->items.begin() + can_lose;
+
+  std::size_t drop_count = this->current_item - HISTORY_LENGTH;
+  auto keep_start = this->items.begin() + drop_count;
   std::copy(keep_start, this->items.end(), this->items.begin());
-  this->items.erase(this->items.begin() + HISTORY_LENGTH, this->items.end());
-  this->current_item = HISTORY_LENGTH - 1;
+  this->items.erase(this->items.end() - drop_count, this->items.end());
+  // We have indices 0 to `HISTORY_LENGTH - 1` as the history; the actual current item is 1 after that.
+  this->current_item = HISTORY_LENGTH;
 }
 
 template <typename T, unsigned int HISTORY_LENGTH, unsigned int COPYBACK_THRESHOLD>

@@ -1,6 +1,7 @@
 ## 0.11.6 (WIP)
 
 - Introduce `FastSineBankGenerator` to synthesize chiptune/additive synth/etc waveforms.
+- Fix very long automation timelines.
 
 ## 0.11.5
 

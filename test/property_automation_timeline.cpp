@@ -4,13 +4,14 @@
 #include "synthizer/config.hpp"
 #include "synthizer/property_automation_timeline.hpp"
 
-#include <cmath>
-#include <cstdio>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <vector>
 
 using namespace synthizer;
 
-bool floatCmp(double a, double b) { return std::abs(a - b) < 0.000001; }
+bool floatCmp(double a, double b) { return abs(a - b) < 0.000001; }
 
 struct Point {
   int type;
@@ -18,7 +19,7 @@ struct Point {
   double value;
 };
 
-int main() {
+void testCurve() {
   double tick_delta = config::BLOCK_SIZE / (double)config::SR;
   double time = 0.0;
 
@@ -58,14 +59,74 @@ int main() {
       auto x = *v;
       if (floatCmp(x[0], exp) == false) {
         printf("Expected %f but got %f at time %f\n", exp, x[0], time);
-        return 1;
+        exit(EXIT_FAILURE);
       }
     } else {
       printf("Timeline ended early at time %f\n", time);
-      return 1;
+      exit(EXIT_FAILURE);
     }
   }
 
   printf("Success\n");
+}
+
+class IdentityPoint {
+public:
+  IdentityPoint(double t) : value(t) {}
+  double getTime() { return this->value; }
+  double value;
+};
+
+/**
+ * Test a timeline which "runs ahead". Exercises logic which gets rid of unneeded points.
+ * */
+void testLongTimeline() {
+  auto tl = GenericTimeline<IdentityPoint, 10>();
+  unsigned int i = 0, last_added = 0;
+
+  // Add an initial 10 points.
+  for (i = 0; i < 10; i++) {
+    tl.addItem(IdentityPoint((double)i));
+  }
+
+  // We want the 10th point for convenience; always having one in the future for the next loop avoids a weird special
+  // case where the first iteration returns the wrong value w.r.t. what we check because there is no point "after" the
+  // start time.
+  last_added = i;
+  tl.addItem(IdentityPoint(last_added));
+
+  for (; i < 10000; i++) {
+    // Drive the timeline to time i-0.5, which gives us the next point as i.
+    tl.tick((double)i - 0.5);
+    // We know there are at least 10 points; check them all.
+    for (unsigned int d = 0; d < 10; d++) {
+      double p = (double)i - d;
+      auto val = tl.getItem(-d);
+      if (!val) {
+        printf("Expected point at %f but didn't find one", p);
+        exit(EXIT_FAILURE);
+      }
+      if ((*val)->value != (double)p) {
+        printf("Expected %f but got %f at %i\n", (double)p, (*val)->value, -d);
+        exit(EXIT_FAILURE);
+      }
+    }
+
+    // So the timeline always grows, add two items.
+    for (unsigned int _unused = 0; _unused < 2; _unused++) {
+      last_added += 1;
+      tl.addItem(IdentityPoint((double)last_added));
+    }
+  }
+
+  printf("Success\n");
+}
+
+int main() {
+  printf("Running curve test\n");
+  testCurve();
+  printf("Testing long GenericTimeline\n");
+  testLongTimeline();
+
   return 0;
 }
