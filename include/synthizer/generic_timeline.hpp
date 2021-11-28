@@ -107,7 +107,6 @@ void GenericTimeline<T, HISTORY_LENGTH, COPYBACK_THRESHOLD>::copyBackIfNeeded() 
     return;
   }
 
-
   std::size_t drop_count = this->current_item - HISTORY_LENGTH;
   auto keep_start = this->items.begin() + drop_count;
   std::copy(keep_start, this->items.end(), this->items.begin());
