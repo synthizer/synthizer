@@ -51,9 +51,10 @@
 ---
 
 - [Operations Common to All Generators](./object_reference/generator.md)
-- [StreamingGenerator](./object_reference/streaming_generator.md)
 - [BufferGenerator](./object_reference/buffer_generator.md)
+- [FastSineBankGenerator](./object_reference/fast_sine_bank.md)
 - [NoiseGenerator](./object_reference/noise_generator.md)
+- [StreamingGenerator](./object_reference/streaming_generator.md)
 
 ---
 

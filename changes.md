@@ -1,4 +1,8 @@
-## 0.11.5 (WIP)
+## 0.11.6 (WIP)
+
+- Introduce `FastSineBankGenerator` to synthesize chiptune/additive synth/etc waveforms.
+
+## 0.11.5
 
 - Fix the ability to use non-seekable streams.
   - NOTE: contrary to docs (updated in this release), dr_wav doesn't support non-seekable wav streams; mp3 and flac work

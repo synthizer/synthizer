@@ -8,7 +8,7 @@
       "name": "(Windows) Launch",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/custom_stream.exe",
+      "program": "${workspaceFolder}/build/fast_sine_bank.exe",
       "args": [
         "corpus/ball.mp3"
       ],

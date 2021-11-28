@@ -145,6 +145,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/filters/simple_filters.cpp
 
   src/generators/buffer.cpp
+  src/generators/fast_sine_bank.cpp
   src/generators/noise.cpp
   src/generators/streaming.cpp
 
@@ -201,6 +202,7 @@ example(buffer_from_memory c)
 example(buffer_from_raw_data c)
 example(custom_stream c)
 example(events cpp)
+example(fast_sine_bank cpp)
 example(load_libsndfile c)
 example(play_note c)
 example(print_version c)
@@ -258,6 +260,9 @@ if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
 
   add_executable(test_seeking test/seeking.cpp)
   target_link_libraries(test_seeking synthizer)
+
+  add_executable(test_fast_sine_accuracy test/fast_sine_accuracy.cpp)
+  target_link_libraries(test_fast_sine_accuracy synthizer)
 endif()
 
 install(
