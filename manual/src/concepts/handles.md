@@ -21,6 +21,9 @@ for deletion, but may not be deleted immediately.  Uniquely among Synthizer func
 cloning and freeing.  The issues introduced with respect to object lifetimes due to the fact that Synthizer objects may
 stay around for a while can be dealt with userdata support, as described below.
 
+No interface except for `syz_handleDecRef` decrements reference counts in a way which should be visible to the
+application provided that the application is itself using reference counts correctly.
+
 Synthizer objects are like classes.  They have "methods" and "bases".  For example all generators support a common set
 of operations named with a `syz_generatorXXX` prefix.
 
