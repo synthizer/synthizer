@@ -150,7 +150,7 @@ using namespace synthizer;
 SYZ_CAPI void syz_initSineBankConfig(struct syz_SineBankConfig *cfg) { *cfg = syz_SineBankConfig{}; }
 
 SYZ_CAPI syz_ErrorCode syz_createFastSineBankGenerator(syz_Handle *out, syz_Handle context,
-                                                       struct syz_SineBankConfig *bank_config, void *config,
+                                                       const struct syz_SineBankConfig *bank_config, void *config,
                                                        void *userdata,
                                                        syz_UserdataFreeCallback *userdata_free_callback) {
   SYZ_PROLOGUE(void) config;
