@@ -26,7 +26,7 @@ use `syz_handleDecRef`. It is possible to increment the reference count with
 `syz_handleIncRef` which is useful for languages which wish to use Synthizer
 behind a "smart pointer" abstraction, or to interface with the event system,
 which can function in a borrow-only mode which requires incrementing reference
-counts on handles that the app wiishes to store elsewhere.
+counts on handles that the app wishes to store elsewhere.
 
 Objects are like classes: they have constructors, properties, and methods. These
 elements of a given object are documented in the object reference. Objects also

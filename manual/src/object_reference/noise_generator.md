@@ -47,7 +47,7 @@ sampled from a uniform rather than Gaussian distribution for efficiency.
 This is pink noise generated with the Voss-McCartney algorithm, which consists
 of a number of summed uniform random number generators which are run at
 different rates. Synthizer adds an additional random number generator at the top
-of the hierachy in order to improve the color of the noise in the high
+of the hierarchy in order to improve the color of the noise in the high
 frequencies.
 
 ### `SYZ_NOISE_TYPE_FILTERED_BROWN`

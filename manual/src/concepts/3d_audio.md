@@ -16,7 +16,7 @@ who haven't had prior exposure to these concepts.
 
 ## Introduction
 
-There are two mandatorey steps to using `Source3D` as well as a few optional
+There are two mandatory steps to using `Source3D` as well as a few optional
 ones.  The two mandatory steps are these:
 
 - On the context, update `SYZ_P_POSITION` and `SYZ_P_ORIENTATION` with the
@@ -108,8 +108,8 @@ SYZ_PANNER_STRATEGY_STEREO | 2 | A simple stereo panning strategy assuming speak
 
 When  a source is created, the panning strategy it is to use is passed via the constructor function and cannot be
 changed.  A special value, `SYZ_PANNER_STRATEGY_DELEGATE` allows the source to delegate this to the context, and can be
-used in cases whre the context's configuration should be preferred.  A vast majority of applications will do this
-configuration via the context and `SYZ_PANNER_STRATEGY_DELEGATE`; other valeus should be safed for cases in which you
+used in cases where the context's configuration should be preferred.  A vast majority of applications will do this
+configuration via the context and `SYZ_PANNER_STRATEGY_DELEGATE`; other values should be safed for cases in which you
 wish to mix panning types.
 
 By default Synthizer is configured to use a stereo panning strategy, which

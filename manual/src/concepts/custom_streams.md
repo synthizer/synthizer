@@ -5,7 +5,7 @@ aren't files or memory: encrypted asset stores, the network, and so on.  This
 section explains how to implement them.
 
 before continuing, carefully consider whether you need this.  Implementing a
-stream ina  higher level language and forcing Synthizer to go through it has a
+stream in a higher level language and forcing Synthizer to go through it has a
 small but likely noticeable performance hit.  It'll work fine, but the built-in
 functionality will certainly be faster and more scalable.  Implementing a stream
 in C is a complex process.  If your app can use the already-existing
@@ -13,7 +13,7 @@ funtionality, it is encouraged to do so.
 
 ## A Complete Python Example
 
-The rest of this section will explain ind detail how streams work from the C
+The rest of this section will explain in detail how streams work from the C
 API, but this is a very complex topic and most of the infrastructure which
 exists for it exists to make it possible to write convenient bindings.
 Consequently, here is a complete and simple custom stream which wraps a Python
@@ -50,7 +50,7 @@ gen = synthizer.StreamingGenerator.from_stream_params(ctx, "custom", sys.argv[1]
 Your bindings will document how to do this, for example in Python see
 `help(synthizer.register_stream_protocol)`.  it's usually going to be this level
 of complexity when doing it from a binding.  The rest of this section explains
-what's going on from the C perspective, but non-C users are still encouriaged to
+what's going on from the C perspective, but non-C users are still encouraged to
 read it because it explains the general idea and offers best practices for
 efficient and stable stream usage.
 

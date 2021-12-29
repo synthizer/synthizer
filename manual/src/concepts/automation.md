@@ -123,7 +123,7 @@ is perfectly fine.
 
 Automation offers the following command types:
 
-- `SYZ_AUTOMATION_COMMAND_APPEND_PROPERTY`: Add a value to the timeline for a properety, e.g. "use linear interpolation
+- `SYZ_AUTOMATION_COMMAND_APPEND_PROPERTY`: Add a value to the timeline for a property, e.g. "use linear interpolation
   to get to 20.0 by 10 seconds".
 - `SYZ_AUTOMATION_COMMAND_SEND_USER_EVENT`: Add an event to the timeline, to be sent approximately when the timeline
   crosses the specified time.
@@ -135,7 +135,7 @@ Commands which clear data don't respect time, and take effect immediately.  Typi
 the automation batch in order to clean up before adding new automation.
 
 Parameters to commands are specified as the enum variants of `syz_AutomationCommand`'s `params` union and are mostly
-self-explanatory.  Properety automation is discussed below.
+self-explanatory.  Property automation is discussed below.
 
 ## Automating Property values
 
@@ -154,7 +154,7 @@ The fields are as follows:
 
 - The interpolation type specifies how to get from the last value (if any) to the current value in the point:
   - `SYZ_INTERPOLATION_TYPE_NONE`: do nothing until the point is crossed, then jump immediately.
-  - `sYZ_P_INTERPOLATION_TYPE_LINEAR`: use linear interpolation from the last point.
+  - `SYZ_P_INTERPOLATION_TYPE_LINEAR`: use linear interpolation from the last point.
 - The values array specifies the values.  The number of indices used depends on the property: doubles use only the first
   index, d3 use the first 3, and d6 use all 6.
 - Flags is reserved and must be 0.

@@ -9,7 +9,7 @@ SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context,
                                             syz_UserdataFreeCallback *userdata_free_callback);
 ```
 
-Creates an echoe effect.
+Creates an echo effect.
 
 ## Functions
 
@@ -49,7 +49,7 @@ for modeling discrete, panned echo taps.  Some ways this is useful are:
 
 - Emphasize footsteps off walls in large spaces, by computing the parameters for
   the taps off level geometry.
-- Emphasize openings or cooridors.
+- Emphasize openings or coridors.
 - Pair it with a reverb implementation to offer additional, highly controlled
   early reflection emphasis
 

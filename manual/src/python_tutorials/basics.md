@@ -36,7 +36,7 @@ done with an object, call `myobj.dec_ref()`.
 
 At the moment, failing to do so will permanently leak the object.  Work in
 future may lift this restriction, but it's still necessary to be explicit: if
-you aren't, things may be audioble longer than you intend.
+you aren't, things may be audible longer than you intend.
 
 Be careful here.  If you leak objects, you will eventually run out of memory. If
 you intentionally leak objects and the Python bindings start garbage collecting
@@ -125,11 +125,13 @@ Note the following:
 Sources represent audio output.  They get one or more generators, combine them
 all, and output.  Currently we have the following kinds of sources:
 
-- A `DirectSource` conneccts audio directly to the speakers, so that you can
-  pass things through without collapsing them to mono.  This is what you want
-  for music.
-- A `AngularPannedSource` is manually controlled using azimuth and elevation angles.
-- A `ScalarPannedSource` is controlled by a scalar value from -1.0 (all left) to 1.0 (all right).
+- A `DirectSource` connects audio directly to the speakers, so that you can pass
+  things through without collapsing them to mono.  This is what you want for
+  music.
+- A `AngularPannedSource` is manually controlled using azimuth and elevation
+  angles.
+- A `ScalarPannedSource` is controlled by a scalar value from -1.0 (all left) to
+  1.0 (all right).
 - `Source3D` is a 3D environmental source with the usual things you'd expect:
   distance model, position, etc.
 
@@ -176,7 +178,7 @@ various generators, where Synthizer is updating the property itself. In general,
 it's best to use properties to tell Synthizer what to do, but keep the model of
 what's supposed to be going on in your code. A common mistake is to try to use
 Synthizer to store data, for example putting the position of your objects in a
-source rather than maintaing the coordinates yourself.  For some very simple
+source rather than maintaining the coordinates yourself.  For some very simple
 rules that will ensure you avoid these bugs:
 
 - Always set properties with `=`.
@@ -241,9 +243,9 @@ def make_source(context, file_path):
     buffer = synthizer.Buffer.from_file(context, file_path)
     generator = synthizer.BufferGenerator(context)
     generator.buffer = buffer
-    source = synthizer.Sourec3D(context)
+    source = synthizer.Source3D(context)
     source.add_generator(generator)
-    return (buffer, generator, soruce)
+    return (buffer, generator, source)
 
 (buffer, generator, source) = make_source(context, "the_file.wav")
 ```

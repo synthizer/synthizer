@@ -1,6 +1,6 @@
 # Logging, Initialization, and Shutdown
 
-The following excerpts from `synthizer.h` specify the loggin and initialization
+The following excerpts from `synthizer.h` specify the logging and initialization
 API. Explanation follows:
 
 ```
@@ -36,7 +36,7 @@ which will use reasonable library defaults for most apps.  The second is
 ```
 struct syz_LibraryConfig cfg;
 
-syz_libraryConfigSetDefaults(&config)l;
+syz_libraryConfigSetDefaults(&config);
 syz_initializeWithConfig(&config);
 ```
 

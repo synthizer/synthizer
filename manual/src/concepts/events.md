@@ -1,6 +1,6 @@
 # Events
 
-Synthizer supports receivin events.  Currently, this is limited to knowing when
+Synthizer supports receiving events.  Currently, this is limited to knowing when
 buffer/streaming generators have looped and/or finished.  Note that the use case
 of destroying objects only after they have stopped playing is better handled
 with [lingering](./lingering.md).
@@ -20,14 +20,14 @@ SYZ_CAPI syz_ErrorCode syz_contextGetNextEvent(struct syz_Event *out, syz_Handle
 SYZ_CAPI void syz_eventDeinit(struct syz_Event *event);
 ```
 
-To begin receivin events, an application should call `syz_contextEnableEvents`.
+To begin receiving events, an application should call `syz_contextEnableEvents`.
 This cannot be undone.  After a call to `syz_contextEnableEvents`, events will
 begin to fill the event queue and must be retrieved with
 `syz_contextGetNextEvent`.  Failure to call `syz_contextGetNextEvent` will
 slowly fill the event queue, so applications should be sure to incorporate this
 into their main UI/game update loops.  After the application is done with an
 event struct, it should then call `syz_eventDeinit` on the event structure;
-failure to do so leaksh handles.
+failure to do so leaks handles.
 
 The `flags` argument of `syz_getNextEvent` is reserved and must be 0.
 
