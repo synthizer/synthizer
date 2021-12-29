@@ -50,7 +50,7 @@ different contexts is unvalidated, and the behavior of mixing them is undefined.
 
 All objects associated with a context become useless once the context is
 destroyed.  Calls to them will still work, but they can't be reassociated with a
-different context and no audioble output will result.
+different context and no audible output will result.
 
 Most programs create one context and destroy it at shutdown.
 

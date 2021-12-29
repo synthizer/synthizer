@@ -14,7 +14,7 @@ listener in 3D space.  They:
 
 For more information on 3D audio, see [the dedicated section](./3d_audio.md).
 
-Almost all objects in Synthizer requirea  context to be created and must be used
+Almost all objects in Synthizer require a context to be created and must be used
 only with the context they're associated with.
 
 A common question is whether an app should ever have more than one context.

@@ -11,6 +11,6 @@ Generators are like a stereo without speakers: you have to plug them into
 something else before they're audible.  In this case the "something else" is a
 source.  Synthizer only supports using a generator with one source at a time,
 but every source can have multiple generators.  That is, given generators `g1`
-and `g2` and sources `s1` and `s2`, then `g1` and `g2` could be conneccted to
+and `g2` and sources `s1` and `s2`, then `g1` and `g2` could be connected to
 `s1`, `g1` to `s1` and `g2` to `s2`, but not `g1` to both `s1` and `s2` at the
 same time.
