@@ -56,6 +56,9 @@ int main(int argc, char *argv[]) {
   CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
   CHECKED(syz_sourceAddGenerator(source, generator));
 
+  struct syz_BiquadConfig filter_cfg;
+  CHECKED(syz_biquadDesignBandpass(&filter_cfg, 1000.0, 15.0));
+  CHECKED(syz_setBiquad(source, SYZ_P_FILTER_DIRECT, &filter_cfg));
   {
     unsigned long long len;
     CHECKED(syz_bufferGetSizeInBytes(&len, buffer));
@@ -64,7 +67,7 @@ int main(int argc, char *argv[]) {
 
   CHECKED(syz_initRouteConfig(&route_config));
   CHECKED(syz_createGlobalFdnReverb(&effect, context, NULL, NULL, NULL));
-  CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
+  //CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
 
   // std::this_thread::sleep_for(std::chrono::seconds(2));
   // CHECKED(syz_pause(source));

@@ -115,12 +115,7 @@ using BiquadFilterDef = IIRFilterDef<3, 3>;
  * */
 BiquadFilterDef designAudioEqLowpass(double omega, double q = 0.7071135624381276);
 BiquadFilterDef designAudioEqHighpass(double omega, double q = 0.7071135624381276);
-/*
- * The peak gain of 0db variant.
- *
- * In general filters try not to add energy on feedback loops.
- * */
-BiquadFilterDef designAudioEqBandpass(double omega, double bw);
+BiquadFilterDef designAudioEqBandpass(double omega, double q);
 /* Aka band reject, but we use audio eq terminology. */
 BiquadFilterDef designAudioEqNotch(double omega, double bw);
 BiquadFilterDef designAudioEqAllpass(double omega, double q = 0.7071135624381276);
