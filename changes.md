@@ -1,3 +1,9 @@
+## 0.11.7 (2022-03-06)
+
+- Fix MSVC 2022 support.
+- Fix internal filter math.
+- Fix bandpass filters, 
+
 ## 0.11.6 (2021-11-27)
 
 - Introduce `FastSineBankGenerator` to synthesize chiptune/additive synth/etc waveforms.
