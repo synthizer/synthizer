@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
 function Invoke-Utility {
-<#
+  <#
 .SYNOPSIS
 Invokes an external utility, ensuring successful execution.
 
@@ -24,27 +24,29 @@ is nonzero.
   if ($LASTEXITCODE) { Throw "$exe indicated failure (exit code $LASTEXITCODE; full command: $Args)." }
 }
 
-$build_types ="Release"
+$build_types = "Release"
 $lib_types = "static", "dynamic"
 
 foreach ($build_type in $build_types) {
-	foreach ($lib_type in $lib_types) {
-		$directory = "build_$($lib_type.toLower())_$($build_type.toLower())"
-		if (-not $(test-path $directory)) {
-			mkdir $directory 
-		}
-		set-location $directory
-		$ci_name = "synthizer"
-		if ($build_type -eq "Debug") { $ci_name += "d" }
-		if ($lib_type -eq "static") { $ci_name += "_static" }
-		if ($lib_type -eq "dynamic" ) { $lib_type = "shared" }
-		invoke-utility cmake -G Ninja ".." `
-			"-DCMAKE_BUILD_TYPE=$build_type" `
-			"-DCI_SYNTHIZER_NAME=$ci_name" `
-			"-DSYNTHIZER_LIB_TYPE=$($lib_type.toUpper())"
-			"-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL"
-		invoke-utility ninja
-		invoke-utility ninja test
-		set-location ..
-	}
+  foreach ($lib_type in $lib_types) {
+    $directory = "build_$($lib_type.toLower())_$($build_type.toLower())"
+    if (-not $(test-path $directory)) {
+      mkdir $directory 
+    }
+    set-location $directory
+    $ci_name = "synthizer"
+    if ($build_type -eq "Debug") { $ci_name += "d" }
+    if ($lib_type -eq "static") { $ci_name += "_static" }
+    if ($lib_type -eq "dynamic" ) { $lib_type = "shared" }
+    invoke-utility cmake -G Ninja ".." `
+      "-DCMAKE_BUILD_TYPE=$build_type" `
+      "-DCI_SYNTHIZER_NAME=$ci_name" `
+      "-DSYNTHIZER_LIB_TYPE=$($lib_type.toUpper())" `
+      "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL" `
+      "-DCMAKE_C_COMPILER=cl" `
+      "-DCMAKE_CXX_COMPILER=cl"
+    invoke-utility ninja
+    invoke-utility ninja test
+    set-location ..
+  }
 }

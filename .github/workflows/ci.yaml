@@ -6,12 +6,12 @@ jobs:
   ubuntu:
     runs-on: ${{matrix.os}}
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: 'Build CI'
-      run: |
-        cd $GITHUB_WORKSPACE
-        ./ci/build_linux.sh
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: "Build CI"
+        run: |
+          cd $GITHUB_WORKSPACE
+          ./ci/build_linux.sh
     strategy:
       matrix:
         include:
@@ -19,130 +19,140 @@ jobs:
           - os: ubuntu-18.04
 
   windows:
-    runs-on: windows-2019
+    runs-on: "${{ matrix.OS }}"
     env:
-      CI_ARCH: ${{matrix.CI_ARCH}}
+      VCVARS_PATH: ${{matrix.VCVARS_PATH}}
       BUILDING_SYNTHIZER: "1"
       CI_WINDOWS: "1"
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Configure MSVC Environment Variables
-      shell: cmd
-      run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\enterprise\VC\Auxiliary\Build\vcvars%CI_ARCH%.bat"
-        set > %GITHUB_ENV%
-    - name: Build C Libraries
-      shell: powershell
-      run: |
-        set-location $Env:GITHUB_WORKSPACE
-        ./ci/build_c.ps1
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Configure MSVC Environment Variables
+        shell: cmd
+        run: |
+          call "%VCVARS_PATH%"
+          set > %GITHUB_ENV%
+      - name: install ninja
+        shell: powershell
+        run: |
+          choco install ninja
+      - name: Build C Libraries
+        shell: powershell
+        run: |
+          set-location $Env:GITHUB_WORKSPACE
+          ./ci/build_c.ps1
     strategy:
       fail-fast: true
       matrix:
-        CI_ARCH: ['32', '64']
+        include:
+          - VCVARS_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\enterprise\VC\Auxiliary\Build\vcvars32.bat
+            OS: windows-2019
+          - VCVARS_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\enterprise\VC\Auxiliary\Build\vcvars64.bat
+            OS: windows-2019
+          - VCVARS_PATH: C:\Program Files\Microsoft Visual Studio\2022\enterprise\VC\Auxiliary\Build\vcvars64.bat
+            OS: windows-2022
 
   osx:
     runs-on: macos-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - shell: bash
-      run:  |
-        set -ex
-        brew install ninja
-        cd $GITHUB_WORKSPACE
-        mkdir build
-        cd build
-        cmake -G Ninja ..
-        ninja
-        ninja test
+      - name: Checkout
+        uses: actions/checkout@v2
+      - shell: bash
+        run: |
+          set -ex
+          brew install ninja
+          cd $GITHUB_WORKSPACE
+          mkdir build
+          cd build
+          cmake -G Ninja ..
+          ninja
+          ninja test
 
   build_docs:
     runs-on: ubuntu-20.04
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Cache mdbook
-      id: cache_mdbook
-      uses: actions/cache@v2
-      with:
-        key: ${{ runner.os }}-mdbook
-        path: |
-          ~/mdbook
-    - name: Install mdbook
-      if: steps.cache_mdbook.outputs.cache-hit != 'true'
-      run: |
-        mkdir -p ~/mdbook
-        curl -H "Accept-Encoding: gzip" https://files.ahicks.io/synthizer_ci/mdbook/mdbook | gunzip - > ~/mdbook/mdbook
-        curl -H "Accept-Encoding: gzip" https://files.ahicks.io/synthizer_ci/mdbook/mdbook-linkcheck | gunzip - > ~/mdbook/mdbook-linkcheck
-        chmod +x ~/mdbook/*
-    - name: Build Manual
-      run: |
-        cd $GITHUB_WORKSPACE/manual
-        export PATH=~/mdbook:$PATH
-        mdbook build
-    - uses: actions/upload-artifact@v2
-      with:
-        name: manual
-        path: manual/book/html/**
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Cache mdbook
+        id: cache_mdbook
+        uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-mdbook
+          path: |
+            ~/mdbook
+      - name: Install mdbook
+        if: steps.cache_mdbook.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/mdbook
+          curl -H "Accept-Encoding: gzip" https://files.ahicks.io/synthizer_ci/mdbook/mdbook | gunzip - > ~/mdbook/mdbook
+          curl -H "Accept-Encoding: gzip" https://files.ahicks.io/synthizer_ci/mdbook/mdbook-linkcheck | gunzip - > ~/mdbook/mdbook-linkcheck
+          chmod +x ~/mdbook/*
+      - name: Build Manual
+        run: |
+          cd $GITHUB_WORKSPACE/manual
+          export PATH=~/mdbook:$PATH
+          mdbook build
+      - uses: actions/upload-artifact@v2
+        with:
+          name: manual
+          path: manual/book/html/**
 
   deploy_docs:
     if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request'
     runs-on: ubuntu-20.04
-    needs: [ 'build_docs', 'windows', 'ubuntu', 'osx' ]
+    needs: ["build_docs", "windows", "ubuntu", "osx"]
     env:
       DOCS_DEPLOY_KEY: ${{secrets.docs_deploy_key}}
       DOCS_DEPLOY_KEY_PUB: ${{secrets.docs_deploy_key_pub}}
     steps:
-    - name: Install SSH Deploy Key
-      run: |
-        mkdir -p ~/.ssh
-        echo "$DOCS_DEPLOY_KEY" > ~/.ssh/id_rsa
-        echo "$DOCS_DEPLOY_KEY_PUB" > ~/.ssh/id_rsa.pub
-        chmod 400 ~/.ssh/id_rsa
-    - name: Clone Repository
-      run: |
-        cd $GITHUB_WORKSPACE
-        git clone git@github.com:synthizer/synthizer.github.io .
-        rm -rf *
-    - name: Download Docs
-      uses: actions/download-artifact@v2
-      with:
-        name: manual
-    - name: Commit and Push Docs
-      run: |
-        git config --global user.name "Synthizer CI"
-        git config --global user.email "ahicks@ahicks.io"
-        git add -A
-        git commit --allow-empty -m "Docs deployed at $(date)"
-        git push
+      - name: Install SSH Deploy Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "$DOCS_DEPLOY_KEY" > ~/.ssh/id_rsa
+          echo "$DOCS_DEPLOY_KEY_PUB" > ~/.ssh/id_rsa.pub
+          chmod 400 ~/.ssh/id_rsa
+      - name: Clone Repository
+        run: |
+          cd $GITHUB_WORKSPACE
+          git clone git@github.com:synthizer/synthizer.github.io .
+          rm -rf *
+      - name: Download Docs
+        uses: actions/download-artifact@v2
+        with:
+          name: manual
+      - name: Commit and Push Docs
+        run: |
+          git config --global user.name "Synthizer CI"
+          git config --global user.email "ahicks@ahicks.io"
+          git add -A
+          git commit --allow-empty -m "Docs deployed at $(date)"
+          git push
 
   github_release:
-    needs: [ "build_docs", "windows", "ubuntu", "osx" ]
+    needs: ["build_docs", "windows", "ubuntu", "osx"]
     if: startsWith(github.ref, 'refs/tags') && !github.event_type != 'pull_request'
     runs-on: ubuntu-20.04
     steps:
-    - name: Download Docs
-      uses: actions/download-artifact@v2
-      with:
-        name: manual
-        path: ~/artifacts/manual
-    - name: Zip Docs
-      run: |
-        zip -r ~/artifacts/manual.zip ~/artifacts/manual
-        # get it out of the way so that the uploads don't freak out.
-        rm -rf ~/artifacts/manual
-        ls ~/artifacts
-    - name: Create Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      with:
-        tag_name: ${{github.ref}}
-    - name: Upload Artifacts
-      uses: alexellis/upload-assets@0.2.2
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      with:
-        asset_paths: '[ "/home/runner/artifacts/*" ]'
+      - name: Download Docs
+        uses: actions/download-artifact@v2
+        with:
+          name: manual
+          path: ~/artifacts/manual
+      - name: Zip Docs
+        run: |
+          zip -r ~/artifacts/manual.zip ~/artifacts/manual
+          # get it out of the way so that the uploads don't freak out.
+          rm -rf ~/artifacts/manual
+          ls ~/artifacts
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          tag_name: ${{github.ref}}
+      - name: Upload Artifacts
+        uses: alexellis/upload-assets@0.2.2
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          asset_paths: '[ "/home/runner/artifacts/*" ]'
