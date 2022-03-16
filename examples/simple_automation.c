@@ -17,7 +17,6 @@ static const unsigned int HARMONICS = 10;
 static const double PI = 3.141592653589793;
 
 static const struct {
-
   int interpolation_type;
   double time;
   double value;

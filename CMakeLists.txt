@@ -191,9 +191,15 @@ endif()
 add_custom_target(data
 python "${CMAKE_SOURCE_DIR}/data_processor/main.py")
 
+# Not linked to C examples by default. on Linux.
+find_library(MATH_LIBRARY m)
+
 macro(example NAME EXT)
   add_executable(${NAME} ./examples/${NAME}.${EXT})
   target_link_libraries(${NAME} synthizer)
+  if(${MATH_LIBRARY})
+    target_link_libraries(${NAME} ${MATH_LIBRARIES})
+  endif()
 endmacro()
 
 example(automation_circle cpp)
