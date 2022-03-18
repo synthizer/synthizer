@@ -1,3 +1,7 @@
+## 0.11.8 (2022-03-18)
+
+- Fix linking libm to examples on Linux.
+
 ## 0.11.7 (2022-03-06)
 
 - Fix MSVC 2022 support.
