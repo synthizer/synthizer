@@ -48,11 +48,14 @@ through the standard CMake processes.
 
 On Windows, you may need to run the above under an MSVC command prompt.
 
-If you want to build a DLL under windows, use the following command in place of `cmake -G Ninja ..`:
+If you want to build a shared library:
 
 ```
-cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL -DSYNTHIZER_LIB_TYPE=SHARED
+cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Release -DSYNTHIZER_LIB_TYPE=SHARED
 ```
+
+For windows, also add `-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL` if you want to statically link the MSVC runtime,
+and avoid needing external dependencies.
 
 For the Python bindings, one of the following applies:
 
