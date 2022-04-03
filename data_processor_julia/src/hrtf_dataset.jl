@@ -76,7 +76,7 @@ function load_mit(path::String)::Dataset
   pattern = r"L(-?\d+)e(\d+)"
   for f in all_files
     res = match(pattern, f)
-    if res == nothing
+    if res === nothing
       continue
     end
 
