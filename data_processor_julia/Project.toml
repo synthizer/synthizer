@@ -1,4 +1,5 @@
 [deps]
+JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
 PortAudio = "80ea8bcb-4634-5cb3-8ee8-a132660d1d2d"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 SampledSignals = "bd7594eb-a658-542f-9e75-4c4d8908c167"

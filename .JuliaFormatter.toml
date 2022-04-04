@@ -1,0 +1,4 @@
+indent=4
+margin=100
+whitespace_typedefs = true
+remove_extra_newlines = true
