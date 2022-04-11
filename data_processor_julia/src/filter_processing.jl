@@ -20,7 +20,7 @@ function compute_magnitude_response(
     padded = impulse
     if length(impulse) < sr
         remaining = sr - length(impulse)
-        padded = cat(impulse, repeat([0.0], remaining), 1)
+        padded = cat(impulse, zeros(remaining), dims = 1)
     end
     abs.(FFTW.fft(padded))
 end
@@ -36,30 +36,35 @@ function compute_power_equalizer(hrirs)::Vector{Float64}
         az_count += 1
         h .^ 2
     end)
-    average_power_response = average_power_response ./ hrir_count
+    average_power_response = average_power_response ./ az_count
 
     # The following logic stops the response from doing insane things, and was roughly borrowed from the matlab scripts
     # with the MIT Kemar dataset, modified for our use case by listening tests.
-    avg_power_db = 20 .* log10.(average_power)
+    avg_power_db = 20 .* log10.(average_power_response)
     db_range = 20
-    avg_power_db = clamp.(avg_power_db, -db_range, db_range)
+    #avg_power_db = clamp.(avg_power_db, -db_range, db_range)
+    offset = sum(avg_power_db) / length(avg_power_db)
+    avg_power_db = avg_power_db .- offset
 
     1.0 ./ sqrt.(10 .^ (avg_power_db / 20))
 end
 
 """
-Compute a periodic Blackman-harris window.
+Compute the right half of a periodic Blackman-harris window, such that it always starts with 1, and ends with an
+implicit 0.  We use this for truncation at l points.
 
 The DSP package doesn't have this for some reason.
 """
-function blackman_harris(l)
+function half_blackman_harris(l)
     a0 = 0.35875
     a1 = 0.48829
     a2 = 0.14128
     a3 = 0.01168
 
+    # Evaluate the function from 0.5 to 1, excluding 1 
     ns = [0:l-1;]
-    mul = 2 * π .* ns / (l - 1)
+    mul = 0.5 .+ 0.5 .* ns ./ l
+    mul .*= 2 * π
 
     a0 .- a1 .* cos.(mul) + a2 .* cos.(mul .* 2) - a3 .* cos.(3 .* mul)
 end
@@ -70,7 +75,7 @@ Truncate a given impulse to a given length by windowing with blackman-harris.
 The window is picked because it matches what WDL does in its resampler truncation.
 """
 function truncate_impulse(impulse::Vector{Float64}, length::Int64)::Vector{Float64}
-    (impulse[1:length] .* blackman_harris(length))
+    (impulse[1:length] .* half_blackman_harris(length))
 end
 
 """
@@ -83,7 +88,7 @@ function compute_max_dc(impulses)::Float64
 end
 
 """
-Remove the base fro an impulse by filtering with a butterworth filter.
+Remove the base from an impulse by filtering with a butterworth filter.
 """
 function remove_dc(impulse::Vector{Float64}; sr = 44100)::Vector{Float64}
     resp = DSP.Filters.Highpass(100.0; fs = Float64(sr))

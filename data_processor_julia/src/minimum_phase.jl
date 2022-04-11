@@ -20,6 +20,9 @@ function minimum_phase(amplitude_response::Vector{Float64})::Vector{Float64}
     hilb = abs.(DSP.hilbert(log_amplitude_response))
 
     minphase_freq = safe_amplitude_response .* E .^ (-1im .* hilb)
+    minphase_freq[1] = 0
+    minphase_freq[length(minphase_freq)÷2+1] = 0
+
     real.(FFTW.ifft(minphase_freq))
 end
 
