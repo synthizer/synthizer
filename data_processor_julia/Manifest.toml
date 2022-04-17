@@ -187,6 +187,12 @@ git-tree-sha1 = "9448588172fad86f4e7f22a46607874923e43242"
 uuid = "1d38b3a6-207b-531b-80e8-c83f48dafa73"
 version = "1.3.4+1"
 
+[[deps.FileIO]]
+deps = ["Pkg", "Requires", "UUIDs"]
+git-tree-sha1 = "80ced645013a5dbdc52cf70329399c35ce007fae"
+uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+version = "1.13.0"
+
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
@@ -358,6 +364,12 @@ uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 [[deps.LibSSH2_jll]]
 deps = ["Artifacts", "Libdl", "MbedTLS_jll"]
 uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
+
+[[deps.LibSndFile]]
+deps = ["FileIO", "Libdl", "LinearAlgebra", "Printf", "SampledSignals", "libsndfile_jll"]
+git-tree-sha1 = "955515227165d2a276abb017bafd0b4e93d0eded"
+uuid = "b13ce0c6-77b0-50c6-a2db-140568b8d1a5"
+version = "2.4.0"
 
 [[deps.LibUnwind_jll]]
 deps = ["Artifacts", "Libdl"]

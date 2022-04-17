@@ -10,7 +10,11 @@ import ..FilterProcessing
 import ..MinimumPhase
 import DSP
 
-function clean_dataset(dataset; sr = 44100, final_filter_length = 32)
+function clean_dataset(
+    dataset::HrtfDataset.Dataset;
+    sr = 44100,
+    final_filter_length = 32,
+)::HrtfDataset.Dataset
     mag_dataset = HrtfDataset.map_to_dataset(
         x -> FilterProcessing.compute_magnitude_response(x.data),
         dataset,
