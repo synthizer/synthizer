@@ -78,8 +78,96 @@ dataset = HrtfCleaner.clean_dataset(dataset)
 left_hrir = build_hrir(dataset, 45, 70)
 right_hrir = build_hrir(dataset, 360 - 45, 70)
 
-left = DSP.conv(left_hrir, data)
-right = DSP.conv(right_hrir, data)
+function conv_del(line, impulse, delay)
+    sum = 0.0
+    for i = 1:length(impulse)
+        sample = DelayLine.read(line, UInt64(delay + i - 1))[1]
+        sum += sample * impulse[i]
+    end
+    sum
+end
+
+function do_hrir(line, left_del, left_impulse, right_del, right_impulse)
+    left_del_floor = floor(left_del)
+    left_del_ceil = ceil(left_del)
+    right_del_floor = floor(right_del)
+    right_del_ceil = ceil(right_del)
+
+    left_floor = conv_del(line, left_impulse, left_del_floor)
+    left_ceil = conv_del(line, left_impulse, left_del_ceil)
+    right_floor = conv_del(line, right_impulse, right_del_floor)
+    right_ceil = conv_del(line, right_impulse, right_del_ceil)
+
+    lw2 = left_del - left_del_floor
+    lw1 = 1.0 - lw2
+    rw2 = right_del - right_del_floor
+    rw1 = 1.0 - rw2
+
+    return (left_floor * lw1 + left_ceil * lw2, right_floor * rw1 + right_ceil * rw2)
+end
+
+function tick_hrir(line, input_sample, left_del, left_impulse, right_del, right_impulse)
+    DelayLine.write(line, (input_sample,))
+    return do_hrir(line, left_del, left_impulse, right_del, right_impulse)
+end
+
+# Returns (left_delay, right_delay)
+function compute_delays(azimuth, elevation)
+    az_r = azimuth * π / 180.0
+    elev_r = elevation * π / 180.0
+
+    # Convert our direction to a cartesian vector, keeping x.
+    #
+    # az_r is the clockwise angle from y, which is forward. cos(az_r) is the y component. Consequently, sin(az_r) is the
+    # x component.
+    #
+    # This is the standard spherical coordinate conversion, but adjusted to account for our flipped coordinate system
+    # and dropping all the components we don't need.
+    x = sin(az_r) * cos(elev_r)
+
+    # The angle between y and our spherical vector, in the range 0, pi/2, which "pretends" the source is in the front
+    # right quadrant.  Note that the front right and back right yield the same itd, and the front left and back left
+    # yield the same itd as well, but flipped.
+    #
+    # We have the angle between our vector and x, because x=cos(theta) in this instance: the vector we're getting an
+    # angle with is a unit vector in the unit circle, so this is true by definition.
+    angle = π / 2 - acos(abs(x))
+
+    # ITD in seconds using woodworth.
+    head_rad = 0.15
+    sos = 343.0
+    itd = (head_rad / sos) * (angle + sin(angle))
+
+    # Get the side of the head the higher itd is on.  This works because 0 to π is the right half, as is 2πto 3πand so
+    # on.  This pattern means we take whether or not the division is even or odd as our answer; even is right, odd is
+    # left.
+    pi_intervals = Int32(floor(az_r / π))
+    even = pi_intervals ÷ 2 == 0
+
+    if even
+        return (0, itd)
+    else
+        return (itd, 0)
+    end
+end
+
+(itd_l, itd_r) = compute_delays(70, 45)
+
+line = DelayLine.Line(Val{1}(), 44100)
+res_l = []
+res_r = []
+
+samples = 44100 * 10
+reps = samples / length(data)
+reps += 1
+
+data = repeat(data, UInt32(floor(reps)))
+
+for i = 1:samples
+    (l, r) = tick_hrir(line, data[i], itd_l, left_hrir, itd_r, right_hrir)
+    push!(res_l, l)
+    push!(res_r, r)
+end
 
 stream = PortAudio.PortAudioStream(0, 2)
-PortAudio.write(stream, [left;; right])
+PortAudio.write(stream, [res_l;; res_r])
