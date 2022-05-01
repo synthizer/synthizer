@@ -125,16 +125,16 @@ function compute_delays(azimuth, elevation; sr = 44100)
     sos = 343.0
     itd = (head_rad / sos) * (angle + sin(angle))
 
-    # Get the side of the head the higher itd is on.  This works because 0 to π is the right half, as is 2πto 3πand so
+    # Get the side of the head the lower itd is on.  This works because 0 to π is the right half, as is 2π to 3πand so
     # on.  This pattern means we take whether or not the division is even or odd as our answer; even is right, odd is
     # left.
     pi_intervals = Int32(floor(az_r / π))
     even = pi_intervals ÷ 2 == 0
 
     if even
-        return (0, sr * itd)
+        return (sr * itd, 0.0)
     else
-        return (sr * itd, 0)
+        return (0.0, sr * itd)
     end
 end
 
@@ -162,7 +162,8 @@ function play_hrtf(dataset, file)
 
     data = load_file(file, samples)
 
-    left_hrir = right_hrir = nothing
+    left_hrir = nothing
+    right_hrir = nothing
     itd_l = nothing
     itd_r = nothing
 
@@ -180,7 +181,7 @@ function play_hrtf(dataset, file)
             (itd_l, itd_r) = compute_delays(effective_az, elev)
         end
 
-        (l, r) = tick_hrir(line, data[i], 0, left_hrir, 0, right_hrir)
+        (l, r) = tick_hrir(line, data[i], itd_l, left_hrir, itd_r, right_hrir)
         push!(res_l, l)
         push!(res_r, r)
     end

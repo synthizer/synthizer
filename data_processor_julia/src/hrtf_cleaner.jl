@@ -8,7 +8,7 @@ module HrtfCleaner
 import ..HrtfDataset
 import ..FilterProcessing
 import ..MinimumPhase
-import DSP
+import DSP, FFTW
 
 function clean_dataset(
     dataset::HrtfDataset.Dataset;
@@ -28,7 +28,6 @@ function clean_dataset(
         HrtfDataset.map_to_dataset(x -> x.data .* equalpower_inverse, mag_dataset)
 
     minphase = HrtfDataset.map_to_dataset(x -> MinimumPhase.minimum_phase(x.data), mag_dataset)
-    return minphase
 
     emphasized = HrtfDataset.map_to_dataset(minphase) do i
         filt = FilterProcessing.design_behind_emphasis_filter(i.current_azimuth, sr)
@@ -39,7 +38,7 @@ function clean_dataset(
 
     truncated = HrtfDataset.map_to_dataset(
         x -> FilterProcessing.truncate_impulse(x.data, final_filter_length),
-        no_dc,
+        minphase,
     )
 
     truncated

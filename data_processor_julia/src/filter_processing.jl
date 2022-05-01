@@ -26,7 +26,8 @@ function compute_magnitude_response(
 end
 
 """
-Compute an array which will equalize the power of the passed-in HRIRs when multiplied by the magnitude response.
+Compute an array which will equalize the power of the passed-in HRIRs when multiplied by the magnitude response.  Takes
+a list of magnitude responses.
 
 Hrirs should be an iterator over a set of HRIRs.  This assumes that all of the HRIRs are of the same length.
 """
@@ -78,8 +79,7 @@ function truncate_impulse(impulse::Vector{Float64}, length::Int64)::Vector{Float
     truncated = impulse[1:length] .* half_blackman_harris(length)
     original_power = sqrt(sum(impulse .^ 2))
     new_power = sqrt(sum(truncated .^ 2))
-    power_ratio = original_power / new_power
-    mul = sqrt(power_ratio)
+    mul = original_power / new_power
     truncated .* mul
 end
 
