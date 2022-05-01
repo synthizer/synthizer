@@ -48,7 +48,7 @@ function build_hrir(dataset::HrtfDataset.Dataset, az, elev)
 
         width = next_angle - last_angle
         last_delta = az - last_angle
-        @assert last_delta >= 0
+        @assert last_delta >= 0 "last_angle=$(last_angle), az=$(az), next_angle=$(next_angle)"
         w1 = 1.0 - (last_delta / width)
         w2 = 1.0 - w1
         azs[1].data .* w1 .+ azs[2].data .* w2
@@ -99,7 +99,7 @@ function tick_hrir(line, input_sample, left_del, left_impulse, right_del, right_
 end
 
 # Returns (left_delay, right_delay)
-function compute_delays(azimuth, elevation)
+function compute_delays(azimuth, elevation; sr = 44100)
     az_r = azimuth * π / 180.0
     elev_r = elevation * π / 180.0
 
@@ -132,9 +132,9 @@ function compute_delays(azimuth, elevation)
     even = pi_intervals ÷ 2 == 0
 
     if even
-        return (0, itd)
+        return (0, sr * itd)
     else
-        return (itd, 0)
+        return (sr * itd, 0)
     end
 end
 
@@ -153,23 +153,34 @@ end
 
 function play_hrtf(dataset, file)
     samples = 44100 * 10
-    az = 45
-    elev = 70
+    az = 0
+    elev = 0
+    step_len = 1000
+    increment = 1
 
     line = DelayLine.Line(Val{1}(), 44100)
 
     data = load_file(file, samples)
 
-    left_hrir = build_hrir(dataset, az, elev)
-    right_hrir = build_hrir(dataset, 360 - az, elev)
-
-    (itd_l, itd_r) = compute_delays(az, elev)
+    left_hrir = right_hrir = nothing
+    itd_l = nothing
+    itd_r = nothing
 
     res_l = []
     res_r = []
 
+    last_computed_step = -1
     for i = 1:samples
-        (l, r) = tick_hrir(line, data[i], itd_l, left_hrir, itd_r, right_hrir)
+        step = mod1(i, step_len)
+        if step != last_computed_step
+            last_computed_step = step
+            effective_az = mod(az + i / step_len * increment, 360)
+            left_hrir = build_hrir(dataset, effective_az, elev)
+            right_hrir = build_hrir(dataset, 360 - effective_az, elev)
+            (itd_l, itd_r) = compute_delays(effective_az, elev)
+        end
+
+        (l, r) = tick_hrir(line, data[i], 0, left_hrir, 0, right_hrir)
         push!(res_l, l)
         push!(res_r, r)
     end

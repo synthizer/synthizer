@@ -36,17 +36,17 @@ function compute_power_equalizer(hrirs)::Vector{Float64}
         az_count += 1
         h .^ 2
     end)
-    average_power_response = average_power_response ./ az_count
+    average_power_response = sqrt.(average_power_response ./ az_count)
 
     # The following logic stops the response from doing insane things, and was roughly borrowed from the matlab scripts
     # with the MIT Kemar dataset, modified for our use case by listening tests.
     avg_power_db = 20 .* log10.(average_power_response)
     db_range = 20
-    #avg_power_db = clamp.(avg_power_db, -db_range, db_range)
+    avg_power_db = clamp.(avg_power_db, -db_range, db_range)
     offset = sum(avg_power_db) / length(avg_power_db)
     avg_power_db = avg_power_db .- offset
 
-    1.0 ./ sqrt.(10 .^ (avg_power_db / 20))
+    1.0 ./ (10 .^ (avg_power_db / 20))
 end
 
 """
@@ -70,12 +70,17 @@ function half_blackman_harris(l)
 end
 
 """
-Truncate a given impulse to a given length by windowing with blackman-harris.
+Truncate a given impulse to a given length by windowing with blackman-harris, then re-normalizing the power.
 
 The window is picked because it matches what WDL does in its resampler truncation.
 """
 function truncate_impulse(impulse::Vector{Float64}, length::Int64)::Vector{Float64}
-    (impulse[1:length] .* half_blackman_harris(length))
+    truncated = impulse[1:length] .* half_blackman_harris(length)
+    original_power = sqrt(sum(impulse .^ 2))
+    new_power = sqrt(sum(truncated .^ 2))
+    power_ratio = original_power / new_power
+    mul = sqrt(power_ratio)
+    truncated .* mul
 end
 
 """

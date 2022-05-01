@@ -27,15 +27,15 @@ function clean_dataset(
     power_equalized_dataset =
         HrtfDataset.map_to_dataset(x -> x.data .* equalpower_inverse, mag_dataset)
 
-    minphase =
-        HrtfDataset.map_to_dataset(x -> MinimumPhase.minimum_phase(x.data), power_equalized_dataset)
+    minphase = HrtfDataset.map_to_dataset(x -> MinimumPhase.minimum_phase(x.data), mag_dataset)
+    return minphase
 
     emphasized = HrtfDataset.map_to_dataset(minphase) do i
         filt = FilterProcessing.design_behind_emphasis_filter(i.current_azimuth, sr)
         DSP.filt(filt, i.data)
     end
 
-    no_dc = HrtfDataset.map_to_dataset(x -> FilterProcessing.remove_dc(x.data), emphasized)
+    no_dc = HrtfDataset.map_to_dataset(x -> FilterProcessing.remove_dc(x.data), minphase)
 
     truncated = HrtfDataset.map_to_dataset(
         x -> FilterProcessing.truncate_impulse(x.data, final_filter_length),
