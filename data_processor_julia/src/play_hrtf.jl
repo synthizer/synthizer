@@ -162,32 +162,29 @@ function play_hrtf(dataset, file)
 
     data = load_file(file, samples)
 
-    left_hrir = nothing
-    right_hrir = nothing
-    itd_l = nothing
-    itd_r = nothing
+    function dostep(effective_az, data)
+        left_hrir = build_hrir(dataset, effective_az, elev)
+        right_hrir = build_hrir(dataset, 360 - effective_az, elev)
+        (itd_l, itd_r) = compute_delays(effective_az, elev)
 
-    res_l = []
-    res_r = []
-
-    last_computed_step = -1
-    for i = 1:samples
-        step = mod1(i, step_len)
-        if step != last_computed_step
-            last_computed_step = step
-            effective_az = mod(az + i / step_len * increment, 360)
-            left_hrir = build_hrir(dataset, effective_az, elev)
-            right_hrir = build_hrir(dataset, 360 - effective_az, elev)
-            (itd_l, itd_r) = compute_delays(effective_az, elev)
+        res_l = []
+        res_r = []
+        for i = 1:length(data)
+            (l, r) = tick_hrir(line, data[i], itd_l, left_hrir, itd_r, right_hrir)
+            push!(res_l, l)
+            push!(res_r, r)
         end
 
-        (l, r) = tick_hrir(line, data[i], itd_l, left_hrir, itd_r, right_hrir)
-        push!(res_l, l)
-        push!(res_r, r)
+        [res_l;; res_r]
     end
 
     stream = PortAudio.PortAudioStream(0, 2)
-    PortAudio.write(stream, [res_l;; res_r])
+    steps = samples ÷ step_len
+    for i = 1:steps
+        effective_az = mod(i * increment, 360)
+        res = dostep(effective_az, data[i*step_len:(i+1)*step_len-1])
+        PortAudio.write(stream, res)
+    end
 end
 
 end
