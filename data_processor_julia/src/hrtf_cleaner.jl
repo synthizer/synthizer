@@ -14,6 +14,9 @@ function clean_dataset(
     dataset::HrtfDataset.Dataset;
     sr = 44100,
     final_filter_length = 32,
+    # Clamps the db range to keep things sounding more natural, because the HRTF impulses can have very sharp peaks and
+    # valleys.
+    db_range = 60,
 )::HrtfDataset.Dataset
     mag_dataset = HrtfDataset.map_to_dataset(
         x -> FilterProcessing.compute_magnitude_response(x.data),
@@ -27,7 +30,14 @@ function clean_dataset(
     power_equalized_dataset =
         HrtfDataset.map_to_dataset(x -> x.data .* equalpower_inverse, mag_dataset)
 
-    minphase = HrtfDataset.map_to_dataset(x -> MinimumPhase.minimum_phase(x.data), mag_dataset)
+    db_min = 10^(-db_range / 20)
+    db_max = 10^(20 / db_range)
+
+    clamped_dataset = HrtfDataset.map_to_dataset(power_equalized_dataset) do x
+        clamp.(x.data, db_min, db_max)
+    end
+
+    minphase = HrtfDataset.map_to_dataset(x -> MinimumPhase.minimum_phase(x.data), power_equalized_dataset)
 
     emphasized = HrtfDataset.map_to_dataset(minphase) do i
         filt = FilterProcessing.design_behind_emphasis_filter(i.current_azimuth, sr)

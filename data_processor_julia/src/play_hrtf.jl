@@ -128,8 +128,8 @@ function compute_delays(azimuth, elevation; sr = 44100)
     # Get the side of the head the lower itd is on.  This works because 0 to π is the right half, as is 2π to 3πand so
     # on.  This pattern means we take whether or not the division is even or odd as our answer; even is right, odd is
     # left.
-    pi_intervals = Int32(floor(az_r / π))
-    even = pi_intervals ÷ 2 == 0
+    pi_intervals = az_r ÷ π
+    even = mod(pi_intervals, 2) == 0
 
     if even
         return (sr * itd, 0.0)
@@ -152,9 +152,9 @@ function load_file(file, samples)
 end
 
 function play_hrtf(dataset, file)
-    samples = 44100 * 10
-    az = 0
-    elev = 0
+    samples = 44100 * 30
+    az = 45
+    elev = 60
     step_len = 1000
     increment = 1
 
@@ -162,29 +162,30 @@ function play_hrtf(dataset, file)
 
     data = load_file(file, samples)
 
+    res_l = []
+    res_r = []
     function dostep(effective_az, data)
         left_hrir = build_hrir(dataset, effective_az, elev)
         right_hrir = build_hrir(dataset, 360 - effective_az, elev)
         (itd_l, itd_r) = compute_delays(effective_az, elev)
 
-        res_l = []
-        res_r = []
         for i = 1:length(data)
             (l, r) = tick_hrir(line, data[i], itd_l, left_hrir, itd_r, right_hrir)
             push!(res_l, l)
             push!(res_r, r)
         end
-
-        [res_l;; res_r]
     end
 
     stream = PortAudio.PortAudioStream(0, 2)
     steps = samples ÷ step_len
+
     for i = 1:steps
-        effective_az = mod(i * increment, 360)
-        res = dostep(effective_az, data[i*step_len:(i+1)*step_len-1])
-        PortAudio.write(stream, res)
+        effective_az = mod(az + i * increment, 360)
+        dostep(effective_az, data[i*step_len:(i+1)*step_len-1])
     end
+
+    println("Playing")
+    PortAudio.write(stream, [res_l;; res_r])
 end
 
 end
