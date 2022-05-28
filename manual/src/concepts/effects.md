@@ -14,6 +14,7 @@ struct syz_RouteConfig {
 SYZ_CAPI syz_ErrorCode syz_initRouteConfig(struct syz_RouteConfig *cfg);
 SYZ_CAPI syz_ErrorCode syz_routingConfigRoute(syz_Handle context, syz_Handle output, syz_Handle input, struct syz_RouteConfig *config);
 SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle output, syz_Handle input, double fade_out);
+SYZ_CAPI syz_ErrorCode syz_routingRemoveAllRoutes(syz_Handle context, syz_Handle output, double fade_out);
 ```
 
 Routes are uniquely identified by the output object (Source3D, etc) and input
@@ -35,7 +36,8 @@ Filters are also per route and apply after any filters on sources.  For example,
 this can be used to change the filter on a per-reverb basis for a reverb zone
 algorithm that feeds sources to more than one reverb at a time.
 
-In order to remove a route, use `syz_routingRemoveRoute`.
+In order to remove a route, use `syz_routingRemoveRoute`.  Alternatively, `syz_routingRemoveAllRoutes` can remove all
+routes from a source.
 
 Many effects involve feedback and/or other long-running audio as part of their
 intended function. But while in development, it is often useful to reset an

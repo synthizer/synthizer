@@ -301,3 +301,35 @@ SYZ_CAPI syz_ErrorCode syz_routingRemoveRoute(syz_Handle context, syz_Handle out
   return 0;
   SYZ_EPILOGUE
 }
+
+SYZ_CAPI syz_ErrorCode syz_routingRemoveAllRoutes(syz_Handle context, syz_Handle output, double fade_out) {
+  (void)context;
+
+  SYZ_PROLOGUE
+  auto obj_output = fromC<BaseObject>(output);
+  auto output_handle = obj_output->getOutputHandle();
+  if (output_handle == nullptr) {
+    throw EInvariant("Output doesn't support routing to inputs");
+  }
+
+  unsigned int fade_out_blocks = fade_out * config::SR / config::BLOCK_SIZE;
+  if (fade_out != 0.0f && fade_out_blocks == 0) {
+    fade_out_blocks = 1;
+  }
+
+  auto ctx = obj_output->getContext();
+  ctx->enqueueReferencingCallbackCommand(
+      true,
+      [](auto &ctx, auto &obj_output, auto &fade_out_blocks) {
+        if (ctx == nullptr) {
+          return;
+        }
+        auto output_handle = obj_output->getOutputHandle();
+
+        ctx->getRouter()->removeAllRoutes(output_handle, fade_out_blocks);
+      },
+      ctx, obj_output, fade_out_blocks);
+
+  return 0;
+  SYZ_EPILOGUE
+}
