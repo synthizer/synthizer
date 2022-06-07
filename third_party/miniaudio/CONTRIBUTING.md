@@ -6,7 +6,7 @@ miniaudio.
 
 Found a Bug?
 ------------
-If you've found a bug you can create a bug report [here on GitHub](https://github.com/dr-soft/miniaudio/issues).
+If you've found a bug you can create a bug report [here on GitHub](https://github.com/mackron/miniaudio/issues).
 The more information you can provide, the quicker I'll be able to get it fixed. Sample programs and files help a
 lot, as does a detailed list of steps I can follow to reproduce the problem.
 
@@ -36,6 +36,9 @@ things in particular:
   * Don't add a third party dependency. If you do this I'll immediately reject your pull request.
 
 I'm not going to outline specific coding styles - just look at the existing code and use common sense.
+
+If you want to submit a pull request for any of the dr_* libraries in the "extras" folder, please submit the pull
+request to the [dr_libs repository](https://github.com/mackron/dr_libs).
 
 
 Respect the Goals of the Project
@@ -72,7 +75,7 @@ incur the cost of maintaining build systems in miniaudio.
 
 ### "Would you consider feature XYZ? It requires C11, but don't worry, all compilers support it."
 One of the philosophies of miniaudio is that it should just work, and that includes compilation environment. There's
-no real reason to not support support older compilers. Newer versions of C will not add anything of any significance
+no real reason to not support older compilers. Newer versions of C will not add anything of any significance
 that cannot already be done in C89.
 
 ### "Will you consider adding a third license option such as [my favourite license]?"

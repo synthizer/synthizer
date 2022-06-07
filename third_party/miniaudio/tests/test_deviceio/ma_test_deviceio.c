@@ -13,13 +13,13 @@ will receive the captured audio.
 
 "backend" is one of the miniaudio backends:
     wasapi
-    dsound
+    dsound or directsound
     winmm
     coreaudio
     sndio
     audio4
     oss
-    pulseaudio
+    pulseaudio or pulse
     alsa
     jack
     aaudio
@@ -124,7 +124,7 @@ ma_bool32 try_parse_backend(const char* arg, ma_backend* pBackends, ma_uint32 ba
         pBackends[backendCount++] = ma_backend_wasapi;
         goto done;
     }
-    if (strcmp(arg, "dsound") == 0) {
+    if (strcmp(arg, "dsound") == 0 || strcmp(arg, "directsound") == 0) {
         pBackends[backendCount++] = ma_backend_dsound;
         goto done;
     }
@@ -148,7 +148,7 @@ ma_bool32 try_parse_backend(const char* arg, ma_backend* pBackends, ma_uint32 ba
         pBackends[backendCount++] = ma_backend_oss;
         goto done;
     }
-    if (strcmp(arg, "pulseaudio") == 0) {
+    if (strcmp(arg, "pulseaudio") == 0 || strcmp(arg, "pulse") == 0) {
         pBackends[backendCount++] = ma_backend_pulseaudio;
         goto done;
     }
@@ -235,27 +235,29 @@ ma_bool32 try_parse_noise(const char* arg, ma_noise_type* pNoiseType)
 ma_result print_device_info(ma_context* pContext, ma_device_type deviceType, const ma_device_info* pDeviceInfo)
 {
     ma_result result;
-    ma_uint32 iFormat;
     ma_device_info detailedDeviceInfo;
 
     MA_ASSERT(pDeviceInfo != NULL);
 
-    result = ma_context_get_device_info(pContext, deviceType, &pDeviceInfo->id, ma_share_mode_shared, &detailedDeviceInfo);
+#if 1
+    result = ma_context_get_device_info(pContext, deviceType, &pDeviceInfo->id, &detailedDeviceInfo);
     if (result != MA_SUCCESS) {
         return result;
     }
+#else
+    detailedDeviceInfo = *pDeviceInfo;
+#endif
 
-    printf("%s\n", pDeviceInfo->name);
-    printf("    Default:         %s\n", (detailedDeviceInfo._private.isDefault) ? "Yes" : "No");
-    printf("    Min Channels:    %d\n", detailedDeviceInfo.minChannels);
-    printf("    Max Channels:    %d\n", detailedDeviceInfo.maxChannels);
-    printf("    Min Sample Rate: %d\n", detailedDeviceInfo.minSampleRate);
-    printf("    Max Sample Rate: %d\n", detailedDeviceInfo.maxSampleRate);
-    printf("    Format Count:    %d\n", detailedDeviceInfo.formatCount);
-    for (iFormat = 0; iFormat < detailedDeviceInfo.formatCount; ++iFormat) {
-        printf("        %s\n", ma_get_format_name(detailedDeviceInfo.formats[iFormat]));
+    {
+        ma_uint32 iFormat;
+
+        printf("%s\n", pDeviceInfo->name);
+        printf("    Default:      %s\n", (detailedDeviceInfo.isDefault) ? "Yes" : "No");
+        printf("    Format Count: %d\n", detailedDeviceInfo.nativeDataFormatCount);
+        for (iFormat = 0; iFormat < detailedDeviceInfo.nativeDataFormatCount; ++iFormat) {
+            printf("        %s, %d, %d\n", ma_get_format_name(detailedDeviceInfo.nativeDataFormats[iFormat].format), detailedDeviceInfo.nativeDataFormats[iFormat].channels, detailedDeviceInfo.nativeDataFormats[iFormat].sampleRate);
+        }
     }
-    printf("\n");
 
     return MA_SUCCESS;
 }
@@ -295,18 +297,46 @@ ma_result enumerate_devices(ma_context* pContext)
     return MA_SUCCESS;
 }
 
-void on_log(ma_context* pContext, ma_device* pDevice, ma_uint32 logLevel, const char* message)
+void on_log(void* pUserData, ma_uint32 logLevel, const char* message)
 {
-    (void)pContext;
-    (void)pDevice;
+    (void)pUserData;
 
-    printf("%s: %s\n", ma_log_level_to_string(logLevel), message);
+    printf("%s: %s", ma_log_level_to_string(logLevel), message);
 }
 
-void on_stop(ma_device* pDevice)
+void on_notification(const ma_device_notification* pNotification)
 {
-    (void)pDevice;
-    printf("Stopped\n");
+    MA_ASSERT(pNotification != NULL);
+    
+    switch (pNotification->type)
+    {
+        case ma_device_notification_type_started:
+        {
+            printf("Started\n");
+        } break;
+
+        case ma_device_notification_type_stopped:
+        {
+            printf("Stopped\n");
+        } break;
+
+        case ma_device_notification_type_rerouted:
+        {
+            printf("Rerouted\n");
+        } break;
+
+        case ma_device_notification_type_interruption_began:
+        {
+            printf("Interruption Began\n");
+        } break;
+
+        case ma_device_notification_type_interruption_ended:
+        {
+            printf("Interruption Ended\n");
+        } break;
+
+        default: break;
+    }
 }
 
 void on_data(ma_device* pDevice, void* pFramesOut, const void* pFramesIn, ma_uint32 frameCount)
@@ -317,11 +347,11 @@ void on_data(ma_device* pDevice, void* pFramesOut, const void* pFramesIn, ma_uin
         {
             /* In the playback case we just read from our input source. */
             if (g_State.sourceType == source_type_decoder) {
-                ma_decoder_read_pcm_frames(&g_State.decoder, pFramesOut, frameCount);
+                ma_decoder_read_pcm_frames(&g_State.decoder, pFramesOut, frameCount, NULL);
             } else if (g_State.sourceType == source_type_waveform) {
-                ma_waveform_read_pcm_frames(&g_State.waveform, pFramesOut, frameCount);
+                ma_waveform_read_pcm_frames(&g_State.waveform, pFramesOut, frameCount, NULL);
             } else if (g_State.sourceType == source_type_noise) {
-                ma_noise_read_pcm_frames(&g_State.noise, pFramesOut, frameCount);
+                ma_noise_read_pcm_frames(&g_State.noise, pFramesOut, frameCount, NULL);
             }
         } break;
 
@@ -329,7 +359,7 @@ void on_data(ma_device* pDevice, void* pFramesOut, const void* pFramesIn, ma_uin
         case ma_device_type_loopback:
         {
             /* In the capture and loopback cases we just output straight to a file. */
-            ma_encoder_write_pcm_frames(&g_State.encoder, pFramesIn, frameCount);
+            ma_encoder_write_pcm_frames(&g_State.encoder, pFramesIn, frameCount, NULL);
         } break;
 
         case ma_device_type_duplex:
@@ -341,7 +371,7 @@ void on_data(ma_device* pDevice, void* pFramesOut, const void* pFramesIn, ma_uin
 
             /* Also output to the encoder if necessary. */
             if (g_State.hasEncoder) {
-                ma_encoder_write_pcm_frames(&g_State.encoder, pFramesIn, frameCount);
+                ma_encoder_write_pcm_frames(&g_State.encoder, pFramesIn, frameCount, NULL);
             }
         } break;
 
@@ -357,7 +387,10 @@ int main(int argc, char** argv)
 {
     int iarg;
     ma_result result;
-    ma_backend backends[ma_backend_null+1];
+    ma_backend enabledBackends[MA_BACKEND_COUNT];
+    size_t enabledBackendCount;
+    size_t iEnabledBackend;
+    ma_backend backends[MA_BACKEND_COUNT];
     ma_uint32 backendCount = 0;
     ma_context_config contextConfig;
     ma_device_type deviceType = ma_device_type_playback;
@@ -403,14 +436,29 @@ int main(int argc, char** argv)
         g_State.sourceType = source_type_decoder;
     }
 
+    /* Here we'll quickly print the available backends. */
+    printf("Enabled Backends:\n");
+    result = ma_get_enabled_backends(enabledBackends, ma_countof(enabledBackends), &enabledBackendCount);
+    if (result != MA_SUCCESS) {
+        printf("Failed to retrieve available backends.\n");
+        return -1;
+    }
+
+    for (iEnabledBackend = 0; iEnabledBackend < enabledBackendCount; iEnabledBackend += 1) {
+        printf("    %s\n", ma_get_backend_name(enabledBackends[iEnabledBackend]));
+    }
+    printf("\n");
+
+
     /* Initialize the context first. If no backends were passed into the command line we just use defaults. */
     contextConfig = ma_context_config_init();
-    contextConfig.logCallback = on_log;
     result = ma_context_init((backendCount == 0) ? NULL : backends, backendCount, &contextConfig, &g_State.context);
     if (result != MA_SUCCESS) {
         printf("Failed to initialize context.\n");
         return -1;
     }
+
+    ma_log_register_callback(ma_context_get_log(&g_State.context), ma_log_callback_init(on_log, NULL));
 
     /* Here we'll print some info about what we're doing. */
     printf("Backend: %s\n", ma_get_backend_name(g_State.context.backend));
@@ -439,13 +487,13 @@ int main(int argc, char** argv)
     }
 
     deviceConfig = ma_device_config_init(deviceType);
-    deviceConfig.playback.format   = deviceFormat;
-    deviceConfig.playback.channels = deviceChannels;
-    deviceConfig.capture.format    = deviceFormat;
-    deviceConfig.capture.channels  = deviceChannels;
-    deviceConfig.sampleRate        = deviceSampleRate;
-    deviceConfig.dataCallback      = on_data;
-    deviceConfig.stopCallback      = on_stop;
+    deviceConfig.playback.format      = deviceFormat;
+    deviceConfig.playback.channels    = deviceChannels;
+    deviceConfig.capture.format       = deviceFormat;
+    deviceConfig.capture.channels     = deviceChannels;
+    deviceConfig.sampleRate           = deviceSampleRate;
+    deviceConfig.dataCallback         = on_data;
+    deviceConfig.notificationCallback = on_notification;
     result = ma_device_init(&g_State.context, &deviceConfig, &g_State.device);
     if (result != MA_SUCCESS) {
         printf("Failed to initialize device.\n");
@@ -482,7 +530,7 @@ int main(int argc, char** argv)
         if (g_State.sourceType == source_type_noise) {
             ma_noise_config noiseConfig;
             noiseConfig = ma_noise_config_init(g_State.device.playback.format, g_State.device.playback.channels, noiseType, 0, 0.1);
-            result = ma_noise_init(&noiseConfig, &g_State.noise);
+            result = ma_noise_init(&noiseConfig, NULL, &g_State.noise);
             if (result != MA_SUCCESS) {
                 printf("Failed to initialize noise.\n");
                 ma_device_uninit(&g_State.device);
@@ -494,7 +542,7 @@ int main(int argc, char** argv)
 
     if (deviceType == ma_device_type_capture || deviceType == ma_device_type_loopback || (deviceType == ma_device_type_duplex && pFilePath != NULL && pFilePath[0] != '\0')) {
         ma_encoder_config encoderConfig;
-        encoderConfig = ma_encoder_config_init(ma_resource_format_wav, g_State.device.capture.format, g_State.device.capture.channels, g_State.device.sampleRate);
+        encoderConfig = ma_encoder_config_init(ma_encoding_format_wav, g_State.device.capture.format, g_State.device.capture.channels, g_State.device.sampleRate);
         result = ma_encoder_init_file(pFilePath, &encoderConfig, &g_State.encoder);
         if (result != MA_SUCCESS) {
             printf("Failed to initialize output file for capture \"%s\".\n", pFilePath);
@@ -509,10 +557,14 @@ int main(int argc, char** argv)
 
     /* Print the name of the device. */
     if (deviceType == ma_device_type_playback || deviceType == ma_device_type_duplex) {
-        printf("Playback Device: %s\n", g_State.device.playback.name);
+        char name[MA_MAX_DEVICE_NAME_LENGTH + 1];
+        ma_device_get_name(&g_State.device, ma_device_type_playback, name, sizeof(name), NULL);
+        printf("Playback Device: %s\n", name);
     }
     if (deviceType == ma_device_type_capture || deviceType == ma_device_type_duplex || deviceType == ma_device_type_loopback) {
-        printf("Capture Device:  %s\n", g_State.device.capture.name);
+        char name[MA_MAX_DEVICE_NAME_LENGTH + 1];
+        ma_device_get_name(&g_State.device, ma_device_type_capture, name, sizeof(name), NULL);
+        printf("Capture Device:  %s\n", name);
     }
     
 
@@ -557,6 +609,12 @@ done:
     ma_context_uninit(&g_State.context);
     if (g_State.sourceType == source_type_decoder) {
         ma_decoder_uninit(&g_State.decoder);
+    }
+    if (g_State.sourceType == source_type_waveform) {
+        ma_waveform_uninit(&g_State.waveform);
+    }
+    if (g_State.sourceType == source_type_noise) {
+        ma_noise_uninit(&g_State.noise, NULL);
     }
     if (g_State.hasEncoder) {
         ma_encoder_uninit(&g_State.encoder);

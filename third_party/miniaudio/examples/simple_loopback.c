@@ -1,6 +1,11 @@
 /*
-This example simply captures data from your default playback device until you press Enter. The output is saved to the file
-specified on the command line.
+Demonstrates how to implement loopback recording.
+
+This example simply captures data from your default playback device until you press Enter. The output is saved to the
+file specified on the command line.
+
+Loopback mode is when you record audio that is played from a given speaker. It is only supported on WASAPI, but can be
+used indirectly with PulseAudio by choosing the appropriate loopback device after enumeration.
 
 To use loopback mode you just need to set the device type to ma_device_type_loopback and set the capture device config
 properties. The output buffer in the callback will be null whereas the input buffer will be valid.
@@ -16,7 +21,7 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
     ma_encoder* pEncoder = (ma_encoder*)pDevice->pUserData;
     MA_ASSERT(pEncoder != NULL);
 
-    ma_encoder_write_pcm_frames(pEncoder, pInput, frameCount);
+    ma_encoder_write_pcm_frames(pEncoder, pInput, frameCount, NULL);
 
     (void)pOutput;
 }
@@ -35,11 +40,11 @@ int main(int argc, char** argv)
     };
 
     if (argc < 2) {
-        printf("No input file.\n");
+        printf("No output file.\n");
         return -1;
     }
 
-    encoderConfig = ma_encoder_config_init(ma_resource_format_wav, ma_format_f32, 2, 44100);
+    encoderConfig = ma_encoder_config_init(ma_encoding_format_wav, ma_format_f32, 2, 44100);
 
     if (ma_encoder_init_file(argv[1], &encoderConfig, &encoder) != MA_SUCCESS) {
         printf("Failed to initialize output file.\n");

@@ -1,6 +1,15 @@
 /*
+Demonstrates one way to load multiple files and play them all back at the same time.
+
+When mixing multiple sounds together, you should not create multiple devices. Instead you should create only a single
+device and then mix your sounds together which you can do by simply summing their samples together. The simplest way to
+do this is to use floating point samples and use miniaudio's built-in clipper to handling clipping for you. (Clipping
+is when sample are clampled to their minimum and maximum range, which for floating point is -1..1.)
+
+```
 Usage:   simple_mixing [input file 0] [input file 1] ... [input file n]
 Example: simple_mixing file1.wav file2.flac
+```
 */
 #define MINIAUDIO_IMPLEMENTATION
 #include "../miniaudio.h"
@@ -8,7 +17,7 @@ Example: simple_mixing file1.wav file2.flac
 #include <stdio.h>
 
 /*
-For simplicity, this example requires the device use floating point samples.
+For simplicity, this example requires the device to use floating point samples.
 */
 #define SAMPLE_FORMAT   ma_format_f32
 #define CHANNEL_COUNT   2
@@ -39,21 +48,22 @@ ma_uint32 read_and_mix_pcm_frames_f32(ma_decoder* pDecoder, float* pOutputF32, m
     contents of the output buffer by simply adding the samples together. You could also clip the samples to -1..+1, but I'm not
     doing that in this example.
     */
+    ma_result result;
     float temp[4096];
     ma_uint32 tempCapInFrames = ma_countof(temp) / CHANNEL_COUNT;
     ma_uint32 totalFramesRead = 0;
 
     while (totalFramesRead < frameCount) {
-        ma_uint32 iSample;
-        ma_uint32 framesReadThisIteration;
+        ma_uint64 iSample;
+        ma_uint64 framesReadThisIteration;
         ma_uint32 totalFramesRemaining = frameCount - totalFramesRead;
         ma_uint32 framesToReadThisIteration = tempCapInFrames;
         if (framesToReadThisIteration > totalFramesRemaining) {
             framesToReadThisIteration = totalFramesRemaining;
         }
 
-        framesReadThisIteration = (ma_uint32)ma_decoder_read_pcm_frames(pDecoder, temp, framesToReadThisIteration);
-        if (framesReadThisIteration == 0) {
+        result = ma_decoder_read_pcm_frames(pDecoder, temp, framesToReadThisIteration, &framesReadThisIteration);
+        if (result != MA_SUCCESS || framesReadThisIteration == 0) {
             break;
         }
 
@@ -62,9 +72,9 @@ ma_uint32 read_and_mix_pcm_frames_f32(ma_decoder* pDecoder, float* pOutputF32, m
             pOutputF32[totalFramesRead*CHANNEL_COUNT + iSample] += temp[iSample];
         }
 
-        totalFramesRead += framesReadThisIteration;
+        totalFramesRead += (ma_uint32)framesReadThisIteration;
 
-        if (framesReadThisIteration < framesToReadThisIteration) {
+        if (framesReadThisIteration < (ma_uint32)framesToReadThisIteration) {
             break;  /* Reached EOF. */
         }
     }

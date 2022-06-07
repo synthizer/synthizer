@@ -1,3 +1,17 @@
+/*
+Demonstrates playback of a sine wave.
+
+Since all this example is doing is playing back a sine wave, we can disable decoding (and encoding) which will slightly
+reduce the size of the executable. This is done with the `MA_NO_DECODING` and `MA_NO_ENCODING` options.
+
+The generation of sine wave is achieved via the `ma_waveform` API. A waveform is a data source which means it can be
+seamlessly plugged into the `ma_data_source_*()` family of APIs as well.
+
+A waveform is initialized using the standard config/init pattern used throughout all of miniaudio. Frames are read via
+the `ma_waveform_read_pcm_frames()` API.
+
+This example works with Emscripten.
+*/
 #define MA_NO_DECODING
 #define MA_NO_ENCODING
 #define MINIAUDIO_IMPLEMENTATION
@@ -26,7 +40,7 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
     pSineWave = (ma_waveform*)pDevice->pUserData;
     MA_ASSERT(pSineWave != NULL);
 
-    ma_waveform_read_pcm_frames(pSineWave, pOutput, frameCount);
+    ma_waveform_read_pcm_frames(pSineWave, pOutput, frameCount, NULL);
 
     (void)pInput;   /* Unused. */
 }
