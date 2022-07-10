@@ -35,20 +35,13 @@ unsigned int BufferGenerator::getChannels() {
 }
 
 void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
-  std::weak_ptr<Buffer> buffer_weak;
-  std::shared_ptr<Buffer> buffer;
-  bool buffer_changed = this->acquireBuffer(buffer_weak);
-  double pitch_bend = this->getPitchBend();
-  double new_pos;
+  double new_pos, pitch_bend;
 
-  buffer = buffer_weak.lock();
-
-  if (buffer == nullptr || buffer->getLength() == 0) {
+  if (this->handlePropertyConfig() == false) {
     return;
   }
-  if (buffer_changed) {
-    this->configureBufferReader(buffer);
-  }
+
+  pitch_bend = this->getPitchBend();
 
   if (this->acquirePlaybackPosition(new_pos)) {
     this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLength());
@@ -164,9 +157,35 @@ void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) {
   this->position_in_samples = pos;
 }
 
-void BufferGenerator::configureBufferReader(const std::shared_ptr<Buffer> &b) {
-  this->reader.setBuffer(b.get());
-  this->setPlaybackPosition(0.0);
+bool BufferGenerator::handlePropertyConfig() {
+  std::weak_ptr<Buffer> buffer_weak;
+  std::shared_ptr<Buffer> buffer;
+  bool buffer_changed = this->acquireBuffer(buffer_weak);
+  double new_pos;
+  buffer = buffer_weak.lock();
+
+  if (buffer_changed == false) {
+    // Just tell the caller if there's a buffer.
+    return buffer != nullptr;
+  }
+
+  this->reader.setBuffer(buffer.get());
+  this->sent_finished = false;
+
+  // It is possible that the user set the buffer then changed the playback position.  It is very difficult to tell the
+  // difference between this and setting the position immediately before changing the buffer without rewriting the
+  // entire property infrastructure so, under the assumption that the common case is trying to set both together we
+  // (sometimes) will treat these cases the same if they happen in the audio tick.
+  //
+  // Hopefully, this is rare.
+  if (this->acquirePlaybackPosition(new_pos)) {
+    this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLength());
+  } else {
+    this->setPlaybackPosition(0.0, false);
+    this->position_in_samples = 0.0;
+  }
+
+  return false;
 }
 
 void BufferGenerator::handleEndEvent() {

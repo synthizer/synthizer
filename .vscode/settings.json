@@ -13,9 +13,13 @@
   },
   "[markdown]": {
     "editor.wordWrap": "on",
-    "editor.quickSuggestions": false,
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    },
     "editor.insertSpaces": true,
   },
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
   "editor.insertSpaces": true
 }

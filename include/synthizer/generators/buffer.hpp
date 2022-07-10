@@ -34,7 +34,14 @@ private:
   void generateNoPitchBend(float *out, FadeDriver *gain_driver);
   template <bool L> void generatePitchBendHelper(float *out, FadeDriver *gain_driver, double pitch_bend);
   void generatePitchBend(float *out, FadeDriver *gain_driver, double pitch_bend);
-  void configureBufferReader(const std::shared_ptr<Buffer> &b);
+
+  /*
+   * Handle configuring properties, and set the non-property state variables up appropriately.
+   *
+   * Returns true if processing of the block should proceed, or false if there is no buffer and processing of the block
+   * should be skipped.
+   */
+  bool handlePropertyConfig();
   /**
    * Either sends finished or looped, depending.
    * */

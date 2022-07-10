@@ -8,9 +8,9 @@
       "name": "(Windows) Launch",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/test_property_automation_timeline.exe",
+      "program": "${workspaceFolder}/build/file_test.exe",
       "args": [
-        "corpus/ball.mp3"
+        "corpus/test2.flac"
       ],
       "stopAtEntry": true,
       "cwd": "${workspaceFolder}",
