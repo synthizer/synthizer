@@ -132,6 +132,21 @@ std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_ST
   return this->source_panners->allocateLane(strategy);
 }
 
+void logForClipping(unsigned int channels, float *destination) {
+  unsigned int clips = 0;
+  unsigned int length = channels * config::BLOCK_SIZE;
+
+  for (unsigned int i = 0; i < length; i++) {
+    if (fabs(destination[i]) > 1.0) {
+      clips += 1;
+    }
+  }
+
+  if (clips != 0) {
+    logDebug("This block clipped for %u out of %u samples (%f percent)", clips, length, clips / (double)length * 100.0);
+  }
+}
+
 void Context::generateAudio(unsigned int channels, float *destination) {
   if (this->running.load() == 0 && this->headless == false) {
     return;
@@ -232,6 +247,8 @@ void Context::generateAudio(unsigned int channels, float *destination) {
   } catch (...) {
     logError("Got an exception in the audio callback");
   }
+
+  logForClipping(channels, destination);
 }
 
 void Context::runCommands() {
