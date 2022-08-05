@@ -32,8 +32,6 @@ Context::Context() : BaseObject(nullptr) {}
 void Context::initContext(bool is_headless) {
   std::weak_ptr<Context> ctx_weak = this->getContext();
 
-  this->source_panners = createPannerBank();
-
   this->headless = is_headless;
   if (headless) {
     this->delete_directly.store(1);
@@ -128,10 +126,6 @@ void Context::registerGlobalEffect(const std::shared_ptr<GlobalEffect> &effect) 
       true, [this](auto &effect) { this->global_effects.push_back(effect); }, effect);
 }
 
-std::shared_ptr<PannerLane> Context::allocateSourcePannerLane(enum SYZ_PANNER_STRATEGY strategy) {
-  return this->source_panners->allocateLane(strategy);
-}
-
 void logForClipping(unsigned int channels, float *destination) {
   unsigned int clips = 0;
   unsigned int length = channels * config::BLOCK_SIZE;
@@ -195,8 +189,6 @@ void Context::generateAudio(unsigned int channels, float *destination) {
         i++;
       }
     }
-
-    this->source_panners->run(channels, destination);
 
     weak_vector::iterate_removing(this->global_effects, [&](auto &e) { e->run(channels, this->getDirectBuffer()); });
     this->getRouter()->finishBlock();

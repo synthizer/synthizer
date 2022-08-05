@@ -64,7 +64,7 @@ void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned
  * have all of this code inline. That said, note the class-level consts: this is intentionally written so that it can be
  * templatized later.
  * */
-class HrtfPanner : public AbstractPanner {
+class HrtfPanner {
 public:
   static constexpr std::size_t CHANNELS = 4;
 

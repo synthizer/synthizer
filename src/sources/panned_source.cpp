@@ -28,7 +28,7 @@ void PannedSource::initInAudioThread() {
     this->panner_strategy = this->getContextRaw()->getDefaultPannerStrategy();
   }
 
-  this->panner_lane = this->context->allocateSourcePannerLane((enum SYZ_PANNER_STRATEGY)this->panner_strategy);
+  this->panner_lane = nullptr;
 }
 
 void PannedSource::setGain3D(double gain) { this->gain_3d = gain; }

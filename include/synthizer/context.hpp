@@ -97,7 +97,7 @@ public:
    * Call a callable in the audio thread. Doesn't wait for completion. Returns false
    * if there was no room in the queue.
    * */
-  template <typename CB, typename... ARGS> bool enqueueCallbackCommandNonblocking(CB &&callback, ARGS &&... args) {
+  template <typename CB, typename... ARGS> bool enqueueCallbackCommandNonblocking(CB &&callback, ARGS &&...args) {
     if (this->headless) {
       callback(args...);
       return true;
@@ -118,14 +118,14 @@ public:
    * In practice, code goes through this one instead, and we rely on knowing that there's a reasonable size for the
    * command queue that will reasonably ensure no one ever spins for practical applications.
    * */
-  template <typename CB, typename... ARGS> void enqueueCallbackCommand(CB &&callback, ARGS &&... args) {
+  template <typename CB, typename... ARGS> void enqueueCallbackCommand(CB &&callback, ARGS &&...args) {
     while (this->enqueueCallbackCommandNonblocking(callback, args...) == false) {
       std::this_thread::yield();
     }
   }
 
   template <typename CB, typename... ARGS>
-  bool enqueueReferencingCallbackCommandNonblocking(bool short_circuit, CB &&callback, ARGS &&... args) {
+  bool enqueueReferencingCallbackCommandNonblocking(bool short_circuit, CB &&callback, ARGS &&...args) {
     if (this->headless) {
       callback(args...);
       return true;
@@ -148,7 +148,7 @@ public:
     }
   }
 
-  template <typename T, typename... ARGS> std::shared_ptr<T> createObject(ARGS &&... args) {
+  template <typename T, typename... ARGS> std::shared_ptr<T> createObject(ARGS &&...args) {
     auto obj = new T(this->getContext(), args...);
     auto ret = sharedPtrDeferred<T>(obj, [](T *ptr) {
       auto ctx = ptr->getContextRaw();
@@ -208,9 +208,6 @@ public:
    * direct sources, etc. Inline because it's super inexpensive.
    * */
   float *getDirectBuffer() { return &this->direct_buffer[0]; }
-
-  /* Allocate a panner lane intended to be used by a source. */
-  std::shared_ptr<PannerLane> allocateSourcePannerLane(enum SYZ_PANNER_STRATEGY strategy);
 
   router::Router *getRouter() { return &this->router; }
 
@@ -325,7 +322,6 @@ private:
 
   /* The key is a raw pointer for easy lookup. */
   deferred_unordered_map<void *, std::weak_ptr<Source>> sources;
-  std::shared_ptr<AbstractPannerBank> source_panners = nullptr;
 
   /* Effects to run. */
   deferred_vector<std::weak_ptr<GlobalEffect>> global_effects;

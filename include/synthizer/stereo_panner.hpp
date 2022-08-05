@@ -9,18 +9,18 @@
 
 namespace synthizer {
 
-class StereoPanner : public AbstractPanner {
+class StereoPanner {
 public:
   static constexpr unsigned int CHANNELS = 2;
   static constexpr unsigned int LANES = 4;
 
-  unsigned int getOutputChannelCount() override;
-  unsigned int getLaneCount() override;
-  void run(float *output) override;
-  std::tuple<float *, unsigned int> getLane(unsigned int lane) override;
-  void releaseLane(unsigned int lane) override;
-  void setPanningAngles(unsigned int lane, double azimuth, double elevation) override;
-  void setPanningScalar(unsigned int lane, double scalar) override;
+  unsigned int getOutputChannelCount() ;
+  unsigned int getLaneCount() ;
+  void run(float *output) ;
+  std::tuple<float *, unsigned int> getLane(unsigned int lane) ;
+  void releaseLane(unsigned int lane) ;
+  void setPanningAngles(unsigned int lane, double azimuth, double elevation) ;
+  void setPanningScalar(unsigned int lane, double scalar) ;
 
 private:
   std::array<float, LANES * config::BLOCK_SIZE> data{0.0};
