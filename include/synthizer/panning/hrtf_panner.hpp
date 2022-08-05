@@ -10,6 +10,7 @@
 #include "synthizer/block_delay_line.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/data/hrtf.hpp"
+#include "synthizer/math.hpp"
 #include "synthizer/types.hpp"
 
 namespace synthizer {
@@ -21,8 +22,7 @@ namespace synthizer {
  * data:
  *
  * - Low-level functions, which compute HRIRs and interaural time delay.
- * - A higher level piece, the HrtfPannerBlock, which does HRTF on 4 sources at once.
- * - A yet higher level piece, the HrtfPannerBank, which implements the panner bank interface.
+ * - A higher level HrtfPanner, to actually drive the HRTF.
  *
  * NOTE: because of established conventions for HRIR data that we didn't set, angles here are in degrees in order to
  * match our data sources. Specifically azimuth is clockwise of forward and elevation ranges from -90 to 90.
@@ -59,66 +59,56 @@ void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned
                          unsigned int right_stride);
 
 /*
- * A bank of 4 parallel HRTF convolvers with ITD.
- *
- * We don't template this because anything bigger than 4 is likely as not to cause problems, and it's convenient to not
- * have all of this code inline. That said, note the class-level consts: this is intentionally written so that it can be
- * templatized later.
+ * An HRTF convolver with ITD>
  * */
 class HrtfPanner {
 public:
-  static constexpr std::size_t CHANNELS = 4;
-
   HrtfPanner();
   unsigned int getOutputChannelCount();
-  unsigned int getLaneCount();
-  std::tuple<float *, unsigned int> getLane(unsigned int channel);
-  void releaseLane(unsigned int channel);
+  float *getInputBuffer();
   void run(float *output);
-  void setPanningAngles(unsigned int lane, double azimuth, double elevation);
-  void setPanningScalar(unsigned int lane, double scalar);
+  void setPanningAngles(double azimuth, double elevation);
+  void setPanningScalar(double scalar);
 
 private:
-  template <typename R>
-  void stepConvolution(R &&reader, const float *hrir, std::array<float, 4> *dest_l, std::array<float, 4> *dest_r);
+  template <typename R> void stepConvolution(R &&reader, const float *hrir, float *out_l, float *out_r);
 
   /*
    * 2 blocks plus the max ITD.
    * We'll use modulus on 1/3 blocks on average.
    * */
-  BlockDelayLine<CHANNELS,
+  BlockDelayLine<1,
                  nextMultipleOf(config::HRTF_MAX_ITD + config::BLOCK_SIZE * 2, config::BLOCK_SIZE) / config::BLOCK_SIZE>
       input_line;
+
   /* This is an extra sample long to make linear interpolation easier. */
-  BlockDelayLine<CHANNELS * 2, nextMultipleOf(config::BLOCK_SIZE * 2 + config::HRTF_MAX_ITD + 1, config::BLOCK_SIZE) /
-                                   config::BLOCK_SIZE>
+  BlockDelayLine<2, nextMultipleOf(config::BLOCK_SIZE * 2 + config::HRTF_MAX_ITD + 1, config::BLOCK_SIZE) /
+                        config::BLOCK_SIZE>
       itd_line;
 
   /*
    * The hrirs and an index which determines which we are using.
    *
    * The way this works is that current_hrir is easily flipped with xor. current_hrir ^ 1 is the previous, (current_hrir
-   * ^ 1)*CHANNELS*2*data::hrtf::RESPONSE_LENGTH is the index of the previous.
-   *
-   * These are stored like: [l1, l2, l3, l4, r1, r2, r3, r4]
-   * We do the convolution with a specialized kernel that can deal with this.
+   * ^ 1)*2*data::hrtf::RESPONSE_LENGTH is the index of the previous.
    * */
-  std::array<float, data::hrtf::IMPULSE_LENGTH *CHANNELS * 2 * 2> hrirs = {0.0f};
+  std::array<float, data::hrtf::IMPULSE_LENGTH * 2 * 2> hrirs = {0.0f};
   unsigned int current_hrir = 0;
-  std::array<std::tuple<double, double>, CHANNELS> prev_itds{};
-  std::array<double, CHANNELS> azimuths = {{0.0}};
-  std::array<double, CHANNELS> elevations = {{0.0}};
-  Bitset<CHANNELS> moved;
+  double prev_itd_l = 0.0, prev_itd_r = 0.0;
+
+  double azimuth = 0.0;
+  double elevation = 0.0;
+  bool moved = false;
 };
 
 inline const HrirParameters DEFAULT_HRIR_PARAMETERS{};
 
-std::tuple<double, double> computeInterauralTimeDifference(double azimuth, double elevation) {
+inline std::tuple<double, double> computeInterauralTimeDifference(double azimuth, double elevation) {
   return computeInterauralTimeDifference(azimuth, elevation, &DEFAULT_HRIR_PARAMETERS);
 }
 
-std::tuple<double, double> computeInterauralTimeDifference(double azimuth, double elevation,
-                                                           const HrirParameters *hrir_parameters) {
+inline std::tuple<double, double> computeInterauralTimeDifference(double azimuth, double elevation,
+                                                                  const HrirParameters *hrir_parameters) {
   double az_r = azimuth * PI / 180;
   double elev_r = elevation * PI / 180;
 
@@ -169,7 +159,7 @@ std::tuple<double, double> computeInterauralTimeDifference(double azimuth, doubl
 /*
  * Helper to get weights for linear interpolation.
  * */
-std::tuple<double, double> linearInterpolate(double val, double start, double end) {
+inline std::tuple<double, double> linearInterpolate(double val, double start, double end) {
   /* These need to be loose because of floating point error, but let's catch any weirdness beyond what's reasonable. */
   assert(val - start > -0.01);
   assert(end - val > -0.01);
@@ -184,8 +174,10 @@ std::tuple<double, double> linearInterpolate(double val, double start, double en
   return {1 - w1, w1};
 }
 
-void computeHrtfImpulseSingleChannel(double azimuth, double elevation, const data::hrtf::ElevationDef *elev_lower,
-                                     const data::hrtf::ElevationDef *elev_upper, float *out, unsigned int out_stride) {
+inline void computeHrtfImpulseSingleChannel(double azimuth, double elevation,
+                                            const data::hrtf::ElevationDef *elev_lower,
+                                            const data::hrtf::ElevationDef *elev_upper, float *out,
+                                            unsigned int out_stride) {
   std::array<double, 4> weights = {0.0};
   std::array<const float *, 4> impulses = {nullptr};
   unsigned int weight_count = 0;
@@ -248,8 +240,8 @@ void computeHrtfImpulseSingleChannel(double azimuth, double elevation, const dat
   }
 }
 
-void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned int left_stride, float *right,
-                         unsigned int right_stride) {
+inline void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned int left_stride, float *right,
+                                unsigned int right_stride) {
   const data::hrtf::ElevationDef *elev_lower = nullptr, *elev_upper = nullptr;
 
   assert(azimuth >= 0.0 && azimuth <= 360.0);
@@ -281,66 +273,43 @@ void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned
   computeHrtfImpulseSingleChannel(360 - azimuth, elevation, elev_lower, elev_upper, right, right_stride);
 }
 
-HrtfPanner::HrtfPanner() { this->moved.setAll(true); }
+inline unsigned int HrtfPanner::getOutputChannelCount() { return 2; }
 
-unsigned int HrtfPanner::getOutputChannelCount() { return 2; }
-
-unsigned int HrtfPanner::getLaneCount() { return CHANNELS; }
-
-std::tuple<float *, unsigned int> HrtfPanner::getLane(unsigned int channel) {
-  assert(channel < HrtfPanner::CHANNELS);
-  float *ptr = this->input_line.getNextBlock();
-  return {ptr + channel, CHANNELS};
-}
-
-void HrtfPanner::releaseLane(unsigned int lane) {
-  assert(lane < CHANNELS);
-
-  this->input_line.clearChannel(lane);
-}
+inline float *HrtfPanner::getInputBuffer() { return this->input_line.getNextBlock(); }
 
 template <typename R>
-void HrtfPanner::stepConvolution(R &&reader, const float *hrir, std::array<float, 4> *dest_l,
-                                 std::array<float, 4> *dest_r) {
-  std::array<float, 4> accumulator_left = {{0.0f}};
-  std::array<float, 4> accumulator_right = {{0.0f}};
+inline void HrtfPanner::stepConvolution(R &&reader, const float *hrir, float *dest_l, float *dest_r) {
+  float accumulator_left = 0.0f;
+  float accumulator_right = 0.0f;
   for (unsigned int j = 0; j < data::hrtf::IMPULSE_LENGTH; j++) {
     auto tmp = reader.readFrame(j);
-    auto hrir_left = &hrir[j * 2 * 4];
-    auto hrir_right = &hrir[(j * 2 + 1) * 4];
-    for (unsigned int k = 0; k < CHANNELS; k++) {
-      accumulator_left[k] += tmp[k] * hrir_left[k];
-      accumulator_right[k] += tmp[k] * hrir_right[k];
-    }
+    float hrir_left = hrir[j * 2];
+    float hrir_right = hrir[j * 2 + 1];
+
+    accumulator_left += *tmp * hrir_left;
+    accumulator_right += *tmp * hrir_right;
   }
+
   // We have to scatter these out, to re-interleave them.
-  *dest_l = std::array<float, 4>{accumulator_left[0], accumulator_right[0], accumulator_left[1], accumulator_right[1]};
-  *dest_r = std::array<float, 4>{accumulator_left[2], accumulator_right[2], accumulator_left[3], accumulator_right[3]};
+  *dest_l = accumulator_left;
+  *dest_r = accumulator_right;
 }
 
-void HrtfPanner::run(float *output) {
+inline void HrtfPanner::run(float *output) {
   float *prev_hrir = nullptr;
-  float *cur_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * data::hrtf::IMPULSE_LENGTH];
+  float *cur_hrir = &this->hrirs[this->current_hrir * 2 * data::hrtf::IMPULSE_LENGTH];
 
-  bool crossfade = false;
-  for (unsigned int i = 0; i < CHANNELS; i++) {
-    crossfade |= this->moved.get(i);
-    this->moved.set(i, false);
-  }
+  bool crossfade = this->moved;
+  this->moved = false;
 
   if (crossfade) {
     prev_hrir = cur_hrir;
     this->current_hrir ^= 1;
-    cur_hrir = &this->hrirs[this->current_hrir * CHANNELS * 2 * data::hrtf::IMPULSE_LENGTH];
+    cur_hrir = &this->hrirs[this->current_hrir * 2 * data::hrtf::IMPULSE_LENGTH];
   }
 
-  std::array<std::tuple<double, double>, CHANNELS> itds = this->prev_itds;
-
   if (crossfade) {
-    for (unsigned int i = 0; i < CHANNELS; i++) {
-      computeHrtfImpulses(this->azimuths[i], this->elevations[i], &cur_hrir[i], 8, &cur_hrir[i + 4], 8);
-      itds[i] = computeInterauralTimeDifference(azimuths[i], elevations[i]);
-    }
+    computeHrtfImpulses(this->azimuth, this->elevation, cur_hrir, 2, cur_hrir + 1, 2);
   }
 
   unsigned int crossfade_samples = crossfade ? config::CROSSFADE_SAMPLES : 0;
@@ -351,49 +320,35 @@ void HrtfPanner::run(float *output) {
   input_line.runReadLoopSplit(
       data::hrtf::IMPULSE_LENGTH - 1, crossfade_samples,
       [&](unsigned int i, auto &reader) {
-        std::array<float, 4> l_old, l_new, r_old, r_new;
+        float l_old, l_new, r_old, r_new;
         this->stepConvolution(reader, prev_hrir, &l_old, &r_old);
         this->stepConvolution(reader, cur_hrir, &l_new, &r_new);
-        float *out = itd_block + CHANNELS * 2 * i;
-        float weight = i / (float)config::CROSSFADE_SAMPLES;
-        for (unsigned int j = 0; j < 4; j++) {
-          out[j] = l_new[j] * weight + l_old[j] * (1.0f - weight);
-        }
-        for (unsigned int j = 0; j < 4; j++) {
-          out[4 + j] = r_new[j] * weight + r_old[j] * (1.0f - weight);
-        }
+        float *out = itd_block + 2 * i;
+        float w1 = i / (float)config::CROSSFADE_SAMPLES;
+        float w0 = 1.0f - w1;
+
+        out[0] = l_old * w0 + l_new * w1;
+        out[1] = r_old * w0 + r_new * w1;
       },
       normal_samples,
       [&](unsigned int i, auto &reader) {
-        std::array<float, 4> l, r;
-        this->stepConvolution(reader, cur_hrir, &l, &r);
-        float *out = itd_block + CHANNELS * 2 * i;
-        for (unsigned int j = 0; j < 4; j++) {
-          out[j] = l[j];
-        }
-        for (unsigned int j = 0; j < 4; j++) {
-          out[4 + j] = r[j];
-        }
+        this->stepConvolution(reader, cur_hrir, &itd_block[2 * i], &itd_block[2 * i + 1]);
       });
 
   /*
    *pre-unrolled weights for the left and right ear.
    * Early is too little delay. Late is too much.
    */
-  std::array<double, CHANNELS * 2> weights_early, weights_late;
-  /* Integer delays in samples for the ears, [l r l r  l r l r...]. */
-  std::array<unsigned int, CHANNELS * 2> delays;
+  float itd_w_early_l = 0.0, itd_w_early_r = 0.0, itd_w_late_l = 1.0, itd_w_late_r = 1.0;
+  auto itds = computeInterauralTimeDifference(this->azimuth, this->elevation);
+  double itd_l = std::get<0>(itds);
+  double itd_r = std::get<1>(itds);
 
-  for (unsigned int i = 0; i < CHANNELS; i++) {
-    auto [l, r] = itds[i];
-    delays[i * 2] = l;
-    delays[i * 2 + 1] = r;
-    if (crossfade) {
-      weights_late[i * 2] = l - floor(l);
-      weights_early[i * 2] = 1.0 - weights_late[i * 2];
-      weights_late[i * 2 + 1] = r - floor(r);
-      weights_early[i * 2 + 1] = 1.0 - weights_late[i * 2 + 1];
-    }
+  if (crossfade) {
+    itd_w_late_l = itd_l - floor(itd_l);
+    itd_w_early_l = 1.0 - itd_w_late_l;
+    itd_w_late_r = itd_r - floor(itd_r);
+    itd_w_early_r = 1.0 - itd_w_late_r;
   }
 
   this->itd_line.runReadLoopSplit(
@@ -401,51 +356,49 @@ void HrtfPanner::run(float *output) {
       /* Crossfade the delays, if necessary. */
       crossfade_samples,
       [&](unsigned int i, auto &reader) {
-        float *o = output + i * CHANNELS * 2;
+        float *o = output + i * 2;
         double fraction = i / (float)config::CROSSFADE_SAMPLES;
-        for (unsigned int c = 0; c < CHANNELS; c++) {
-          auto [old_left, old_right] = this->prev_itds[c];
-          auto [new_left, new_right] = itds[c];
-          double left = new_left * fraction + old_left * (1.0 - fraction);
-          double right = new_right * fraction + old_right * (1.0 - fraction);
-          assert(left >= 0.0);
-          assert(right >= 0.0);
-          unsigned int left_s = left, right_s = right;
-          double wl = left - std::floor(left);
-          double wr = right - std::floor(right);
-          float lse = reader.read(c * 2, left_s), lsl = reader.read(c * 2, left_s + 1);
-          float rse = reader.read(c * 2 + 1, right_s), rsl = reader.read(c * 2 + 1, right_s + 1);
-          float ls = lsl * wl + lse * (1.0f - wl);
-          float rs = rsl * wr + rse * (1.0f - wr);
-          o[c * 2] += ls;
-          o[c * 2 + 1] += rs;
-        }
+
+        double prev_itd_l = this->prev_itd_l, prev_itd_r = this->prev_itd_r;
+
+        double left = itd_l * fraction + prev_itd_l * (1.0 - fraction);
+        double right = itd_r * fraction + prev_itd_r * (1.0 - fraction);
+        assert(left >= 0.0);
+        assert(right >= 0.0);
+        unsigned int left_s = left, right_s = right;
+        double wl = left - std::floor(left);
+        double wr = right - std::floor(right);
+        float lse = reader.read(0, left_s), lsl = reader.read(0, left_s + 1);
+        float rse = reader.read(1, right_s), rsl = reader.read(1, right_s + 1);
+        float ls = lsl * wl + lse * (1.0f - wl);
+        float rs = rsl * wr + rse * (1.0f - wr);
+        o[0] += ls;
+        o[1] += rs;
       },
       /* Then do the main loop. */
       normal_samples,
       [&](unsigned int i, auto &reader) {
-        float *o = output + i * CHANNELS * 2;
-        for (unsigned int j = 0; j < CHANNELS * 2; j++) {
-          o[j] += reader.read(j, delays[j]);
-        }
+        float *o = output + i * 2;
+        o[0] += reader.read(0, itd_l);
+        o[1] = reader.read(1, itd_r);
       });
 
-  this->prev_itds = itds;
+  this->prev_itd_l = itd_l;
+  this->prev_itd_r = itd_r;
 }
 
-void HrtfPanner::setPanningAngles(unsigned int lane, double azimuth, double elevation) {
-  assert(lane < CHANNELS);
-  this->azimuths[lane] = azimuth;
-  this->elevations[lane] = elevation;
-  this->moved.set(lane, true);
+inline void HrtfPanner::setPanningAngles(double azimuth, double elevation) {
+  this->moved = this->azimuth != azimuth || this->elevation != elevation;
+  this->azimuth = azimuth;
+  this->elevation = elevation;
 }
 
-void HrtfPanner::setPanningScalar(unsigned int lane, double scalar) {
+inline void HrtfPanner::setPanningScalar(double scalar) {
   assert(scalar >= -1.0 && scalar <= 1.0);
   if (scalar >= 0.0) {
-    this->setPanningAngles(lane, 90 * scalar, 0.0);
+    this->setPanningAngles(90 * scalar, 0.0);
   } else {
-    this->setPanningAngles(lane, 360.0 + 90.0 * scalar, 0.0);
+    this->setPanningAngles(360.0 + 90.0 * scalar, 0.0);
   }
 }
 

@@ -1,7 +1,8 @@
 #pragma once
 
 #include "synthizer/config.hpp"
-#include "synthizer/panning/panner_bank.hpp"
+#include "synthizer/math.hpp"
+
 #include "synthizer/types.hpp"
 
 #include <array>
@@ -12,53 +13,30 @@ namespace synthizer {
 class StereoPanner {
 public:
   static constexpr unsigned int CHANNELS = 2;
-  static constexpr unsigned int LANES = 4;
 
   unsigned int getOutputChannelCount();
-  unsigned int getLaneCount();
+  float *getInputBuffer();
   void run(float *output);
-  std::tuple<float *, unsigned int> getLane(unsigned int lane);
-  void releaseLane(unsigned int lane);
-  void setPanningAngles(unsigned int lane, double azimuth, double elevation);
-  void setPanningScalar(unsigned int lane, double scalar);
+  void setPanningAngles(double azimuth, double elevation);
+  void setPanningScalar(double scalar);
 
 private:
-  std::array<float, LANES * config::BLOCK_SIZE> data{0.0};
-  /*
-   * Store the output gains as { l1, r1, l2, r2, l3, r3, l4, r4 }
-   *  */
-  std::array<float, LANES * 2> gains;
+  std::array<float, config::BLOCK_SIZE> block{0.0};
+  float gain_l = 0.5, gain_r = 0.5;
 };
 
-unsigned int StereoPanner::getOutputChannelCount() { return CHANNELS; }
+inline unsigned int StereoPanner::getOutputChannelCount() { return CHANNELS; }
 
-unsigned int StereoPanner::getLaneCount() { return LANES; }
+inline float *StereoPanner::getInputBuffer() { return &this->block[0]; }
 
-void StereoPanner::run(float *output) {
-  for (unsigned int ch = 0; ch < LANES * 2; ch++) {
-    float *d = &this->data[ch / 2];
-    float *o = output + ch;
-    float g = this->gains[ch];
-    for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-      o[i * LANES * CHANNELS] += g * d[i * LANES];
-    }
-  }
-}
-
-std::tuple<float *, unsigned int> StereoPanner::getLane(unsigned int lane) {
-  assert(lane < LANES);
-  return {&this->data[lane], LANES};
-}
-
-void StereoPanner::releaseLane(unsigned int lane) {
-  assert(lane < LANES);
-
+inline void StereoPanner::run(float *output) {
   for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-    this->data[i * LANES + lane] = 0.0f;
+    output[i * 2] = this->gain_l * this->block[i];
+    output[i * 2 + 1] = this->gain_r * this->block[i];
   }
 }
 
-void StereoPanner::setPanningAngles(unsigned int lane, double azimuth, double elevation) {
+inline void StereoPanner::setPanningAngles(double azimuth, double elevation) {
   (void)elevation;
 
   /*
@@ -72,12 +50,10 @@ void StereoPanner::setPanningAngles(unsigned int lane, double azimuth, double el
   } else {
     scalar = 1.0 - 2.0 * (angle - 180) / 180.0;
   }
-  this->setPanningScalar(lane, scalar);
+  this->setPanningScalar(scalar);
 }
 
-void StereoPanner::setPanningScalar(unsigned int lane, double scalar) {
-  assert(lane < LANES);
-
+inline void StereoPanner::setPanningScalar(double scalar) {
   /*
    * Transform from [ -1, 1] to [ 0, 1 ]
    * Then from [0, 1] to [0, 90]
@@ -87,10 +63,8 @@ void StereoPanner::setPanningScalar(unsigned int lane, double scalar) {
    * */
   double angle = (1.0 + scalar) / 2.0 * 90.0;
   angle *= PI / 180.0;
-  float left = cosf(angle);
-  float right = sinf(angle);
-  this->gains[lane * 2] = left;
-  this->gains[lane * 2 + 1] = right;
+  this->gain_l = cosf(angle);
+  this->gain_r = sinf(angle);
 }
 
 } // namespace synthizer

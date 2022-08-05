@@ -1,13 +1,13 @@
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
-#include "synthizer/sources.hpp"
-
 #include "synthizer/c_api.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/generator.hpp"
 #include "synthizer/math.hpp"
+#include "synthizer/panning/panner.hpp"
+#include "synthizer/sources.hpp"
 #include "synthizer/types.hpp"
 #include "synthizer/vector_helpers.hpp"
 
