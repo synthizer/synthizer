@@ -25,7 +25,6 @@ namespace synthizer {
 
 class BiquadFilter;
 class Context;
-class PannerLane;
 
 class Source : public RouteOutput, public Pausable {
 public:
@@ -111,7 +110,6 @@ public:
   void run() override;
 
 protected:
-  std::shared_ptr<PannerLane> panner_lane = nullptr;
   int panner_strategy;
   double gain_3d = 1.0;
 };

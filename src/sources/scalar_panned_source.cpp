@@ -17,7 +17,6 @@ void ScalarPannedSource::preRun() {
   double scalar;
 
   if (this->acquirePanningScalar(scalar)) {
-    this->panner_lane->setPanningScalar(scalar);
   }
 }
 

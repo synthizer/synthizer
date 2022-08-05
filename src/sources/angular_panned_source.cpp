@@ -19,7 +19,6 @@ void AngularPannedSource::preRun() {
   bool angles_changed = this->acquireAzimuth(azimuth) | this->acquireElevation(elevation);
 
   if (angles_changed) {
-    this->panner_lane->setPanningAngles(azimuth, elevation);
   }
 }
 

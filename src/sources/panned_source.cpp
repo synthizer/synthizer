@@ -27,8 +27,6 @@ void PannedSource::initInAudioThread() {
   if (this->panner_strategy == SYZ_PANNER_STRATEGY_DELEGATE) {
     this->panner_strategy = this->getContextRaw()->getDefaultPannerStrategy();
   }
-
-  this->panner_lane = nullptr;
 }
 
 void PannedSource::setGain3D(double gain) { this->gain_3d = gain; }
@@ -38,12 +36,9 @@ void PannedSource::run() {
 
   this->fillBlock(1);
   /* And output. */
-  this->panner_lane->update();
-  unsigned int stride = this->panner_lane->stride;
-  float *dest = this->panner_lane->destination;
-  float g = this->gain_3d;
+
+  // float g = this->gain_3d;
   for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-    dest[i * stride] = g * block[i];
   }
 }
 
