@@ -1,4 +1,4 @@
-#include "synthizer/hrtf.hpp"
+#include "synthizer/panning/hrtf_panner.hpp"
 
 #include <algorithm>
 #include <array>

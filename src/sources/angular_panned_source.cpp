@@ -4,7 +4,7 @@
 
 #include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"
-#include "synthizer/panner_bank.hpp"
+#include "synthizer/panning/panner_bank.hpp"
 
 namespace synthizer {
 

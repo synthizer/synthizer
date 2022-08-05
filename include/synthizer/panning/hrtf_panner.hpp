@@ -8,7 +8,6 @@
 #include "synthizer/block_delay_line.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/data/hrtf.hpp"
-#include "synthizer/panner_bank.hpp"
 #include "synthizer/types.hpp"
 
 namespace synthizer {

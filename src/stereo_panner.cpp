@@ -1,4 +1,4 @@
-#include "synthizer/stereo_panner.hpp"
+#include "synthizer/panning/stereo_panner.hpp"
 #include "synthizer/math.hpp"
 
 #include <array>

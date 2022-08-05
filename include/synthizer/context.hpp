@@ -6,7 +6,7 @@
 #include "synthizer/events.hpp"
 #include "synthizer/fade_driver.hpp"
 #include "synthizer/mpsc_ring.hpp"
-#include "synthizer/panner_bank.hpp"
+#include "synthizer/panning/panner_bank.hpp"
 #include "synthizer/pausable.hpp"
 #include "synthizer/priority_queue.hpp"
 #include "synthizer/property_internals.hpp"
