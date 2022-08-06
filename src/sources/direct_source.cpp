@@ -14,15 +14,16 @@ namespace synthizer {
 
 int DirectSource::getObjectType() { return SYZ_OTYPE_DIRECT_SOURCE; }
 
-void DirectSource::run() {
+void DirectSource::run(unsigned int out_channels, float *out) {
   /*
    * For now, use the fact that we know that the context is always stereo.
    * In future this'll need to be done better.
    * */
-  this->fillBlock(2);
-  float *buf = this->context->getDirectBuffer();
-  for (unsigned int i = 0; i < config::BLOCK_SIZE * 2; i++) {
-    buf[i] += this->block[i];
+  assert(out_channels == 2);
+  this->fillBlock(out_channels);
+
+  for (unsigned int i = 0; i < config::BLOCK_SIZE * out_channels; i++) {
+    out[i] += this->block[i];
   }
 }
 

@@ -17,6 +17,7 @@ void ScalarPannedSource::preRun() {
   double scalar;
 
   if (this->acquirePanningScalar(scalar)) {
+    this->maybe_panner.value().setPanningScalar(scalar);
   }
 }
 

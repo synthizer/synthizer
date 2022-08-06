@@ -185,7 +185,7 @@ void Context::generateAudio(unsigned int channels, float *destination) {
           continue;
         }
         s->tickAutomation();
-        s->run();
+        s->run(channels, destination);
         i++;
       }
     }

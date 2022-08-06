@@ -63,7 +63,8 @@ void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned
  * */
 class HrtfPanner {
 public:
-  HrtfPanner();
+  HrtfPanner() : moved(true) {}
+
   unsigned int getOutputChannelCount();
   float *getInputBuffer();
   void run(float *output);
@@ -388,7 +389,7 @@ inline void HrtfPanner::run(float *output) {
 }
 
 inline void HrtfPanner::setPanningAngles(double azimuth, double elevation) {
-  this->moved = this->azimuth != azimuth || this->elevation != elevation;
+  this->moved = this->moved || this->azimuth != azimuth || this->elevation != elevation;
   this->azimuth = azimuth;
   this->elevation = elevation;
 }

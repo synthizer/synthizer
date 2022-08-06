@@ -8,6 +8,7 @@
 #include "synthizer/faders.hpp"
 #include "synthizer/generator.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/panning/panner.hpp"
 #include "synthizer/pausable.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/routable.hpp"
@@ -35,7 +36,7 @@ public:
   virtual void tickAutomation() override;
 
   /* Should write to appropriate places in the context on its own. */
-  virtual void run() = 0;
+  virtual void run(unsigned int out_channels, float *out) = 0;
 
   /* Weak add and/or remove a generator from this source. */
   virtual void addGenerator(std::shared_ptr<Generator> &gen);
@@ -87,7 +88,7 @@ public:
   DirectSource(std::shared_ptr<Context> ctx) : Source(ctx) {}
 
   int getObjectType() override;
-  void run() override;
+  void run(unsigned int out_channels, float *out) override;
 };
 
 /*
@@ -97,7 +98,7 @@ public:
  * */
 class PannedSource : public Source {
 public:
-  PannedSource(std::shared_ptr<Context> context, int panner_straegy);
+  PannedSource(std::shared_ptr<Context> context, int panner_strategy);
   void initInAudioThread() override;
 
   /* For 	Source3D. */
@@ -107,10 +108,17 @@ public:
    * Hook to let subclasses drive the panner and (optionally) the 3D gain.
    * */
   virtual void preRun() {}
-  void run() override;
+  void run(unsigned int out_channels, float *out) override;
 
 protected:
-  int panner_strategy;
+  unsigned int panner_strategy;
+  /**
+   * So this is a bit annoying.  We need to only initialize the panner once in the audio thread in case the user
+   * delegated the panning strategy because this is the only way to maintain the total order.  Rather than being
+   * complicated in that API where the logic is, just make sources deal.
+   * */
+  std::optional<Panner> maybe_panner;
+
   double gain_3d = 1.0;
 };
 

@@ -14,6 +14,8 @@ class StereoPanner {
 public:
   static constexpr unsigned int CHANNELS = 2;
 
+  StereoPanner() { this->setPanningScalar(0.0); }
+
   unsigned int getOutputChannelCount();
   float *getInputBuffer();
   void run(float *output);
@@ -22,7 +24,7 @@ public:
 
 private:
   std::array<float, config::BLOCK_SIZE> block{0.0};
-  float gain_l = 0.5, gain_r = 0.5;
+  float gain_l, gain_r;
 };
 
 inline unsigned int StereoPanner::getOutputChannelCount() { return CHANNELS; }
