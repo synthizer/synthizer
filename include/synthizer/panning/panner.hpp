@@ -75,6 +75,8 @@ inline void Panner::setPanningScalar(double scalar) {
 }
 
 inline void Panner::run(unsigned int out_channels, float *out) {
+  (void)out_channels;
+
   /* for now Synthizer only ever works with stereo audio. */
   assert(out_channels == 2);
   assert(this->getOutputChannelCount() == 2);
