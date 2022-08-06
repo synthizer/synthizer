@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <tuple>
 
-#include "synthizer/bitset.hpp"
 #include "synthizer/block_delay_line.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/data/hrtf.hpp"
