@@ -339,17 +339,15 @@ inline void HrtfPanner::run(float *output) {
    *pre-unrolled weights for the left and right ear.
    * Early is too little delay. Late is too much.
    */
-  float itd_w_early_l = 0.0, itd_w_early_r = 0.0, itd_w_late_l = 1.0, itd_w_late_r = 1.0;
   auto itds = computeInterauralTimeDifference(this->azimuth, this->elevation);
   double itd_l = std::get<0>(itds);
   double itd_r = std::get<1>(itds);
+  unsigned int itd_l_i = itd_l, itd_r_i = itd_r;
 
-  if (crossfade) {
-    itd_w_late_l = itd_l - floor(itd_l);
-    itd_w_early_l = 1.0 - itd_w_late_l;
-    itd_w_late_r = itd_r - floor(itd_r);
-    itd_w_early_r = 1.0 - itd_w_late_r;
-  }
+  double itd_w_late_l = itd_l - itd_l_i;
+  double itd_w_early_l = 1.0 - itd_w_late_l;
+  double itd_w_late_r = itd_r - itd_r_i;
+  double itd_w_early_r = 1.0 - itd_w_late_r;
 
   this->itd_line.runReadLoopSplit(
       config::HRTF_MAX_ITD,
@@ -366,8 +364,8 @@ inline void HrtfPanner::run(float *output) {
         assert(left >= 0.0);
         assert(right >= 0.0);
         unsigned int left_s = left, right_s = right;
-        double wl = left - std::floor(left);
-        double wr = right - std::floor(right);
+        double wl = left - left_s;
+        double wr = right - right_s;
         float lse = reader.read(0, left_s), lsl = reader.read(0, left_s + 1);
         float rse = reader.read(1, right_s), rsl = reader.read(1, right_s + 1);
         float ls = lsl * wl + lse * (1.0f - wl);
@@ -379,8 +377,10 @@ inline void HrtfPanner::run(float *output) {
       normal_samples,
       [&](unsigned int i, auto &reader) {
         float *o = output + i * 2;
-        o[0] += reader.read(0, itd_l);
-        o[1] = reader.read(1, itd_r);
+        float lse = reader.read(0, itd_l_i), lsl = reader.read(0, itd_l_i + 1);
+        float rse = reader.read(1, itd_r_i), rsl = reader.read(1, itd_r_i + 1);
+        o[0] += itd_w_early_l * lse + itd_w_late_l * lsl;
+        o[1] += itd_w_early_r * rse + itd_w_late_r * rsl;
       });
 
   this->prev_itd_l = itd_l;
