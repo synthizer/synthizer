@@ -6,6 +6,7 @@
   "files.associations": {
     "chrono": "cpp",
     "*.pyx": "python",
+    "cmath": "cpp"
   },
   "[python]": {
     "editor.insertSpaces": true,

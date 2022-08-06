@@ -387,10 +387,10 @@ inline void HrtfPanner::run(float *output) {
   this->prev_itd_r = itd_r;
 }
 
-inline void HrtfPanner::setPanningAngles(double azimuth, double elevation) {
-  this->moved = this->moved || this->azimuth != azimuth || this->elevation != elevation;
-  this->azimuth = azimuth;
-  this->elevation = elevation;
+inline void HrtfPanner::setPanningAngles(double _azimuth, double _elevation) {
+  this->moved = this->moved || this->azimuth != _azimuth || this->elevation != _elevation;
+  this->azimuth = _azimuth;
+  this->elevation = _elevation;
 }
 
 inline void HrtfPanner::setPanningScalar(double scalar) {
