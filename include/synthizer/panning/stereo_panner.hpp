@@ -33,8 +33,8 @@ inline float *StereoPanner::getInputBuffer() { return &this->block[0]; }
 
 inline void StereoPanner::run(float *output) {
   for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-    output[i * 2] = this->gain_l * this->block[i];
-    output[i * 2 + 1] = this->gain_r * this->block[i];
+    output[i * 2] += this->gain_l * this->block[i];
+    output[i * 2 + 1] += this->gain_r * this->block[i];
   }
 }
 
