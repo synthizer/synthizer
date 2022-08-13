@@ -119,7 +119,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/router.cpp
   src/shared_object.cpp
   src/source.cpp
-  src/spatialization_math.cpp
   src/spsc_semaphore.cpp
   src/stream_handle.cpp
   src/version.cpp
