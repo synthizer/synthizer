@@ -30,20 +30,16 @@ void PannedSource::initInAudioThread() {
   this->maybe_panner.emplace(buildPannerForStrategy(effective_panner_strategy));
 }
 
-void PannedSource::setGain3D(double gain) { this->gain_3d = gain; }
-
 void PannedSource::run(unsigned int out_channels, float *out) {
   assert(out_channels == 2);
 
   auto &panner = this->maybe_panner.value();
 
-  this->preRun();
-
   this->fillBlock(1);
   float *dest = panner.getInputBuffer();
-  float g = this->gain_3d;
+
   for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-    dest[i] = this->block[i] * g;
+    dest[i] = this->block[i];
   }
 
   panner.run(out_channels, out);

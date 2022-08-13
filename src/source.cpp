@@ -59,7 +59,14 @@ void Source::tickAutomation() {
   weak_vector::iterate_removing(this->generators, [](auto &g) { g->tickAutomation(); });
 }
 
+void Source::setGain3D(double gain) {
+  this->gain_3d = gain;
+  this->gain_3d_changed = true;
+}
+
 void Source::fillBlock(unsigned int channels) {
+  this->preRun();
+
   auto premix_guard = acquireBlockBuffer();
   float *premix = premix_guard;
   double gain_prop;
@@ -75,8 +82,9 @@ void Source::fillBlock(unsigned int channels) {
     this->last_channels = channels;
   }
 
-  if (this->acquireGain(gain_prop) || this->shouldIncorporatePausableGain()) {
-    gain_prop *= this->getPausableGain();
+  if (this->acquireGain(gain_prop) || this->shouldIncorporatePausableGain() || this->gain_3d_changed) {
+    gain_prop *= this->getPausableGain() * this->gain_3d;
+    this->gain_3d_changed = false;
     this->gain_fader.setValue(time, gain_prop);
   }
 

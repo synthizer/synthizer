@@ -35,6 +35,16 @@ public:
 
   virtual void tickAutomation() override;
 
+  /*
+   * called before running, to give subclasses a chance to set gain_3d.
+   *
+   * Called in fillBlock since this base class doesn't have a run.
+   * */
+  virtual void preRun() {}
+
+  /* Set the 3d gain, an additional gain aplied on top of the gain property. */
+  void setGain3D(double gain);
+
   /* Should write to appropriate places in the context on its own. */
   virtual void run(unsigned int out_channels, float *out) = 0;
 
@@ -81,6 +91,10 @@ private:
    * filters. Without it, sources can click on death.
    * */
   unsigned int linger_countdown = 3;
+
+  /* gains used by 3D sources, applied to the block on top of whatever the user set. */
+  double gain_3d = 1.0;
+  bool gain_3d_changed = false;
 };
 
 class DirectSource : public Source {
@@ -101,13 +115,6 @@ public:
   PannedSource(std::shared_ptr<Context> context, int panner_strategy);
   void initInAudioThread() override;
 
-  /* For 	Source3D. */
-  void setGain3D(double gain);
-
-  /**
-   * Hook to let subclasses drive the panner and (optionally) the 3D gain.
-   * */
-  virtual void preRun() {}
   void run(unsigned int out_channels, float *out) override;
 
 protected:
@@ -118,8 +125,6 @@ protected:
    * complicated in that API where the logic is, just make sources deal.
    * */
   std::optional<Panner> maybe_panner;
-
-  double gain_3d = 1.0;
 };
 
 class AngularPannedSource : public PannedSource {
