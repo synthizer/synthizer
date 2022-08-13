@@ -97,7 +97,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/background_thread.cpp
   src/base_object.cpp
   src/block_buffer_cache.cpp
-  src/buffer.cpp
+  src/c_api/buffer.cpp
   src/byte_stream.cpp
   src/c_api/core.cpp
   src/c_api/generators.cpp

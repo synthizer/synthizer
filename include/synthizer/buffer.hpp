@@ -2,7 +2,9 @@
 
 #include "synthizer/base_object.hpp"
 #include "synthizer/config.hpp"
+#include "synthizer/decoding.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/random_generator.hpp"
 #include "synthizer/types.hpp"
 
 #include <algorithm>
@@ -234,7 +236,111 @@ private:
   BufferChunk chunk;
 };
 
-class AudioDecoder;
 std::shared_ptr<BufferData> bufferDataFromDecoder(const std::shared_ptr<AudioDecoder> &decoder);
+
+class DitherGenerator {
+public:
+  float generate() {
+    float r1 = this->gen01();
+    float r2 = this->gen01();
+    return 1.0f - r1 - r2;
+  }
+
+  float gen01() {
+    float o = gen.generateFloat();
+    return (1.0 + o) * 0.5f;
+  }
+
+private:
+  RandomGenerator gen{};
+};
+
+/*
+ * Takes a callable std::size_t producer(std::size_t frames, float *destination) and generates a buffer.
+ * Producer must always return the number of samples requested exactly, unless the end of the buffer is reached, in
+ * which case it should rewturn less. We use the less condition to indicate that we're done.
+ * */
+template <typename T>
+inline std::shared_ptr<BufferData> generateBufferData(unsigned int channels, unsigned int sr, T &&producer) {
+  DitherGenerator dither;
+  WDL_Resampler *resampler = nullptr;
+  deferred_vector<std::int16_t *> chunks;
+  float *working_buf = nullptr;
+  std::int16_t *next_chunk = nullptr;
+
+  if (channels > config::MAX_CHANNELS) {
+    throw ERange("Buffer has too many channels");
+  }
+
+  /* If the samplerates don't match, we'll have to go through a resampler. */
+  if (sr != config::SR) {
+    resampler = new WDL_Resampler();
+    /* Sync interpolation. */
+    resampler->SetMode(false, 0, true, 20);
+    resampler->SetRates(sr, config::SR);
+    /* We're output driven. */
+    resampler->SetFeedMode(false);
+  }
+
+  try {
+    std::size_t chunk_size_samples = channels * config::BUFFER_CHUNK_SIZE;
+    std::size_t length = 0;
+    bool last = false;
+
+    working_buf = new float[chunk_size_samples];
+
+    while (last == false) {
+      next_chunk = (std::int16_t *)calloc(channels * config::BUFFER_CHUNK_SIZE, sizeof(std::int16_t));
+      std::size_t next_chunk_len = 0;
+
+      if (resampler != nullptr) {
+        float *dst;
+        unsigned long long needed = resampler->ResamplePrepare(config::BUFFER_CHUNK_SIZE, channels, &dst);
+        auto got = producer(needed, dst);
+        last = got < needed;
+        next_chunk_len = resampler->ResampleOut(working_buf, got, config::BUFFER_CHUNK_SIZE, channels);
+        assert(last == true || next_chunk_len == config::BUFFER_CHUNK_SIZE);
+      } else {
+        next_chunk_len = producer(config::BUFFER_CHUNK_SIZE, working_buf);
+        last = next_chunk_len < config::BUFFER_CHUNK_SIZE;
+      }
+
+      for (std::size_t i = 0; i < next_chunk_len * channels; i++) {
+        std::int_fast32_t tmp = working_buf[i] * 32768.0f + dither.generate();
+        next_chunk[i] = clamp<std::int_fast32_t>(tmp, -32768, 32767);
+      }
+
+      std::fill(next_chunk + next_chunk_len * channels, next_chunk + chunk_size_samples, 0);
+      chunks.push_back(next_chunk);
+      length += next_chunk_len;
+      /* In case the next allocation fails, avoid a double free. */
+      next_chunk = nullptr;
+    }
+
+    if (length == 0) {
+      throw Error("Buffers of zero length not supported");
+    }
+
+    delete[] working_buf;
+    return allocateSharedDeferred<BufferData>(channels, length, std::move(chunks));
+  } catch (...) {
+    for (auto x : chunks) {
+      deferredFree(x);
+    }
+    delete resampler;
+    deferredFree(next_chunk);
+    delete[] working_buf;
+    throw;
+  }
+}
+
+inline std::shared_ptr<BufferData> bufferDataFromDecoder(const std::shared_ptr<AudioDecoder> &decoder) {
+  auto channels = decoder->getChannels();
+  auto sr = decoder->getSr();
+  return generateBufferData(channels, sr,
+                            [&](auto frames, float *dest) { return decoder->writeSamplesInterleaved(frames, dest); });
+}
+
+inline int Buffer::getObjectType() { return SYZ_OTYPE_BUFFER; }
 
 } // namespace synthizer
