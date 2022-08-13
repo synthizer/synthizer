@@ -100,7 +100,8 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/block_buffer_cache.cpp
   src/buffer.cpp
   src/byte_stream.cpp
-  src/c_api.cpp
+  src/c_api/core.cpp
+  src/c_api/generators.cpp
   src/channel_mixing.cpp
   src/context.cpp
   src/decoding.cpp
