@@ -6,6 +6,7 @@
 #include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/decoding.hpp"
+#include "synthizer/generators/buffer.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
 
@@ -355,5 +356,16 @@ SYZ_CAPI syz_ErrorCode syz_configDeleteBehavior(syz_Handle object, const struct 
   auto obj = fromC<BaseObject>(object);
   obj->setDeleteBehaviorConfig(*cfg);
   return 0;
+  SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_createBufferGenerator(syz_Handle *out, syz_Handle context, void *config, void *userdata,
+                                                 syz_UserdataFreeCallback *userdata_free_callback) {
+  SYZ_PROLOGUE(void) config;
+
+  auto ctx = fromC<Context>(context);
+  auto x = ctx->createObject<BufferGenerator>();
+  *out = toC(x);
+  return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
   SYZ_EPILOGUE
 }
