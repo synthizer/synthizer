@@ -112,7 +112,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/logging.cpp
   src/memory.cpp
   src/pausable.cpp
-  src/prime_helpers.cpp
   src/property_internals.cpp
   src/routable.cpp
   src/router.cpp
