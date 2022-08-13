@@ -8,6 +8,7 @@
 #include "synthizer/decoding.hpp"
 #include "synthizer/generators/buffer.hpp"
 #include "synthizer/generators/fast_sine_bank.hpp"
+#include "synthizer/generators/noise.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
 
@@ -437,5 +438,20 @@ SYZ_CAPI syz_ErrorCode syz_createFastSineBankGeneratorSaw(syz_Handle *out, syz_H
   auto waves = sb_construction_helpers::buildSawtoothSeries(partials);
   return createSineBankFromVec(out, context, initial_frequency, &waves, userdata, userdata_free_callback);
 
+  SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle context, unsigned int channels,
+                                                void *config, void *userdata,
+                                                syz_UserdataFreeCallback *userdata_free_callback) {
+  SYZ_PROLOGUE(void) config;
+
+  if (channels == 0) {
+    throw ERange("NoiseGenerator must have at least 1 channel");
+  }
+  auto ctx = fromC<Context>(context);
+  auto x = ctx->createObject<ExposedNoiseGenerator>(channels);
+  *out = toC(x);
+  return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
   SYZ_EPILOGUE
 }

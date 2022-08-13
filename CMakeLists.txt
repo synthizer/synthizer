@@ -112,7 +112,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/generator.cpp
   src/logging.cpp
   src/memory.cpp
-  src/noise_generator.cpp
   src/pausable.cpp
   src/prime_helpers.cpp
   src/property_internals.cpp
@@ -140,7 +139,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 
   src/filters/audio_eq_cookbook.cpp
   src/filters/simple_filters.cpp
-  src/generators/noise.cpp
   src/generators/streaming.cpp
 
   src/sources/angular_panned_source.cpp
