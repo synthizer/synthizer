@@ -9,8 +9,10 @@
 #include "synthizer/generators/buffer.hpp"
 #include "synthizer/generators/fast_sine_bank.hpp"
 #include "synthizer/generators/noise.hpp"
+#include "synthizer/generators/streaming.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/stream_handle.hpp"
 
 #include <array>
 #include <atomic>
@@ -452,6 +454,42 @@ SYZ_CAPI syz_ErrorCode syz_createNoiseGenerator(syz_Handle *out, syz_Handle cont
   auto ctx = fromC<Context>(context);
   auto x = ctx->createObject<ExposedNoiseGenerator>(channels);
   *out = toC(x);
+  return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
+  SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamParams(syz_Handle *out, syz_Handle context,
+                                                                    const char *protocol, const char *path, void *param,
+                                                                    void *config, void *userdata,
+                                                                    syz_UserdataFreeCallback *userdata_free_callback) {
+  SYZ_PROLOGUE(void) config;
+
+  auto ctx = fromC<Context>(context);
+  auto decoder = getDecoderForStreamParams(protocol, path, param);
+  auto generator = ctx->createObject<StreamingGenerator>(decoder);
+  *out = toC(generator);
+  return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
+  SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromFile(syz_Handle *out, syz_Handle context, const char *path,
+                                                            void *config, void *userdata,
+                                                            syz_UserdataFreeCallback *userdata_free_callback) {
+  return syz_createStreamingGeneratorFromStreamParams(out, context, "file", path, NULL, config, userdata,
+                                                      userdata_free_callback);
+}
+
+SYZ_CAPI syz_ErrorCode syz_createStreamingGeneratorFromStreamHandle(syz_Handle *out, syz_Handle context,
+                                                                    syz_Handle stream, void *config, void *userdata,
+                                                                    syz_UserdataFreeCallback *userdata_free_callback) {
+  SYZ_PROLOGUE(void) config;
+
+  auto ctx = fromC<Context>(context);
+  auto s = fromC<StreamHandle>(stream);
+  auto bs = consumeStreamHandle(s);
+  auto decoder = getDecoderForStream(bs);
+  auto generator = ctx->createObject<StreamingGenerator>(decoder);
+  *out = toC(generator);
   return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
   SYZ_EPILOGUE
 }

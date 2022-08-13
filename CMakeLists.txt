@@ -139,8 +139,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
 
   src/filters/audio_eq_cookbook.cpp
   src/filters/simple_filters.cpp
-  src/generators/streaming.cpp
-
   src/sources/angular_panned_source.cpp
   src/sources/direct_source.cpp
   src/sources/panned_source.cpp
