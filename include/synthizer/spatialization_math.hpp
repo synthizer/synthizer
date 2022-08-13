@@ -115,34 +115,6 @@ inline double mulFromDistanceParams(const DistanceParams &params) {
   return clamp(dist_mul, 0.0, 1.0);
 }
 
-/*
- * Helper class which can be used to augment anything with a distance model, with Synthizer-compatible property
- * getter/setter pairs.
- *
- * How this works is you inherit from it somewhere in the hierarchy, then define properties as usual
- * */
-class DistanceParamsMixin {
-public:
-  DistanceParams &getDistanceParams();
-  void setDistanceParams(const DistanceParams &params);
-
-  double getDistanceRef();
-  void setDistanceRef(double val);
-  double getDistanceMax();
-  void setDistanceMax(double val);
-  double getRolloff();
-  void setRolloff(double val);
-  double getClosenessBoost();
-  void setClosenessBoost(double val);
-  double getClosenessBoostDistance();
-  void setClosenessBoostDistance(double val);
-  int getDistanceModel();
-  void setDistanceModel(int val);
-
-private:
-  DistanceParams distance_params{};
-};
-
 typedef std::array<double, 3> Vec3d;
 
 inline double dotProduct(const Vec3d &a, const Vec3d &b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
@@ -168,39 +140,6 @@ inline void throwIfParallel(const Vec3d &a, const Vec3d &b) {
   double dp = dotProduct(a, b);
   if (dp > 0.95)
     throw EInvariant("Vectors must not be parallel");
-}
-
-inline DistanceParams &DistanceParamsMixin::getDistanceParams() { return this->distance_params; }
-
-inline void DistanceParamsMixin::setDistanceParams(const DistanceParams &params) { this->distance_params = params; }
-
-inline double DistanceParamsMixin::getDistanceRef() { return this->distance_params.distance_ref; }
-
-inline void DistanceParamsMixin::setDistanceRef(double val) { this->distance_params.distance_ref = val; }
-
-inline double DistanceParamsMixin::getDistanceMax() { return this->distance_params.distance_max; }
-
-inline void DistanceParamsMixin::setDistanceMax(double val) { this->distance_params.distance_max = val; }
-
-inline double DistanceParamsMixin::getRolloff() { return this->distance_params.rolloff; }
-
-inline void DistanceParamsMixin::setRolloff(double val) { this->distance_params.rolloff = val; }
-inline double DistanceParamsMixin::getClosenessBoost() { return this->distance_params.closeness_boost; }
-
-inline void DistanceParamsMixin::setClosenessBoost(double val) { this->distance_params.closeness_boost = val; }
-
-inline double DistanceParamsMixin::getClosenessBoostDistance() {
-  return this->distance_params.closeness_boost_distance;
-}
-
-inline void DistanceParamsMixin::setClosenessBoostDistance(double val) {
-  this->distance_params.closeness_boost_distance = val;
-}
-
-inline int DistanceParamsMixin::getDistanceModel() { return this->distance_params.distance_model; }
-
-inline void DistanceParamsMixin::setDistanceModel(int val) {
-  this->distance_params.distance_model = (enum SYZ_DISTANCE_MODEL)val;
 }
 
 } // namespace synthizer
