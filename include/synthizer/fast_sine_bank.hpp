@@ -65,9 +65,10 @@ private:
   std::vector<WaveState> wave_states;
 };
 
-FastSineBank::FastSineBank(double _frequency) : frequency(_frequency) {}
+inline FastSineBank::FastSineBank(double _frequency) : frequency(_frequency) {}
 
-template <std::size_t SAMPLES, std::size_t WAVES> void FastSineBank::fillBlockHelper(float *out, std::size_t start) {
+template <std::size_t SAMPLES, std::size_t WAVES>
+inline void FastSineBank::fillBlockHelper(float *out, std::size_t start) {
   /* sa=sin(a), ca=cos(a), etc. */
   float sa[WAVES], ca[WAVES], sb[WAVES], cb[WAVES], gains[WAVES];
 
@@ -100,7 +101,7 @@ template <std::size_t SAMPLES, std::size_t WAVES> void FastSineBank::fillBlockHe
   }
 }
 
-template <std::size_t SAMPLES, bool ADD> void FastSineBank::fillBlock(float *out) {
+template <std::size_t SAMPLES, bool ADD> inline void FastSineBank::fillBlock(float *out) {
   if (ADD == false) {
     std::fill(out, out + SAMPLES, 0.0);
   }
@@ -121,16 +122,16 @@ template <std::size_t SAMPLES, bool ADD> void FastSineBank::fillBlock(float *out
 #undef BLOCK
 }
 
-void FastSineBank::addWave(const SineWaveConfig &wave) {
+inline void FastSineBank::addWave(const SineWaveConfig &wave) {
   this->waves.push_back(wave);
   this->wave_states.emplace_back(FastSineBank::WaveState{wave.phase});
 }
 
-void FastSineBank::clearWaves() {
+inline void FastSineBank::clearWaves() {
   this->waves.clear();
   this->wave_states.clear();
 }
 
-void FastSineBank::setFrequency(double _frequency) { this->frequency = _frequency; }
+inline void FastSineBank::setFrequency(double _frequency) { this->frequency = _frequency; }
 
 } // namespace synthizer

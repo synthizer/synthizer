@@ -109,7 +109,7 @@ static void sigmaApproximate(std::vector<syz_SineBankWave> *waves) {
 /**
  * Normalize a set of waves.
  * */
-static void normalizeSeries(std::vector<syz_SineBankWave> *waves) {
+inline  void normalizeSeries(std::vector<syz_SineBankWave> *waves) {
   double gsum = 0.0;
   for (auto &w : *waves) {
     gsum += w.gain;
@@ -120,7 +120,7 @@ static void normalizeSeries(std::vector<syz_SineBankWave> *waves) {
   }
 }
 
-static std::vector<syz_SineBankWave> buildTriangleSeries(unsigned int partials) {
+inline  std::vector<syz_SineBankWave> buildTriangleSeries(unsigned int partials) {
   std::vector<syz_SineBankWave> out;
 
   double sign = 1.0;
@@ -135,7 +135,7 @@ static std::vector<syz_SineBankWave> buildTriangleSeries(unsigned int partials) 
   return out;
 }
 
-static std::vector<syz_SineBankWave> buildSawtoothSeries(unsigned int partials) {
+inline std::vector<syz_SineBankWave> buildSawtoothSeries(unsigned int partials) {
   std::vector<syz_SineBankWave> out;
 
   // `$ x(t)=-{\frac {2}{\pi }}\sum _{k=1}^{\infty }{\frac {{\left(-1\right)}^{k}}{k}}\sin \left(2\pi kt\right) $`
@@ -152,7 +152,7 @@ static std::vector<syz_SineBankWave> buildSawtoothSeries(unsigned int partials) 
   return out;
 }
 
-static std::vector<syz_SineBankWave> buildSquareSeries(unsigned int partials) {
+inline std::vector<syz_SineBankWave> buildSquareSeries(unsigned int partials) {
   std::vector<syz_SineBankWave> out{};
   for (unsigned int p = 0; p < partials; p++) {
     double gain = 1.0 / (2 * p + 1);
