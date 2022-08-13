@@ -113,15 +113,174 @@ using BiquadFilterDef = IIRFilterDef<3, 3>;
  *
  * For lowpass and highpass, default q gives butterworth polynomials in the denominator.
  * */
-BiquadFilterDef designAudioEqLowpass(double omega, double q = 0.7071135624381276);
-BiquadFilterDef designAudioEqHighpass(double omega, double q = 0.7071135624381276);
-BiquadFilterDef designAudioEqBandpass(double omega, double q);
+namespace biquad_design_detail {
+inline BiquadFilterDef makeRet(double b0, double b1, double b2, double a0, double a1, double a2) {
+  BiquadFilterDef ret;
+  const double gain = 1 / a0;
+  a1 /= a0;
+  a2 /= a0;
+
+  ret.num_coefs = {b0, b1, b2};
+  ret.den_coefs = {a1, a2};
+  ret.gain = gain;
+  return ret;
+}
+} // namespace biquad_design_detail
+
+#define BIQUAD_RET return biquad_design_detail::makeRet(b0, b1, b2, a0, a1, a2);
+#define BIQUAD_VAR_W0 const double w0 = 2 * PI * omega
+#define BIQUAD_VAR_CW0 const double cw0 = cos(w0)
+#define BIQUAD_VAR_SW0 const double sw0 = sin(w0)
+
+inline BiquadFilterDef designAudioEqLowpass(double omega, double q = 0.7071135624381276) {
+  using namespace std;
+
+  BIQUAD_VAR_W0;
+  BIQUAD_VAR_SW0;
+  BIQUAD_VAR_CW0;
+
+  const double alpha = sw0 / (2 * q);
+
+  const double b0 = (1 - cw0) / 2;
+  const double b1 = 1 - cw0;
+  const double b2 = b1 / 2;
+  const double a0 = 1 + alpha;
+  const double a1 = -2 * cw0;
+  const double a2 = 1 - alpha;
+  BIQUAD_RET;
+}
+
+inline BiquadFilterDef designAudioEqHighpass(double omega, double q = 0.7071135624381276) {
+  using namespace std;
+
+  BIQUAD_VAR_W0;
+  BIQUAD_VAR_CW0;
+  BIQUAD_VAR_SW0;
+
+  const double alpha = sw0 / (2 * q);
+
+  const double b0 = (1 + cw0) / 2;
+  const double b1 = -(1 + cw0);
+  const double b2 = (1 + cw0) / 2;
+  const double a0 = 1 + alpha;
+  const double a1 = -2 * cw0;
+  const double a2 = 1 - alpha;
+
+  BIQUAD_RET;
+}
+
+inline BiquadFilterDef designAudioEqBandpass(double omega, double bw) {
+  using namespace std;
+
+  BIQUAD_VAR_W0;
+  BIQUAD_VAR_SW0;
+  BIQUAD_VAR_CW0;
+
+  const double alpha = sw0 * sinh(log(2) / 2 * bw * omega / sw0);
+  const double b0 = alpha;
+  const double b1 = 0;
+  const double b2 = -alpha;
+  const double a0 = 1 + alpha;
+  const double a1 = -2 * cw0;
+  const double a2 = 1 - alpha;
+  BIQUAD_RET;
+}
+
 /* Aka band reject, but we use audio eq terminology. */
-BiquadFilterDef designAudioEqNotch(double omega, double bw);
-BiquadFilterDef designAudioEqAllpass(double omega, double q = 0.7071135624381276);
-BiquadFilterDef designAudioEqPeaking(double omega, double bw, double dbgain);
-BiquadFilterDef designAudioEqLowShelf(double omega, double db_gain, double s = 1.0);
-BiquadFilterDef designAudioEqHighShelf(double omega, double db_gain, double s = 1.0);
+inline BiquadFilterDef designAudioEqNotch(double omega, double bw) {
+  using namespace std;
+
+  BIQUAD_VAR_W0;
+  BIQUAD_VAR_SW0;
+  BIQUAD_VAR_CW0;
+
+  const double alpha = sw0 * sinh(log(2) / 2 * bw * omega / sw0);
+
+  const double b0 = 1;
+  const double b1 = -2 * cw0;
+  const double b2 = 1;
+  const double a0 = 1 + alpha;
+  const double a1 = -2 * cw0;
+  const double a2 = 1 - alpha;
+  BIQUAD_RET;
+}
+
+inline BiquadFilterDef designAudioEqAllpass(double omega, double q = 0.7071135624381276) {
+  using namespace std;
+
+  BIQUAD_VAR_W0;
+  BIQUAD_VAR_CW0;
+  BIQUAD_VAR_SW0;
+
+  const double alpha = sw0 / (2 * q);
+  const double b0 = 1 - alpha;
+  const double b1 = -2 * cw0;
+  const double b2 = 1 + alpha;
+  const double a0 = 1 + alpha;
+  const double a1 = -2 * cw0;
+  const double a2 = 1 - alpha;
+  BIQUAD_RET;
+}
+
+inline BiquadFilterDef designAudioEqPeaking(double omega, double bw, double dbgain) {
+  using namespace std;
+
+  BIQUAD_VAR_W0;
+  BIQUAD_VAR_CW0;
+  BIQUAD_VAR_SW0;
+
+  const double a = pow(10, dbgain / 40);
+  const double alpha = sw0 * sinh(log(2) / 2 * bw * omega / sw0);
+  const double b0 = 1 + alpha * a;
+  const double b1 = -2 * cw0;
+  const double b2 = 1 - alpha * a;
+  const double a0 = 1 + alpha / a;
+  const double a1 = -2 * cw0;
+  const double a2 = 1 - alpha / a;
+  BIQUAD_RET;
+}
+
+inline BiquadFilterDef designAudioEqLowShelf(double omega, double db_gain, double s = 1.0) {
+  using namespace std;
+
+  BIQUAD_VAR_W0;
+  BIQUAD_VAR_CW0;
+  BIQUAD_VAR_SW0;
+
+  const double a = pow(10, db_gain / 40.0);
+
+  const double beta = sqrt(a) * sqrt((a + 1 / a) * (1 / s - 1) + 2);
+
+  const double b0 = a * ((a + 1) - (a - 1) * cw0 + beta * sw0);
+  const double b1 = 2 * a * ((a - 1) - (a + 1) * cw0);
+  const double b2 = a * ((a + 1) - (a - 1) * cw0 - beta * sw0);
+  const double a0 = (a + 1) + (a - 1) * cw0 + beta * sw0;
+  const double a1 = -2 * ((a - 1) + (a + 1) * cw0);
+  const double a2 = (a + 1) + (a - 1) * cw0 - beta * sw0;
+  BIQUAD_RET;
+}
+
+inline BiquadFilterDef designAudioEqHighShelf(double omega, double db_gain, double s = 1.0) {
+  using namespace std;
+  const double a = pow(10, db_gain / 40.0);
+  BIQUAD_VAR_W0;
+  BIQUAD_VAR_SW0;
+  BIQUAD_VAR_CW0;
+  const double beta = sqrt(a) * sqrt((a + 1 / a) * (1 / s - 1) + 2);
+
+  const double b0 = a * ((a + 1) + (a - 1) * cw0 + beta * sw0);
+  const double b1 = -2 * a * ((a - 1) + (a + 1) * cw0);
+  const double b2 = a * ((a + 1) + (a - 1) * cw0 - beta * sw0);
+  const double a0 = (a + 1) - (a - 1) * cw0 + beta * sw0;
+  const double a1 = 2 * ((a - 1) - (a + 1) * cw0);
+  const double a2 = (a + 1) - (a - 1) * cw0 - beta * sw0;
+  BIQUAD_RET;
+}
+
+#undef BIQUAD_RET
+#undef BIQUAD_VAR_W0
+#undef BIQUAD_VAR_CW0
+#undef BIQUAD_VAR_SW0
 
 /*
  * A windowed sinc. Used primarily for upsampling/downsampling.

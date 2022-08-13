@@ -135,8 +135,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/effects/echo.cpp
   src/effects/effects.cpp
   src/effects/fdn_reverb.cpp
-
-  src/filters/audio_eq_cookbook.cpp
   src/filters/simple_filters.cpp
   src/sources/angular_panned_source.cpp
   src/sources/direct_source.cpp
