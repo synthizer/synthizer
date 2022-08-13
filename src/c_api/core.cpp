@@ -1,6 +1,7 @@
 #include "synthizer.h"
 
 #include "synthizer/audio_output.hpp"
+#include "synthizer/automation_batch.hpp"
 #include "synthizer/background_thread.hpp"
 #include "synthizer/base_object.hpp"
 #include "synthizer/c_api.hpp"
@@ -359,6 +360,42 @@ SYZ_CAPI syz_ErrorCode syz_configDeleteBehavior(syz_Handle object, const struct 
   SYZ_PROLOGUE
   auto obj = fromC<BaseObject>(object);
   obj->setDeleteBehaviorConfig(*cfg);
+  return 0;
+  SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_createAutomationBatch(syz_Handle *out, syz_Handle context, void *userdata,
+                                                 syz_UserdataFreeCallback *userdata_free_callback) {
+  SYZ_PROLOGUE
+  auto ctx = fromC<Context>(context);
+  auto batch = allocateSharedDeferred<AutomationBatch>(ctx);
+  auto ce = std::static_pointer_cast<CExposable>(batch);
+  ce->stashInternalReference(ce);
+  *out = toC(batch);
+  return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
+  SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_automationBatchAddCommands(syz_Handle batch, unsigned long long commands_len,
+                                                      const struct syz_AutomationCommand *commands) {
+  SYZ_PROLOGUE
+  auto b = fromC<AutomationBatch>(batch);
+  b->addCommands(commands_len, commands);
+  return 0;
+  SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_automationBatchExecute(syz_Handle batch) {
+  SYZ_PROLOGUE
+  auto b = fromC<AutomationBatch>(batch);
+  b->throwIfConsumed();
+  b->consume();
+  auto c = b->getContext();
+  if (c == nullptr) {
+    return 0;
+  }
+  c->enqueueCallbackCommand([=]() { b->executeOnContextThread(); });
+
   return 0;
   SYZ_EPILOGUE
 }
