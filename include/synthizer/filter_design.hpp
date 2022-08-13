@@ -1,5 +1,7 @@
 #pragma once
 
+#include "synthizer.h"
+
 #include "synthizer/math.hpp"
 
 #include <algorithm>

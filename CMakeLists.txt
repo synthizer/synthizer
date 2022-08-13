@@ -97,7 +97,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/automation_batch.cpp
   src/background_thread.cpp
   src/base_object.cpp
-  src/biquad.cpp
   src/block_buffer_cache.cpp
   src/buffer.cpp
   src/byte_stream.cpp
