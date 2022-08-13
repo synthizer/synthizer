@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <tuple>
 #include <type_traits>
 
 namespace synthizer {
@@ -82,25 +83,105 @@ public:
   }
 };
 
+template <std::size_t num1, std::size_t den1, std::size_t num2, std::size_t den2>
+IIRFilterDef<num1 + num2 - 1, den1 + den2 - 1> combineIIRFilters(IIRFilterDef<num1, den1> f1,
+                                                                 IIRFilterDef<num2, den2> f2) {
+  double newGain = f1.gain * f2.gain;
+  std::array<double, num1 + num2 - 1> workingNum;
+  std::array<double, den1 + den2 - 1> workingDen;
+  std::fill(workingNum.begin(), workingNum.end(), 0.0);
+  std::fill(workingDen.begin(), workingDen.end(), 0.0);
+
+  /*
+   * Convolve the numerators, then convolve the denominators.
+   * */
+  for (unsigned int i = 0; i < num1; i++) {
+    double num1r = f1.num_coefs[i];
+    for (unsigned int j = 0; j < num2; j++) {
+      double num2r = f2.num_coefs[j];
+      workingNum[i + j] += num1r * num2r;
+    }
+  }
+
+  for (unsigned int i = 0; i < den1; i++) {
+    double den1r = i == 0 ? 1.0 : f1.den_coefs[i - 1];
+    for (unsigned int j = 0; j < den2; j++) {
+      double den2r = j == 0 ? 1.0 : f2.den_coefs[j - 1];
+      workingDen[i + j] += den1r * den2r;
+    }
+  }
+
+  IIRFilterDef<num1 + num2 - 1, den1 + den2 - 1> ret;
+  ret.gain = newGain;
+  std::copy(workingNum.begin(), workingNum.end(), ret.num_coefs.begin());
+  std::copy(workingDen.begin() + 1, workingDen.end(), ret.den_coefs.begin());
+  return ret;
+}
+
 /*
  * A wire is the identity filter.
  * */
-IIRFilterDef<1, 0> designWire();
+inline IIRFilterDef<1, 0> designWire() {
+  IIRFilterDef<1, 0> def;
+  def.gain = 1.0;
+  def.num_coefs[0] = 1.0;
+  return def;
+}
+
+namespace simple_filters_detail {
+/*
+ * Compute coefficients for a zero of the polynomial a0+a1 z^-1
+ *
+ * a1 = -x because a0 =1  in all cases, so
+ * 1 + a1 z^-1 = 0
+ * 1 = -a1 z^-1
+ * 1 = -a1 / z
+ * z = -a1
+ * */
+inline std::tuple<double, double> coefsForZero(double x) { return {1, -x}; }
+} // namespace simple_filters_detail
 
 /*
  * A single-zero filter.
  * Zero is on the x axis.
  * Normalized so that peak gain is 1.
  * */
-IIRFilterDef<2, 1> designOneZero(double zero);
+inline IIRFilterDef<2, 1> designOneZero(double zero) {
+  double b0, b1;
+  std::tie(b0, b1) = simple_filters_detail::coefsForZero(zero);
+  IIRFilterDef<2, 1> ret;
+  ret.num_coefs = {b0, b1};
+  ret.gain = 1.0 / (abs(b0) + abs(b1));
+  ret.den_coefs = {};
+  return ret;
+}
 
 /*
  * A single-pole filter.
  * Normalized so that peak gain is 1.
  * */
-IIRFilterDef<1, 2> designOnePole(double pole);
+inline IIRFilterDef<1, 2> designOnePole(double pole) {
+  double a0, a1;
+  // poles are zero in the denominator.
+  std::tie(a0, a1) = simple_filters_detail::coefsForZero(pole);
+  IIRFilterDef<1, 2> ret;
+  ret.num_coefs = {1.0};
+  ret.den_coefs = {a1};
+  /*
+   * Explanation: the gain is maximum at either:
+   * -1, because a1 > 0, giving 1/(1-a0)
+   * 1, because a1 < 0, giving 1/(1-abs(a0))
+   * The former expression can have abs added without changing its value, so we avoid the conditional.
+   * */
+  ret.gain = 1 - abs(a1);
+  return ret;
+}
 
-IIRFilterDef<2, 2> designDcBlocker(double r = 0.995);
+inline IIRFilterDef<2, 2> designDcBlocker(double r = 0.995) {
+  auto num = designOneZero(1);
+  auto den = designOnePole(r);
+  return combineIIRFilters(num, den);
+}
 
 /* Coefficients for a 2-pole 2-zero filter, often from the audio eq cookbook. */
 using BiquadFilterDef = IIRFilterDef<3, 3>;
@@ -319,41 +400,6 @@ template <std::size_t N> auto designSincLowpass(double omega) -> IIRFilterDef<N,
   ret.gain = gain;
   for (unsigned int i = 0; i < ret.num_coefs.size(); i++)
     ret.num_coefs[i] = coefs[i];
-  return ret;
-}
-
-template <std::size_t num1, std::size_t den1, std::size_t num2, std::size_t den2>
-IIRFilterDef<num1 + num2 - 1, den1 + den2 - 1> combineIIRFilters(IIRFilterDef<num1, den1> f1,
-                                                                 IIRFilterDef<num2, den2> f2) {
-  double newGain = f1.gain * f2.gain;
-  std::array<double, num1 + num2 - 1> workingNum;
-  std::array<double, den1 + den2 - 1> workingDen;
-  std::fill(workingNum.begin(), workingNum.end(), 0.0);
-  std::fill(workingDen.begin(), workingDen.end(), 0.0);
-
-  /*
-   * Convolve the numerators, then convolve the denominators.
-   * */
-  for (unsigned int i = 0; i < num1; i++) {
-    double num1r = f1.num_coefs[i];
-    for (unsigned int j = 0; j < num2; j++) {
-      double num2r = f2.num_coefs[j];
-      workingNum[i + j] += num1r * num2r;
-    }
-  }
-
-  for (unsigned int i = 0; i < den1; i++) {
-    double den1r = i == 0 ? 1.0 : f1.den_coefs[i - 1];
-    for (unsigned int j = 0; j < den2; j++) {
-      double den2r = j == 0 ? 1.0 : f2.den_coefs[j - 1];
-      workingDen[i + j] += den1r * den2r;
-    }
-  }
-
-  IIRFilterDef<num1 + num2 - 1, den1 + den2 - 1> ret;
-  ret.gain = newGain;
-  std::copy(workingNum.begin(), workingNum.end(), ret.num_coefs.begin());
-  std::copy(workingDen.begin() + 1, workingDen.end(), ret.den_coefs.begin());
   return ret;
 }
 
