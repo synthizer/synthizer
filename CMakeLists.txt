@@ -117,7 +117,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/router.cpp
   src/shared_object.cpp
   src/source.cpp
-  src/spsc_semaphore.cpp
   src/stream_handle.cpp
   src/data/arrays.cpp
   src/data/hrtf.cpp

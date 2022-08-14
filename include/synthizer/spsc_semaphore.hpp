@@ -44,7 +44,7 @@ public:
 
 private:
   Semaphore *backing_sema;
-  static thread_local std::vector<Semaphore *> sema_pool;
+  static inline thread_local std::vector<Semaphore *> sema_pool;
 };
 
 } // namespace synthizer
