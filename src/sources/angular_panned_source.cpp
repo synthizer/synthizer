@@ -1,6 +1,6 @@
 #include "synthizer.h"
 
-#include "synthizer/sources.hpp"
+#include "synthizer/sources/angular_panned_source.hpp"
 
 #include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"

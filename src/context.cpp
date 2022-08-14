@@ -12,7 +12,7 @@
 #include "synthizer/effects/global_effect.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/property_automation_timeline.hpp"
-#include "synthizer/sources.hpp"
+#include "synthizer/source.hpp"
 #include "synthizer/spatialization_math.hpp"
 #include "synthizer/types.hpp"
 #include "synthizer/vector_helpers.hpp"

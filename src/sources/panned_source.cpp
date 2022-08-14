@@ -7,7 +7,7 @@
 #include "synthizer/generator.hpp"
 #include "synthizer/math.hpp"
 #include "synthizer/panning/panner.hpp"
-#include "synthizer/sources.hpp"
+#include "synthizer/sources/panned_source.hpp"
 #include "synthizer/types.hpp"
 #include "synthizer/vector_helpers.hpp"
 

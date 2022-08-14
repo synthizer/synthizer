@@ -1,6 +1,6 @@
 #include "synthizer.h"
 
-#include "synthizer/sources.hpp"
+#include "synthizer/source.hpp"
 
 #include "synthizer/biquad.hpp"
 #include "synthizer/block_buffer_cache.hpp"

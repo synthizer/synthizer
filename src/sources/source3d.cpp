@@ -5,7 +5,7 @@
 #include "synthizer/context.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/math.hpp"
-#include "synthizer/sources.hpp"
+#include "synthizer/sources/source_3d.hpp"
 #include "synthizer/spatialization_math.hpp"
 
 #include <cmath>

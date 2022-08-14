@@ -4,7 +4,7 @@
 #include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/memory.hpp"
-#include "synthizer/sources.hpp"
+#include "synthizer/sources/direct_source.hpp"
 #include "synthizer/types.hpp"
 
 #include <algorithm>
