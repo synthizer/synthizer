@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.15.0)
 project(synthizer VERSION 0.1.0 LANGUAGES C CXX)
 
+OPTION(SYZ_INTEGRATING "Set to ON to avoid linking examples etc. when integrating into a language's bindings" OFF)
+
 # Do this first; some things will quietly pick it up and it's
 # really hard to tell which.
 set(CMAKE_CXX_STANDARD 17)
@@ -181,10 +183,12 @@ python "${CMAKE_SOURCE_DIR}/data_processor/main.py")
 find_library(MATH_LIBRARY m)
 
 function(example NAME EXT)
-  add_executable(${NAME} ./examples/${NAME}.${EXT})
-  target_link_libraries(${NAME} synthizer)
-  if(MATH_LIBRARY)
-    target_link_libraries(${NAME} ${MATH_LIBRARY})
+  if (NOT "${SYZ_INTEGRATING}")
+    add_executable(${NAME} ./examples/${NAME}.${EXT})
+    target_link_libraries(${NAME} synthizer)
+    if(MATH_LIBRARY)
+      target_link_libraries(${NAME} ${MATH_LIBRARY})
+    endif()
   endif()
 endfunction()
 
@@ -203,7 +207,7 @@ example(simple_automation c)
 
 # The following won't work on Windows unless compiled against a static build of Synthizer because we don't want to expose the C++ internals from the DLL.
 # Since these are just test programs and not actual utilities, disable them on all platforms if the build isn't static.
-if("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC")
+if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   add_executable(delay_line_test test/delay_line.cpp)
   target_link_libraries(delay_line_test synthizer)
   add_test(NAME delay_line COMMAND delay_line_test)
