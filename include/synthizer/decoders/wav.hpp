@@ -1,3 +1,5 @@
+#pragma once
+
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
@@ -13,14 +15,16 @@
 #include <memory>
 
 namespace synthizer {
+std::shared_ptr<AudioDecoder> decodeWav(std::shared_ptr<LookaheadByteStream> stream);
 
-static std::size_t read_cb(void *user_data, void *out, std::size_t count) {
+namespace wav_detail {
+inline std::size_t read_cb(void *user_data, void *out, std::size_t count) {
   ByteStream *stream = (ByteStream *)user_data;
   auto ret = stream->read(count, (char *)out);
   return ret;
 }
 
-static drwav_bool32 seek_cb(void *user_data, int offset, drwav_seek_origin origin) {
+inline drwav_bool32 seek_cb(void *user_data, int offset, drwav_seek_origin origin) {
   ByteStream *stream = (ByteStream *)user_data;
   stream->seek(origin == drwav_seek_origin_start ? offset : stream->getPosition() + offset);
   return DRWAV_TRUE;
@@ -45,7 +49,7 @@ private:
   std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> tmp_buf{{0.0f}};
 };
 
-WavDecoder::WavDecoder(std::shared_ptr<LookaheadByteStream> stream) {
+inline WavDecoder::WavDecoder(std::shared_ptr<LookaheadByteStream> stream) {
   stream->resetFinal();
   this->stream = stream;
   drwav_uint32 flags = 0;
@@ -67,9 +71,10 @@ WavDecoder::WavDecoder(std::shared_ptr<LookaheadByteStream> stream) {
   }
 }
 
-WavDecoder::~WavDecoder() { drwav_uninit(&this->wav); }
+inline WavDecoder::~WavDecoder() { drwav_uninit(&this->wav); }
 
-unsigned long long WavDecoder::writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels) {
+inline unsigned long long WavDecoder::writeSamplesInterleaved(unsigned long long num, float *samples,
+                                                              unsigned int channels) {
   auto actualChannels = channels < 1 ? this->wav.channels : channels;
   /* Fast case: if the channels are equal, just write. */
   if (actualChannels == this->wav.channels)
@@ -92,28 +97,29 @@ unsigned long long WavDecoder::writeSamplesInterleaved(unsigned long long num, f
   return num - needed;
 }
 
-int WavDecoder::getSr() { return this->wav.sampleRate; }
+inline int WavDecoder::getSr() { return this->wav.sampleRate; }
 
-int WavDecoder::getChannels() { return this->wav.channels; }
+inline int WavDecoder::getChannels() { return this->wav.channels; }
 
-AudioFormat WavDecoder::getFormat() { return AudioFormat::Wav; }
+inline AudioFormat WavDecoder::getFormat() { return AudioFormat::Wav; }
 
-void WavDecoder::seekPcm(unsigned long long pos) {
+inline void WavDecoder::seekPcm(unsigned long long pos) {
   auto actualPos = std::min(this->getLength(), pos);
   if (drwav_seek_to_pcm_frame(&this->wav, actualPos) == DRWAV_FALSE)
     throw new Error("Unable to seek.");
 }
 
-bool WavDecoder::supportsSeek() { return this->stream->supportsSeek(); }
+inline bool WavDecoder::supportsSeek() { return this->stream->supportsSeek(); }
 
-bool WavDecoder::supportsSampleAccurateSeek() { return this->supportsSeek() && true; }
+inline bool WavDecoder::supportsSampleAccurateSeek() { return this->supportsSeek() && true; }
 
-unsigned long long WavDecoder::getLength() { return this->wav.totalPCMFrameCount; }
+inline unsigned long long WavDecoder::getLength() { return this->wav.totalPCMFrameCount; }
+} // namespace wav_detail
 
-std::shared_ptr<AudioDecoder> decodeWav(std::shared_ptr<LookaheadByteStream> stream) {
+inline std::shared_ptr<AudioDecoder> decodeWav(std::shared_ptr<LookaheadByteStream> stream) {
   drwav test_wav;
   drwav_uint32 flags = 0;
-  auto seek_callback = seek_cb;
+  auto seek_callback = wav_detail::seek_cb;
 
   /* Disable seeking if necessary. */
   if (stream->supportsSeek() == false) {
@@ -121,13 +127,14 @@ std::shared_ptr<AudioDecoder> decodeWav(std::shared_ptr<LookaheadByteStream> str
     seek_callback = nullptr;
   }
 
-  if (drwav_init_ex(&test_wav, read_cb, seek_callback, NULL, (void *)stream.get(), NULL, flags, NULL) == DRWAV_FALSE)
+  if (drwav_init_ex(&test_wav, wav_detail::read_cb, seek_callback, NULL, (void *)stream.get(), NULL, flags, NULL) ==
+      DRWAV_FALSE)
     return nullptr;
 
   drwav_uninit(&test_wav);
 
   /* resetFinal handled by constructor. */
-  return std::make_shared<WavDecoder>(stream);
+  return std::make_shared<wav_detail::WavDecoder>(stream);
 }
 
 } // namespace synthizer
