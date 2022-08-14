@@ -175,25 +175,3 @@ std::optional<double> Source::startLingering(const std::shared_ptr<CExposable> &
 }
 
 } // namespace synthizer
-
-using namespace synthizer;
-
-SYZ_CAPI syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle generator) {
-  SYZ_PROLOGUE
-  auto src = fromC<Source>(source);
-  auto gen = fromC<Generator>(generator);
-  src->getContextRaw()->enqueueReferencingCallbackCommand(
-      true, [](auto &src, auto &gen) { src->addGenerator(gen); }, src, gen);
-  return 0;
-  SYZ_EPILOGUE
-}
-
-SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle generator) {
-  SYZ_PROLOGUE
-  auto src = fromC<Source>(source);
-  auto gen = fromC<Generator>(generator);
-  src->getContextRaw()->enqueueReferencingCallbackCommand(
-      true, [](auto &src, auto &gen) { src->removeGenerator(gen); }, src, gen);
-  return 0;
-  SYZ_EPILOGUE
-}

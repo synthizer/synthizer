@@ -12,6 +12,26 @@
 
 using namespace synthizer;
 
+SYZ_CAPI syz_ErrorCode syz_sourceAddGenerator(syz_Handle source, syz_Handle generator) {
+  SYZ_PROLOGUE
+  auto src = fromC<Source>(source);
+  auto gen = fromC<Generator>(generator);
+  src->getContextRaw()->enqueueReferencingCallbackCommand(
+      true, [](auto &src, auto &gen) { src->addGenerator(gen); }, src, gen);
+  return 0;
+  SYZ_EPILOGUE
+}
+
+SYZ_CAPI syz_ErrorCode syz_sourceRemoveGenerator(syz_Handle source, syz_Handle generator) {
+  SYZ_PROLOGUE
+  auto src = fromC<Source>(source);
+  auto gen = fromC<Generator>(generator);
+  src->getContextRaw()->enqueueReferencingCallbackCommand(
+      true, [](auto &src, auto &gen) { src->removeGenerator(gen); }, src, gen);
+  return 0;
+  SYZ_EPILOGUE
+}
+
 SYZ_CAPI syz_ErrorCode syz_createDirectSource(syz_Handle *out, syz_Handle context, void *config, void *userdata,
                                               syz_UserdataFreeCallback *userdata_free_callback) {
   SYZ_PROLOGUE(void) config;
@@ -55,8 +75,6 @@ SYZ_CAPI syz_ErrorCode syz_createAngularPannedSource(syz_Handle *out, syz_Handle
   SYZ_EPILOGUE
 }
 
-
-
 SYZ_CAPI syz_ErrorCode syz_createScalarPannedSource(syz_Handle *out, syz_Handle context, int panner_strategy,
                                                     double panning_scalar, void *config, void *userdata,
                                                     syz_UserdataFreeCallback *userdata_free_callback) {
@@ -82,7 +100,6 @@ SYZ_CAPI syz_ErrorCode syz_createScalarPannedSource(syz_Handle *out, syz_Handle 
   return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
   SYZ_EPILOGUE
 }
-
 
 SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, int panner_strategy, double x, double y,
                                           double z, void *config, void *userdata,
