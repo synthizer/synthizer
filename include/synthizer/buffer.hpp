@@ -7,6 +7,8 @@
 #include "synthizer/random_generator.hpp"
 #include "synthizer/types.hpp"
 
+#include "WDL/resample.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
@@ -307,7 +309,7 @@ inline std::shared_ptr<BufferData> generateBufferData(unsigned int channels, uns
 
       for (std::size_t i = 0; i < next_chunk_len * channels; i++) {
         std::int_fast32_t tmp = working_buf[i] * 32768.0f + dither.generate();
-        next_chunk[i] = clamp<std::int_fast32_t>(tmp, -32768, 32767);
+        next_chunk[i] = std::clamp<std::int_fast32_t>(tmp, -32768, 32767);
       }
 
       std::fill(next_chunk + next_chunk_len * channels, next_chunk + chunk_size_samples, 0);
