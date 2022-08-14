@@ -1,5 +1,5 @@
 /*
- * this is the C API for filter properties.\
+ * this is the C API for filter properties.
  * */
 
 #include "synthizer.h"
