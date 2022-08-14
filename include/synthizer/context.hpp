@@ -346,5 +346,3 @@ private:
 };
 
 } // namespace synthizer
-
-inline int dummy = 5;
