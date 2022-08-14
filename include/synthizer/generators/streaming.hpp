@@ -4,6 +4,7 @@
 #include "synthizer/config.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/decoding.hpp"
+#include "synthizer/event_builder.hpp"
 #include "synthizer/events.hpp"
 #include "synthizer/generation_thread.hpp"
 #include "synthizer/generator.hpp"

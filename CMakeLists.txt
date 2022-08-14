@@ -101,13 +101,13 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/c_api/buffer.cpp
   src/byte_stream.cpp
   src/c_api/core.cpp
+  src/c_api/events.cpp
   src/c_api/filter_properties.cpp
   src/c_api/generators.cpp
   src/context.cpp
   src/decoding.cpp
   src/error.cpp
   src/event_timeline.cpp
-  src/events.cpp
   src/generator.cpp
   src/logging.cpp
   src/memory.cpp

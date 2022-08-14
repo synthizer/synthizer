@@ -4,6 +4,7 @@
 #include "synthizer/buffer.hpp"
 #include "synthizer/context.hpp"
 #include "synthizer/edge_trigger.hpp"
+#include "synthizer/event_builder.hpp"
 #include "synthizer/events.hpp"
 #include "synthizer/generator.hpp"
 #include "synthizer/property_internals.hpp"
