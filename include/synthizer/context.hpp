@@ -225,7 +225,7 @@ public:
    *
    * How this works is you pass it a callback which takes a pointer to an EventBuilder, you build your event, then the
    * context dispatches it on your behalf. The point of this function is that the callback/event building can be
-   * entirely avoided if events are disabled; in that cse, your callback will not be called.
+   * entirely avoided if events are disabled; in that case, your callback will not be called.
    * */
   template <typename CB> void sendEvent(CB &&callback) {
     if (this->event_sender.isEnabled() == false) {

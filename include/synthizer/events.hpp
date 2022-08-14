@@ -1,14 +1,9 @@
 #pragma once
 
-#include "synthizer.h"
-#include "synthizer_constants.h"
-
-#include "synthizer/memory.hpp"
 #include "synthizer/small_vec.hpp"
 
 #include <concurrentqueue.h>
 
-#include <cassert>
 #include <cstdint>
 #include <memory>
 #include <utility>
@@ -16,6 +11,7 @@
 namespace synthizer {
 
 class CExposable;
+class Context;
 
 /**
  * Event system internals.  See the comments on each of these classes, which explain how everything works.
@@ -89,62 +85,55 @@ private:
   bool enabled = false;
 };
 
-inline PendingEvent::PendingEvent() {}
+/**
+ * The EventBuilder is a safe abstraction for building events, or at least
+ * as safe as C++ allows.  To use it:
+ *
+ * - call setSource to set the source.
+ * - Maybe call setContext to set the context.
+ * - call translateHandle for every object that needs to be a handle in the event struct. This may return
+ *   0 if the object doesn't have a handle, but will short-circuit event sending in that case.
+ * - Build one of the payload event structs.
+ * - call setPayload with the payload struct, which will handle
+ *   setting up the union via overloads.
+ * - call dispatch with a pointer to an EventSender to send the event.
+ *
+ * For convenience, translateHandle has a weak_ptr overload.
+ * */
+class EventBuilder {
+public:
+  void setSource(const std::shared_ptr<CExposable> &source);
+  void setContext(const std::shared_ptr<Context> &ctx);
 
-inline PendingEvent::PendingEvent(syz_Event &&event, EventHandleVec &&referenced_handles)
-    : event(event), referenced_handles(referenced_handles), valid(true) {}
+  syz_Handle translateHandle(const std::shared_ptr<CExposable> &object);
+  syz_Handle translateHandle(const std::weak_ptr<CExposable> &object);
+  void setType(int type);
 
-inline void PendingEvent::extract(syz_Event *out) {
-  *out = syz_Event{};
+  /* These overloads set the payload, and the type that goes with that payload when the type is known. */
 
-  for (std::size_t i = 0; i < this->referenced_handles.size(); i++) {
-    auto strong = this->referenced_handles[i].lock();
+  void setPayload(const syz_UserAutomationEvent &payload);
 
-    if (strong == nullptr || strong->incRef() == false) {
-      /**
-       * We failed to revive this object and produce a strong reference.
-       * Decrement all the references before it in the vector. All the
-       * previous objects are still alive because we just incremented
-       * their reference counts, so unconditionally decrement their
-       * reference counts without checking again.  If this crashes, it's
-       * because the user misused the library, probably by decrementing
-       * reference counts more than they were incremented.
-       * */
-      for (std::size_t j = 0; j < i; j++) {
-        this->referenced_handles[j].lock()->decRef();
-      }
-      return;
-    }
-  }
+  void dispatch(EventSender *sender);
 
-  *out = this->event;
-}
+private:
+  /**
+   * Associate a handle with this event, return whether or not the object was valid (e.g. non-null, still visible from
+   * C)
+   * */
+  bool associateObject(const std::shared_ptr<CExposable> &obj);
 
-inline EventSender::EventSender() : pending_events(), producer_token(pending_events) {}
+  syz_Event event{};
+  EventHandleVec referenced_objects;
+  bool will_send = true;
+  bool has_source = false;
+};
 
-inline void EventSender::setEnabled(bool val) { this->enabled = val; }
-
-inline bool EventSender::isEnabled() { return this->enabled; }
-
-inline void EventSender::getNextEvent(syz_Event *out) {
-  PendingEvent maybe_event;
-
-  *out = syz_Event{};
-
-  if (this->pending_events.try_dequeue(maybe_event) == false) {
-    return;
-  }
-
-  maybe_event.extract(out);
-}
-
-inline void EventSender::enqueue(syz_Event &&event, EventHandleVec &&handles) {
-  if (this->enabled == false) {
-    return;
-  }
-
-  PendingEvent pending{std::move(event), std::move(handles)};
-  this->pending_events.enqueue(this->producer_token, pending);
-}
+/**
+ * senders for a couple common cases.
+ * */
+void sendFinishedEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<CExposable> &source);
+void sendLoopedEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<CExposable> &source);
+void sendUserAutomationEvent(const std::shared_ptr<Context> &ctx, const std::shared_ptr<BaseObject> &source,
+                             unsigned long long param);
 
 } // namespace synthizer

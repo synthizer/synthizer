@@ -8,7 +8,6 @@
 #include "./buffer.cpp"
 #include "./core.cpp"
 #include "./effects.cpp"
-#include "./events.cpp"
 #include "./filter_properties.cpp"
 #include "./generators.cpp"
 #include "./sources.cpp"

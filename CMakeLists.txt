@@ -104,6 +104,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/decoding.cpp
   src/error.cpp
   src/event_timeline.cpp
+  src/events.cpp
   src/generator.cpp
   src/logging.cpp
   src/memory.cpp
