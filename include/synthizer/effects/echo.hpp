@@ -1,10 +1,12 @@
 #pragma once
+#include "synthizer_constants.h"
 
 #include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/block_delay_line.hpp"
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
 #include "synthizer/effects/base_effect.hpp"
+#include "synthizer/effects/global_effect.hpp"
 #include "synthizer/memory.hpp"
 #include "synthizer/types.hpp"
 
@@ -32,14 +34,6 @@ struct EchoTap {
 constexpr unsigned int ECHO_MAX_DELAY = nextMultipleOf(config::SR * 5, config::BLOCK_SIZE);
 
 /*
- * Shim base class for the C API, so that it can work for both global and generator-specific echoes.
- * */
-class EchoEffectCInterface {
-public:
-  virtual void pushNewConfig(deferred_vector<EchoTapConfig> &&config) = 0;
-};
-
-/*
  * A stereo echo effect with variable taps. This gets to use the "echo" name because it is broadly speaking the most
  * common form of echo.
  *
@@ -47,17 +41,19 @@ public:
  * dynamically sized delay line, so there's not currently one implemented. I'm going to circle back on this later, but
  * for the sake of early access, let's get this out the door without it.
  * */
-template <typename BASE> class EchoEffect : public BASE, public EchoEffectCInterface {
+class GlobalEchoEffect : public GlobalEffect {
 public:
-  EchoEffect(const std::shared_ptr<Context> &ctx) : BASE(ctx, 1) {}
+  GlobalEchoEffect(const std::shared_ptr<Context> &ctx) : GlobalEffect(ctx, 1) {}
 
   void runEffect(unsigned int block_time, unsigned int input_channels, float *input, unsigned int output_channels,
                  float *output, float gain) override;
   void resetEffect() override;
 
-  void pushNewConfig(deferred_vector<EchoTapConfig> &&config) override;
+  void pushNewConfig(deferred_vector<EchoTapConfig> &&config);
 
   double getEffectLingerTimeout() override;
+
+  int getObjectType() override;
 
 private:
   /*
@@ -85,9 +81,7 @@ private:
   unsigned int max_delay_tap = 0;
 };
 
-template <typename BASE>
-template <bool FADE_IN, bool ADD>
-void EchoEffect<BASE>::runEffectInternal(float *output, float gain) {
+template <bool FADE_IN, bool ADD> void GlobalEchoEffect::runEffectInternal(float *output, float gain) {
   this->line.runReadLoop(this->max_delay_tap, [&](unsigned int i, auto &reader) {
     float acc_l = 0.0f;
     float acc_r = 0.0f;
@@ -112,8 +106,7 @@ void EchoEffect<BASE>::runEffectInternal(float *output, float gain) {
   });
 }
 
-template <typename BASE>
-void EchoEffect<BASE>::runEffect(unsigned int block_time, unsigned int input_channels, float *input,
+void GlobalEchoEffect::runEffect(unsigned int block_time, unsigned int input_channels, float *input,
                                  unsigned int output_channels, float *output, float gain) {
   (void)block_time;
 
@@ -159,16 +152,16 @@ void EchoEffect<BASE>::runEffect(unsigned int block_time, unsigned int input_cha
   }
 }
 
-template <typename BASE> void EchoEffect<BASE>::resetEffect() { this->line.clear(); }
+void GlobalEchoEffect::resetEffect() { this->line.clear(); }
 
-template <typename BASE> void EchoEffect<BASE>::pushNewConfig(deferred_vector<EchoTapConfig> &&config) {
+void GlobalEchoEffect::pushNewConfig(deferred_vector<EchoTapConfig> &&config) {
   pdqsort_branchless(config.begin(), config.end(), [](auto &a, auto &b) { return a.delay < b.delay; });
   if (this->pending_configs.enqueue(std::move(config)) == false) {
     throw std::bad_alloc();
   }
 }
 
-template <typename BASE> double EchoEffect<BASE>::getEffectLingerTimeout() {
+double GlobalEchoEffect::getEffectLingerTimeout() {
   /**
    * The best we can do is linger until the entire delay line is empty.
    *
@@ -176,5 +169,7 @@ template <typename BASE> double EchoEffect<BASE>::getEffectLingerTimeout() {
    * */
   return (ECHO_MAX_DELAY / config::BLOCK_SIZE + 1) * config::BLOCK_SIZE / (double)config::SR;
 }
+
+int GlobalEchoEffect::getObjectType() { return SYZ_OTYPE_GLOBAL_ECHO; }
 
 } // namespace synthizer

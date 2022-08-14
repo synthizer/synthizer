@@ -8,18 +8,6 @@
 
 #include <utility>
 
-namespace synthizer {
-
-class ExposedGlobalFdnReverb : public FdnReverbEffect<GlobalEffect> {
-public:
-  template <typename... ARGS>
-  ExposedGlobalFdnReverb(ARGS &&... args) : FdnReverbEffect<GlobalEffect>(std::forward<ARGS>(args)...) {}
-
-  int getObjectType() override { return SYZ_OTYPE_GLOBAL_FDN_REVERB; }
-};
-
-} // namespace synthizer
-
 using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle context, void *config, void *userdata,
@@ -27,7 +15,7 @@ SYZ_CAPI syz_ErrorCode syz_createGlobalFdnReverb(syz_Handle *out, syz_Handle con
   SYZ_PROLOGUE(void) config;
 
   auto ctx = fromC<Context>(context);
-  auto x = ctx->createObject<ExposedGlobalFdnReverb>();
+  auto x = ctx->createObject<GlobalFdnReverbEffect>();
   std::shared_ptr<GlobalEffect> e = x;
   ctx->registerGlobalEffect(e);
   *out = toC(x);

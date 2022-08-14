@@ -9,18 +9,6 @@
 
 #include <utility>
 
-namespace synthizer {
-
-class ExposedGlobalEcho : public EchoEffect<GlobalEffect> {
-public:
-  template <typename... ARGS>
-  ExposedGlobalEcho(ARGS &&... args) : EchoEffect<GlobalEffect>(std::forward<ARGS>(args)...) {}
-
-  int getObjectType() override { return SYZ_OTYPE_GLOBAL_ECHO; }
-};
-
-} // namespace synthizer
-
 using namespace synthizer;
 
 SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context, void *config, void *userdata,
@@ -28,7 +16,7 @@ SYZ_CAPI syz_ErrorCode syz_createGlobalEcho(syz_Handle *out, syz_Handle context,
   SYZ_PROLOGUE(void) config;
 
   auto ctx = fromC<Context>(context);
-  auto x = ctx->createObject<ExposedGlobalEcho>();
+  auto x = ctx->createObject<GlobalEchoEffect>();
   std::shared_ptr<GlobalEffect> e = x;
   ctx->registerGlobalEffect(e);
   *out = toC(x);
@@ -40,7 +28,7 @@ SYZ_CAPI syz_ErrorCode syz_globalEchoSetTaps(syz_Handle handle, unsigned int n_t
                                              const struct syz_EchoTapConfig *taps) {
   SYZ_PROLOGUE
   deferred_vector<EchoTapConfig> cfg;
-  auto echo = fromC<EchoEffectCInterface>(handle);
+  auto echo = fromC<GlobalEchoEffect>(handle);
   cfg.reserve(n_taps);
   for (unsigned int i = 0; i < n_taps; i++) {
     const unsigned int delay_in_samples = taps[i].delay * config::SR;

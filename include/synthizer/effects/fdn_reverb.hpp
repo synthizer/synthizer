@@ -1,12 +1,13 @@
 #pragma once
 
 #include "synthizer.h"
+#include "synthizer_constants.h"
 
 #include "synthizer/block_buffer_cache.hpp"
 #include "synthizer/block_delay_line.hpp"
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
-#include "synthizer/effects/base_effect.hpp"
+#include "synthizer/effects/global_effect.hpp"
 #include "synthizer/iir_filter.hpp"
 #include "synthizer/interpolated_random_sequence.hpp"
 #include "synthizer/math.hpp"
@@ -33,7 +34,7 @@ class Context;
 /*
  * An FDN reverberator using a household reflection matrix and an early reflections model.
  * */
-template <typename BASE> class FdnReverbEffect : public BASE {
+class GlobalFdnReverbEffect : public GlobalEffect {
 public:
   /* Number of lines in the FDN. */
   static constexpr unsigned int LINES = 8;
@@ -58,7 +59,7 @@ public:
    * */
   static constexpr unsigned int MAX_FEEDBACK_DELAY = 0.35 * config::SR;
 
-  FdnReverbEffect(const std::shared_ptr<Context> &ctx) : BASE(ctx, 1) {
+  GlobalFdnReverbEffect(const std::shared_ptr<Context> &ctx) : GlobalEffect(ctx, 1) {
     syz_BiquadConfig filter_cfg;
     syz_biquadDesignLowpass(&filter_cfg, 2000, 0.7071135624381276);
     this->setFilterInput(filter_cfg);
@@ -71,9 +72,10 @@ public:
                  float *output, float gain) override;
   void resetEffect() override;
   double getEffectLingerTimeout() override;
+  int getObjectType() override;
 
 #define PROPERTY_CLASS FdnReverbEffect
-#define PROPERTY_BASE BASE
+#define PROPERTY_BASE GlobalEffect
 #define PROPERTY_LIST FDN_REVERB_EFFECT_PROPERTIES
 #include "synthizer/property_impl.hpp"
 private:
@@ -103,7 +105,7 @@ private:
   std::array<InterpolatedRandomSequence, LINES> late_modulators;
 };
 
-template <typename BASE> void FdnReverbEffect<BASE>::maybeRecomputeModel() {
+inline void GlobalFdnReverbEffect::maybeRecomputeModel() {
   bool dirty = false;
 
   /*
@@ -285,15 +287,14 @@ template <typename BASE> void FdnReverbEffect<BASE>::maybeRecomputeModel() {
   }
 }
 
-template <typename BASE> void FdnReverbEffect<BASE>::resetEffect() {
+inline void GlobalFdnReverbEffect::resetEffect() {
   this->lines.clear();
   this->feedback_eq.reset();
   this->input_filter.reset();
 }
 
-template <typename BASE>
-void FdnReverbEffect<BASE>::runEffect(unsigned int block_time, unsigned int input_channels, float *input,
-                                      unsigned int output_channels, float *output, float gain) {
+inline void GlobalFdnReverbEffect::runEffect(unsigned int block_time, unsigned int input_channels, float *input,
+                                             unsigned int output_channels, float *output, float gain) {
   (void)block_time;
 
   /*
@@ -385,6 +386,8 @@ void FdnReverbEffect<BASE>::runEffect(unsigned int block_time, unsigned int inpu
   mixChannels(config::BLOCK_SIZE, output_buf_ptr, 2, output, output_channels);
 }
 
-template <typename BASE> double FdnReverbEffect<BASE>::getEffectLingerTimeout() { return this->getT60(); }
+inline double GlobalFdnReverbEffect::getEffectLingerTimeout() { return this->getT60(); }
+
+inline int GlobalFdnReverbEffect::getObjectType() { return SYZ_OTYPE_GLOBAL_FDN_REVERB; }
 
 } // namespace synthizer
