@@ -98,13 +98,9 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/audio_output.cpp
   src/base_object.cpp
   src/block_buffer_cache.cpp
-  src/c_api/buffer.cpp
   src/byte_stream.cpp
-  src/c_api/core.cpp
-  src/c_api/events.cpp
-  src/c_api/filter_properties.cpp
-  src/c_api/generators.cpp
-  src/c_api/stream_handle.cpp
+  # includes our C API source files into a unity build.
+  src/c_api/unity.cpp
   src/context.cpp
   src/decoding.cpp
   src/error.cpp

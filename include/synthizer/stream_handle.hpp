@@ -1,3 +1,5 @@
+#pragma once
+
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/error.hpp"
 #include "synthizer/memory.hpp"
