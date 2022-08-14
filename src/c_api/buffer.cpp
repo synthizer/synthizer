@@ -5,6 +5,7 @@
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"
+#include "synthizer/decoders/raw_decoder.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/error.hpp"
 #include "synthizer/math.hpp"

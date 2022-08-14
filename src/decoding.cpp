@@ -5,6 +5,7 @@
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/decoders/flac.hpp"
 #include "synthizer/decoders/mp3.hpp"
+#include "synthizer/decoders/raw_decoder.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/make_static_array.hpp"

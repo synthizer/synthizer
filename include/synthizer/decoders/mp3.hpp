@@ -1,3 +1,5 @@
+#pragma once
+
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
@@ -122,7 +124,7 @@ inline bool Mp3Decoder::supportsSampleAccurateSeek() { return this->supportsSeek
 inline unsigned long long Mp3Decoder::getLength() { return this->frame_count; }
 } // namespace mp3_detail
 
-std::shared_ptr<AudioDecoder> decodeMp3(std::shared_ptr<LookaheadByteStream> stream) {
+inline std::shared_ptr<AudioDecoder> decodeMp3(std::shared_ptr<LookaheadByteStream> stream) {
   drmp3 test_mp3;
 
   if (drmp3_init(&test_mp3, mp3_detail::read_cb, NULL, (void *)stream.get(), NULL) == DRMP3_FALSE)

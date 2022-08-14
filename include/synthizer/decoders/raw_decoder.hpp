@@ -1,3 +1,5 @@
+#pragma once
+
 #include "synthizer/decoding.hpp"
 
 #include "synthizer/memory.hpp"
@@ -5,6 +7,15 @@
 #include <memory>
 
 namespace synthizer {
+
+/**
+ * Get a decoder which is backed by a raw buffer of float data.  This is used
+ * to let users feed generated audio into Synthizer, e.g. waveforms in float arrays.
+ * */
+std::shared_ptr<AudioDecoder> getRawDecoder(unsigned int sr, unsigned int channels, std::size_t frames,
+                                            const float *data);
+
+namespace raw_decoder_detail {
 
 class RawDecoder : public AudioDecoder {
 public:
@@ -29,7 +40,8 @@ private:
   std::size_t position_in_frames = 0;
 };
 
-unsigned long long RawDecoder::writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int chans) {
+inline unsigned long long RawDecoder::writeSamplesInterleaved(unsigned long long num, float *samples,
+                                                              unsigned int chans) {
   if (this->position_in_frames >= this->frames) {
     return 0;
   }
@@ -67,24 +79,25 @@ unsigned long long RawDecoder::writeSamplesInterleaved(unsigned long long num, f
   return will_read;
 }
 
-void RawDecoder::seekPcm(unsigned long long frame) { this->position_in_frames = frame; }
+inline void RawDecoder::seekPcm(unsigned long long frame) { this->position_in_frames = frame; }
 
-bool RawDecoder::supportsSeek() { return true; }
+inline bool RawDecoder::supportsSeek() { return true; }
 
-bool RawDecoder::supportsSampleAccurateSeek() { return true; }
+inline bool RawDecoder::supportsSampleAccurateSeek() { return true; }
 
-unsigned long long RawDecoder::getLength() { return this->frames; }
+inline unsigned long long RawDecoder::getLength() { return this->frames; }
 
-int RawDecoder::getSr() { return this->sr; }
+inline int RawDecoder::getSr() { return this->sr; }
 
-int RawDecoder::getChannels() { return this->channels; }
+inline int RawDecoder::getChannels() { return this->channels; }
 
-AudioFormat RawDecoder::getFormat() { return AudioFormat::Raw; }
+inline AudioFormat RawDecoder::getFormat() { return AudioFormat::Raw; }
+} // namespace raw_decoder_detail
 
-std::shared_ptr<AudioDecoder> getRawDecoder(unsigned int sr, unsigned int channels, std::size_t frames,
-                                            const float *data) {
-  RawDecoder *dec = new RawDecoder(sr, channels, frames, data);
-  return sharedPtrDeferred<RawDecoder>(dec, deferredDelete<RawDecoder>);
+inline std::shared_ptr<AudioDecoder> getRawDecoder(unsigned int sr, unsigned int channels, std::size_t frames,
+                                                   const float *data) {
+  raw_decoder_detail::RawDecoder *dec = new raw_decoder_detail::RawDecoder(sr, channels, frames, data);
+  return sharedPtrDeferred<raw_decoder_detail::RawDecoder>(dec, deferredDelete<raw_decoder_detail::RawDecoder>);
 }
 
 } // namespace synthizer

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
