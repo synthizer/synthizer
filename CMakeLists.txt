@@ -114,7 +114,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/shared_object.cpp
   src/data/arrays.cpp
   src/data/hrtf.cpp
-  src/decoders/libsndfile.cpp
   src/effects/echo.cpp
   src/effects/effects.cpp
   src/effects/fdn_reverb.cpp

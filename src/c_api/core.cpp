@@ -6,6 +6,7 @@
 #include "synthizer/base_object.hpp"
 #include "synthizer/c_api.hpp"
 #include "synthizer/context.hpp"
+#include "synthizer/decoders/libsndfile.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/generators/buffer.hpp"
 #include "synthizer/generators/fast_sine_bank.hpp"

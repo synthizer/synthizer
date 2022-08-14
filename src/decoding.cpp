@@ -4,6 +4,7 @@
 
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/decoders/flac.hpp"
+#include "synthizer/decoders/libsndfile.hpp"
 #include "synthizer/decoders/mp3.hpp"
 #include "synthizer/decoders/raw_decoder.hpp"
 #include "synthizer/decoders/wav.hpp"

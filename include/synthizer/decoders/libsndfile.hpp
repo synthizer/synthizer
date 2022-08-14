@@ -1,3 +1,5 @@
+#pragma once
+
 #include "synthizer/byte_stream.hpp"
 #include "synthizer/channel_mixing.hpp"
 #include "synthizer/config.hpp"
@@ -14,6 +16,18 @@
 
 #include <stdint.h>
 #include <stdio.h>
+
+namespace synthizer {
+
+std::shared_ptr<AudioDecoder> decodeLibsndfile(std::shared_ptr<LookaheadByteStream> stream);
+
+namespace libsndfile_detail {
+/**
+ * Try to load libsndfile. Throws if this isn't possible.
+ *
+ * Should be called at most once per process, as part of initializing Synthizer.
+ * */
+void loadLibsndfile(const char *path);
 
 /**
  * Libsndfile functions and prototypes.
@@ -65,27 +79,25 @@ typedef sf_count_t sf_readf_float_fn(SNDFILE *sndfile, float *ptr, sf_count_t it
 typedef int sf_error_fn(SNDFILE *sndfile);
 typedef const char *sf_strerror_fn(SNDFILE *sndfile);
 
-namespace synthizer {
-
 /**
  * Pointers to the libsndfile functions. Initialized as part of library initialization.
  * */
-static sf_open_virtual_fn *sf_open_virtual = nullptr;
-static sf_close_fn *sf_close = nullptr;
-static sf_seek_fn *sf_seek = nullptr;
-static sf_readf_float_fn *sf_readf_float = nullptr;
-static sf_error_fn *sf_error = nullptr;
-static sf_strerror_fn *sf_strerror = nullptr;
+inline sf_open_virtual_fn *sf_open_virtual = nullptr;
+inline sf_close_fn *sf_close = nullptr;
+inline sf_seek_fn *sf_seek = nullptr;
+inline sf_readf_float_fn *sf_readf_float = nullptr;
+inline sf_error_fn *sf_error = nullptr;
+inline sf_strerror_fn *sf_strerror = nullptr;
 
-static bool libsndfile_loaded = false;
-static SharedObject *libsndfile_obj = nullptr;
+inline bool libsndfile_loaded = false;
+inline SharedObject *libsndfile_obj = nullptr;
 
-static sf_count_t snd_filelen_cb(void *userdata) {
+inline sf_count_t snd_filelen_cb(void *userdata) {
   ByteStream *stream = (ByteStream *)userdata;
   return stream->getLength();
 }
 
-static sf_count_t snd_seek_cb(sf_count_t offset, int whence, void *userdata) {
+inline sf_count_t snd_seek_cb(sf_count_t offset, int whence, void *userdata) {
   ByteStream *stream = (ByteStream *)userdata;
 
   auto cur_pos = stream->getPosition();
@@ -118,7 +130,7 @@ static sf_count_t snd_seek_cb(sf_count_t offset, int whence, void *userdata) {
   return new_pos;
 }
 
-static sf_count_t snd_read_cb(void *ptr, sf_count_t count, void *userdata) {
+inline sf_count_t snd_read_cb(void *ptr, sf_count_t count, void *userdata) {
   char *dest = (char *)ptr;
   ByteStream *stream = (ByteStream *)userdata;
 
@@ -130,14 +142,14 @@ static sf_count_t snd_read_cb(void *ptr, sf_count_t count, void *userdata) {
   }
 }
 
-sf_count_t snd_tell_cb(void *userdata) { return ((ByteStream *)userdata)->getLength(); }
+inline sf_count_t snd_tell_cb(void *userdata) { return ((ByteStream *)userdata)->getLength(); }
 
 /**
  * Libsndfile error handling is interesting because sf_strerror doesn't return NULL for no error. This function
  * does the error check and throws an exception if file has an error state, and should be called
  * after most libsndfile operations.
  * */
-static void throwForLibsndfile(SNDFILE *file, const char *why) {
+inline void throwForLibsndfile(SNDFILE *file, const char *why) {
   if (sf_error(file) != 0) {
     const char *e = sf_strerror(file);
     throw Error(std::string(why) + std::string(" ") + std::string(e));
@@ -165,7 +177,7 @@ private:
   std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> tmp_buf{{0}};
 };
 
-LibsndfileDecoder::LibsndfileDecoder(const std::shared_ptr<LookaheadByteStream> &s) {
+inline LibsndfileDecoder::LibsndfileDecoder(const std::shared_ptr<LookaheadByteStream> &s) {
   this->stream = std::static_pointer_cast<ByteStream>(s);
   SF_VIRTUAL_IO callbacks = SF_VIRTUAL_IO{
       snd_filelen_cb, snd_seek_cb, snd_read_cb, nullptr, snd_tell_cb,
@@ -186,15 +198,15 @@ LibsndfileDecoder::LibsndfileDecoder(const std::shared_ptr<LookaheadByteStream> 
   s->resetFinal();
 }
 
-LibsndfileDecoder::~LibsndfileDecoder() {
+inline LibsndfileDecoder::~LibsndfileDecoder() {
   if (sf_close(this->file) != 0) {
     // Shouldn't be possible.
     logError("Unable to close Libsndfile file: %s", sf_strerror(this->file));
   }
 }
 
-unsigned long long LibsndfileDecoder::writeSamplesInterleaved(unsigned long long num, float *samples,
-                                                              unsigned int channels) {
+inline unsigned long long LibsndfileDecoder::writeSamplesInterleaved(unsigned long long num, float *samples,
+                                                                     unsigned int channels) {
   auto actualChannels = channels < 1 ? this->info.channels : channels;
 
   /* Fast case: if the channels are equal, just write. */
@@ -221,30 +233,34 @@ unsigned long long LibsndfileDecoder::writeSamplesInterleaved(unsigned long long
   return num - needed;
 }
 
-void LibsndfileDecoder::seekPcm(unsigned long long pos) {
+inline void LibsndfileDecoder::seekPcm(unsigned long long pos) {
   sf_seek(this->file, pos, SF_SEEK_SET);
   throwForLibsndfile(this->file, "Unable to seek");
 }
 
-bool LibsndfileDecoder::supportsSeek() { return true; }
+inline bool LibsndfileDecoder::supportsSeek() { return true; }
 
-bool LibsndfileDecoder::supportsSampleAccurateSeek() {
+inline bool LibsndfileDecoder::supportsSampleAccurateSeek() {
   // Libsndfile doesn't tell us, but claiming no is always safe.
   return false;
 }
 
-unsigned long long LibsndfileDecoder::getLength() { return (unsigned long long)this->info.frames; }
+inline unsigned long long LibsndfileDecoder::getLength() { return (unsigned long long)this->info.frames; }
 
-int LibsndfileDecoder::getSr() { return (int)this->info.samplerate; }
+inline int LibsndfileDecoder::getSr() { return (int)this->info.samplerate; }
 
-int LibsndfileDecoder::getChannels() { return this->info.channels; }
+inline int LibsndfileDecoder::getChannels() { return this->info.channels; }
 
-AudioFormat LibsndfileDecoder::getFormat() {
+inline AudioFormat LibsndfileDecoder::getFormat() {
   // Libsndfile does a lot of these, let's not even try for now.
   return AudioFormat::Unknown;
 }
 
-void loadLibsndfile(const char *path) {
+} // namespace libsndfile_detail
+
+inline void loadLibsndfile(const char *path) {
+  using namespace libsndfile_detail;
+
   libsndfile_obj = new SharedObject(path);
   sf_open_virtual = (sf_open_virtual_fn *)libsndfile_obj->getSymbol("sf_open_virtual");
   sf_close = (sf_close_fn *)libsndfile_obj->getSymbol("sf_close");
@@ -255,7 +271,9 @@ void loadLibsndfile(const char *path) {
   libsndfile_loaded = true;
 }
 
-std::shared_ptr<AudioDecoder> decodeLibsndfile(std::shared_ptr<LookaheadByteStream> stream) {
+inline std::shared_ptr<AudioDecoder> decodeLibsndfile(std::shared_ptr<LookaheadByteStream> stream) {
+  using namespace libsndfile_detail;
+
   if (libsndfile_loaded == false) {
     logDebug("decoder: skipping libsndfile because it isn't loaded");
     return nullptr;
@@ -265,7 +283,7 @@ std::shared_ptr<AudioDecoder> decodeLibsndfile(std::shared_ptr<LookaheadByteStre
   }
 
   std::shared_ptr<AudioDecoder> res =
-      sharedPtrDeferred<AudioDecoder>(new LibsndfileDecoder(stream), deferredDelete<AudioDecoder>);
+      sharedPtrDeferred<AudioDecoder>(new libsndfile_detail::LibsndfileDecoder(stream), deferredDelete<AudioDecoder>);
   return res;
 }
 

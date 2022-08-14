@@ -88,11 +88,4 @@ std::shared_ptr<AudioDecoder> getDecoderForStream(std::shared_ptr<ByteStream> st
  * */
 std::shared_ptr<AudioDecoder> convertAudioDecoderToInMemory(std::shared_ptr<AudioDecoder> input, bool encoded = false);
 
-std::shared_ptr<AudioDecoder> decodeLibsndfile(std::shared_ptr<LookaheadByteStream> stream);
-
-/**
- * Try to load libsndfiele. Throws if this isn't possible.
- * */
-void loadLibsndfile(const char *path);
-
 } // namespace synthizer
