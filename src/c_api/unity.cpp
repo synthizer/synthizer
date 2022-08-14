@@ -10,4 +10,5 @@
 #include "./events.cpp"
 #include "./filter_properties.cpp"
 #include "./generators.cpp"
+#include "./sources.cpp"
 #include "./stream_handle.cpp"

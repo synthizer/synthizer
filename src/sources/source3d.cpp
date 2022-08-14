@@ -69,27 +69,3 @@ void Source3D::preRun() {
 }
 
 } // namespace synthizer
-
-using namespace synthizer;
-
-SYZ_CAPI syz_ErrorCode syz_createSource3D(syz_Handle *out, syz_Handle context, int panner_strategy, double x, double y,
-                                          double z, void *config, void *userdata,
-                                          syz_UserdataFreeCallback *userdata_free_callback) {
-  SYZ_PROLOGUE(void) config;
-
-  if (panner_strategy >= SYZ_PANNER_STRATEGY_COUNT) {
-    throw ERange("Invalid panner strategy");
-  }
-
-  auto ctx = fromC<Context>(context);
-  auto ret = ctx->createObject<Source3D>(panner_strategy);
-  std::shared_ptr<Source> src_ptr = ret;
-  ctx->registerSource(src_ptr);
-  *out = toC(ret);
-
-  auto e = syz_setD3(*out, SYZ_P_POSITION, x, y, z);
-  (void)e;
-  assert(e == 0);
-  return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
-  SYZ_EPILOGUE
-}

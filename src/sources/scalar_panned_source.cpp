@@ -22,31 +22,3 @@ void ScalarPannedSource::preRun() {
 }
 
 } // namespace synthizer
-
-using namespace synthizer;
-
-SYZ_CAPI syz_ErrorCode syz_createScalarPannedSource(syz_Handle *out, syz_Handle context, int panner_strategy,
-                                                    double panning_scalar, void *config, void *userdata,
-                                                    syz_UserdataFreeCallback *userdata_free_callback) {
-  SYZ_PROLOGUE(void) config;
-
-  if (panner_strategy >= SYZ_PANNER_STRATEGY_COUNT) {
-    throw ERange("Invalid panner strategy");
-  }
-  if (panning_scalar < -1.0 || panning_scalar > 1.0) {
-    throw ERange("Invalid panning scalar");
-  }
-
-  auto ctx = fromC<Context>(context);
-  auto ret = ctx->createObject<ScalarPannedSource>(panner_strategy);
-  std::shared_ptr<Source> src_ptr = ret;
-  ctx->registerSource(src_ptr);
-  *out = toC(ret);
-
-  auto e = syz_setD(*out, SYZ_P_PANNING_SCALAR, panning_scalar);
-  (void)e;
-  assert(e == 0);
-
-  return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
-  SYZ_EPILOGUE
-}

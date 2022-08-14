@@ -28,17 +28,3 @@ void DirectSource::run(unsigned int out_channels, float *out) {
 }
 
 } // namespace synthizer
-
-using namespace synthizer;
-
-SYZ_CAPI syz_ErrorCode syz_createDirectSource(syz_Handle *out, syz_Handle context, void *config, void *userdata,
-                                              syz_UserdataFreeCallback *userdata_free_callback) {
-  SYZ_PROLOGUE(void) config;
-
-  auto ctx = fromC<Context>(context);
-  auto ret = ctx->createObject<DirectSource>();
-  ctx->registerSource(ret);
-  *out = toC(ret);
-  return syz_handleSetUserdata(*out, userdata, userdata_free_callback);
-  SYZ_EPILOGUE
-}
