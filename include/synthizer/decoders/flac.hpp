@@ -13,15 +13,22 @@
 #include <memory>
 
 namespace synthizer {
+/*
+ * The public interface to this module: try to get a FLAC decoder.
+ *
+ * Returns NULL if that's not possible.
+ * */
+std::shared_ptr<AudioDecoder> decodeFlac(std::shared_ptr<LookaheadByteStream> stream);
 
-static std::size_t read_cb(void *user_data, void *out, std::size_t count) {
+namespace flac_detail {
+inline std::size_t read_cb(void *user_data, void *out, std::size_t count) {
   ByteStream *stream = (ByteStream *)user_data;
   char *dest = (char *)out;
   auto ret = stream->read(count, dest);
   return ret;
 }
 
-static drflac_bool32 seek_cb(void *user_data, int offset, drflac_seek_origin origin) {
+inline drflac_bool32 seek_cb(void *user_data, int offset, drflac_seek_origin origin) {
   ByteStream *stream = (ByteStream *)user_data;
   if (stream->supportsSeek() == false) {
     return DRFLAC_FALSE;
@@ -54,7 +61,7 @@ private:
   std::array<float, config::BLOCK_SIZE * config::MAX_CHANNELS> tmp_buf{{0.0f}};
 };
 
-FlacDecoder::FlacDecoder(std::shared_ptr<LookaheadByteStream> stream) {
+inline FlacDecoder::FlacDecoder(std::shared_ptr<LookaheadByteStream> stream) {
   stream->resetFinal();
   this->stream = stream;
 
@@ -70,9 +77,10 @@ FlacDecoder::FlacDecoder(std::shared_ptr<LookaheadByteStream> stream) {
   }
 }
 
-FlacDecoder::~FlacDecoder() { drflac_close(this->flac); }
+inline FlacDecoder::~FlacDecoder() { drflac_close(this->flac); }
 
-unsigned long long FlacDecoder::writeSamplesInterleaved(unsigned long long num, float *samples, unsigned int channels) {
+inline unsigned long long FlacDecoder::writeSamplesInterleaved(unsigned long long num, float *samples,
+                                                               unsigned int channels) {
   auto actualChannels = channels < 1 ? this->flac->channels : channels;
   /* Fast case: if the channels are equal, just write. */
   if (actualChannels == this->flac->channels) {
@@ -98,28 +106,29 @@ unsigned long long FlacDecoder::writeSamplesInterleaved(unsigned long long num, 
   return num - needed;
 }
 
-int FlacDecoder::getSr() { return this->flac->sampleRate; }
+inline int FlacDecoder::getSr() { return this->flac->sampleRate; }
 
-int FlacDecoder::getChannels() { return this->flac->channels; }
+inline int FlacDecoder::getChannels() { return this->flac->channels; }
 
-AudioFormat FlacDecoder::getFormat() { return AudioFormat::Flac; }
+inline AudioFormat FlacDecoder::getFormat() { return AudioFormat::Flac; }
 
-void FlacDecoder::seekPcm(unsigned long long pos) {
+inline void FlacDecoder::seekPcm(unsigned long long pos) {
   auto actualPos = std::min(this->getLength(), pos);
   if (drflac_seek_to_pcm_frame(this->flac, actualPos) == DRFLAC_FALSE)
     throw new Error("Unable to seek.");
 }
 
-bool FlacDecoder::supportsSeek() { return this->stream->supportsSeek(); }
+inline bool FlacDecoder::supportsSeek() { return this->stream->supportsSeek(); }
 
-bool FlacDecoder::supportsSampleAccurateSeek() { return this->supportsSeek() && true; }
+inline bool FlacDecoder::supportsSampleAccurateSeek() { return this->supportsSeek() && true; }
 
-unsigned long long FlacDecoder::getLength() { return this->flac->totalPCMFrameCount; }
+inline unsigned long long FlacDecoder::getLength() { return this->flac->totalPCMFrameCount; }
+} // namespace flac_detail
 
-std::shared_ptr<AudioDecoder> decodeFlac(std::shared_ptr<LookaheadByteStream> stream) {
+inline std::shared_ptr<AudioDecoder> decodeFlac(std::shared_ptr<LookaheadByteStream> stream) {
   drflac *test_flac;
 
-  test_flac = drflac_open(read_cb, seek_cb, stream.get(), NULL);
+  test_flac = drflac_open(flac_detail::read_cb, flac_detail::seek_cb, stream.get(), NULL);
   if (test_flac == nullptr) {
     return nullptr;
   }
@@ -127,7 +136,7 @@ std::shared_ptr<AudioDecoder> decodeFlac(std::shared_ptr<LookaheadByteStream> st
   drflac_close(test_flac);
 
   /* resetFinal handled by constructor. */
-  return std::make_shared<FlacDecoder>(stream);
+  return std::make_shared<flac_detail::FlacDecoder>(stream);
 }
 
 } // namespace synthizer

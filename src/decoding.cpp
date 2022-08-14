@@ -3,6 +3,7 @@
 #include <exception>
 
 #include "synthizer/byte_stream.hpp"
+#include "synthizer/decoders/flac.hpp"
 #include "synthizer/decoding.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/make_static_array.hpp"

@@ -88,12 +88,6 @@ std::shared_ptr<AudioDecoder> getDecoderForStream(std::shared_ptr<ByteStream> st
  * */
 std::shared_ptr<AudioDecoder> convertAudioDecoderToInMemory(std::shared_ptr<AudioDecoder> input, bool encoded = false);
 
-/*
- * Semi-private infrastructure to decoders that we need to have somewhere for getDecoderForProtocol.
- *
- * getDecoderForProtocol tries all of these and takes the first which doesn't error and doesn't return nullptr.
- * */
-std::shared_ptr<AudioDecoder> decodeFlac(std::shared_ptr<LookaheadByteStream> stream);
 std::shared_ptr<AudioDecoder> decodeMp3(std::shared_ptr<LookaheadByteStream> stream);
 std::shared_ptr<AudioDecoder> decodeWav(std::shared_ptr<LookaheadByteStream> stream);
 std::shared_ptr<AudioDecoder> decodeLibsndfile(std::shared_ptr<LookaheadByteStream> stream);
