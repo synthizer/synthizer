@@ -259,7 +259,7 @@ inline BiquadFilterDef designAudioEqBandpass(double omega, double bw) {
   BIQUAD_VAR_SW0;
   BIQUAD_VAR_CW0;
 
-  const double alpha = sw0 * sinh(log(2) / 2 * bw * omega / sw0);
+  const double alpha = sw0 * sinh(std::log(2) / 2 * bw * omega / sw0);
   const double b0 = alpha;
   const double b1 = 0;
   const double b2 = -alpha;
@@ -277,7 +277,7 @@ inline BiquadFilterDef designAudioEqNotch(double omega, double bw) {
   BIQUAD_VAR_SW0;
   BIQUAD_VAR_CW0;
 
-  const double alpha = sw0 * sinh(log(2) / 2 * bw * omega / sw0);
+  const double alpha = sw0 * sinh(std::log(2) / 2 * bw * omega / sw0);
 
   const double b0 = 1;
   const double b1 = -2 * cw0;
@@ -313,7 +313,7 @@ inline BiquadFilterDef designAudioEqPeaking(double omega, double bw, double dbga
   BIQUAD_VAR_SW0;
 
   const double a = pow(10, dbgain / 40);
-  const double alpha = sw0 * sinh(log(2) / 2 * bw * omega / sw0);
+  const double alpha = sw0 * sinh(std::log(2) / 2 * bw * omega / sw0);
   const double b0 = 1 + alpha * a;
   const double b1 = -2 * cw0;
   const double b2 = 1 - alpha * a;
