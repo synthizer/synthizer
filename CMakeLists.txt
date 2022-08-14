@@ -118,8 +118,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/source.cpp
   src/spsc_semaphore.cpp
   src/stream_handle.cpp
-  src/version.cpp
-
   src/data/arrays.cpp
   src/data/hrtf.cpp
 

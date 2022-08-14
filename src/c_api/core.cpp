@@ -75,6 +75,14 @@ void endInitializedCall(bool require_init) {
 /* C stuff itself; note we're outside the namespace. */
 using namespace synthizer;
 
+SYZ_CAPI void syz_getVersion(unsigned int *major, unsigned int *minor, unsigned int *patch) {
+  *major = SYZ_MAJOR;
+  *minor = SYZ_MINOR;
+  *patch = SYZ_PATCH;
+
+  return;
+}
+
 SYZ_CAPI void syz_libraryConfigSetDefaults(struct syz_LibraryConfig *cfg) { *cfg = syz_LibraryConfig{}; }
 
 SYZ_CAPI syz_ErrorCode syz_initialize(void) {
