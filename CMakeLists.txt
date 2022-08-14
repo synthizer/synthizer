@@ -115,7 +115,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/data/arrays.cpp
   src/data/hrtf.cpp
   src/decoders/libsndfile.cpp
-  src/decoders/mp3.cpp
   src/decoders/raw_decoder.cpp
   src/decoders/wav.cpp
 

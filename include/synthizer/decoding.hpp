@@ -88,7 +88,6 @@ std::shared_ptr<AudioDecoder> getDecoderForStream(std::shared_ptr<ByteStream> st
  * */
 std::shared_ptr<AudioDecoder> convertAudioDecoderToInMemory(std::shared_ptr<AudioDecoder> input, bool encoded = false);
 
-std::shared_ptr<AudioDecoder> decodeMp3(std::shared_ptr<LookaheadByteStream> stream);
 std::shared_ptr<AudioDecoder> decodeWav(std::shared_ptr<LookaheadByteStream> stream);
 std::shared_ptr<AudioDecoder> decodeLibsndfile(std::shared_ptr<LookaheadByteStream> stream);
 
