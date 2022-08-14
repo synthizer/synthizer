@@ -1,5 +1,7 @@
 #pragma once
 
+#include "synthizer_constants.h"
+
 #include "synthizer/property_internals.hpp"
 #include "synthizer/source.hpp"
 #include "synthizer/sources/panned_source.hpp"
@@ -22,5 +24,18 @@ public:
 #define PROPERTY_BASE PannedSource
 #include "synthizer/property_impl.hpp"
 };
+
+inline ScalarPannedSource::ScalarPannedSource(const std::shared_ptr<Context> &ctx, int _panner_strategy)
+    : PannedSource(ctx, _panner_strategy) {}
+
+inline int ScalarPannedSource::getObjectType() { return SYZ_OTYPE_SCALAR_PANNED_SOURCE; }
+
+inline void ScalarPannedSource::preRun() {
+  double scalar;
+
+  if (this->acquirePanningScalar(scalar)) {
+    this->maybe_panner.value().setPanningScalar(scalar);
+  }
+}
 
 } // namespace synthizer

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "synthizer_constants.h"
+
 #include "synthizer/property_internals.hpp"
 #include "synthizer/sources/panned_source.hpp"
 
@@ -21,5 +23,20 @@ public:
 #define PROPERTY_BASE PannedSource
 #include "synthizer/property_impl.hpp"
 };
+
+inline AngularPannedSource::AngularPannedSource(const std::shared_ptr<Context> &ctx, int _panner_strategy)
+    : PannedSource(ctx, _panner_strategy) {}
+
+inline int AngularPannedSource::getObjectType() { return SYZ_OTYPE_ANGULAR_PANNED_SOURCE; }
+
+inline void AngularPannedSource::preRun() {
+  double azimuth, elevation;
+
+  bool angles_changed = this->acquireAzimuth(azimuth) | this->acquireElevation(elevation);
+
+  if (angles_changed) {
+    this->maybe_panner.value().setPanningAngles(azimuth, elevation);
+  }
+}
 
 } // namespace synthizer

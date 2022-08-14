@@ -1,5 +1,7 @@
 #pragma once
 
+#include "synthizer_constants.h"
+
 #include "synthizer/source.hpp"
 
 #include <memory>
@@ -26,5 +28,32 @@ protected:
    * */
   std::optional<Panner> maybe_panner;
 };
+
+inline PannedSource::PannedSource(const std::shared_ptr<Context> context, int _panner_strategy)
+    : Source(context), panner_strategy(_panner_strategy) {}
+
+inline void PannedSource::initInAudioThread() {
+  int effective_panner_strategy = this->panner_strategy;
+  if (effective_panner_strategy == SYZ_PANNER_STRATEGY_DELEGATE) {
+    effective_panner_strategy = this->getContextRaw()->getDefaultPannerStrategy();
+  }
+
+  this->maybe_panner.emplace(buildPannerForStrategy(effective_panner_strategy));
+}
+
+inline void PannedSource::run(unsigned int out_channels, float *out) {
+  assert(out_channels == 2);
+
+  auto &panner = this->maybe_panner.value();
+
+  this->fillBlock(1);
+  float *dest = panner.getInputBuffer();
+
+  for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
+    dest[i] = this->block[i];
+  }
+
+  panner.run(out_channels, out);
+}
 
 } // namespace synthizer

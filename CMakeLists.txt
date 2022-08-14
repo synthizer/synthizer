@@ -112,7 +112,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/routable.cpp
   src/router.cpp
   src/shared_object.cpp
-  src/source.cpp
   src/data/arrays.cpp
   src/data/hrtf.cpp
 
@@ -125,12 +124,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/effects/echo.cpp
   src/effects/effects.cpp
   src/effects/fdn_reverb.cpp
-  src/sources/angular_panned_source.cpp
-  src/sources/direct_source.cpp
-  src/sources/panned_source.cpp
-  src/sources/scalar_panned_source.cpp
-  src/sources/source3d.cpp
-
   src/streams/custom_stream.cpp
   src/streams/file.cpp
   src/streams/memory_stream.cpp
