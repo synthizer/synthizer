@@ -164,6 +164,11 @@ endif()
 
 set_property(TARGET synthizer PROPERTY POSITION_INDEPENDENT_CODE ON)
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # Don't let MSVC define min and max from windows.h.
+  target_compile_definitions(synthizer PRIVATE NOMINMAX)
+endif()
+
 # For CI artifacts:
 if(DEFINED CI_SYNTHIZER_NAME)
   set_target_properties(synthizer PROPERTIES OUTPUT_NAME ${CI_SYNTHIZER_NAME})

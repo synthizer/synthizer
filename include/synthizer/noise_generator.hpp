@@ -3,6 +3,7 @@
 #include "synthizer.h"
 #include "synthizer_constants.h"
 
+#include "synthizer/compiler_specifics.hpp"
 #include "synthizer/iir_filter.hpp"
 #include "synthizer/random_generator.hpp"
 #include "synthizer/types.hpp"
