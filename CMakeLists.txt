@@ -114,7 +114,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/shared_object.cpp
   src/data/arrays.cpp
   src/data/hrtf.cpp
-  src/effects/effects.cpp
   src/streams/custom_stream.cpp
   src/streams/file.cpp
   src/streams/memory_stream.cpp
