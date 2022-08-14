@@ -97,7 +97,6 @@ set(SYNTHIZER_LIB_TYPE STATIC CACHE STRING "The build type for Synthizer. Either
 add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/audio_output.cpp
   src/base_object.cpp
-  src/block_buffer_cache.cpp
   src/byte_stream.cpp
   # includes our C API source files into a unity build.
   src/c_api/unity.cpp
