@@ -9,21 +9,6 @@
 
 namespace synthizer {
 
-void StreamHandleBase::markConsumed() {
-  /* technically the user can re-consume a handle with 2**32 calls that try to do it.  Don't worry about that case and
-   * avoid a cas loop. */
-  if (this->consumed.fetch_add(1, std::memory_order_relaxed) != 0) {
-    throw EValidation("Cannot use StreamHandle twice");
-  }
-}
-
-int StreamHandleBase::getObjectType() { return SYZ_OTYPE_STREAM_HANDLE; }
-
-std::shared_ptr<ByteStream> consumeStreamHandle(const std::shared_ptr<StreamHandle> &handle) {
-  handle->markConsumed();
-  return std::static_pointer_cast<ByteStream>(handle);
-}
-
 } // namespace synthizer
 
 using namespace synthizer;

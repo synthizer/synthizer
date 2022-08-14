@@ -2,6 +2,7 @@
 #include "synthizer/error.hpp"
 #include "synthizer/memory.hpp"
 
+#include <atomic>
 #include <memory>
 
 namespace synthizer {
@@ -35,5 +36,20 @@ private:
 using StreamHandle = ForwardingStream<StreamHandleBase>;
 
 std::shared_ptr<ByteStream> consumeStreamHandle(const std::shared_ptr<StreamHandle> &handle);
+
+inline void StreamHandleBase::markConsumed() {
+  /* technically the user can re-consume a handle with 2**32 calls that try to do it.  Don't worry about that case and
+   * avoid a cas loop. */
+  if (this->consumed.fetch_add(1, std::memory_order_relaxed) != 0) {
+    throw EValidation("Cannot use StreamHandle twice");
+  }
+}
+
+inline int StreamHandleBase::getObjectType() { return SYZ_OTYPE_STREAM_HANDLE; }
+
+inline std::shared_ptr<ByteStream> consumeStreamHandle(const std::shared_ptr<StreamHandle> &handle) {
+  handle->markConsumed();
+  return std::static_pointer_cast<ByteStream>(handle);
+}
 
 } // namespace synthizer

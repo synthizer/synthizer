@@ -104,6 +104,7 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/c_api/events.cpp
   src/c_api/filter_properties.cpp
   src/c_api/generators.cpp
+  src/c_api/stream_handle.cpp
   src/context.cpp
   src/decoding.cpp
   src/error.cpp
@@ -117,7 +118,6 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/router.cpp
   src/shared_object.cpp
   src/source.cpp
-  src/stream_handle.cpp
   src/data/arrays.cpp
   src/data/hrtf.cpp
 
