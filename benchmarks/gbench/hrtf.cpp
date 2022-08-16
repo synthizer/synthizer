@@ -1,3 +1,5 @@
+#include "utils.hpp"
+
 #include "synthizer/panning/hrtf_panner.hpp"
 #include "synthizer/random_generator.hpp"
 
