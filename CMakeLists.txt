@@ -3,6 +3,8 @@ project(synthizer VERSION 0.1.0 LANGUAGES C CXX)
 
 OPTION(SYZ_INTEGRATING "Set to ON to avoid linking examples etc. when integrating into a language's bindings" OFF)
 
+include(FetchContent)
+
 # Do this first; some things will quietly pick it up and it's
 # really hard to tell which.
 set(CMAKE_CXX_STANDARD 17)
@@ -236,6 +238,26 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
 
   add_executable(test_fast_sine_accuracy test/fast_sine_accuracy.cpp)
   target_link_libraries(test_fast_sine_accuracy synthizer)
+
+  # Set up benchmarks for things we can benchmark.
+  #
+  # Unfortunately Synthizer's state is too global for us to do this reliably until we pull the math out to a library,
+  # but we can at least group some things under Google's benchmarking library which is better than nothing.
+
+  # Apparently we have to do this globally because CMake won't let us set a define for a subdirectory. Without it
+  # google/benchmark wants gtest.
+  set(BENCHMARK_ENABLE_TESTING OFF)
+
+  FetchContent_Declare(benchmark
+    GIT_REPOSITORY https://github.com/google/benchmark
+    GIT_TAG 37be1e8252527229cccad9f097afe68572f3c08a
+  )
+
+  FetchContent_MakeAvailable(benchmark)
+
+  add_executable(gbench benchmarks/gbench/hrtf.cpp)
+  target_link_libraries(gbench synthizer benchmark::benchmark benchmark::benchmark_main)
+  set_property(TARGET gbench PROPERTY CXX_STANDARD 17)
 endif()
 
 install(
