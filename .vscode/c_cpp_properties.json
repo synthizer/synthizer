@@ -10,7 +10,9 @@
         "${workspaceFolder}/third_party/miniaudio",
         "${workspaceFolder}/third_party/plf_colony",
         "${workspaceFolder}/third_party/concurrentqueue",
-        "${workspaceFolder}/third_party/pdqsort"
+        "${workspaceFolder}/third_party/pdqsort",
+        "${workspaceFolder}/build/_deps/**"
+
       ],
       "defines": [
         "_DEBUG",

@@ -255,8 +255,11 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
 
   FetchContent_MakeAvailable(benchmark)
 
-  add_executable(gbench benchmarks/gbench/hrtf.cpp)
-  target_link_libraries(gbench synthizer benchmark::benchmark benchmark::benchmark_main)
+  add_executable(gbench
+    benchmarks/gbench/hrtf.cpp
+    benchmarks/gbench/main.cpp
+  )
+  target_link_libraries(gbench synthizer benchmark::benchmark)
   set_property(TARGET gbench PROPERTY CXX_STANDARD 17)
 endif()
 
