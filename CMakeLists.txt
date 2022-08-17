@@ -256,6 +256,7 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
     benchmarks/gbench/hrtf.cpp
     benchmarks/gbench/main.cpp
     benchmarks/gbench/property_write.cpp
+    benchmarks/gbench/standard_setup.cpp
   )
   target_link_libraries(gbench synthizer benchmark::benchmark)
   set_property(TARGET gbench PROPERTY CXX_STANDARD 17)
