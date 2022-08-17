@@ -136,7 +136,7 @@ private:
   FLATTENED void runLoopPrivSplit(unsigned int max_delay, unsigned first, F1 &first_c, unsigned int second,
                                   F2 &second_c) {
     assert(first + second == config::BLOCK_SIZE);
-    bool needs_modulus = max_delay > this->current_frame;
+    bool needs_modulus = max_delay >= this->current_frame;
 
     if (needs_modulus) {
       Reader<modulusIndexProducer, WRITE_ENABLED> r{this->data, this->current_frame};
