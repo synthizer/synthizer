@@ -18,7 +18,8 @@ static void bm_hrtf_panner(benchmark::State &state) {
   synthizer::HrtfPanner panner{};
 
   for (auto s : state) {
-    panner.setPanningAngles(azimuth, 0.0);
+    // Azimuth needs to be offset so that it doesn't go negative when we flip the sign.
+    panner.setPanningAngles(90.0 + azimuth, 0.0);
     azimuth *= -1.0;
 
     float *dest = panner.getInputBuffer();

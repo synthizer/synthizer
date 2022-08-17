@@ -197,9 +197,6 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   add_executable(test_filter_repl test/filter_repl.cpp)
   target_link_libraries(test_filter_repl synthizer)
 
-  add_executable(property_write_bench benchmarks/property_write.cpp)
-  target_link_libraries(property_write_bench synthizer)
-
   add_executable(decoding_bench benchmarks/decoding.cpp)
   target_link_libraries(decoding_bench synthizer)
 
@@ -258,6 +255,7 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   add_executable(gbench
     benchmarks/gbench/hrtf.cpp
     benchmarks/gbench/main.cpp
+    benchmarks/gbench/property_write.cpp
   )
   target_link_libraries(gbench synthizer benchmark::benchmark)
   set_property(TARGET gbench PROPERTY CXX_STANDARD 17)

@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 /**
  * Wrap a synthizer call in this macro, and it will exit the process early on error.
@@ -31,4 +32,23 @@ public:
   ~SynthizerInitGuard() { syz_shutdown(); }
 };
 
+/**
+ * A helper that always drops handles.
+ *
+ * Handles are registered with .register(), and will be destroyed in reverse order of addition when this object's
+ * destructor is called.
+ * */
+class HandleSet {
+public:
+  void registerHandle(syz_Handle handle) { this->handles.push_back(handle); }
+
+  ~HandleSet() {
+    for (auto i = this->handles.rbegin(); i != this->handles.rend(); i++) {
+      syz_handleDecRef(*i);
+    }
+  }
+
+private:
+  std::vector<syz_Handle> handles;
+};
 } // namespace syz_bench

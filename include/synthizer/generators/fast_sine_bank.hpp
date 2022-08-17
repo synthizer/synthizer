@@ -81,7 +81,7 @@ namespace sb_construction_helpers {
  *
  * This is a strategy to reduce the gibbs phenomenon when approximating fourier series.
  * */
-static void sigmaApproximate(std::vector<syz_SineBankWave> *waves) {
+inline void sigmaApproximate(std::vector<syz_SineBankWave> *waves) {
   // Per wolfram, rewrite the fourier series as:
   // `f(theta)=1/2a_0+sum_(n=1)^(m-1)sinc((npi)/(2m))[a_ncos(ntheta)+b_nsin(ntheta)]` where `m`  is the last term.
   //
