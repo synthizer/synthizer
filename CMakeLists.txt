@@ -236,7 +236,7 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   )
   FetchContent_MakeAvailable(benchmark catch2)
   list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
-  INCLUDE(CATCH)
+  INCLUDE(Catch)
 
   add_executable(tests
     test/delay_line.cpp
@@ -252,7 +252,6 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   )
   target_link_libraries(tests PRIVATE Catch2::Catch2 synthizer)
   catch_discover_tests(tests)
-
 
 endif()
 
