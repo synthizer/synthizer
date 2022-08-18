@@ -245,6 +245,7 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
     test/generation_thread.cpp
     test/latch.cpp
     test/main.cpp
+    test/mod_pointer.cpp
     test/property_automation_timeline.cpp
     test/random_float.cpp
     test/verify_properties.cpp
