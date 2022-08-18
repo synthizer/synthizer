@@ -12,7 +12,6 @@
         "${workspaceFolder}/third_party/concurrentqueue",
         "${workspaceFolder}/third_party/pdqsort",
         "${workspaceFolder}/build/_deps/**"
-
       ],
       "defines": [
         "_DEBUG",

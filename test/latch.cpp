@@ -1,5 +1,7 @@
 #include "synthizer/cells.hpp"
 
+#include <catch2/catch_all.hpp>
+
 #include <atomic>
 #include <cassert>
 #include <chrono>
@@ -15,7 +17,7 @@ struct Partial {
   bool c;
 };
 
-int main() {
+TEST_CASE("Test the latch concurrency primitive") {
   LatchCell<Partial> cell{{false, false, false}};
   std::atomic<int> running = 1;
 
@@ -35,7 +37,8 @@ int main() {
 
   for (unsigned int i = 0; i < 1000; i++) {
     Partial v = cell.read();
-    assert(v.a == v.b && v.b == v.c);
+    REQUIRE(v.a == v.b);
+    REQUIRE(v.b == v.c);
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
 

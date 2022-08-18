@@ -187,53 +187,22 @@ example(simple_automation c)
 # The following won't work on Windows unless compiled against a static build of Synthizer because we don't want to expose the C++ internals from the DLL.
 # Since these are just test programs and not actual utilities, disable them on all platforms if the build isn't static.
 if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
-  add_executable(delay_line_test test/delay_line.cpp)
-  target_link_libraries(delay_line_test synthizer)
-  add_test(NAME delay_line COMMAND delay_line_test)
-
   add_executable(file_test file_test.cpp)
   target_link_libraries(file_test synthizer)
 
-  add_executable(test_filter_repl test/filter_repl.cpp)
+  add_executable(test_filter_repl test/INTERACTIVE/filter_repl.cpp)
   target_link_libraries(test_filter_repl synthizer)
 
   add_executable(decoding_bench benchmarks/decoding.cpp)
   target_link_libraries(decoding_bench synthizer)
 
-  add_executable(test_random_float test/random_float.cpp)
-  target_link_libraries(test_random_float synthizer)
-
-  add_executable(test_noise test/noise.cpp)
+  add_executable(test_noise test/INTERACTIVE/noise.cpp)
   target_link_libraries(test_noise synthizer)
 
-  add_executable(test_latch test/latch.cpp)
-  target_link_libraries(test_latch synthizer)
-  add_test(NAME latch COMMAND test_latch)
-
-  add_executable(test_verify_properties test/verify_properties.cpp)
-  target_link_libraries(test_verify_properties synthizer)
-  add_test(NAME verify_properties COMMAND test_verify_properties)
-
-  # can't be an actual unit test until we have silent contexts.
-  add_executable(test_effect_connection test/effect_connection.cpp)
-  target_link_libraries(test_effect_connection synthizer)
-
-  add_executable(test_generation_thread test/generation_thread.cpp)
-  target_link_libraries(test_generation_thread synthizer)
-  add_test(NAME generation_thread COMMAND test_generation_thread)
-
-  add_executable(test_double_refcount test/double_refcount.c)
-  target_link_libraries(test_double_refcount synthizer)
-  add_test(NAME double_refcount COMMAND test_double_refcount)
-
-  add_executable(test_property_automation_timeline test/property_automation_timeline.cpp)
-  target_link_libraries(test_property_automation_timeline synthizer)
-  add_test(NAME property_automation_timeline COMMAND test_property_automation_timeline)
-
-  add_executable(test_seeking test/seeking.cpp)
+  add_executable(test_seeking test/interactive/seeking.cpp)
   target_link_libraries(test_seeking synthizer)
 
-  add_executable(test_fast_sine_accuracy test/fast_sine_accuracy.cpp)
+  add_executable(test_fast_sine_accuracy test/interactive/fast_sine_accuracy.cpp)
   target_link_libraries(test_fast_sine_accuracy synthizer)
 
   # Set up benchmarks for things we can benchmark.
@@ -260,6 +229,30 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   )
   target_link_libraries(gbench synthizer benchmark::benchmark)
   set_property(TARGET gbench PROPERTY CXX_STANDARD 17)
+
+  FetchContent_Declare(catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2
+    GIT_TAG v3.1.0
+  )
+  FetchContent_MakeAvailable(benchmark catch2)
+  list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+  INCLUDE(CATCH)
+
+  add_executable(tests
+    test/delay_line.cpp
+    test/double_refcount.cpp
+    test/effect_connection.cpp
+    test/generation_thread.cpp
+    test/latch.cpp
+    test/main.cpp
+    test/property_automation_timeline.cpp
+    test/random_float.cpp
+    test/verify_properties.cpp
+  )
+  target_link_libraries(tests PRIVATE Catch2::Catch2 synthizer)
+  catch_discover_tests(tests)
+
+
 endif()
 
 install(

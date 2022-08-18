@@ -16,6 +16,8 @@
 #include "synthizer/property_xmacros.hpp"
 #include "synthizer_constants.h"
 
+#include <catch2/catch_all.hpp>
+
 #include <array>
 #include <climits>
 #include <cmath>
@@ -38,7 +40,7 @@ static std::array<float, 2 * 1024> tmp_buf;
 #define ERR_MSG(msg)                                                                                                   \
   std::printf("Error %s.%s: " msg ":", objtype, propname);                                                             \
   printLastError();                                                                                                    \
-  std::exit(1)
+  REQUIRE(false)
 #define TICK_CTX                                                                                                       \
   if (syz_contextGetBlock(ctx, &tmp_buf[0]) != 0) {                                                                    \
     ERR_MSG("Unable to tick context");                                                                                 \
@@ -46,7 +48,6 @@ static std::array<float, 2 * 1024> tmp_buf;
 
 void verifyInt(syz_Handle ctx, syz_Handle handle, int property, int min, int max, int default_value,
                const char *objtype, const char *propname) {
-  printf("Verifying %s.%s\n", objtype, propname);
 
   int val;
   if (syz_getI(&val, handle, property) != 0) {
@@ -85,7 +86,6 @@ void verifyInt(syz_Handle ctx, syz_Handle handle, int property, int min, int max
 
 void verifyDouble(syz_Handle ctx, syz_Handle handle, int property, double min, double max, double default_value,
                   const char *objtype, const char *propname) {
-  printf("Verifying %s.%s\n", objtype, propname);
 
   double val;
   if (syz_getD(&val, handle, property) != 0) {
@@ -124,7 +124,6 @@ void verifyDouble(syz_Handle ctx, syz_Handle handle, int property, double min, d
 
 void verifyDouble3(syz_Handle ctx, syz_Handle handle, int property, double dx, double dy, double dz,
                    const char *objtype, const char *propname) {
-  printf("Verifying %s.%s\n", objtype, propname);
 
   double x, y, z;
 
@@ -148,7 +147,6 @@ void verifyDouble3(syz_Handle ctx, syz_Handle handle, int property, double dx, d
 
 void verifyDouble6(syz_Handle ctx, syz_Handle handle, int property, double dx, double dy, double dz, double da,
                    double db, double dc, const char *objtype, const char *propname) {
-  printf("Verifying %s.%s\n", objtype, propname);
 
   double x, y, z, a, b, c;
 
@@ -181,42 +179,25 @@ void verifyDouble6(syz_Handle ctx, syz_Handle handle, int property, double dx, d
 #define DOUBLE6_P(E, N, IGNORED, DV1, DV2, DV3, DV4, DV5, DV6)                                                         \
   verifyDouble6(ctx, handle, E, DV1, DV2, DV3, DV4, DV5, DV6, objtype, #N);
 
-int main() {
+TEST_CASE("Fuzz the property infrastructure") {
   syz_Handle ctx, source, handle;
   const char *objtype;
 
-  syz_initialize();
-
-  if (syz_createContextHeadless(&ctx, NULL, NULL) != 0) {
-    printf("Unable to create context: ");
-    printLastError();
-    return 1;
-  }
+  REQUIRE_FALSE(syz_createContextHeadless(&ctx, NULL, NULL));
   handle = ctx;
 
   objtype = "Context";
   CONTEXT_PROPERTIES;
 
   objtype = "AngularPannedSource";
-  if (syz_createAngularPannedSource(&source, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, NULL, NULL, NULL) != 0) {
-    printf("Couldn't create PannedSource ");
-    printLastError();
-    return 1;
-  }
+  REQUIRE_FALSE(syz_createAngularPannedSource(&source, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, NULL, NULL, NULL));
   handle = source;
   ANGULAR_PANNED_SOURCE_PROPERTIES;
 
   objtype = "BufferGenerator";
-  if (syz_createBufferGenerator(&handle, ctx, NULL, NULL, NULL) != 0) {
-    printf("Couldn't create BufferGenerator");
-    printLastError();
-    return 1;
-  }
-  if (syz_sourceAddGenerator(source, handle) != 0) {
-    printf("Couldn't attach generator to source\n");
-    printLastError();
-    return 1;
-  }
+  REQUIRE_FALSE(syz_createBufferGenerator(&handle, ctx, NULL, NULL, NULL));
+
+  REQUIRE_FALSE(syz_sourceAddGenerator(source, handle));
 
 #undef DOUBLE_P
 #define DOUBLE_P(...)
@@ -225,19 +206,8 @@ int main() {
 #define DOUBLE_P(...) DOUBLE_P_IMPL(__VA_ARGS__)
 
   objtype = "Source3D";
-  if (syz_createSource3D(&handle, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, 0.0, NULL, NULL, NULL) != 0) {
-    printf("Couldn't create Source3D ");
-    printLastError();
-    return 1;
-  }
+  REQUIRE_FALSE(syz_createSource3D(&handle, ctx, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, 0.0, NULL, NULL, NULL));
 
   objtype = "FdnReverb";
-  if (syz_createGlobalFdnReverb(&handle, ctx, NULL, NULL, NULL) != 0) {
-    printf("Couldn't create GlobalFdnReverb ");
-    printLastError();
-    return 1;
-  }
-
-  syz_shutdown();
-  return 0;
+  REQUIRE_FALSE(syz_createGlobalFdnReverb(&handle, ctx, NULL, NULL, NULL));
 }

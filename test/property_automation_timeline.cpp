@@ -4,6 +4,8 @@
 #include "synthizer/config.hpp"
 #include "synthizer/property_automation_timeline.hpp"
 
+#include <catch2/catch_all.hpp>
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +13,7 @@
 
 using namespace synthizer;
 
-bool floatCmp(double a, double b) { return abs(a - b) < 0.000001; }
+void floatCmp(double a, double b) { REQUIRE(a == Catch::Approx(b)); }
 
 struct Point {
   int type;
@@ -19,7 +21,7 @@ struct Point {
   double value;
 };
 
-void testCurve() {
+TEST_CASE("Test storing a curve in PropertyAutomationTimeline") {
   double tick_delta = config::BLOCK_SIZE / (double)config::SR;
   double time = 0.0;
 
@@ -55,19 +57,10 @@ void testCurve() {
     timeline.tick(time);
     time += tick_delta;
     auto v = timeline.getValue();
-    if (v) {
-      auto x = *v;
-      if (floatCmp(x[0], exp) == false) {
-        printf("Expected %f but got %f at time %f\n", exp, x[0], time);
-        exit(EXIT_FAILURE);
-      }
-    } else {
-      printf("Timeline ended early at time %f\n", time);
-      exit(EXIT_FAILURE);
-    }
+    REQUIRE(v);
+    auto x = *v;
+    floatCmp(x[0], exp);
   }
-
-  printf("Success\n");
 }
 
 class IdentityPoint {
@@ -80,7 +73,7 @@ public:
 /**
  * Test a timeline which "runs ahead". Exercises logic which gets rid of unneeded points.
  * */
-void testLongTimeline() {
+TEST_CASE("Test point removal on PropertyAutomationTimeline") {
   auto tl = GenericTimeline<IdentityPoint, 10>();
   unsigned int i = 0, last_added = 0;
 
@@ -102,14 +95,8 @@ void testLongTimeline() {
     for (unsigned int d = 0; d < 10; d++) {
       double p = (double)i - d;
       auto val = tl.getItem(-d);
-      if (!val) {
-        printf("Expected point at %f but didn't find one", p);
-        exit(EXIT_FAILURE);
-      }
-      if ((*val)->value != (double)p) {
-        printf("Expected %f but got %f at %i\n", (double)p, (*val)->value, -d);
-        exit(EXIT_FAILURE);
-      }
+      REQUIRE(val);
+      REQUIRE((*val)->value == (double)p);
     }
 
     // So the timeline always grows, add two items.
@@ -118,15 +105,4 @@ void testLongTimeline() {
       tl.addItem(IdentityPoint((double)last_added));
     }
   }
-
-  printf("Success\n");
-}
-
-int main() {
-  printf("Running curve test\n");
-  testCurve();
-  printf("Testing long GenericTimeline\n");
-  testLongTimeline();
-
-  return 0;
 }

@@ -1,3 +1,7 @@
+#include "synthizer/random_generator.hpp"
+
+#include <catch2/catch_all.hpp>
+
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
@@ -5,36 +9,28 @@
 #include <cstring>
 #include <limits>
 
-#include "synthizer/random_generator.hpp"
+#define FCHECK(x)                                                                                                      \
+  REQUIRE(x >= -1.0f);                                                                                                 \
+  REQUIRE(x <= 1.0f)
 
-int main() {
+TEST_CASE("RandomGenerator: Random floats are always in range") {
   synthizer::RandomGenerator gen{};
 
-  printf("Testing generation of single floats\n");
-  float fmin = std::numeric_limits<float>::infinity(), fmax = -std::numeric_limits<float>::infinity();
-  for (unsigned int i = 0; i < 100000000; i++) {
-    float v = gen.generateFloat();
-    fmin = std::min(fmin, v);
-    fmax = std::max(fmax, v);
+  SECTION("Generating flaots one at a time") {
+    for (unsigned int i = 0; i < 100000; i++) {
+      float v = gen.generateFloat();
+      FCHECK(v);
+    }
   }
-  printf("Single floats fmin=%f fmax=%f\n", fmin, fmax);
 
-  fmin = std::numeric_limits<float>::infinity();
-  fmax = -std::numeric_limits<float>::infinity();
-  printf("Testing float4 generation\n");
-  for (unsigned int i = 0; i < 100000000; i++) {
-    float f1, f2, f3, f4;
-    gen.generateFloat4(f1, f2, f3, f4);
-    fmin = std::min(fmin, f1);
-    fmin = std::min(fmin, f2);
-    fmin = std::min(fmin, f3);
-    fmin = std::min(f4, fmin);
-    fmax = std::max(fmax, f1);
-    fmax = std::max(fmax, f2);
-    fmax = std::max(fmax, f3);
-    fmax = std::max(fmax, f4);
+  SECTION("Generating in batches of 4") {
+    for (unsigned int i = 0; i < 100000; i++) {
+      float f1, f2, f3, f4;
+      gen.generateFloat4(f1, f2, f3, f4);
+      FCHECK(f1);
+      FCHECK(f2);
+      FCHECK(f3);
+      FCHECK(f4);
+    }
   }
-  printf("float4: fmin = %f fmax = %f\n", fmin, fmax);
-
-  return 0;
 }

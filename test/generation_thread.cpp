@@ -5,6 +5,8 @@
 #include "synthizer/generation_thread.hpp"
 #include "synthizer/config.hpp"
 
+#include <catch2/catch_all.hpp>
+
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -14,12 +16,12 @@
 
 using namespace synthizer;
 
-int main() {
+TEST_CASE("Test the generation thread") {
   std::array<float, config::BLOCK_SIZE> tmp_buf;
   std::vector<int> ints;
   GenerationThread<int *> gt{5};
   std::size_t read_so_far = 0;
-  const std::size_t iterations = 100;
+  const std::size_t iterations = 10000;
   int gen_int = 0;
 
   ints.resize(10);
@@ -38,11 +40,7 @@ int main() {
     if (gt.receive(&got) == false) {
       continue;
     }
-    if (*got != i) {
-      return 1;
-    }
+    REQUIRE(*got == i);
     gt.send(got);
   }
-
-  return 0;
 }
