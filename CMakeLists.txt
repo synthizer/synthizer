@@ -239,6 +239,7 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   INCLUDE(Catch)
 
   add_executable(tests
+    test/block_delay_line.cpp
     test/delay_line.cpp
     test/double_refcount.cpp
     test/effect_connection.cpp

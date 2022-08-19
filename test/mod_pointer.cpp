@@ -86,11 +86,11 @@ TEST_CASE("ModPointer") {
   // table is {offset, max_index, expected_variant_index}
   auto params = GENERATE(Catch::Generators::table<std::size_t, std::size_t, std::size_t>({
       {0, 4, 1},
-      {0, 5, 0},
+      {0, 5, 1},
       {1, 3, 1},
       {1, 10, 0},
       {0, 4, 1},
-      {4, 1, 0},
+      {4, 1, 1},
   }));
 
   auto [offset, max_index, variant_index] = params;

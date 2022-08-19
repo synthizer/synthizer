@@ -39,9 +39,9 @@ public:
   ModSlice<T, LEN> &operator--();
   ModSlice<T, LEN> operator++(int);
   ModSlice<T, LEN> operator--(int);
-
   ModSlice<T, LEN> operator+(std::size_t increment) const;
   ModSlice<T, LEN> operator-(std::size_t decrement) const;
+  void operator+=(std::size_t increment);
 
 private:
   /**
@@ -74,10 +74,11 @@ private:
 template <typename T, std::size_t LEN> using ModPointer = std::variant<ModSlice<T, LEN>, T *>;
 
 /**
- * Given a pointer, an offset, and the maximum index which may be accessed, return a ModPointer that can handle it.
+ * Given a pointer, an offset, and one past the maximum index which may be accessed, return a ModPointer that can handle
+ * it.
  * */
 template <typename T, std::size_t LEN>
-ModPointer<T, LEN> createModPointer(T *data, std::size_t offset, std::size_t max_index);
+ModPointer<T, LEN> createModPointer(T *data, std::size_t offset, std::size_t len);
 
 template <typename T, std::size_t LEN>
 ModSlice<T, LEN>::ModSlice(T *_data, std::size_t initial_offset) : data(_data), offset(initial_offset) {}
@@ -137,9 +138,13 @@ template <typename T, std::size_t LEN> ModSlice<T, LEN> ModSlice<T, LEN>::operat
   return copy;
 }
 
+template <typename T, std::size_t LEN> inline void ModSlice<T, LEN>::operator+=(std::size_t increment) {
+  *this = *this + increment;
+}
+
 template <typename T, std::size_t LEN>
-ModPointer<T, LEN> inline createModPointer(T *data, std::size_t offset, std::size_t max_index) {
-  if (offset + max_index >= LEN) {
+ModPointer<T, LEN> inline createModPointer(T *data, std::size_t offset, std::size_t len) {
+  if (offset + len > LEN) {
     return ModSlice<T, LEN>{data, offset};
   } else {
     return data + offset;

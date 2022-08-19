@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
   CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
 
   std::this_thread::sleep_for(std::chrono::seconds(2));
-  CHECKED(syz_routingRemoveAllRoutes(context, source, 0.5));
+  //CHECKED(syz_routingRemoveAllRoutes(context, source, 0.5));
   // CHECKED(syz_pause(source));
   // std::this_thread::sleep_for(std::chrono::seconds(5));
   CHECKED(syz_play(source));

@@ -12,6 +12,7 @@
 #include "synthizer/interpolated_random_sequence.hpp"
 #include "synthizer/math.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/mod_pointer.hpp"
 #include "synthizer/prime_helpers.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/random_generator.hpp"
@@ -26,6 +27,7 @@
 #include <memory>
 #include <numeric>
 #include <utility>
+#include <variant>
 
 namespace synthizer {
 
@@ -322,66 +324,74 @@ inline void GlobalFdnReverbEffect::runEffect(unsigned int block_time, unsigned i
   }
   max_delay = std::max(max_delay, this->late_reflections_delay_samples);
 
-  /*
-   * Normally we would go through a temporary buffer to premix channels here, and we still might, but we're using the
-   * delay line's write loop and it's always to mono; just do it inline.
-   * */
-  this->lines.runRwLoop(max_delay, [&](unsigned int i, auto &rw) {
-    float *input_ptr = input + input_channels * i;
-    float input_sample = 0.0f;
+  auto mp = this->lines.getModPointer(max_delay);
+  std::visit(
+      [=](auto &ptr) {
+        for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
+          float *input_ptr = input + input_channels * i;
+          float input_sample = 0.0f;
 
-    /* Mono downmix. */
-    for (unsigned int ch = 0; ch < input_channels; ch++) {
-      input_sample += input_ptr[ch];
-    }
-    input_sample *= 1.0f / input_channels;
+          /* Mono downmix. */
+          for (unsigned int ch = 0; ch < input_channels; ch++) {
+            input_sample += input_ptr[ch];
+          }
+          input_sample *= 1.0f / input_channels;
 
-    /*
-     * Apply the initial filter. The purpose is to let the user make the reverb less harsh on high-frequency sounds.
-     * */
-    this->input_filter.tick(&input_sample, &input_sample);
+          /*
+           * Apply the initial filter. The purpose is to let the user make the reverb less harsh on high-frequency
+           * sounds.
+           * */
+          this->input_filter.tick(&input_sample, &input_sample);
 
-    /*
-     * Implement a householder reflection about <1, 1, 1, 1... >. This is a reflection about the hyperplane.
-     * */
+          /*
+           * Implement a householder reflection about <1, 1, 1, 1... >. This is a reflection about the hyperplane.
+           * */
 
-    /* not initialized because zeroing can be expensive and we set it immediately in the loop below. */
-    std::array<float, LINES> values;
-    for (unsigned int j = 0; j < LINES; j++) {
-      double delay = this->delays[j] + this->late_modulators[j].tick();
-      float w2 = delay - std::floor(delay);
-      float w1 = 1.0f - w2;
-      float v1 = rw.read(j, delay);
-      float v2 = rw.read(j, delay + 1);
-      values[j] = v1 * w1 + v2 * w2;
-    }
+          /* not initialized because zeroing can be expensive and we set it immediately in the loop below. */
+          std::array<float, LINES> values;
+          for (unsigned int j = 0; j < LINES; j++) {
+            double delay = this->delays[j] + this->late_modulators[j].tick();
+            auto cur_del = ptr - LINES * ((std::size_t)delay - 1);
+            float w2 = delay - std::floor(delay);
+            float w1 = 1.0f - w2;
+            // This is a pointer to the delay line; higher indices are in the future.
+            float v1 = cur_del[LINES];
+            float v2 = cur_del[LINES + j];
+            values[j] = v1 * w1 + v2 * w2;
+          }
 
-    /*
-     * Pass it through the equalizer, which handles feedback.
-     * */
-    this->feedback_eq.tick(&values[0], &values[0]);
+          /*
+           * Pass it through the equalizer, which handles feedback.
+           * */
+          this->feedback_eq.tick(&values[0], &values[0]);
 
-    float sum = std::accumulate(values.begin(), values.end(), 0.0f);
-    sum *= 2.0f / LINES;
+          float sum = std::accumulate(values.begin(), values.end(), 0.0f);
+          sum *= 2.0f / LINES;
 
-    /*
-     * Write it back.
-     * */
-    float input_per_line = input_sample * (1.0f / LINES);
-    for (unsigned int j = 0; j < LINES; j++) {
-      rw.write(j, values[j] - sum + input_per_line);
-    }
+          /*
+           * Write it back.
+           * */
+          float input_per_line = input_sample * (1.0f / LINES);
+          for (unsigned int j = 0; j < LINES; j++) {
+            ptr[j] = values[j] - sum + input_per_line;
+          }
 
-    /*
-     * We want two decorrelated channels, with roughly the same amount of reflections in each.
-     * */
-    unsigned int d = this->late_reflections_delay_samples;
-    float *frame = rw.readFrame(d);
-    float l = frame[0] + frame[2] + frame[4] + frame[6];
-    float r = frame[1] + frame[3] + frame[5] + frame[7];
-    output_buf_ptr[2 * i] = l * gain;
-    output_buf_ptr[2 * i + 1] = r * gain;
-  });
+          /*
+           * We want two decorrelated channels, with roughly the same amount of reflections in each.
+           * */
+          unsigned int d = this->late_reflections_delay_samples;
+          auto out_frame = ptr - d * LINES;
+          float l = out_frame[0] + out_frame[2] + out_frame[4] + out_frame[6];
+          float r = out_frame[1] + out_frame[3] + out_frame[5] + out_frame[7];
+          output_buf_ptr[2 * i] = l * gain;
+          output_buf_ptr[2 * i + 1] = r * gain;
+
+          ptr += LINES;
+        }
+      },
+      mp);
+
+  this->lines.incrementBlock();
 
   mixChannels(config::BLOCK_SIZE, output_buf_ptr, 2, output, output_channels);
 }
