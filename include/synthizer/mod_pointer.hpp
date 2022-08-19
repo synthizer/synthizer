@@ -90,7 +90,7 @@ inline std::size_t ModSlice<T, LEN>::addIndexRelative(std::size_t increment) con
 template <typename T, std::size_t LEN>
 inline std::size_t ModSlice<T, LEN>::subIndexRelative(std::size_t decrement) const {
   assert(decrement <= LEN);
-  return (LEN+ this->offset + decrement) % LEN;
+  return (LEN + this->offset + decrement) % LEN;
 }
 
 template <typename T, std::size_t LEN> inline T &ModSlice<T, LEN>::operator[](std::size_t index) const {
@@ -100,9 +100,7 @@ template <typename T, std::size_t LEN> inline T &ModSlice<T, LEN>::operator[](st
 
 template <typename T, std::size_t LEN> inline T &ModSlice<T, LEN>::operator*() const { return (*this)[0]; }
 
-template <typename T, std::size_t LEN> T *ModSlice<T, LEN>::operator->() const {
-  return &((*this)[0]);
-}
+template <typename T, std::size_t LEN> T *ModSlice<T, LEN>::operator->() const { return &((*this)[0]); }
 
 template <typename T, std::size_t LEN> ModSlice<T, LEN> &ModSlice<T, LEN>::operator++() {
   this->offset = this->addIndexRelative(1);
