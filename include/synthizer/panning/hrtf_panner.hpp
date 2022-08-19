@@ -77,13 +77,12 @@ private:
                                      float *out_r);
 
   /*
-   * 2 blocks plus the max ITD.
-   * We'll use modulus on 1/3 blocks on average.
+   * Must be at least 1 block, and at least hrtf::IMPULSE_LENGTH. But we want longer; longer requires less modulus.
    * */
-  BlockDelayLine<1, nextPowerOfTwo(config::HRTF_MAX_ITD + config::BLOCK_SIZE * 2) / config::BLOCK_SIZE> input_line;
+  BlockDelayLine<1, nextPowerOfTwo(config::HRTF_MAX_ITD + config::BLOCK_SIZE * 10) / config::BLOCK_SIZE> input_line;
 
   /* This is an extra sample long to make linear interpolation easier. */
-  BlockDelayLine<2, nextPowerOfTwo(config::BLOCK_SIZE * 2 + config::HRTF_MAX_ITD + 1) / config::BLOCK_SIZE> itd_line;
+  BlockDelayLine<2, nextPowerOfTwo(config::BLOCK_SIZE * 10 + config::HRTF_MAX_ITD + 1) / config::BLOCK_SIZE> itd_line;
 
   /*
    * The hrirs and an index which determines which we are using.
