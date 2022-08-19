@@ -54,8 +54,7 @@ std::tuple<double, double> computeInterauralTimeDifference(double azimuth, doubl
 /*
  * Read the built-in HRIR dataset, interpolate as necessary, and fill the output buffers with impulses for convolution.
  * */
-void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned int left_stride, float *right,
-                         unsigned int right_stride);
+void computeHrtfImpulses(double azimuth, double elevation, float *left, float *right);
 
 /*
  * An HRTF convolver with ITD>
@@ -174,8 +173,7 @@ inline std::tuple<double, double> linearInterpolate(double val, double start, do
 
 inline void computeHrtfImpulseSingleChannel(double azimuth, double elevation,
                                             const data::hrtf::ElevationDef *elev_lower,
-                                            const data::hrtf::ElevationDef *elev_upper, float *out,
-                                            unsigned int out_stride) {
+                                            const data::hrtf::ElevationDef *elev_upper, float *out) {
   std::array<double, 4> weights = {0.0};
   std::array<const float *, 4> impulses = {nullptr};
   unsigned int weight_count = 0;
@@ -227,19 +225,18 @@ inline void computeHrtfImpulseSingleChannel(double azimuth, double elevation,
   }
 
   for (unsigned int i = 0; i < data::hrtf::IMPULSE_LENGTH; i++) {
-    out[i * out_stride] = impulses[0][i] * weights[0];
+    out[i] = impulses[0][i] * weights[0];
   }
 
   for (unsigned int c = 1; c < weight_count; c++) {
-    float *cursor = out;
-    for (unsigned int i = 0; i < data::hrtf::IMPULSE_LENGTH; i++, cursor += out_stride) {
-      *cursor += impulses[c][i] * weights[c];
+
+    for (unsigned int i = 0; i < data::hrtf::IMPULSE_LENGTH; i++) {
+      out[i] += impulses[c][i] * weights[c];
     }
   }
 }
 
-inline void computeHrtfImpulses(double azimuth, double elevation, float *left, unsigned int left_stride, float *right,
-                                unsigned int right_stride) {
+inline void computeHrtfImpulses(double azimuth, double elevation, float *left, float *right) {
   const data::hrtf::ElevationDef *elev_lower = nullptr, *elev_upper = nullptr;
 
   assert(azimuth >= 0.0 && azimuth <= 360.0);
@@ -267,8 +264,8 @@ inline void computeHrtfImpulses(double azimuth, double elevation, float *left, u
    * */
   elevation = clamp(elevation, elev_lower->angle, elev_upper->angle);
 
-  computeHrtfImpulseSingleChannel(azimuth, elevation, elev_lower, elev_upper, left, left_stride);
-  computeHrtfImpulseSingleChannel(360 - azimuth, elevation, elev_lower, elev_upper, right, right_stride);
+  computeHrtfImpulseSingleChannel(azimuth, elevation, elev_lower, elev_upper, left);
+  computeHrtfImpulseSingleChannel(360 - azimuth, elevation, elev_lower, elev_upper, right);
 }
 
 inline unsigned int HrtfPanner::getOutputChannelCount() { return 2; }
@@ -321,7 +318,7 @@ inline void HrtfPanner::run(float *output) {
   }
 
   if (crossfade) {
-    computeHrtfImpulses(this->azimuth, this->elevation, cur_hrir_l, 1, cur_hrir_r, 1);
+    computeHrtfImpulses(this->azimuth, this->elevation, cur_hrir_l, cur_hrir_r);
   }
 
   unsigned int crossfade_samples = crossfade ? config::CROSSFADE_SAMPLES : 0;
