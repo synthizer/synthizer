@@ -286,16 +286,12 @@ inline void HrtfPanner::stepConvolution(MP &&ptr, const float *hrir_left, const 
   float acc_l[8] = {0.0f};
   float acc_r[8] = {0.0f};
   for (unsigned int j = 0; j < data::hrtf::IMPULSE_LENGTH; j += 8) {
-    float samples[8] = {*(ptr - j),     *(ptr - j - 1), *(ptr - j - 2), *(ptr - j - 3),
-                        *(ptr - j - 4), *(ptr - j - 5), *(ptr - j - 6), *(ptr - j - 7)};
-    float hls[8] = {hrir_left[j],     hrir_left[j + 1], hrir_left[j + 2], hrir_left[j + 3],
-                    hrir_left[j + 4], hrir_left[j + 5], hrir_left[j + 6], hrir_left[j + 7]};
-    float hrs[8] = {hrir_right[j],     hrir_right[j + 1], hrir_right[j + 2], hrir_right[j + 3],
-                    hrir_right[j + 4], hrir_right[j + 5], hrir_right[j + 6], hrir_right[j + 7]};
-
     for (unsigned int subind = 0; subind < 8; subind++) {
-      acc_l[subind] += hls[subind] * samples[subind];
-      acc_r[subind] += samples[subind] * hrs[subind];
+      float sample = *(ptr - j - subind);
+      float hl = hrir_left[j + subind];
+      float hr = hrir_right[j + subind];
+      acc_l[subind] += sample * hl;
+      acc_r[subind] += sample * hr;
     }
   }
 
