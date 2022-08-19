@@ -1,17 +1,18 @@
 #pragma once
 
+#include "synthizer/block_delay_line.hpp"
+#include "synthizer/config.hpp"
+#include "synthizer/data/hrtf.hpp"
+#include "synthizer/math.hpp"
+#include "synthizer/types.hpp"
+#include "synthizer/vbool.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
 #include <numeric>
 #include <tuple>
-
-#include "synthizer/block_delay_line.hpp"
-#include "synthizer/config.hpp"
-#include "synthizer/data/hrtf.hpp"
-#include "synthizer/math.hpp"
-#include "synthizer/types.hpp"
 
 namespace synthizer {
 
@@ -403,17 +404,18 @@ inline void HrtfPanner::run(float *output) {
 
   // Let's figure out if we can use less than the max hrtf delay.
   unsigned int needed_itd_l = config::HRTF_MAX_ITD, needed_itd_r = config::HRTF_MAX_ITD;
+  bool left_is_zero = itd_l == 0.0f;
+  bool right_is_zero = itd_r == 0.0f;
   if (crossfade_samples == 0) {
-    // For now we always crossfade, but this will eventually not be true and we can set one of these to 0 consistently.
-    needed_itd_l = itd_l_i + 1;
-    needed_itd_r = itd_r_i + 1;
+    needed_itd_l = left_is_zero ? 0 : itd_l_i + 1;
+    needed_itd_r = right_is_zero ? 0 : itd_r_i + 1;
   }
 
   auto itd_left_mp = this->itd_line_left.getModPointer(needed_itd_l);
   auto itd_right_mp = this->itd_line_right.getModPointer(needed_itd_r);
 
   std::visit(
-      [&](auto ptr_left, auto ptr_right) {
+      [&](auto ptr_left, auto ptr_left_zero, auto ptr_right, auto ptr_right_zero) {
         for (std::size_t i = 0; i < crossfade_samples; i++) {
           float *o = output + i * 2;
           float fraction = i / (float)config::CROSSFADE_SAMPLES;
@@ -441,17 +443,28 @@ inline void HrtfPanner::run(float *output) {
 
         for (std::size_t i = crossfade_samples; i < config::BLOCK_SIZE; i++) {
           float *o = output + i * 2;
-          auto del_left_ptr = ptr_left - (itd_l_i + 1);
-          auto del_right_ptr = ptr_right - (itd_r_i + 1);
-          float lse = del_left_ptr[1], lsl = del_left_ptr[0];
-          float rse = del_right_ptr[1], rsl = del_right_ptr[0];
-          o[0] += itd_w_early_l * lse + itd_w_late_l * lsl;
-          o[1] += itd_w_early_r * rse + itd_w_late_r * rsl;
+
+          if (ptr_left_zero) {
+            o[0] = *ptr_left;
+          } else {
+            auto del_left_ptr = ptr_left - (itd_l_i + 1);
+            float lse = del_left_ptr[1], lsl = del_left_ptr[0];
+            o[0] += itd_w_early_l * lse + itd_w_late_l * lsl;
+          }
+
+          if (ptr_right_zero) {
+            o[1] = *ptr_right;
+          } else {
+            auto del_right_ptr = ptr_right - (itd_r_i + 1);
+            float rse = del_right_ptr[1], rsl = del_right_ptr[0];
+            o[1] += itd_w_early_r * rse + itd_w_late_r * rsl;
+          }
+
           ++ptr_left;
           ++ptr_right;
         }
       },
-      itd_left_mp, itd_right_mp);
+      itd_left_mp, vCond(left_is_zero), itd_right_mp, vCond(right_is_zero));
 
   this->itd_line_left.incrementBlock();
   this->itd_line_right.incrementBlock();
