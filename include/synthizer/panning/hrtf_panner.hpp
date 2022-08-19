@@ -90,7 +90,7 @@ private:
    * */
   std::array<float, data::hrtf::IMPULSE_LENGTH * 2 * 2> hrirs = {0.0f};
   unsigned int current_hrir = 0;
-  double prev_itd_l = 0.0, prev_itd_r = 0.0;
+  float prev_itd_l = 0.0, prev_itd_r = 0.0;
 
   double azimuth = 0.0;
   double elevation = 0.0;
@@ -341,31 +341,31 @@ inline void HrtfPanner::run(float *output) {
    * Early is too little delay. Late is too much.
    */
   auto itds = computeInterauralTimeDifference(this->azimuth, this->elevation);
-  double itd_l = std::get<0>(itds);
-  double itd_r = std::get<1>(itds);
+  float itd_l = std::get<0>(itds);
+  float itd_r = std::get<1>(itds);
   unsigned int itd_l_i = itd_l, itd_r_i = itd_r;
 
-  double itd_w_late_l = itd_l - itd_l_i;
-  double itd_w_early_l = 1.0 - itd_w_late_l;
-  double itd_w_late_r = itd_r - itd_r_i;
-  double itd_w_early_r = 1.0 - itd_w_late_r;
+  float itd_w_late_l = itd_l - itd_l_i;
+  float itd_w_early_l = 1.0 - itd_w_late_l;
+  float itd_w_late_r = itd_r - itd_r_i;
+  float itd_w_early_r = 1.0 - itd_w_late_r;
 
   auto itd_mp = this->itd_line.getModPointer(config::HRTF_MAX_ITD);
   std::visit(
       [&](auto ptr) {
         for (std::size_t i = 0; i < crossfade_samples; i++) {
           float *o = output + i * 2;
-          double fraction = i / (float)config::CROSSFADE_SAMPLES;
+          float fraction = i / (float)config::CROSSFADE_SAMPLES;
 
-          double prev_itd_l = this->prev_itd_l, prev_itd_r = this->prev_itd_r;
+          float prev_itd_l = this->prev_itd_l, prev_itd_r = this->prev_itd_r;
 
-          double left = itd_l * fraction + prev_itd_l * (1.0 - fraction);
-          double right = itd_r * fraction + prev_itd_r * (1.0 - fraction);
+          float left = itd_l * fraction + prev_itd_l * (1.0 - fraction);
+          float right = itd_r * fraction + prev_itd_r * (1.0 - fraction);
           assert(left >= 0.0);
           assert(right >= 0.0);
           unsigned int left_s = left, right_s = right;
-          double wl = left - left_s;
-          double wr = right - right_s;
+          float wl = left - left_s;
+          float wr = right - right_s;
           auto left_ptr = ptr - 2 * (left_s + 1);
           auto right_ptr = ptr - 2 * (right_s + 1);
           float lse = left_ptr[2], lsl = left_ptr[0];
