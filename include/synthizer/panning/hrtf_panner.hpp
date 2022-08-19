@@ -71,7 +71,8 @@ public:
   void setPanningScalar(double scalar);
 
 private:
-  template <typename MP> void stepConvolution(MP &&ptr, const float *hrir, float *out_l, float *out_r);
+  template <typename MP>
+  void stepConvolution(MP &&ptr, const float *hrir_left, const float *hrir_right, float *out_l, float *out_r);
 
   /*
    * 2 blocks plus the max ITD.
@@ -85,10 +86,11 @@ private:
   /*
    * The hrirs and an index which determines which we are using.
    *
-   * The way this works is that current_hrir is easily flipped with xor. current_hrir ^ 1 is the previous, (current_hrir
-   * ^ 1)*2*data::hrtf::RESPONSE_LENGTH is the index of the previous.
+   * The way this works is that current_hrir is easily flipped with ^, so each array holds two arrays of the hrir for
+   * that ear.
    * */
-  std::array<float, data::hrtf::IMPULSE_LENGTH * 2 * 2> hrirs = {0.0f};
+  std::array<std::array<float, data::hrtf::IMPULSE_LENGTH>, 2> impulse_l, impulse_r;
+
   unsigned int current_hrir = 0;
   float prev_itd_l = 0.0, prev_itd_r = 0.0;
 
@@ -274,16 +276,17 @@ inline unsigned int HrtfPanner::getOutputChannelCount() { return 2; }
 inline float *HrtfPanner::getInputBuffer() { return this->input_line.getNextBlock(); }
 
 template <typename MP>
-inline void HrtfPanner::stepConvolution(MP &&ptr, const float *hrir, float *dest_l, float *dest_r) {
+inline void HrtfPanner::stepConvolution(MP &&ptr, const float *hrir_left, const float *hrir_right, float *dest_l,
+                                        float *dest_r) {
   float accumulator_left = 0.0f;
   float accumulator_right = 0.0f;
   for (unsigned int j = 0; j < data::hrtf::IMPULSE_LENGTH; j++) {
     float sample = *(ptr - j);
-    float hrir_left = hrir[j * 2];
-    float hrir_right = hrir[j * 2 + 1];
+    float hl = hrir_left[j];
+    float hr = hrir_right[j];
 
-    accumulator_left += sample * hrir_left;
-    accumulator_right += sample * hrir_right;
+    accumulator_left += sample * hl;
+    accumulator_right += sample * hr;
   }
 
   *dest_l = accumulator_left;
@@ -291,20 +294,24 @@ inline void HrtfPanner::stepConvolution(MP &&ptr, const float *hrir, float *dest
 }
 
 inline void HrtfPanner::run(float *output) {
-  float *prev_hrir = nullptr;
-  float *cur_hrir = &this->hrirs[this->current_hrir * 2 * data::hrtf::IMPULSE_LENGTH];
+  float *prev_hrir_l = nullptr;
+  float *prev_hrir_r = nullptr;
+  float *cur_hrir_l = this->impulse_l[this->current_hrir].data();
+  float *cur_hrir_r = this->impulse_r[this->current_hrir].data();
 
   bool crossfade = this->moved;
   this->moved = false;
 
   if (crossfade) {
-    prev_hrir = cur_hrir;
+    prev_hrir_l = cur_hrir_l;
+    prev_hrir_r = cur_hrir_r;
     this->current_hrir ^= 1;
-    cur_hrir = &this->hrirs[this->current_hrir * 2 * data::hrtf::IMPULSE_LENGTH];
+    cur_hrir_l = this->impulse_l[this->current_hrir].data();
+    cur_hrir_r = this->impulse_r[this->current_hrir].data();
   }
 
   if (crossfade) {
-    computeHrtfImpulses(this->azimuth, this->elevation, cur_hrir, 2, cur_hrir + 1, 2);
+    computeHrtfImpulses(this->azimuth, this->elevation, cur_hrir_l, 1, cur_hrir_r, 1);
   }
 
   unsigned int crossfade_samples = crossfade ? config::CROSSFADE_SAMPLES : 0;
@@ -316,8 +323,8 @@ inline void HrtfPanner::run(float *output) {
       [&](auto &ptr) {
         for (std::size_t i = 0; i < crossfade_samples; i++) {
           float l_old, l_new, r_old, r_new;
-          this->stepConvolution(ptr, prev_hrir, &l_old, &r_old);
-          this->stepConvolution(ptr, cur_hrir, &l_new, &r_new);
+          this->stepConvolution(ptr, prev_hrir_l, prev_hrir_r, &l_old, &r_old);
+          this->stepConvolution(ptr, cur_hrir_l, cur_hrir_r, &l_new, &r_new);
           float *out = itd_block + 2 * i;
           float w1 = i / (float)config::CROSSFADE_SAMPLES;
           float w0 = 1.0f - w1;
@@ -329,7 +336,7 @@ inline void HrtfPanner::run(float *output) {
         }
 
         for (std::size_t i = crossfade_samples; i < config::BLOCK_SIZE; i++) {
-          this->stepConvolution(ptr, cur_hrir, &itd_block[2 * i], &itd_block[2 * i + 1]);
+          this->stepConvolution(ptr, cur_hrir_l, cur_hrir_r, &itd_block[2 * i], &itd_block[2 * i + 1]);
           ++ptr;
         }
       },
