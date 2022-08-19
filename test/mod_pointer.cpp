@@ -46,6 +46,25 @@ TEST_CASE("ModSlice") {
     }
   }
 
+  SECTION("Make sure we can decrement and subtract") {
+    auto ptr = TestModSlice<NUM_INDICES>{data.data(), 0};
+    auto ptr2 = TestModSlice<NUM_INDICES>{data.data(), 0};
+    auto ptr3 = TestModSlice<NUM_INDICES>{data.data(), 0};
+
+    for (std::size_t i = 0; i < NUM_INDICES; i++) {
+      // Check subtracting by an increment.
+      REQUIRE(*(ptr - 5) == (NUM_INDICES * 2 - i - 5) % NUM_INDICES);
+
+      ptr--;
+      --ptr2;
+      ptr3 = ptr3 - 1;
+      std::size_t expected = NUM_INDICES - i - 1;
+      REQUIRE(*ptr == expected);
+      REQUIRE(*ptr2 == expected);
+      REQUIRE(*ptr3 == expected);
+    }
+  }
+
   SECTION("Make sure we can write") {
     auto ptr = TestModSlice<NUM_INDICES>{data.data(), 0};
 
