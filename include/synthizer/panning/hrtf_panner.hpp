@@ -4,6 +4,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <numeric>
 #include <tuple>
 
 #include "synthizer/block_delay_line.hpp"
@@ -70,8 +71,10 @@ public:
   void setPanningScalar(double scalar);
 
 private:
+  // Note: copying ptr is important because this function mutates.
   template <typename MP>
-  void stepConvolution(MP &&ptr, const float *hrir_left, const float *hrir_right, float *out_l, float *out_r);
+  __forceinline void stepConvolution(MP ptr, const float *hrir_left, const float *hrir_right, float *out_l,
+                                     float *out_r);
 
   /*
    * 2 blocks plus the max ITD.
@@ -87,6 +90,9 @@ private:
    *
    * The way this works is that current_hrir is easily flipped with ^, so each array holds two arrays of the hrir for
    * that ear.
+   *
+   * These impulses are stored in reversed order, which lets us go "forward" both in the delay line and the impulse
+   * array.  This greatly helps vectorization and SIMD.
    * */
   std::array<std::array<float, data::hrtf::IMPULSE_LENGTH>, 2> impulse_l, impulse_r;
 
@@ -273,31 +279,60 @@ inline unsigned int HrtfPanner::getOutputChannelCount() { return 2; }
 inline float *HrtfPanner::getInputBuffer() { return this->input_line.getNextBlock(); }
 
 template <typename MP>
-inline void HrtfPanner::stepConvolution(MP &&ptr, const float *hrir_left, const float *hrir_right, float *dest_l,
-                                        float *dest_r)
-
-{
+__forceinline void HrtfPanner::stepConvolution(MP ptr, const float *hrir_left, const float *hrir_right, float *dest_l,
+                                               float *dest_r) {
   static_assert(data::hrtf::IMPULSE_LENGTH > 8);
   static_assert(data::hrtf::IMPULSE_LENGTH % 8 == 0);
 
-  float acc_l[8] = {0.0f};
-  float acc_r[8] = {0.0f};
+  // The following horrible code was arrived at through benchmarking because MSVC flat out refuses to recognize any of
+  // this as vectorizable.  We'll continue this effort in the future with overloads using the fact that ModPointer is
+  // sometimes a pointer, but for now we take what we can get.
+
+  float redl0 = 0.0f, redl1 = 0.0f, redl2 = 0.0f, redl3 = 0.0f;
+  float redr0 = 0.0f, redr1 = 0.0f, redr2 = 0.0f, redr3 = 0.0f;
+
+  // We store the impulses reversed so we can go "forward".  To do so, get the pointer at the beginning and then bump it
+  // up.
+  ptr = ptr - data::hrtf::IMPULSE_LENGTH + 1;
+
   for (unsigned int j = 0; j < data::hrtf::IMPULSE_LENGTH; j += 8) {
-    for (unsigned int subind = 0; subind < 8; subind++) {
-      float sample = *(ptr - j - subind);
-      float hl = hrir_left[j + subind];
-      float hr = hrir_right[j + subind];
-      acc_l[subind] += sample * hl;
-      acc_r[subind] += sample * hr;
-    }
+#define DECL(X) float s##X = ptr[j + X], l##X = hrir_left[j + X], r##X = hrir_right[j + X]
+    DECL(0);
+    DECL(1);
+    DECL(2);
+    DECL(3);
+    DECL(4);
+    DECL(5);
+    DECL(6);
+    DECL(7);
+
+#undef DECL
+
+#define RES(X) float rl##X = s##X * l##X, rr##X = s##X * r##X
+
+    RES(0);
+    RES(1);
+    RES(2);
+    RES(3);
+    RES(4);
+    RES(5);
+    RES(6);
+    RES(7);
+
+#undef RES
+
+    redl0 += rl0 + rl1;
+    redl1 += rl2 + rl3;
+    redl2 += rl4 + rl5;
+    redl3 += rl6 + rl7;
+    redr0 += rr0 + rr1;
+    redr1 += rr2 + rr3;
+    redr2 += rr4 + rr5;
+    redr3 += rr6 + rr7;
   }
 
-  // Give the compiler a hint that it can perform horizontal SIMD addition. No guarantee that it'll take it but doesn't
-  // hurt.
-  float red_l[4] = {acc_l[0] + acc_l[1], acc_l[2] + acc_l[3], acc_l[4] + acc_l[5], acc_l[6] + acc_l[7]};
-  float red_r[4] = {acc_r[0] + acc_r[1], acc_r[2] + acc_r[3], acc_r[4] + acc_r[5], acc_r[6] + acc_r[7]};
-  *dest_l = (red_l[0] + red_l[1]) + (red_l[2] + red_l[3]);
-  *dest_r = (red_r[0] + red_r[1]) + (red_r[2] + red_r[3]);
+  *dest_l = (redl0 + redl1) + (redl2 + redl3);
+  *dest_r = (redr0 + redr1) + (redr2 + redr3);
 }
 
 inline void HrtfPanner::run(float *output) {
@@ -319,6 +354,8 @@ inline void HrtfPanner::run(float *output) {
 
   if (crossfade) {
     computeHrtfImpulses(this->azimuth, this->elevation, cur_hrir_l, cur_hrir_r);
+    std::reverse(cur_hrir_l, cur_hrir_l + data::hrtf::IMPULSE_LENGTH);
+    std::reverse(cur_hrir_r, cur_hrir_r + data::hrtf::IMPULSE_LENGTH);
   }
 
   unsigned int crossfade_samples = crossfade ? config::CROSSFADE_SAMPLES : 0;
