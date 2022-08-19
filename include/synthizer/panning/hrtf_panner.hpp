@@ -77,14 +77,10 @@ private:
    * 2 blocks plus the max ITD.
    * We'll use modulus on 1/3 blocks on average.
    * */
-  BlockDelayLine<1,
-                 nextMultipleOf(config::HRTF_MAX_ITD + config::BLOCK_SIZE * 2, config::BLOCK_SIZE) / config::BLOCK_SIZE>
-      input_line;
+  BlockDelayLine<1, nextPowerOfTwo(config::HRTF_MAX_ITD + config::BLOCK_SIZE * 2) / config::BLOCK_SIZE> input_line;
 
   /* This is an extra sample long to make linear interpolation easier. */
-  BlockDelayLine<2, nextMultipleOf(config::BLOCK_SIZE * 2 + config::HRTF_MAX_ITD + 1, config::BLOCK_SIZE) /
-                        config::BLOCK_SIZE>
-      itd_line;
+  BlockDelayLine<2, nextPowerOfTwo(config::BLOCK_SIZE * 2 + config::HRTF_MAX_ITD + 1) / config::BLOCK_SIZE> itd_line;
 
   /*
    * The hrirs and an index which determines which we are using.
@@ -290,7 +286,7 @@ inline void HrtfPanner::stepConvolution(MP &&ptr, const float *hrir, float *dest
     accumulator_right += sample * hrir_right;
   }
 
-    *dest_l = accumulator_left;
+  *dest_l = accumulator_left;
   *dest_r = accumulator_right;
 }
 
