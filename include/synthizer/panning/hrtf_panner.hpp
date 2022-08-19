@@ -277,20 +277,27 @@ inline float *HrtfPanner::getInputBuffer() { return this->input_line.getNextBloc
 
 template <typename MP>
 inline void HrtfPanner::stepConvolution(MP &&ptr, const float *hrir_left, const float *hrir_right, float *dest_l,
-                                        float *dest_r) {
-  float accumulator_left = 0.0f;
-  float accumulator_right = 0.0f;
-  for (unsigned int j = 0; j < data::hrtf::IMPULSE_LENGTH; j++) {
-    float sample = *(ptr - j);
-    float hl = hrir_left[j];
-    float hr = hrir_right[j];
+                                        float *dest_r)
 
-    accumulator_left += sample * hl;
-    accumulator_right += sample * hr;
+{
+  static_assert(data::hrtf::IMPULSE_LENGTH > 4);
+  static_assert(data::hrtf::IMPULSE_LENGTH % 4 == 0);
+
+  float acc_l[4] = {0.0f};
+  float acc_r[4] = {0.0f};
+  for (unsigned int j = 0; j < data::hrtf::IMPULSE_LENGTH; j += 4) {
+    float samples[4] = {*(ptr - j), *(ptr - j - 1), *(ptr - j - 2), *(ptr - j - 3)};
+    float hls[4] = {hrir_left[j], hrir_left[j + 1], hrir_left[j + 2], hrir_left[j + 3]};
+    float hrs[4] = {hrir_right[j], hrir_right[j + 1], hrir_right[j + 2], hrir_right[j + 3]};
+
+    for (unsigned int subind = 0; subind < 4; subind++) {
+      acc_l[subind] += hls[subind] * samples[subind];
+      acc_r[subind] += samples[subind] * hrs[subind];
+    }
   }
 
-  *dest_l = accumulator_left;
-  *dest_r = accumulator_right;
+  *dest_l = (acc_l[0] + acc_l[1]) + (acc_l[2] + acc_l[3]);
+  *dest_r = (acc_r[0] + acc_r[1]) + (acc_r[2] + acc_r[3]);
 }
 
 inline void HrtfPanner::run(float *output) {
