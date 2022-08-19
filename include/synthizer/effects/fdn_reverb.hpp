@@ -48,7 +48,7 @@ public:
    * Also, add in a little bit extra so that prime numbers above the range have room, since reading the primes array can
    * go out of range.
    * */
-  static constexpr unsigned int MAX_DELAY_SAMPLES = config::SR * 1;
+  static constexpr unsigned int MAX_DELAY_SAMPLES = nextPowerOfTwo(config::SR * 1);
   static constexpr float MAX_DELAY_SECONDS = 1.0f;
   /*
    * In the primes-finding algorithm, if we push up against the far end of what we can reasonably handle, we need to cap
