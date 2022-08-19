@@ -71,7 +71,7 @@ public:
   void setPanningScalar(double scalar);
 
 private:
-  template <typename R> void stepConvolution(R &&reader, const float *hrir, float *out_l, float *out_r);
+  template <typename MP> void stepConvolution(MP &&ptr, const float *hrir, float *out_l, float *out_r);
 
   /*
    * 2 blocks plus the max ITD.
@@ -277,21 +277,20 @@ inline unsigned int HrtfPanner::getOutputChannelCount() { return 2; }
 
 inline float *HrtfPanner::getInputBuffer() { return this->input_line.getNextBlock(); }
 
-template <typename R>
-inline void HrtfPanner::stepConvolution(R &&reader, const float *hrir, float *dest_l, float *dest_r) {
+template <typename MP>
+inline void HrtfPanner::stepConvolution(MP &&ptr, const float *hrir, float *dest_l, float *dest_r) {
   float accumulator_left = 0.0f;
   float accumulator_right = 0.0f;
   for (unsigned int j = 0; j < data::hrtf::IMPULSE_LENGTH; j++) {
-    auto tmp = reader.readFrame(j);
+    float sample = *(ptr - j);
     float hrir_left = hrir[j * 2];
     float hrir_right = hrir[j * 2 + 1];
 
-    accumulator_left += *tmp * hrir_left;
-    accumulator_right += *tmp * hrir_right;
+    accumulator_left += sample * hrir_left;
+    accumulator_right += sample * hrir_right;
   }
 
-  // We have to scatter these out, to re-interleave them.
-  *dest_l = accumulator_left;
+    *dest_l = accumulator_left;
   *dest_r = accumulator_right;
 }
 
@@ -314,26 +313,32 @@ inline void HrtfPanner::run(float *output) {
 
   unsigned int crossfade_samples = crossfade ? config::CROSSFADE_SAMPLES : 0;
   unsigned int normal_samples = config::BLOCK_SIZE - crossfade_samples;
-  assert(crossfade_samples + normal_samples == config::BLOCK_SIZE);
 
   float *itd_block = this->itd_line.getNextBlock();
-  input_line.runReadLoopSplit(
-      data::hrtf::IMPULSE_LENGTH - 1, crossfade_samples,
-      [&](unsigned int i, auto &reader) {
-        float l_old, l_new, r_old, r_new;
-        this->stepConvolution(reader, prev_hrir, &l_old, &r_old);
-        this->stepConvolution(reader, cur_hrir, &l_new, &r_new);
-        float *out = itd_block + 2 * i;
-        float w1 = i / (float)config::CROSSFADE_SAMPLES;
-        float w0 = 1.0f - w1;
+  auto input_mp = this->input_line.getModPointer(data::hrtf::IMPULSE_LENGTH - 1);
+  std::visit(
+      [&](auto &ptr) {
+        for (std::size_t i = 0; i < crossfade_samples; i++) {
+          float l_old, l_new, r_old, r_new;
+          this->stepConvolution(ptr, prev_hrir, &l_old, &r_old);
+          this->stepConvolution(ptr, cur_hrir, &l_new, &r_new);
+          float *out = itd_block + 2 * i;
+          float w1 = i / (float)config::CROSSFADE_SAMPLES;
+          float w0 = 1.0f - w1;
 
-        out[0] = l_old * w0 + l_new * w1;
-        out[1] = r_old * w0 + r_new * w1;
+          out[0] = l_old * w0 + l_new * w1;
+          out[1] = r_old * w0 + r_new * w1;
+
+          ++ptr;
+        }
+
+        for (std::size_t i = crossfade_samples; i < config::BLOCK_SIZE; i++) {
+          this->stepConvolution(ptr, cur_hrir, &itd_block[2 * i], &itd_block[2 * i + 1]);
+          ++ptr;
+        }
       },
-      normal_samples,
-      [&](unsigned int i, auto &reader) {
-        this->stepConvolution(reader, cur_hrir, &itd_block[2 * i], &itd_block[2 * i + 1]);
-      });
+      input_mp);
+  this->input_line.incrementBlock();
 
   /*
    *pre-unrolled weights for the left and right ear.

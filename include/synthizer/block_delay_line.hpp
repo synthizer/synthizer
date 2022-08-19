@@ -125,7 +125,7 @@ public:
     return ret;
   }
 
-  void incrementBlock() { this->current_frame += config::BLOCK_SIZE; }
+  void incrementBlock() { this->current_frame = (this->current_frame + config::BLOCK_SIZE) % SIZE_IN_FRAMES; }
 
   /**
    * Get a ModPointer to manipulate the buffer for the specified delay, proceeding until the end of the current
