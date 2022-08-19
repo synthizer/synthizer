@@ -280,24 +280,31 @@ inline void HrtfPanner::stepConvolution(MP &&ptr, const float *hrir_left, const 
                                         float *dest_r)
 
 {
-  static_assert(data::hrtf::IMPULSE_LENGTH > 4);
-  static_assert(data::hrtf::IMPULSE_LENGTH % 4 == 0);
+  static_assert(data::hrtf::IMPULSE_LENGTH > 8);
+  static_assert(data::hrtf::IMPULSE_LENGTH % 8 == 0);
 
-  float acc_l[4] = {0.0f};
-  float acc_r[4] = {0.0f};
-  for (unsigned int j = 0; j < data::hrtf::IMPULSE_LENGTH; j += 4) {
-    float samples[4] = {*(ptr - j), *(ptr - j - 1), *(ptr - j - 2), *(ptr - j - 3)};
-    float hls[4] = {hrir_left[j], hrir_left[j + 1], hrir_left[j + 2], hrir_left[j + 3]};
-    float hrs[4] = {hrir_right[j], hrir_right[j + 1], hrir_right[j + 2], hrir_right[j + 3]};
+  float acc_l[8] = {0.0f};
+  float acc_r[8] = {0.0f};
+  for (unsigned int j = 0; j < data::hrtf::IMPULSE_LENGTH; j += 8) {
+    float samples[8] = {*(ptr - j),     *(ptr - j - 1), *(ptr - j - 2), *(ptr - j - 3),
+                        *(ptr - j - 4), *(ptr - j - 5), *(ptr - j - 6), *(ptr - j - 7)};
+    float hls[8] = {hrir_left[j],     hrir_left[j + 1], hrir_left[j + 2], hrir_left[j + 3],
+                    hrir_left[j + 4], hrir_left[j + 5], hrir_left[j + 6], hrir_left[j + 7]};
+    float hrs[8] = {hrir_right[j],     hrir_right[j + 1], hrir_right[j + 2], hrir_right[j + 3],
+                    hrir_right[j + 4], hrir_right[j + 5], hrir_right[j + 6], hrir_right[j + 7]};
 
-    for (unsigned int subind = 0; subind < 4; subind++) {
+    for (unsigned int subind = 0; subind < 8; subind++) {
       acc_l[subind] += hls[subind] * samples[subind];
       acc_r[subind] += samples[subind] * hrs[subind];
     }
   }
 
-  *dest_l = (acc_l[0] + acc_l[1]) + (acc_l[2] + acc_l[3]);
-  *dest_r = (acc_r[0] + acc_r[1]) + (acc_r[2] + acc_r[3]);
+  // Give the compiler a hint that it can perform horizontal SIMD addition. No guarantee that it'll take it but doesn't
+  // hurt.
+  float red_l[4] = {acc_l[0] + acc_l[1], acc_l[2] + acc_l[3], acc_l[4] + acc_l[5], acc_l[6] + acc_l[7]};
+  float red_r[4] = {acc_r[0] + acc_r[1], acc_r[2] + acc_r[3], acc_r[4] + acc_r[5], acc_r[6] + acc_r[7]};
+  *dest_l = (red_l[0] + red_l[1]) + (red_l[2] + red_l[3]);
+  *dest_r = (red_r[0] + red_r[1]) + (red_r[2] + red_r[3]);
 }
 
 inline void HrtfPanner::run(float *output) {
@@ -322,7 +329,6 @@ inline void HrtfPanner::run(float *output) {
   }
 
   unsigned int crossfade_samples = crossfade ? config::CROSSFADE_SAMPLES : 0;
-  unsigned int normal_samples = config::BLOCK_SIZE - crossfade_samples;
 
   float *itd_block = this->itd_line.getNextBlock();
   auto input_mp = this->input_line.getModPointer(data::hrtf::IMPULSE_LENGTH - 1);

@@ -25,7 +25,7 @@ TEST_CASE("BlockDelayLine ModPointer interface") {
   for (std::size_t block = 0; block < 10; block++) {
     auto mp = line.getModPointer(5);
     std::visit(
-        [&](auto and ptr) {
+        [&](auto &ptr) {
           for (std::size_t i = 0; i < config::BLOCK_SIZE; i++) {
             for (std::size_t d = 0; d <= 5; d++) {
               auto ptr2 = ptr - 2 * d;
