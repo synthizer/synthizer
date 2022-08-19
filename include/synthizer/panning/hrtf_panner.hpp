@@ -350,39 +350,46 @@ inline void HrtfPanner::run(float *output) {
   double itd_w_late_r = itd_r - itd_r_i;
   double itd_w_early_r = 1.0 - itd_w_late_r;
 
-  this->itd_line.runReadLoopSplit(
-      config::HRTF_MAX_ITD,
-      /* Crossfade the delays, if necessary. */
-      crossfade_samples,
-      [&](unsigned int i, auto &reader) {
-        float *o = output + i * 2;
-        double fraction = i / (float)config::CROSSFADE_SAMPLES;
+  auto itd_mp = this->itd_line.getModPointer(config::HRTF_MAX_ITD);
+  std::visit(
+      [&](auto ptr) {
+        for (std::size_t i = 0; i < crossfade_samples; i++) {
+          float *o = output + i * 2;
+          double fraction = i / (float)config::CROSSFADE_SAMPLES;
 
-        double prev_itd_l = this->prev_itd_l, prev_itd_r = this->prev_itd_r;
+          double prev_itd_l = this->prev_itd_l, prev_itd_r = this->prev_itd_r;
 
-        double left = itd_l * fraction + prev_itd_l * (1.0 - fraction);
-        double right = itd_r * fraction + prev_itd_r * (1.0 - fraction);
-        assert(left >= 0.0);
-        assert(right >= 0.0);
-        unsigned int left_s = left, right_s = right;
-        double wl = left - left_s;
-        double wr = right - right_s;
-        float lse = reader.read(0, left_s), lsl = reader.read(0, left_s + 1);
-        float rse = reader.read(1, right_s), rsl = reader.read(1, right_s + 1);
-        float ls = lsl * wl + lse * (1.0f - wl);
-        float rs = rsl * wr + rse * (1.0f - wr);
-        o[0] += ls;
-        o[1] += rs;
+          double left = itd_l * fraction + prev_itd_l * (1.0 - fraction);
+          double right = itd_r * fraction + prev_itd_r * (1.0 - fraction);
+          assert(left >= 0.0);
+          assert(right >= 0.0);
+          unsigned int left_s = left, right_s = right;
+          double wl = left - left_s;
+          double wr = right - right_s;
+          auto left_ptr = ptr - 2 * (left_s + 1);
+          auto right_ptr = ptr - 2 * (right_s + 1);
+          float lse = left_ptr[2], lsl = left_ptr[0];
+          float rse = right_ptr[3], rsl = right_ptr[1];
+          float ls = lsl * wl + lse * (1.0f - wl);
+          float rs = rsl * wr + rse * (1.0f - wr);
+          o[0] += ls;
+          o[1] += rs;
+          ptr += 2;
+        }
+
+        for (std::size_t i = crossfade_samples; i < config::BLOCK_SIZE; i++) {
+          float *o = output + i * 2;
+          auto left_ptr = ptr - 2 * (itd_l_i + 1);
+          auto right_ptr = ptr - 2 * (itd_r_i + 1);
+          float lse = left_ptr[2], lsl = left_ptr[0];
+          float rse = right_ptr[3], rsl = right_ptr[1];
+          o[0] += itd_w_early_l * lse + itd_w_late_l * lsl;
+          o[1] += itd_w_early_r * rse + itd_w_late_r * rsl;
+          ptr += 2;
+        }
       },
-      /* Then do the main loop. */
-      normal_samples,
-      [&](unsigned int i, auto &reader) {
-        float *o = output + i * 2;
-        float lse = reader.read(0, itd_l_i), lsl = reader.read(0, itd_l_i + 1);
-        float rse = reader.read(1, itd_r_i), rsl = reader.read(1, itd_r_i + 1);
-        o[0] += itd_w_early_l * lse + itd_w_late_l * lsl;
-        o[1] += itd_w_early_r * rse + itd_w_late_r * rsl;
-      });
+      itd_mp);
+  this->itd_line.incrementBlock();
 
   this->prev_itd_l = itd_l;
   this->prev_itd_r = itd_r;
