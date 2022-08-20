@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/predef.h>
+
 /*
  * This file defines macros to apply compiler attributes.
  *
@@ -7,7 +9,11 @@
  * */
 
 /* Inline all of a function's callees if possible. */
+#ifdef BOOST_COMP_MSVC
+#define FLATTENED __forceinline
+#else
 #define FLATTENED [[gnu::flatten]]
+#endif
 
 /*
  * This function is printf-like. Argument m (1-based) is the format string, argument n is the first argument to be used
