@@ -438,13 +438,16 @@ inline void HrtfPanner::run(float *output) {
   float itd_w_early_r = 1.0 - itd_w_late_r;
 
   // Let's figure out if we can use less than the max hrtf delay.
+
   unsigned int needed_itd_l = config::HRTF_MAX_ITD, needed_itd_r = config::HRTF_MAX_ITD;
-  bool left_is_zero = itd_l == 0.0f;
-  bool right_is_zero = itd_r == 0.0f;
-  if (crossfade_samples == 0) {
-    needed_itd_l = left_is_zero ? 0 : itd_l_i + 1;
-    needed_itd_r = right_is_zero ? 0 : itd_r_i + 1;
-  }
+  bool left_is_zero = itd_l == 0.0f && this->prev_itd_l == 0.0f;
+  bool right_is_zero = itd_r == 0.0f && this->prev_itd_r == 0.0f;
+
+  // The max delay for either side is either 0, by the above check, or 1 more than the maximum of the current and
+  // previous ITD.  Since the steady state has the current and previous ITD as the same, the max simplifies in that case
+  // to just the current ITD.
+  needed_itd_l = left_is_zero ? 0 : std::max(itd_l_i, (unsigned int)this->prev_itd_l) + 1;
+  needed_itd_r = right_is_zero ? 0 : std::max(itd_r_i, (unsigned int)this->prev_itd_r) + 1;
 
   auto itd_left_mp = this->itd_line_left.getModPointer(needed_itd_l);
   auto itd_right_mp = this->itd_line_right.getModPointer(needed_itd_r);
