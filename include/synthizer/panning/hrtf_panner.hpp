@@ -454,8 +454,10 @@ inline void HrtfPanner::run(float *output) {
 
   std::visit(
       [&](auto ptr_left, auto ptr_left_zero, auto ptr_right, auto ptr_right_zero) {
+        unsigned int i = 0;
         float prev_itd_l = this->prev_itd_l, prev_itd_r = this->prev_itd_r;
-        for (std::size_t i = 0; i < crossfade_samples; i++) {
+
+        for (; i < crossfade_samples; i++) {
           float *o = output + i * 2;
           float itd_w1 = i * (1.0f / (float)config::CROSSFADE_SAMPLES);
           float itd_w2 = 1.0f - itd_w1;
@@ -479,7 +481,7 @@ inline void HrtfPanner::run(float *output) {
           ++ptr_right;
         }
 
-        for (std::size_t i = crossfade_samples; i < config::BLOCK_SIZE; i++) {
+        for (; i < config::BLOCK_SIZE; i++) {
           float *o = output + i * 2;
 
           if (ptr_left_zero) {
