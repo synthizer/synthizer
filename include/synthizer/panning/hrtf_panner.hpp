@@ -7,6 +7,8 @@
 #include "synthizer/types.hpp"
 #include "synthizer/vbool.hpp"
 
+#include <boost/predef.h>
+
 #include <algorithm>
 #include <array>
 #include <cmath>

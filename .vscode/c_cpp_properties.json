@@ -4,6 +4,7 @@
       "name": "Win32",
       "includePath": [
         "${workspaceFolder}/include",
+        "${workspaceFolder}/third_party/boost_partial",
         "${workspaceFolder}/third_party/cpp11-on-multicore/common",
         "${workspaceFolder}/third_party/dr_libs",
         "${workspaceFolder}/third_party/wdl",

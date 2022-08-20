@@ -79,6 +79,7 @@ include(cmake/wdl.txt)
 
 include_directories(SYSTEM
   include
+  third_party/boost_partial
   third_party/miniaudio
   third_party/dr_libs
   third_party/stb
