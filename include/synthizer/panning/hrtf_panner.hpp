@@ -74,11 +74,6 @@ public:
   void setPanningScalar(double scalar);
 
 private:
-  // Note: copying ptr is important because this function mutates.
-  template <typename MP>
-  __forceinline void stepConvolution(MP ptr, const float *hrir_left, const float *hrir_right, float *out_l,
-                                     float *out_r);
-
   /*
    * Must be at least 1 block, and at least hrtf::IMPULSE_LENGTH. But we want longer; longer requires less modulus.
    * */
@@ -281,9 +276,9 @@ inline unsigned int HrtfPanner::getOutputChannelCount() { return 2; }
 
 inline float *HrtfPanner::getInputBuffer() { return this->input_line.getNextBlock(); }
 
+namespace hrtf_panner_detail {
 template <typename MP>
-__forceinline void HrtfPanner::stepConvolution(MP ptr, const float *hrir_left, const float *hrir_right, float *dest_l,
-                                               float *dest_r) {
+void stepConvolution(MP ptr, const float *hrir_left, const float *hrir_right, float *dest_l, float *dest_r) {
   static_assert(data::hrtf::IMPULSE_LENGTH > 8);
   static_assert(data::hrtf::IMPULSE_LENGTH % 8 == 0);
 
@@ -337,6 +332,7 @@ __forceinline void HrtfPanner::stepConvolution(MP ptr, const float *hrir_left, c
   *dest_l = (redl0 + redl1) + (redl2 + redl3);
   *dest_r = (redr0 + redr1) + (redr2 + redr3);
 }
+} // namespace hrtf_panner_detail
 
 inline void HrtfPanner::run(float *output) {
   float *prev_hrir_l = nullptr;
@@ -371,8 +367,8 @@ inline void HrtfPanner::run(float *output) {
       [&](auto &ptr) {
         for (std::size_t i = 0; i < crossfade_samples; i++) {
           float l_old, l_new, r_old, r_new;
-          this->stepConvolution(ptr, prev_hrir_l, prev_hrir_r, &l_old, &r_old);
-          this->stepConvolution(ptr, cur_hrir_l, cur_hrir_r, &l_new, &r_new);
+          hrtf_panner_detail::stepConvolution(ptr, prev_hrir_l, prev_hrir_r, &l_old, &r_old);
+          hrtf_panner_detail::stepConvolution(ptr, cur_hrir_l, cur_hrir_r, &l_new, &r_new);
           float w1 = i / (float)config::CROSSFADE_SAMPLES;
           float w0 = 1.0f - w1;
 
@@ -383,7 +379,7 @@ inline void HrtfPanner::run(float *output) {
         }
 
         for (std::size_t i = crossfade_samples; i < config::BLOCK_SIZE; i++) {
-          this->stepConvolution(ptr, cur_hrir_l, cur_hrir_r, &itd_block_left[i], &itd_block_right[i]);
+          hrtf_panner_detail::stepConvolution(ptr, cur_hrir_l, cur_hrir_r, &itd_block_left[i], &itd_block_right[i]);
           ++ptr;
         }
       },
