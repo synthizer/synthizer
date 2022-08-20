@@ -9,6 +9,10 @@
 
 #include <boost/predef.h>
 
+#ifdef BOOST_HW_SIMD_X86
+#include <emmintrin.h>
+#endif
+
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -278,7 +282,7 @@ inline float *HrtfPanner::getInputBuffer() { return this->input_line.getNextBloc
 
 namespace hrtf_panner_detail {
 template <typename MP>
-void stepConvolution(MP ptr, const float *hrir_left, const float *hrir_right, float *dest_l, float *dest_r) {
+inline void stepConvolution(MP ptr, const float *hrir_left, const float *hrir_right, float *dest_l, float *dest_r) {
   static_assert(data::hrtf::IMPULSE_LENGTH > 8);
   static_assert(data::hrtf::IMPULSE_LENGTH % 8 == 0);
 
@@ -332,6 +336,39 @@ void stepConvolution(MP ptr, const float *hrir_left, const float *hrir_right, fl
   *dest_l = (redl0 + redl1) + (redl2 + redl3);
   *dest_r = (redr0 + redr1) + (redr2 + redr3);
 }
+
+// Since MSVC refuses to vectorize the proceeding generic version of this well, and since Clang could vectorize better
+// versions but that hurts MSVC, we carve out the following optimized implementation using intrinsics.
+#ifdef BOOST_HW_SIMD_X86
+inline float horizontalSum(__m128 input) {
+  __m128 halves_swapped = _mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 0, 3, 2));
+  __m128 halves_summed = _mm_add_ps(input, halves_swapped);
+  __m128 subhalves = _mm_shuffle_ps(halves_swapped, halves_swapped, _MM_SHUFFLE(2, 3, 0, 1));
+  return _mm_cvtss_f32(_mm_add_ps(subhalves, halves_summed));
+}
+
+inline void stepConvolution(float *ptr, const float *hrir_left, const float *hrir_right, float *dest_l, float *dest_r) {
+  static_assert(data::hrtf::IMPULSE_LENGTH > 4);
+  static_assert(data::hrtf::IMPULSE_LENGTH % 4 == 0);
+
+  __m128 acc_l = _mm_setzero_ps();
+  __m128 acc_r = _mm_setzero_ps();
+
+  ptr = ptr - data::hrtf::IMPULSE_LENGTH + 1;
+  for (unsigned int i = 0; i < data::hrtf::IMPULSE_LENGTH; i += 4) {
+    __m128 sample = _mm_loadu_ps(ptr + i);
+    __m128 impulse_left = _mm_loadu_ps(hrir_left + i);
+    __m128 impulse_right = _mm_loadu_ps(hrir_right + i);
+    __m128 tmp_l = _mm_mul_ps(sample, impulse_left);
+    __m128 tmp_r = _mm_mul_ps(sample, impulse_right);
+    acc_l = _mm_add_ps(tmp_l, acc_l);
+    acc_r = _mm_add_ps(tmp_r, acc_r);
+  }
+
+  *dest_l = horizontalSum(acc_l);
+  *dest_r = horizontalSum(acc_r);
+}
+#endif
 } // namespace hrtf_panner_detail
 
 inline void HrtfPanner::run(float *output) {
