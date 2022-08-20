@@ -416,14 +416,14 @@ inline void HrtfPanner::run(float *output) {
 
   std::visit(
       [&](auto ptr_left, auto ptr_left_zero, auto ptr_right, auto ptr_right_zero) {
+        float prev_itd_l = this->prev_itd_l, prev_itd_r = this->prev_itd_r;
         for (std::size_t i = 0; i < crossfade_samples; i++) {
           float *o = output + i * 2;
-          float fraction = i / (float)config::CROSSFADE_SAMPLES;
+          float itd_w1 = i * (1.0f / (float)config::CROSSFADE_SAMPLES);
+          float itd_w2 = 1.0f - itd_w1;
 
-          float prev_itd_l = this->prev_itd_l, prev_itd_r = this->prev_itd_r;
-
-          float left = itd_l * fraction + prev_itd_l * (1.0 - fraction);
-          float right = itd_r * fraction + prev_itd_r * (1.0 - fraction);
+          float left = itd_l * itd_w1 + prev_itd_l * itd_w2;
+          float right = itd_r * itd_w1 + prev_itd_r * itd_w2;
           assert(left >= 0.0);
           assert(right >= 0.0);
           unsigned int left_s = left, right_s = right;
