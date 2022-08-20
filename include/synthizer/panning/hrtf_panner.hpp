@@ -394,15 +394,17 @@ inline void HrtfPanner::run(float *output) {
     std::reverse(cur_hrir_r, cur_hrir_r + data::hrtf::IMPULSE_LENGTH);
   }
 
-  unsigned int crossfade_samples = crossfade ? config::CROSSFADE_SAMPLES : 0;
-
   float *itd_block_left = this->itd_line_left.getNextBlock();
   float *itd_block_right = this->itd_line_right.getNextBlock();
 
   auto input_mp = this->input_line.getModPointer(data::hrtf::IMPULSE_LENGTH - 1);
   std::visit(
-      [&](auto &ptr) {
-        for (std::size_t i = 0; i < crossfade_samples; i++) {
+      [&](auto &ptr, auto crossfading) {
+        constexpr unsigned int crossfade_loop_count = crossfading ? config::CROSSFADE_SAMPLES : 0;
+
+        unsigned int i = 0;
+
+        for (; i < crossfade_loop_count; i++) {
           float l_old, l_new, r_old, r_new;
           hrtf_panner_detail::stepConvolution(ptr, prev_hrir_l, prev_hrir_r, &l_old, &r_old);
           hrtf_panner_detail::stepConvolution(ptr, cur_hrir_l, cur_hrir_r, &l_new, &r_new);
@@ -415,12 +417,12 @@ inline void HrtfPanner::run(float *output) {
           ++ptr;
         }
 
-        for (std::size_t i = crossfade_samples; i < config::BLOCK_SIZE; i++) {
+        for (; i < config::BLOCK_SIZE; i++) {
           hrtf_panner_detail::stepConvolution(ptr, cur_hrir_l, cur_hrir_r, &itd_block_left[i], &itd_block_right[i]);
           ++ptr;
         }
       },
-      input_mp);
+      input_mp, vCond(crossfade));
   this->input_line.incrementBlock();
 
   /*
@@ -438,7 +440,6 @@ inline void HrtfPanner::run(float *output) {
   float itd_w_early_r = 1.0 - itd_w_late_r;
 
   // Let's figure out if we can use less than the max hrtf delay.
-
   unsigned int needed_itd_l = config::HRTF_MAX_ITD, needed_itd_r = config::HRTF_MAX_ITD;
   bool left_is_zero = itd_l == 0.0f && this->prev_itd_l == 0.0f;
   bool right_is_zero = itd_r == 0.0f && this->prev_itd_r == 0.0f;
@@ -457,8 +458,6 @@ inline void HrtfPanner::run(float *output) {
         // these help the compilere out by telling it our static loop counts in a way where we can know whether the
         // crossfade loop will run at compile time, via the VBool specialization.
         constexpr unsigned int crossfade_loop_count = ptr_left_zero && ptr_right_zero ? 0 : config::CROSSFADE_SAMPLES;
-        constexpr unsigned int normal_loop_count = config::BLOCK_SIZE - crossfade_loop_count;
-        assert(crossfade_loop_count + normal_loop_count == config::BLOCK_SIZE);
 
         unsigned int i = 0;
         float prev_itd_l = this->prev_itd_l, prev_itd_r = this->prev_itd_r;
@@ -487,7 +486,7 @@ inline void HrtfPanner::run(float *output) {
           ++ptr_right;
         }
 
-        for (; i < normal_loop_count; i++) {
+        for (; i < config::BLOCK_SIZE; i++) {
           float *o = output + i * 2;
 
           if (ptr_left_zero) {
