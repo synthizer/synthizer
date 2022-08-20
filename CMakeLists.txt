@@ -191,13 +191,13 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   add_executable(file_test file_test.cpp)
   target_link_libraries(file_test synthizer)
 
-  add_executable(test_filter_repl test/INTERACTIVE/filter_repl.cpp)
+  add_executable(test_filter_repl test/interactive/filter_repl.cpp)
   target_link_libraries(test_filter_repl synthizer)
 
   add_executable(decoding_bench benchmarks/decoding.cpp)
   target_link_libraries(decoding_bench synthizer)
 
-  add_executable(test_noise test/INTERACTIVE/noise.cpp)
+  add_executable(test_noise test/interactive/noise.cpp)
   target_link_libraries(test_noise synthizer)
 
   add_executable(test_seeking test/interactive/seeking.cpp)
