@@ -454,10 +454,16 @@ inline void HrtfPanner::run(float *output) {
 
   std::visit(
       [&](auto ptr_left, auto ptr_left_zero, auto ptr_right, auto ptr_right_zero) {
+        // these help the compilere out by telling it our static loop counts in a way where we can know whether the
+        // crossfade loop will run at compile time, via the VBool specialization.
+        constexpr unsigned int crossfade_loop_count = ptr_left_zero && ptr_right_zero ? 0 : config::CROSSFADE_SAMPLES;
+        constexpr unsigned int normal_loop_count = config::BLOCK_SIZE - crossfade_loop_count;
+        assert(crossfade_loop_count + normal_loop_count == config::BLOCK_SIZE);
+
         unsigned int i = 0;
         float prev_itd_l = this->prev_itd_l, prev_itd_r = this->prev_itd_r;
 
-        for (; i < crossfade_samples; i++) {
+        for (; i < crossfade_loop_count; i++) {
           float *o = output + i * 2;
           float itd_w1 = i * (1.0f / (float)config::CROSSFADE_SAMPLES);
           float itd_w2 = 1.0f - itd_w1;
@@ -481,7 +487,7 @@ inline void HrtfPanner::run(float *output) {
           ++ptr_right;
         }
 
-        for (; i < config::BLOCK_SIZE; i++) {
+        for (; i < normal_loop_count; i++) {
           float *o = output + i * 2;
 
           if (ptr_left_zero) {
