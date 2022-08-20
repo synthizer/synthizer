@@ -223,6 +223,7 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   FetchContent_MakeAvailable(benchmark)
 
   add_executable(gbench
+    benchmarks/gbench/block_buffer_cache.cpp
     benchmarks/gbench/hrtf.cpp
     benchmarks/gbench/main.cpp
     benchmarks/gbench/property_write.cpp
