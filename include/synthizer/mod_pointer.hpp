@@ -145,7 +145,7 @@ template <typename T, std::size_t LEN> FLATTENED void ModSlice<T, LEN>::operator
 }
 
 template <typename T, std::size_t LEN>
-ModPointer<T, LEN> FLATTENED createModPointer(T *data, std::size_t offset, std::size_t len) {
+FLATTENED ModPointer<T, LEN> createModPointer(T *data, std::size_t offset, std::size_t len) {
   if (offset + len > LEN) {
     return ModSlice<T, LEN>{data, offset};
   } else {

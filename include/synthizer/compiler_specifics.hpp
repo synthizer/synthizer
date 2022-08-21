@@ -12,7 +12,7 @@
  * Inline all of a function's callees if possible. In Clang/Gcc, includes the inline keyword for you as well, soo this
  * should be used in the same position as and instead of inline.
  * */
-#ifdef BOOST_COMP_MSVC
+#if BOOST_COMP_MSVC > 0
 #define FLATTENED __forceinline
 #else
 #define FLATTENED [[gnu::flatten]] inline
@@ -27,7 +27,7 @@
 #define PRINTF_LIKE(m, n) [[gnu::format(printf, m, n)]]
 
 /* For MSVC, introduce defines to the Clang builtins. */
-#if defined(_MSC_VER) && !(defined(__clang__) || defined(__GNUC__))
+#if BOOST_COMP_MSVC > 0
 #include <intrin.h>
 
 #define __builtin_popcount(x) __popcnt(x)

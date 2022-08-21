@@ -9,7 +9,7 @@
 
 #include <boost/predef.h>
 
-#ifdef BOOST_HW_SIMD_X86
+#if BOOST_HW_SIMD_X86 > 0
 #include <emmintrin.h>
 #endif
 
@@ -339,7 +339,7 @@ FLATTENED void stepConvolution(MP ptr, const float *hrir_left, const float *hrir
 
 // Since MSVC refuses to vectorize the proceeding generic version of this well, and since Clang could vectorize better
 // versions but that hurts MSVC, we carve out the following optimized implementation using intrinsics.
-#ifdef BOOST_HW_SIMD_X86
+#if BOOST_HW_SIMD_X86 >= BOOST_HW_SIMD_X86_SSE2_VERSION
 FLATTENED float horizontalSum(__m128 input) {
   __m128 halves_swapped = _mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 0, 3, 2));
   __m128 halves_summed = _mm_add_ps(input, halves_swapped);
@@ -347,7 +347,8 @@ FLATTENED float horizontalSum(__m128 input) {
   return _mm_cvtss_f32(_mm_add_ps(subhalves, halves_summed));
 }
 
-FLATTENED void stepConvolution(float *ptr, const float *hrir_left, const float *hrir_right, float *dest_l, float *dest_r) {
+FLATTENED void stepConvolution(float *ptr, const float *hrir_left, const float *hrir_right, float *dest_l,
+                               float *dest_r) {
   static_assert(data::hrtf::IMPULSE_LENGTH > 4);
   static_assert(data::hrtf::IMPULSE_LENGTH % 4 == 0);
 
