@@ -351,12 +351,12 @@ inline void GlobalFdnReverbEffect::runEffect(unsigned int block_time, unsigned i
           std::array<float, LINES> values;
           for (unsigned int j = 0; j < LINES; j++) {
             double delay = this->delays[j] + this->late_modulators[j].tick();
-            auto cur_del = ptr - LINES * ((std::size_t)delay - 1);
+            auto cur_del = ptr - LINES * ((std::size_t)delay - 1) + j;
             float w2 = delay - std::floor(delay);
             float w1 = 1.0f - w2;
             // This is a pointer to the delay line; higher indices are in the future.
             float v1 = cur_del[LINES];
-            float v2 = cur_del[LINES + j];
+            float v2 = cur_del[0];
             values[j] = v1 * w1 + v2 * w2;
           }
 
