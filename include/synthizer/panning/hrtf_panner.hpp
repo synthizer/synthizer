@@ -282,7 +282,7 @@ inline float *HrtfPanner::getInputBuffer() { return this->input_line.getNextBloc
 
 namespace hrtf_panner_detail {
 template <typename MP>
-inline void stepConvolution(MP ptr, const float *hrir_left, const float *hrir_right, float *dest_l, float *dest_r) {
+FLATTENED void stepConvolution(MP ptr, const float *hrir_left, const float *hrir_right, float *dest_l, float *dest_r) {
   static_assert(data::hrtf::IMPULSE_LENGTH > 8);
   static_assert(data::hrtf::IMPULSE_LENGTH % 8 == 0);
 
@@ -340,14 +340,14 @@ inline void stepConvolution(MP ptr, const float *hrir_left, const float *hrir_ri
 // Since MSVC refuses to vectorize the proceeding generic version of this well, and since Clang could vectorize better
 // versions but that hurts MSVC, we carve out the following optimized implementation using intrinsics.
 #ifdef BOOST_HW_SIMD_X86
-inline float horizontalSum(__m128 input) {
+FLATTENED float horizontalSum(__m128 input) {
   __m128 halves_swapped = _mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 0, 3, 2));
   __m128 halves_summed = _mm_add_ps(input, halves_swapped);
   __m128 subhalves = _mm_shuffle_ps(halves_swapped, halves_swapped, _MM_SHUFFLE(2, 3, 0, 1));
   return _mm_cvtss_f32(_mm_add_ps(subhalves, halves_summed));
 }
 
-inline void stepConvolution(float *ptr, const float *hrir_left, const float *hrir_right, float *dest_l, float *dest_r) {
+FLATTENED void stepConvolution(float *ptr, const float *hrir_left, const float *hrir_right, float *dest_l, float *dest_r) {
   static_assert(data::hrtf::IMPULSE_LENGTH > 4);
   static_assert(data::hrtf::IMPULSE_LENGTH % 4 == 0);
 
@@ -402,24 +402,19 @@ inline void HrtfPanner::run(float *output) {
       [&](auto &ptr, auto crossfading) {
         constexpr unsigned int crossfade_loop_count = crossfading ? config::CROSSFADE_SAMPLES : 0;
 
-        unsigned int i = 0;
-
-        for (; i < crossfade_loop_count; i++) {
+        for (unsigned int i = 0; i < crossfade_loop_count; i++) {
           float l_old, l_new, r_old, r_new;
-          hrtf_panner_detail::stepConvolution(ptr, prev_hrir_l, prev_hrir_r, &l_old, &r_old);
-          hrtf_panner_detail::stepConvolution(ptr, cur_hrir_l, cur_hrir_r, &l_new, &r_new);
+          hrtf_panner_detail::stepConvolution(ptr + i, prev_hrir_l, prev_hrir_r, &l_old, &r_old);
+          hrtf_panner_detail::stepConvolution(ptr + i, cur_hrir_l, cur_hrir_r, &l_new, &r_new);
           float w1 = i / (float)config::CROSSFADE_SAMPLES;
           float w0 = 1.0f - w1;
 
           itd_block_left[i] = l_old * w0 + l_new * w1;
           itd_block_right[i] = r_old * w0 + r_new * w1;
-
-          ++ptr;
         }
 
-        for (; i < config::BLOCK_SIZE; i++) {
-          hrtf_panner_detail::stepConvolution(ptr, cur_hrir_l, cur_hrir_r, &itd_block_left[i], &itd_block_right[i]);
-          ++ptr;
+        for (unsigned int i = crossfade_loop_count; i < config::BLOCK_SIZE; i++) {
+          hrtf_panner_detail::stepConvolution(ptr + i, cur_hrir_l, cur_hrir_r, &itd_block_left[i], &itd_block_right[i]);
         }
       },
       input_mp, vCond(crossfade));
@@ -459,10 +454,9 @@ inline void HrtfPanner::run(float *output) {
         // crossfade loop will run at compile time, via the VBool specialization.
         constexpr unsigned int crossfade_loop_count = ptr_left_zero && ptr_right_zero ? 0 : config::CROSSFADE_SAMPLES;
 
-        unsigned int i = 0;
         float prev_itd_l = this->prev_itd_l, prev_itd_r = this->prev_itd_r;
 
-        for (; i < crossfade_loop_count; i++) {
+        for (unsigned int i = 0; i < crossfade_loop_count; i++) {
           float *o = output + i * 2;
           float itd_w1 = i * (1.0f / (float)config::CROSSFADE_SAMPLES);
           float itd_w2 = 1.0f - itd_w1;
@@ -474,39 +468,34 @@ inline void HrtfPanner::run(float *output) {
           unsigned int left_s = left, right_s = right;
           float wl = left - left_s;
           float wr = right - right_s;
-          auto del_left_ptr = ptr_left - (left_s + 1);
-          auto del_right_ptr = ptr_right - (right_s + 1);
+          auto del_left_ptr = ptr_left - (left_s + 1) + i;
+          auto del_right_ptr = ptr_right - (right_s + 1) + i;
           float lse = del_left_ptr[1], lsl = del_left_ptr[0];
           float rse = del_right_ptr[1], rsl = del_right_ptr[0];
           float ls = lsl * wl + lse * (1.0f - wl);
           float rs = rsl * wr + rse * (1.0f - wr);
           o[0] += ls;
           o[1] += rs;
-          ++ptr_left;
-          ++ptr_right;
         }
 
-        for (; i < config::BLOCK_SIZE; i++) {
+        for (unsigned int i = crossfade_loop_count; i < config::BLOCK_SIZE; i++) {
           float *o = output + i * 2;
 
           if (ptr_left_zero) {
-            o[0] = *ptr_left;
+            o[0] = ptr_left[i];
           } else {
-            auto del_left_ptr = ptr_left - (itd_l_i + 1);
+            auto del_left_ptr = ptr_left - (itd_l_i + 1) + i;
             float lse = del_left_ptr[1], lsl = del_left_ptr[0];
             o[0] += itd_w_early_l * lse + itd_w_late_l * lsl;
           }
 
           if (ptr_right_zero) {
-            o[1] = *ptr_right;
+            o[1] = ptr_right[i];
           } else {
-            auto del_right_ptr = ptr_right - (itd_r_i + 1);
+            auto del_right_ptr = ptr_right - (itd_r_i + 1) + i;
             float rse = del_right_ptr[1], rsl = del_right_ptr[0];
             o[1] += itd_w_early_r * rse + itd_w_late_r * rsl;
           }
-
-          ++ptr_left;
-          ++ptr_right;
         }
       },
       itd_left_mp, vCond(left_is_zero), itd_right_mp, vCond(right_is_zero));

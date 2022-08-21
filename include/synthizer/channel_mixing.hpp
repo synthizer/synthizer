@@ -1,5 +1,6 @@
 #pragma once
 
+#include "synthizer/compiler_specifics.hpp"
 #include "synthizer/types.hpp"
 
 #include <cassert>
@@ -10,8 +11,8 @@ namespace channel_mixing_detail {
 /*
  * Mix by dropping extra channels from in or adding extra zeros to out.
  * */
-inline void truncateChannels(unsigned int length, float *in, unsigned int inChannelCount, float *out,
-                             unsigned int outChannelCount) {
+FLATTENED void truncateChannels(unsigned int length, float *in, unsigned int inChannelCount, float *out,
+                                unsigned int outChannelCount) {
   unsigned int minChannelCount = inChannelCount < outChannelCount ? inChannelCount : outChannelCount;
   for (unsigned int i = 0; i < length; i++) {
     for (unsigned int ch = 0; ch < minChannelCount; ch++) {
@@ -20,7 +21,7 @@ inline void truncateChannels(unsigned int length, float *in, unsigned int inChan
   }
 }
 
-inline void upmixMono(unsigned int length, float *in, float *out, unsigned int outChannelCount) {
+FLATTENED void upmixMono(unsigned int length, float *in, float *out, unsigned int outChannelCount) {
   for (unsigned int i = 0; i < length; i++) {
     float *frame = out + outChannelCount * i;
     for (unsigned int j = 0; j < outChannelCount; j++) {
@@ -29,7 +30,7 @@ inline void upmixMono(unsigned int length, float *in, float *out, unsigned int o
   }
 }
 
-inline void downmixMono(unsigned int length, float *in, unsigned int inChannelCount, float *out) {
+FLATTENED void downmixMono(unsigned int length, float *in, unsigned int inChannelCount, float *out) {
   float normfactor = 1.0f / inChannelCount;
   for (unsigned int i = 0; i < length; i++) {
     float *frame = in + i * inChannelCount;
@@ -51,7 +52,7 @@ inline void downmixMono(unsigned int length, float *in, unsigned int inChannelCo
  * As is the Synthizer convention, this adds to output, not replaces.
  * */
 inline void mixChannels(unsigned int length, float *in, unsigned int inChannelCount, float *out,
-                 unsigned int outChannelCount) {
+                        unsigned int outChannelCount) {
   assert(inChannelCount != 0);
   assert(outChannelCount != 0);
   if (inChannelCount == outChannelCount) {

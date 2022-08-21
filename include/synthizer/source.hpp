@@ -115,7 +115,8 @@ inline void Source::removeGenerator(std::shared_ptr<Generator> &generator) {
     return;
 
   unsigned int index = 0;
-  for (; index < this->generators.size(); index++) {
+  unsigned int size = this->generators.size();
+  for (; index < size; index++) {
     auto s = this->generators[index].lock();
     if (s == generator)
       break;

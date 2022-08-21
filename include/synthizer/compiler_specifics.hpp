@@ -8,11 +8,14 @@
  * The purpose is to allow Synthizer to one day be cross-compiler if necessary, though for now these are just Clang.
  * */
 
-/* Inline all of a function's callees if possible. */
+/**
+ * Inline all of a function's callees if possible. In Clang/Gcc, includes the inline keyword for you as well, soo this
+ * should be used in the same position as and instead of inline.
+ * */
 #ifdef BOOST_COMP_MSVC
 #define FLATTENED __forceinline
 #else
-#define FLATTENED [[gnu::flatten]]
+#define FLATTENED [[gnu::flatten]] inline
 #endif
 
 /*

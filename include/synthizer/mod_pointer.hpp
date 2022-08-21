@@ -9,6 +9,8 @@
  * */
 #pragma once
 
+#include "synthizer/compiler_specifics.hpp"
+
 #include <cassert>
 #include <cstdint>
 #include <variant>
@@ -84,22 +86,22 @@ template <typename T, std::size_t LEN>
 ModSlice<T, LEN>::ModSlice(T *_data, std::size_t initial_offset) : data(_data), offset(initial_offset) {}
 
 template <typename T, std::size_t LEN>
-inline std::size_t ModSlice<T, LEN>::addIndexRelative(std::size_t increment) const {
+FLATTENED std::size_t ModSlice<T, LEN>::addIndexRelative(std::size_t increment) const {
   return (this->offset + increment) % LEN;
 }
 
 template <typename T, std::size_t LEN>
-inline std::size_t ModSlice<T, LEN>::subIndexRelative(std::size_t decrement) const {
+FLATTENED std::size_t ModSlice<T, LEN>::subIndexRelative(std::size_t decrement) const {
   assert(decrement <= LEN);
   return (LEN + this->offset - decrement) % LEN;
 }
 
-template <typename T, std::size_t LEN> inline T &ModSlice<T, LEN>::operator[](std::size_t index) const {
+template <typename T, std::size_t LEN> FLATTENED T &ModSlice<T, LEN>::operator[](std::size_t index) const {
   auto actual_index = this->addIndexRelative(index);
   return this->data[actual_index];
 }
 
-template <typename T, std::size_t LEN> inline T &ModSlice<T, LEN>::operator*() const { return (*this)[0]; }
+template <typename T, std::size_t LEN> FLATTENED T &ModSlice<T, LEN>::operator*() const { return (*this)[0]; }
 
 template <typename T, std::size_t LEN> T *ModSlice<T, LEN>::operator->() const { return &((*this)[0]); }
 
@@ -138,12 +140,12 @@ template <typename T, std::size_t LEN> ModSlice<T, LEN> ModSlice<T, LEN>::operat
   return copy;
 }
 
-template <typename T, std::size_t LEN> inline void ModSlice<T, LEN>::operator+=(std::size_t increment) {
+template <typename T, std::size_t LEN> FLATTENED void ModSlice<T, LEN>::operator+=(std::size_t increment) {
   *this = *this + increment;
 }
 
 template <typename T, std::size_t LEN>
-ModPointer<T, LEN> inline createModPointer(T *data, std::size_t offset, std::size_t len) {
+ModPointer<T, LEN> FLATTENED createModPointer(T *data, std::size_t offset, std::size_t len) {
   if (offset + len > LEN) {
     return ModSlice<T, LEN>{data, offset};
   } else {
