@@ -123,27 +123,16 @@ public:
     return will_read;
   }
 
-  /*
-   * Read frames into a float*. If the workspace and workspace_len parameters are specified, they will be used as
-   * scratch space for the intermediate conversion. They exist to allow for more than the default stack-allocated
-   * workspace size, which can speed up the loops here significantly. workspace_len is in elements, not frames.
-   * */
-  std::size_t readFrames(std::size_t pos, std::size_t count, float *out, std::size_t workspace_len = 0,
-                         std::int16_t *workspace = nullptr) {
-    std::array<std::int16_t, config::MAX_CHANNELS * 16> default_workspace = {0};
+  std::size_t readFrames(std::size_t pos, std::size_t count, float *out) {
+    std::array<std::int16_t, config::MAX_CHANNELS * 16> workspace = {0};
+    std::size_t workspace_frames = workspace.size() / this->getChannels();
 
-    if (workspace_len * this->getChannels() < default_workspace.size() || workspace == nullptr) {
-      workspace = &default_workspace[0];
-      workspace_len = default_workspace.size();
-    }
-
-    std::size_t workspace_frames = workspace_len / this->getChannels();
     std::size_t written = 0;
     float *cursor = out;
 
     while (written < count) {
       std::size_t requested = std::min(count - written, workspace_frames);
-      std::size_t got = this->readFramesI16(pos + written, requested, workspace);
+      std::size_t got = this->readFramesI16(pos + written, requested, &workspace[0]);
       for (unsigned int i = 0; i < got * this->getChannels(); i++) {
         cursor[i] = workspace[i] / 32768.0f;
       }
