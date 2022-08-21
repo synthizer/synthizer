@@ -46,7 +46,7 @@ public:
    * This takes end so that it can assert that we aren't trying to read past the end in debug builds.
    * */
   const std::int16_t *getPointerToSubslice(std::size_t start, std::size_t end) const {
-    (void)end;  
+    (void)end;
     assert(end <= this->data.size());
     return &this->data[start];
   }
@@ -145,6 +145,16 @@ public:
     }
 
     return written;
+  }
+
+  /**
+   * get a raw view on the internal buffer.
+   *
+   * This is used in BufferGenerator to optimize a common case where we can simply copy by folding the conversion to f32
+   * in and entirely avoiding a temporary uffer.
+   * */
+  const std::int16_t *getRawSlice(std::size_t start, std::size_t end) const {
+    return this->getData()->getPointerToSubslice(start, end);
   }
 
 private:
