@@ -46,6 +46,7 @@ public:
    * This takes end so that it can assert that we aren't trying to read past the end in debug builds.
    * */
   const std::int16_t *getPointerToSubslice(std::size_t start, std::size_t end) const {
+    (void)end;  
     assert(end <= this->data.size());
     return &this->data[start];
   }
@@ -180,7 +181,6 @@ inline std::shared_ptr<BufferData> generateBufferData(unsigned int channels, uns
   WDL_Resampler *resampler = nullptr;
   deferred_vector<std::int16_t> data;
   float *working_buf = nullptr;
-  std::int16_t *next_chunk = nullptr;
 
   if (channels > config::MAX_CHANNELS) {
     throw ERange("Buffer has too many channels");
