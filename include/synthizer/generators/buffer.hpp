@@ -193,7 +193,7 @@ inline void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) 
 
   float *cursor = output;
   unsigned int remaining = config::BLOCK_SIZE;
-  auto workspace_guard = acquireBlockBuffer();
+  auto workspace_guard = acquireBlockBuffer(false);
   float *workspace = workspace_guard;
   bool looping = this->getLooping() != 0;
   unsigned int i = 0;
