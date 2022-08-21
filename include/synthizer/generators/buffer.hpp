@@ -198,17 +198,20 @@ inline void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) 
   bool looping = this->getLooping() != 0;
   unsigned int i = 0;
 
+  // the compiler is bad about telling that the channel count never changes, so lift it to a variable.
+  unsigned int channels = this->getChannels();
+
   gd->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
     while (remaining) {
       auto got = this->reader.readFrames(pos, remaining, workspace);
       for (unsigned int j = 0; j < got; i++, j++) {
         float g = gain_cb(i);
-        for (unsigned int ch = 0; ch < this->reader.getChannels(); ch++) {
-          cursor[j * this->reader.getChannels() + ch] += g * workspace[j * this->reader.getChannels() + ch];
+        for (unsigned int ch = 0; ch < channels; ch++) {
+          cursor[j * channels + ch] += g * workspace[j * channels + ch];
         }
       }
       remaining -= got;
-      cursor += got * this->reader.getChannels();
+      cursor += got * channels;
       pos += got;
       if (remaining > 0) {
         if (looping == false) {
