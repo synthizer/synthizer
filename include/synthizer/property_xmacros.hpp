@@ -65,7 +65,7 @@ extern "C" {
   STANDARD_DISTANCE_MODEL_PROPERTIES
 
 #define GENERATOR_PROPERTIES                                                                                           \
-  DOUBLE_P(SYZ_P_PITCH_BEND, pitch_bend, PitchBend, 0.0, P_DOUBLE_MAX, 1.0)                                            \
+  DOUBLE_P(SYZ_P_PITCH_BEND, pitch_bend, PitchBend, 0.0, 2.0, 1.0)                                                     \
   DOUBLE_P(SYZ_P_GAIN, gain, Gain, 0.0, P_DOUBLE_MAX, 1.0)
 
 #define BUFFER_GENERATOR_PROPERTIES                                                                                    \
