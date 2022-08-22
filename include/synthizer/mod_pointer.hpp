@@ -25,6 +25,19 @@ template <std::size_t LEN> class StaticLengthProvider {
 public:
   std::size_t getLength() const { return LEN; }
 };
+
+/**
+ * A dynamic length provider, where the length is passed in by createDynamicModPointer.
+ * */
+class DynamicLengthProvider {
+public:
+  DynamicLengthProvider(std::size_t len) : length(len) {}
+
+  std::size_t getLength() { return this->length; }
+
+private:
+  std::size_t length;
+};
 } // namespace mod_pointer_detail
 
 /**
@@ -72,8 +85,8 @@ private:
 };
 
 /**
- * A StaticModPointer is a variant of pointer-like objects to a slice of memory at some offset, where access to the object may
- * need mod, and the length of the underlying buffer is known at compile time.
+ * A StaticModPointer is a variant of pointer-like objects to a slice of memory at some offset, where access to the
+ * object may need mod, and the length of the underlying buffer is known at compile time.
  *
  * The idea here is that when reading from a delay line for example, if we know how far ahead we're going to read, we
  * may be able to return a raw pointer.  Likewise for powers of 2, and so on.
@@ -86,11 +99,23 @@ template <typename T, std::size_t LEN>
 using StaticModPointer = std::variant<ModSlice<T, mod_pointer_detail::StaticLengthProvider<LEN>>, T *>;
 
 /**
+ * The same as StaticModPointer, but the modulus case comes from a runtime value.
+ *
+ * This is significantly more expensive in most contexts.
+ * */
+template <typename T>
+using DynamicModPointer = std::variant<ModSlice<T, mod_pointer_detail::DynamicLengthProvider>, T *>;
+
+/**
  * Given a pointer, an offset, and one past the maximum index which may be accessed, return a ModPointer that can handle
  * it.
  * */
 template <typename T, std::size_t LEN>
-StaticModPointer<T, LEN> createStaticModPointer(T *data, std::size_t offset, std::size_t len);
+inline StaticModPointer<T, LEN> createStaticModPointer(T *data, std::size_t offset, std::size_t slice_len);
+
+template <typename T>
+inline DynamicModPointer<T> createStaticModPointer(T *data, std::size_t offset, std::size_t max_index,
+                                                   std::size_t buffer_len);
 
 template <typename T, typename LEN_PROVIDER_T>
 ModSlice<T, LEN_PROVIDER_T>::ModSlice(T *_data, std::size_t initial_offset, LEN_PROVIDER_T _length_provider)
@@ -166,10 +191,21 @@ FLATTENED void ModSlice<T, LEN_PROVIDER_T>::operator+=(std::size_t increment) {
 }
 
 template <typename T, std::size_t LEN>
-FLATTENED StaticModPointer<T, LEN> createStaticModPointer(T *data, std::size_t offset, std::size_t len) {
-  if (offset + len > LEN) {
+FLATTENED StaticModPointer<T, LEN> createStaticModPointer(T *data, std::size_t offset, std::size_t slice_len) {
+  if (offset + slice_len > LEN) {
     return ModSlice<T, mod_pointer_detail::StaticLengthProvider<LEN>>{data, offset,
                                                                       mod_pointer_detail::StaticLengthProvider<LEN>{}};
+  } else {
+    return data + offset;
+  }
+}
+
+template <typename T>
+FLATTENED DynamicModPointer<T> createDynamicModPointer(T *data, std::size_t offset, std::size_t slice_len,
+                                                       std::size_t buffer_len) {
+  if (offset + slice_len > buffer_len) {
+    return ModSlice<T, mod_pointer_detail::DynamicLengthProvider>{
+        data, offset, mod_pointer_detail::DynamicLengthProvider{buffer_len}};
   } else {
     return data + offset;
   }
