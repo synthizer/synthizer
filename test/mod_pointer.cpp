@@ -6,7 +6,8 @@
 #include <variant>
 #include <vector>
 
-template <std::size_t LEN> using TestModSlice = synthizer::ModSlice<int, LEN>;
+template <std::size_t LEN>
+using TestModSlice = synthizer::ModSlice<int, synthizer::mod_pointer_detail::StaticLengthProvider<LEN>>;
 
 TEST_CASE("ModSlice") {
   std::vector<int> data{};
@@ -17,7 +18,8 @@ TEST_CASE("ModSlice") {
   }
 
   SECTION("basic indexing") {
-    auto ptr = TestModSlice<NUM_INDICES>{data.data(), 5000};
+    auto ptr = TestModSlice<NUM_INDICES>{data.data(), 5000,
+                                         synthizer::mod_pointer_detail::StaticLengthProvider<NUM_INDICES>{}};
     REQUIRE(*ptr == 5000);
     REQUIRE(ptr[0] == 5000);
     REQUIRE(ptr[100] == 5100);
@@ -26,7 +28,8 @@ TEST_CASE("ModSlice") {
   }
 
   SECTION("Basic incrementing loops") {
-    auto ptr = TestModSlice<NUM_INDICES>{data.data(), 0};
+    auto ptr =
+        TestModSlice<NUM_INDICES>{data.data(), 0, synthizer::mod_pointer_detail::StaticLengthProvider<NUM_INDICES>{}};
 
     for (std::size_t ign = 0; ign < 5; ign++) {
       for (std::size_t i = 0; i < 10000; i++) {
@@ -39,7 +42,8 @@ TEST_CASE("ModSlice") {
   }
 
   SECTION("Operator []") {
-    auto ptr = TestModSlice<NUM_INDICES>{data.data(), 5000};
+    auto ptr = TestModSlice<NUM_INDICES>{data.data(), 5000,
+                                         synthizer::mod_pointer_detail::StaticLengthProvider<NUM_INDICES>{}};
 
     for (std::size_t i = 0; i < 10000; i++) {
       REQUIRE(ptr[i] == (i + 5000) % NUM_INDICES);
@@ -47,9 +51,12 @@ TEST_CASE("ModSlice") {
   }
 
   SECTION("Make sure we can decrement and subtract") {
-    auto ptr = TestModSlice<NUM_INDICES>{data.data(), 0};
-    auto ptr2 = TestModSlice<NUM_INDICES>{data.data(), 0};
-    auto ptr3 = TestModSlice<NUM_INDICES>{data.data(), 0};
+    auto ptr =
+        TestModSlice<NUM_INDICES>{data.data(), 0, synthizer::mod_pointer_detail::StaticLengthProvider<NUM_INDICES>{}};
+    auto ptr2 =
+        TestModSlice<NUM_INDICES>{data.data(), 0, synthizer::mod_pointer_detail::StaticLengthProvider<NUM_INDICES>{}};
+    auto ptr3 =
+        TestModSlice<NUM_INDICES>{data.data(), 0, synthizer::mod_pointer_detail::StaticLengthProvider<NUM_INDICES>{}};
 
     for (std::size_t i = 0; i < NUM_INDICES; i++) {
       // Check subtracting by an increment.
@@ -66,7 +73,8 @@ TEST_CASE("ModSlice") {
   }
 
   SECTION("Make sure we can write") {
-    auto ptr = TestModSlice<NUM_INDICES>{data.data(), 0};
+    auto ptr =
+        TestModSlice<NUM_INDICES>{data.data(), 0, synthizer::mod_pointer_detail::StaticLengthProvider<NUM_INDICES>{}};
 
     for (std::size_t i = 0; i < NUM_INDICES; i++) {
       ptr[i] += 1;

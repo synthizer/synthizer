@@ -17,6 +17,16 @@
 
 namespace synthizer {
 
+namespace mod_pointer_detail {
+/**
+ * A length provider based off a static compile-time-known len.
+ * */
+template <std::size_t LEN> class StaticLengthProvider {
+public:
+  std::size_t getLength() const { return LEN; }
+};
+} // namespace mod_pointer_detail
+
 /**
  * The modulating variant payload.
  *
@@ -29,20 +39,20 @@ namespace synthizer {
  * This is, in essence, a "pointer", and being outside the range is the same as out of bounds access.  One difference
  * which hopefully never matters is that, for our sanity, we don't support negative indices.
  * */
-template <typename T, std::size_t LEN> class ModSlice {
+template <typename T, typename LEN_PROVIDER_T> class ModSlice {
 public:
-  ModSlice(T *_data, std::size_t initial_offset);
+  ModSlice(T *_data, std::size_t initial_offset, LEN_PROVIDER_T length_provider);
 
   T &operator[](std::size_t index) const;
   T &operator*() const;
   T *operator->() const;
 
-  ModSlice<T, LEN> &operator++();
-  ModSlice<T, LEN> &operator--();
-  ModSlice<T, LEN> operator++(int);
-  ModSlice<T, LEN> operator--(int);
-  ModSlice<T, LEN> operator+(std::size_t increment) const;
-  ModSlice<T, LEN> operator-(std::size_t decrement) const;
+  ModSlice<T, LEN_PROVIDER_T> &operator++();
+  ModSlice<T, LEN_PROVIDER_T> &operator--();
+  ModSlice<T, LEN_PROVIDER_T> operator++(int);
+  ModSlice<T, LEN_PROVIDER_T> operator--(int);
+  ModSlice<T, LEN_PROVIDER_T> operator+(std::size_t increment) const;
+  ModSlice<T, LEN_PROVIDER_T> operator-(std::size_t decrement) const;
   void operator+=(std::size_t increment);
 
 private:
@@ -58,6 +68,7 @@ private:
 
   T *data;
   std::size_t offset;
+  LEN_PROVIDER_T length_provider;
 };
 
 /**
@@ -73,7 +84,8 @@ private:
  *
  * For now, we assume the caller is going to know the length of the underlying memory at compile time.
  * */
-template <typename T, std::size_t LEN> using ModPointer = std::variant<ModSlice<T, LEN>, T *>;
+template <typename T, std::size_t LEN>
+using ModPointer = std::variant<ModSlice<T, mod_pointer_detail::StaticLengthProvider<LEN>>, T *>;
 
 /**
  * Given a pointer, an offset, and one past the maximum index which may be accessed, return a ModPointer that can handle
@@ -82,72 +94,84 @@ template <typename T, std::size_t LEN> using ModPointer = std::variant<ModSlice<
 template <typename T, std::size_t LEN>
 ModPointer<T, LEN> createModPointer(T *data, std::size_t offset, std::size_t len);
 
-template <typename T, std::size_t LEN>
-ModSlice<T, LEN>::ModSlice(T *_data, std::size_t initial_offset) : data(_data), offset(initial_offset) {}
+template <typename T, typename LEN_PROVIDER_T>
+ModSlice<T, LEN_PROVIDER_T>::ModSlice(T *_data, std::size_t initial_offset, LEN_PROVIDER_T _length_provider)
+    : data(_data), offset(initial_offset), length_provider(_length_provider) {}
 
-template <typename T, std::size_t LEN>
-FLATTENED std::size_t ModSlice<T, LEN>::addIndexRelative(std::size_t increment) const {
-  return (this->offset + increment) % LEN;
+template <typename T, typename LEN_PROVIDER_T>
+FLATTENED std::size_t ModSlice<T, LEN_PROVIDER_T>::addIndexRelative(std::size_t increment) const {
+  return (this->offset + increment) % this->length_provider.getLength();
 }
 
-template <typename T, std::size_t LEN>
-FLATTENED std::size_t ModSlice<T, LEN>::subIndexRelative(std::size_t decrement) const {
-  assert(decrement <= LEN);
-  return (LEN + this->offset - decrement) % LEN;
+template <typename T, typename LEN_PROVIDER_T>
+FLATTENED std::size_t ModSlice<T, LEN_PROVIDER_T>::subIndexRelative(std::size_t decrement) const {
+  assert(decrement <= this->length_provider.getLength());
+  return (this->length_provider.getLength() + this->offset - decrement) % this->length_provider.getLength();
 }
 
-template <typename T, std::size_t LEN> FLATTENED T &ModSlice<T, LEN>::operator[](std::size_t index) const {
+template <typename T, typename LEN_PROVIDER_T>
+FLATTENED T &ModSlice<T, LEN_PROVIDER_T>::operator[](std::size_t index) const {
   auto actual_index = this->addIndexRelative(index);
   return this->data[actual_index];
 }
 
-template <typename T, std::size_t LEN> FLATTENED T &ModSlice<T, LEN>::operator*() const { return (*this)[0]; }
+template <typename T, typename LEN_PROVIDER_T> FLATTENED T &ModSlice<T, LEN_PROVIDER_T>::operator*() const {
+  return (*this)[0];
+}
 
-template <typename T, std::size_t LEN> T *ModSlice<T, LEN>::operator->() const { return &((*this)[0]); }
+template <typename T, typename LEN_PROVIDER_T> T *ModSlice<T, LEN_PROVIDER_T>::operator->() const {
+  return &((*this)[0]);
+}
 
-template <typename T, std::size_t LEN> ModSlice<T, LEN> &ModSlice<T, LEN>::operator++() {
+template <typename T, typename LEN_PROVIDER_T> ModSlice<T, LEN_PROVIDER_T> &ModSlice<T, LEN_PROVIDER_T>::operator++() {
   this->offset = this->addIndexRelative(1);
   return *this;
 }
 
-template <typename T, std::size_t LEN> ModSlice<T, LEN> &ModSlice<T, LEN>::operator--() {
+template <typename T, typename LEN_PROVIDER_T> ModSlice<T, LEN_PROVIDER_T> &ModSlice<T, LEN_PROVIDER_T>::operator--() {
   // This is equivalent to going around one minus the len.
   this->offset = this->subIndexRelative(1);
   return *this;
 }
 
-template <typename T, std::size_t LEN> ModSlice<T, LEN> ModSlice<T, LEN>::operator++(int) {
+template <typename T, typename LEN_PROVIDER_T>
+ModSlice<T, LEN_PROVIDER_T> ModSlice<T, LEN_PROVIDER_T>::operator++(int) {
   auto old = *this;
   ++(*this);
   return old;
 }
 
-template <typename T, std::size_t LEN> ModSlice<T, LEN> ModSlice<T, LEN>::operator--(int) {
+template <typename T, typename LEN_PROVIDER_T>
+ModSlice<T, LEN_PROVIDER_T> ModSlice<T, LEN_PROVIDER_T>::operator--(int) {
   auto old = *this;
   --(*this);
   return old;
 }
 
-template <typename T, std::size_t LEN> ModSlice<T, LEN> ModSlice<T, LEN>::operator+(std::size_t increment) const {
+template <typename T, typename LEN_PROVIDER_T>
+ModSlice<T, LEN_PROVIDER_T> ModSlice<T, LEN_PROVIDER_T>::operator+(std::size_t increment) const {
   auto copy = *this;
   copy.offset = this->addIndexRelative(increment);
   return copy;
 }
 
-template <typename T, std::size_t LEN> ModSlice<T, LEN> ModSlice<T, LEN>::operator-(std::size_t decrement) const {
+template <typename T, typename LEN_PROVIDER_T>
+ModSlice<T, LEN_PROVIDER_T> ModSlice<T, LEN_PROVIDER_T>::operator-(std::size_t decrement) const {
   auto copy = *this;
   copy.offset = this->subIndexRelative(decrement);
   return copy;
 }
 
-template <typename T, std::size_t LEN> FLATTENED void ModSlice<T, LEN>::operator+=(std::size_t increment) {
+template <typename T, typename LEN_PROVIDER_T>
+FLATTENED void ModSlice<T, LEN_PROVIDER_T>::operator+=(std::size_t increment) {
   *this = *this + increment;
 }
 
 template <typename T, std::size_t LEN>
 FLATTENED ModPointer<T, LEN> createModPointer(T *data, std::size_t offset, std::size_t len) {
   if (offset + len > LEN) {
-    return ModSlice<T, LEN>{data, offset};
+    return ModSlice<T, mod_pointer_detail::StaticLengthProvider<LEN>>{data, offset,
+                                                                      mod_pointer_detail::StaticLengthProvider<LEN>{}};
   } else {
     return data + offset;
   }
