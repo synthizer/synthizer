@@ -103,6 +103,6 @@ TEST_CASE("ModPointer") {
 
   auto [offset, max_index, variant_index] = params;
 
-  auto ptr = synthizer::createModPointer<int, 5>(data, offset, max_index);
+  auto ptr = synthizer::createStaticModPointer<int, 5>(data, offset, max_index);
   REQUIRE(ptr.index() == variant_index);
 }

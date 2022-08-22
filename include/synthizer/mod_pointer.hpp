@@ -72,8 +72,8 @@ private:
 };
 
 /**
- * A ModPointer is a variant of pointer-like objects to a slice of memory at some offset, where access to the object may
- * need mod.
+ * A StaticModPointer is a variant of pointer-like objects to a slice of memory at some offset, where access to the object may
+ * need mod, and the length of the underlying buffer is known at compile time.
  *
  * The idea here is that when reading from a delay line for example, if we know how far ahead we're going to read, we
  * may be able to return a raw pointer.  Likewise for powers of 2, and so on.
@@ -81,18 +81,16 @@ private:
  * While the non-pointer variants aren't guaranteed to be anything in particular save that they offer a pointer-like
  * interface, there will always be a T* variant and it will always be used when no modulus is required.  See the below
  * helper function for construction of ModPointers.
- *
- * For now, we assume the caller is going to know the length of the underlying memory at compile time.
  * */
 template <typename T, std::size_t LEN>
-using ModPointer = std::variant<ModSlice<T, mod_pointer_detail::StaticLengthProvider<LEN>>, T *>;
+using StaticModPointer = std::variant<ModSlice<T, mod_pointer_detail::StaticLengthProvider<LEN>>, T *>;
 
 /**
  * Given a pointer, an offset, and one past the maximum index which may be accessed, return a ModPointer that can handle
  * it.
  * */
 template <typename T, std::size_t LEN>
-ModPointer<T, LEN> createModPointer(T *data, std::size_t offset, std::size_t len);
+StaticModPointer<T, LEN> createStaticModPointer(T *data, std::size_t offset, std::size_t len);
 
 template <typename T, typename LEN_PROVIDER_T>
 ModSlice<T, LEN_PROVIDER_T>::ModSlice(T *_data, std::size_t initial_offset, LEN_PROVIDER_T _length_provider)
@@ -168,7 +166,7 @@ FLATTENED void ModSlice<T, LEN_PROVIDER_T>::operator+=(std::size_t increment) {
 }
 
 template <typename T, std::size_t LEN>
-FLATTENED ModPointer<T, LEN> createModPointer(T *data, std::size_t offset, std::size_t len) {
+FLATTENED StaticModPointer<T, LEN> createStaticModPointer(T *data, std::size_t offset, std::size_t len) {
   if (offset + len > LEN) {
     return ModSlice<T, mod_pointer_detail::StaticLengthProvider<LEN>>{data, offset,
                                                                       mod_pointer_detail::StaticLengthProvider<LEN>{}};
