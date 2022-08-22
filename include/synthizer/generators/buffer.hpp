@@ -37,11 +37,6 @@ private:
   /* Adds to destination, per the generators API. */
   void generateNoPitchBend(float *out, FadeDriver *gain_driver);
 
-  /**
-   * In the common case we know that we can get from the buffer in one read. This covers that case.
-   * */
-  void generateByCopying(float *out, FadeDriver *gain_driver);
-
   /*
    * Handle configuring properties, and set the non-property state variables up appropriately.
    *
@@ -86,7 +81,7 @@ inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
   pitch_bend = this->getPitchBend();
 
   if (this->acquirePlaybackPosition(new_pos)) {
-    this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLength());
+    this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLengthInSamples());
     this->sent_finished = false;
   }
 
@@ -109,7 +104,7 @@ template <bool L> inline void BufferGenerator::readInterpolated(double pos, floa
   std::size_t lower = std::floor(pos);
   std::size_t upper = lower + 1;
   if (L)
-    upper = upper % this->reader.getLength();
+    upper = upper % this->reader.getLengthInSamples();
   // Important: upper < lower if upper was past the last sample.
   float w2 = pos - lower;
   float w1 = 1.0 - w2;
@@ -120,73 +115,37 @@ template <bool L> inline void BufferGenerator::readInterpolated(double pos, floa
   }
 }
 
-inline void BufferGenerator::generateByCopying(float *output, FadeDriver *gd) {
-  std::size_t pos = std::round(this->position_in_samples);
-
-  // the compiler is not smart enough to tell that the value of getChannels never changes, so we need to pull it to a
-  // variable.
-  unsigned int channels = this->getChannels();
-
-  gd->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
-    const std::int16_t *raw = this->reader.getRawSlice(pos * channels, (pos + config::BLOCK_SIZE) * channels);
-
-    for (unsigned int i = 0; i < config::BLOCK_SIZE * channels; i++) {
-      output[i] += raw[i] * (1.0f / 32768.0f) * gain_cb(i / channels);
-    }
-  });
-
-  this->position_in_samples = pos + config::BLOCK_SIZE;
-}
-
 inline void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) {
-  std::size_t pos = std::round(this->position_in_samples);
+  std::size_t pos = std::ceil(this->position_in_samples);
 
-  // We can sometimes delegate to the generateByCopy optimized path.  Do so when we aren't going to hit the end.  We
-  // could move the end event handling there and fully optimize buffers which are exactly the block size, but that's not
-  // worth the complexity for now.
-  if (pos + config::BLOCK_SIZE + 1 < this->reader.getLength() / this->reader.getChannels()) {
-    return this->generateByCopying(output, gd);
+  std::size_t will_read_frames = config::BLOCK_SIZE;
+  if (pos + will_read_frames > this->reader.getLengthInFrames() && this->getLooping() == false) {
+    if (pos >= this->reader.getLengthInFrames()) {
+      // There is nothing to do, since we always add to our output buffer and that's equivalent to adding zeros.
+      return;
+    }
+
+    will_read_frames = this->reader.getLengthInFrames() - pos - 1;
   }
 
-  float *cursor = output;
-  unsigned int remaining = config::BLOCK_SIZE;
-  auto workspace_guard = acquireBlockBuffer(false);
-  float *workspace = workspace_guard;
-  bool looping = this->getLooping() != 0;
-  unsigned int i = 0;
-
-  // the compiler is bad about telling that the channel count never changes, so lift it to a variable.
+  // Compilers are bad about telling that channels doesn't change.
   unsigned int channels = this->getChannels();
 
-  gd->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
-    while (remaining) {
-      auto got = this->reader.readFrames(pos, remaining, workspace);
-      for (unsigned int j = 0; j < got; i++, j++) {
-        float g = gain_cb(i);
-        for (unsigned int ch = 0; ch < channels; ch++) {
-          cursor[j * channels + ch] += g * workspace[j * channels + ch];
-        }
-      }
-      remaining -= got;
-      cursor += got * channels;
-      pos += got;
-      if (remaining > 0) {
-        if (looping == false) {
-          if (this->sent_finished == false) {
-            this->finished_count += 1;
-            this->sent_finished = true;
+  auto mp = this->reader.getFrameSlice(pos, will_read_frames);
+  std::visit(
+      [&](auto ptr) {
+        gd->drive(this->getContextRaw()->getBlockTime(), [&](auto gain_cb) {
+          for (std::size_t i = 0; i < will_read_frames; i++) {
+            float gain = gain_cb(i) * (1.0f / 32768.0f);
+            for (unsigned int ch = 0; ch < channels; ch++) {
+              output[i * channels + ch] += ptr[i * channels + ch] * gain;
+            }
           }
-          break;
-        } else {
-          pos = 0;
-          this->looped_count += 1;
-        }
-      }
-    }
-  });
-  assert(i <= config::BLOCK_SIZE);
+        });
+      },
+      mp);
 
-  this->position_in_samples = pos;
+  this->position_in_samples = std::fmod(pos + will_read_frames, this->reader.getLengthInFrames());
 }
 
 inline bool BufferGenerator::handlePropertyConfig() {
@@ -211,7 +170,7 @@ inline bool BufferGenerator::handlePropertyConfig() {
   //
   // Hopefully, this is rare.
   if (this->acquirePlaybackPosition(new_pos)) {
-    this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLength());
+    this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLengthInSamples());
   } else {
     this->setPlaybackPosition(0.0, false);
     this->position_in_samples = 0.0;
@@ -241,7 +200,7 @@ inline std::optional<double> BufferGenerator::startGeneratorLingering() {
   if (buf_strong == nullptr) {
     return 0.0;
   }
-  double remaining = buf_strong->getLength() / (double)config::SR - pos;
+  double remaining = buf_strong->getLengthInSamples() / (double)config::SR - pos;
   if (remaining < 0.0) {
     return 0.0;
   }

@@ -33,7 +33,7 @@ class DynamicLengthProvider {
 public:
   DynamicLengthProvider(std::size_t len) : length(len) {}
 
-  std::size_t getLength() { return this->length; }
+  std::size_t getLength() const { return this->length; }
 
 private:
   std::size_t length;

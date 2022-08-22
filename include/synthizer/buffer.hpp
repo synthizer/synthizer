@@ -5,6 +5,7 @@
 #include "synthizer/decoding.hpp"
 #include "synthizer/math.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/mod_pointer.hpp"
 #include "synthizer/random_generator.hpp"
 #include "synthizer/types.hpp"
 
@@ -38,7 +39,9 @@ public:
 
   unsigned int getChannels() const { return this->channels; }
 
-  std::size_t getLength() const { return this->data.size(); }
+  std::size_t getLengthInSamples() const { return this->data.size(); }
+
+  const std::int16_t *getData() const { return this->data.data(); }
 
   /**
    * Get a pointer to a slice of the data.
@@ -62,11 +65,13 @@ public:
 
   unsigned int getChannels() const { return this->data->getChannels(); }
 
-  std::size_t getLength() const { return this->data->getLength(); }
+  std::size_t getLengthInSamples() const { return this->data->getLengthInSamples(); }
+
+  std::size_t getLengthInFrames() const { return this->getLengthInSamples() / this->getChannels(); }
 
   int getObjectType() override;
 
-  const BufferData *getData() { return this->data.get(); }
+  const BufferData *getBufferData() { return this->data.get(); }
 
 private:
   std::shared_ptr<BufferData> data;
@@ -85,76 +90,21 @@ public:
 
   unsigned int getChannels() const { return this->buffer->getChannels(); }
 
-  std::size_t getLength() const { return this->buffer->getLength(); }
+  std::size_t getLengthInSamples() const { return this->buffer->getLengthInSamples(); }
 
-  const BufferData *getData() const { return this->buffer->getData(); }
-
-  std::int16_t readSampleI16(std::size_t pos, unsigned int channel) const {
-    assert(channel < this->buffer->getChannels());
-    const std::int16_t *ptr = this->getData()->getPointerToSubslice(pos + channel, pos + channel + 1);
-    return *ptr;
-  }
-
-  float readSample(std::size_t pos, unsigned int channel) { return this->readSampleI16(pos, channel) / 32768.0f; }
-
-  void readFrameI16(std::size_t pos, std::int16_t *out) {
-    const std::int16_t *ptr = this->getData()->getPointerToSubslice(pos, pos + this->getChannels());
-    std::copy(ptr, ptr + this->getChannels(), out);
-  }
-
-  void readFrame(std::size_t pos, float *out) {
-    std::array<std::int16_t, config::MAX_CHANNELS> intermediate;
-    readFrameI16(pos, &intermediate[0]);
-    for (unsigned int i = 0; i < this->getChannels(); i++) {
-      out[i] = intermediate[i] / 32768.0f;
-    }
-  }
-
-  /* Returns frames read. This will be less than requested at the end of the buffer. */
-  std::size_t readFramesI16(std::size_t pos, std::size_t count, std::int16_t *out) {
-    if (pos * this->getChannels() >= this->getLength()) {
-      return 0;
-    }
-
-    std::size_t available = (this->getLength() - pos) / this->getChannels();
-    std::size_t will_read = available < count ? available : count;
-    const std::int16_t *ptr =
-        this->getData()->getPointerToSubslice(pos * this->getChannels(), (pos + will_read) * this->getChannels());
-    std::copy(ptr, ptr + will_read * this->getChannels(), out);
-    return will_read;
-  }
-
-  std::size_t readFrames(std::size_t pos, std::size_t count, float *out) {
-    std::array<std::int16_t, config::MAX_CHANNELS * 16> workspace = {0};
-    std::size_t workspace_frames = workspace.size() / this->getChannels();
-
-    std::size_t written = 0;
-    float *cursor = out;
-
-    while (written < count) {
-      std::size_t requested = std::min(count - written, workspace_frames);
-      std::size_t got = this->readFramesI16(pos + written, requested, &workspace[0]);
-      for (unsigned int i = 0; i < got * this->getChannels(); i++) {
-        cursor[i] = workspace[i] / 32768.0f;
-      }
-      cursor += got * this->getChannels();
-      written += got;
-      if (got < requested) {
-        break;
-      }
-    }
-
-    return written;
-  }
+  std::size_t getLengthInFrames() const { return this->getLengthInSamples() / this->getChannels(); }
 
   /**
-   * get a raw view on the internal buffer.
-   *
-   * This is used in BufferGenerator to optimize a common case where we can simply copy by folding the conversion to f32
-   * in and entirely avoiding a temporary uffer.
+   * get a ModPointer over a slice of the buffer, whose start and end points are in frames.
    * */
-  const std::int16_t *getRawSlice(std::size_t start, std::size_t end) const {
-    return this->getData()->getPointerToSubslice(start, end);
+  DynamicModPointer<const std::int16_t> getFrameSlice(std::size_t start_frame, std::size_t will_read) {
+    assert(start_frame < this->getLengthInFrames());
+
+    std::size_t samples_start = start_frame * this->getChannels();
+    std::size_t will_read_samples = will_read * this->getChannels();
+    const std::int16_t *buf = this->buffer->getBufferData()->getData();
+
+    return createDynamicModPointer(buf, samples_start, will_read_samples, this->getLengthInSamples());
   }
 
 private:
