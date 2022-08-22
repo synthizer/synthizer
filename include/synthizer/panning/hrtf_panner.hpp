@@ -483,7 +483,7 @@ inline void HrtfPanner::run(float *output) {
           float *o = output + i * 2;
 
           if (ptr_left_zero) {
-            o[0] = ptr_left[i];
+            o[0] += ptr_left[i];
           } else {
             auto del_left_ptr = ptr_left - (itd_l_i + 1) + i;
             float lse = del_left_ptr[1], lsl = del_left_ptr[0];
@@ -491,7 +491,7 @@ inline void HrtfPanner::run(float *output) {
           }
 
           if (ptr_right_zero) {
-            o[1] = ptr_right[i];
+            o[1] += ptr_right[i];
           } else {
             auto del_right_ptr = ptr_right - (itd_r_i + 1) + i;
             float rse = del_right_ptr[1], rsl = del_right_ptr[0];
