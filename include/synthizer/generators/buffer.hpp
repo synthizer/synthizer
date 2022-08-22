@@ -41,9 +41,6 @@ private:
    * In the common case we know that we can get from the buffer in one read. This covers that case.
    * */
   void generateByCopying(float *out, FadeDriver *gain_driver);
-  template <bool L> void generatePitchBendHelper(float *out, FadeDriver *gain_driver, double pitch_bend);
-
-  void generatePitchBend(float *out, FadeDriver *gain_driver, double pitch_bend);
 
   /*
    * Handle configuring properties, and set the non-property state variables up appropriately.
@@ -93,11 +90,7 @@ inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
     this->sent_finished = false;
   }
 
-  if (std::fabs(1.0 - pitch_bend) > 0.001) {
-    this->generatePitchBend(output, gd, pitch_bend);
-  } else {
-    this->generateNoPitchBend(output, gd);
-  }
+  this->generateNoPitchBend(output, gd);
 
   this->setPlaybackPosition(this->position_in_samples / config::SR, false);
 
@@ -124,42 +117,6 @@ template <bool L> inline void BufferGenerator::readInterpolated(double pos, floa
   this->reader.readFrame(upper, &f2[0]);
   for (unsigned int i = 0; i < this->reader.getChannels(); i++) {
     out[i] += gain * (f1[i] * w1 + f2[i] * w2);
-  }
-}
-
-template <bool L>
-inline void BufferGenerator::generatePitchBendHelper(float *output, FadeDriver *gd, double pitch_bend) {
-  double pos = this->position_in_samples;
-  double delta = pitch_bend;
-  gd->drive(this->getContextRaw()->getBlockTime(), [&](auto &gain_cb) {
-    for (unsigned int i = 0; i < config::BLOCK_SIZE; i++) {
-      float g = gain_cb(i);
-      this->readInterpolated<L>(pos, &output[i * this->reader.getChannels()], g);
-      double new_pos = pos + delta;
-      if (L == true) {
-        new_pos = std::fmod(new_pos, this->reader.getLength());
-        if (new_pos < pos) {
-          this->looped_count += 1;
-        }
-      } else if (pos > this->reader.getLength()) {
-        if (this->sent_finished == false) {
-          /* Don't forget to guard against sending this multiple times. */
-          this->finished_count += 1;
-          this->sent_finished = true;
-        }
-        break;
-      }
-      pos = new_pos;
-    }
-  });
-  this->position_in_samples = std::min<double>(pos, this->reader.getLength());
-}
-
-inline void BufferGenerator::generatePitchBend(float *output, FadeDriver *gd, double pitch_bend) {
-  if (this->getLooping()) {
-    return this->generatePitchBendHelper<true>(output, gd, pitch_bend);
-  } else {
-    return this->generatePitchBendHelper<false>(output, gd, pitch_bend);
   }
 }
 
