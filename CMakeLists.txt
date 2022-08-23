@@ -251,6 +251,7 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
     test/mod_pointer.cpp
     test/property_automation_timeline.cpp
     test/random_float.cpp
+    test/sse2_horizontal_sum.cpp
     test/verify_properties.cpp
   )
   target_link_libraries(tests PRIVATE Catch2::Catch2 synthizer)

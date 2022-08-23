@@ -341,10 +341,14 @@ FLATTENED void stepConvolution(MP ptr, const float *hrir_left, const float *hrir
 // versions but that hurts MSVC, we carve out the following optimized implementation using intrinsics.
 #if BOOST_HW_SIMD_X86 >= BOOST_HW_SIMD_X86_SSE2_VERSION
 FLATTENED float horizontalSum(__m128 input) {
+  // First, shuffle from (a, b, c, d) to (c, d, a, b).
   __m128 halves_swapped = _mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 0, 3, 2));
+  // So we have (a+c, b+d, a+c, b+d)
   __m128 halves_summed = _mm_add_ps(input, halves_swapped);
-  __m128 subhalves = _mm_shuffle_ps(halves_swapped, halves_swapped, _MM_SHUFFLE(2, 3, 0, 1));
-  return _mm_cvtss_f32(_mm_add_ps(subhalves, halves_summed));
+  // Now swap the elements in each half and sum again.
+  __m128 subhalves_swapped = _mm_shuffle_ps(halves_summed, halves_summed, _MM_SHUFFLE(2, 3, 0, 1));
+  __m128 res = _mm_add_ps(subhalves_swapped, halves_summed);
+  return _mm_cvtss_f32(res);
 }
 
 FLATTENED void stepConvolution(float *ptr, const float *hrir_left, const float *hrir_right, float *dest_l,
