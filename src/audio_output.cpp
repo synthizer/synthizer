@@ -71,6 +71,9 @@ AudioOutputDevice::AudioOutputDevice() {
   config.dataCallback = miniaudioDataCallback;
   config.pUserData = (void *)this;
   config.performanceProfile = ma_performance_profile_low_latency;
+  // Let's not implicitly start fiddling with the FP environment.  If Synthizer decides it needs to handle denormals
+  // specially, we'll handle it ourselves.
+  config.noDisableDenormals = MA_TRUE;
 
   if (ma_device_init(NULL, &config, &this->device) != MA_SUCCESS)
     throw EAudioDevice("Unable to initialize miniaudio.");
