@@ -32,8 +32,10 @@ public:
 #include "synthizer/property_impl.hpp"
 
 private:
-  /* Adds to destination, per the generators API. */
-  void generateNoPitchBend(float *out, FadeDriver *gain_driver);
+  /**
+   * Adds to the buffer. Returns by how much to increment the position.
+   * */
+  std::size_t generateNoPitchBend(float *out, FadeDriver *gain_driver);
 
   /*
    * Handle configuring properties, and set the non-property state variables up appropriately.
@@ -42,18 +44,16 @@ private:
    * should be skipped.
    */
   bool handlePropertyConfig();
-  /**
-   * Either sends finished or looped, depending.
-   * */
-  void handleEndEvent();
 
   BufferReader reader;
+
   /**
-   * Counters for events.
+   * Set when this generator finishes. Used as an edge trigger to send a finished event, since buffers can only finish
+   * once per block.
    * */
-  unsigned int finished_count = 0, looped_count = 0;
-  bool sent_finished = false;
-  double position_in_samples = 0.0;
+  bool finished = false;
+
+  std::size_t position_in_samples = 0;
 };
 
 inline BufferGenerator::BufferGenerator(std::shared_ptr<Context> ctx) : Generator(ctx) {}
@@ -77,41 +77,47 @@ inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
   }
 
   if (this->acquirePlaybackPosition(new_pos)) {
-    this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLengthInSamples(false));
-    this->sent_finished = false;
+    this->position_in_samples =
+        std::min<std::size_t>(new_pos * config::SR, (double)this->reader.getLengthInSamples(false));
+    this->finished = false;
   }
 
-  this->generateNoPitchBend(output, gd);
-
-  this->setPlaybackPosition(this->position_in_samples / config::SR, false);
-
-  while (this->looped_count > 0) {
-    sendLoopedEvent(this->getContext(), this->shared_from_this());
-    this->looped_count--;
+  // We saw the end and haven't seeked or set the buffer, so don't do anything.
+  if (this->finished == true) {
+    return;
   }
-  while (this->finished_count > 0) {
+
+  std::size_t pos_increment = this->generateNoPitchBend(output, gd);
+
+  if (this->getLooping()) {
+    unsigned int loop_count = (this->position_in_samples + pos_increment + 1) / this->reader.getLengthInFrames(false);
+    for (unsigned int i = 0; i < loop_count; i++) {
+      sendLoopedEvent(this->getContext(), this->shared_from_this());
+    }
+  } else if (this->finished == false &&
+             this->position_in_samples + pos_increment + 1 >= this->reader.getLengthInFrames(false)) {
     sendFinishedEvent(this->getContext(), this->shared_from_this());
-    this->finished_count--;
+    this->finished = true;
   }
+
+  this->position_in_samples = (this->position_in_samples + pos_increment) % this->reader.getLengthInFrames(false);
+  this->setPlaybackPosition(this->position_in_samples / (double)config::SR, false);
 }
 
-inline void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) {
-  std::size_t pos = std::ceil(this->position_in_samples);
+inline std::size_t BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) {
+  assert(this->finished == false);
 
   std::size_t will_read_frames = config::BLOCK_SIZE;
-  if (pos + will_read_frames > this->reader.getLengthInFrames(false) && this->getLooping() == false) {
-    if (pos >= this->reader.getLengthInFrames(false)) {
-      // There is nothing to do, since we always add to our output buffer and that's equivalent to adding zeros.
-      return;
-    }
-
-    will_read_frames = this->reader.getLengthInFrames(false) - pos - 1;
+  if (this->position_in_samples + will_read_frames > this->reader.getLengthInFrames(false) &&
+      this->getLooping() == false) {
+    will_read_frames = this->reader.getLengthInFrames(false) - this->position_in_samples - 1;
+    will_read_frames = std::min<std::size_t>(will_read_frames, config::BLOCK_SIZE);
   }
 
   // Compilers are bad about telling that channels doesn't change.
-  unsigned int channels = this->getChannels();
+  const unsigned int channels = this->getChannels();
 
-  auto mp = this->reader.getFrameSlice(pos, will_read_frames, false);
+  auto mp = this->reader.getFrameSlice(this->position_in_samples, will_read_frames, false);
   std::visit(
       [&](auto ptr) {
         gd->drive(this->getContextRaw()->getBlockTime(), [&](auto gain_cb) {
@@ -125,7 +131,7 @@ inline void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) 
       },
       mp);
 
-  this->position_in_samples = std::fmod(pos + will_read_frames, this->reader.getLengthInFrames(false));
+  return will_read_frames;
 }
 
 inline bool BufferGenerator::handlePropertyConfig() {
@@ -141,7 +147,7 @@ inline bool BufferGenerator::handlePropertyConfig() {
   }
 
   this->reader.setBuffer(buffer.get());
-  this->sent_finished = false;
+  this->finished = false;
 
   // It is possible that the user set the buffer then changed the playback position.  It is very difficult to tell the
   // difference between this and setting the position immediately before changing the buffer without rewriting the
@@ -157,15 +163,6 @@ inline bool BufferGenerator::handlePropertyConfig() {
   }
 
   return false;
-}
-
-inline void BufferGenerator::handleEndEvent() {
-  auto ctx = this->getContext();
-  if (this->getLooping() == 1) {
-    sendLoopedEvent(ctx, this->shared_from_this());
-  } else {
-    sendFinishedEvent(ctx, this->shared_from_this());
-  }
 }
 
 inline std::optional<double> BufferGenerator::startGeneratorLingering() {

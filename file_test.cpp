@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
   double angle = 0.0, angle_per_second = 45.0;
   struct syz_RouteConfig route_config;
   struct syz_BiquadConfig filter;
+  unsigned int ecounter = 0;
 
   if (argc != 2) {
     printf("Usage: wav_test <path>\n");
@@ -51,7 +52,7 @@ int main(int argc, char *argv[]) {
   CHECKED(syz_createSource3D(&source, context, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, 0.0, NULL, NULL, NULL));
   CHECKED(syz_createBufferFromStreamParams(&buffer, "file", argv[1], NULL, NULL, NULL));
   CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL, NULL));
-  CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
+  //CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
   // CHECKED(syz_setD(generator, SYZ_P_PITCH_BEND, 2.0));
   CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
   CHECKED(syz_sourceAddGenerator(source, generator));
@@ -88,6 +89,11 @@ int main(int argc, char *argv[]) {
     CHECKED(syz_setD3(source, SYZ_P_POSITION, x, y, 0.0));
 
     CHECKED(syz_contextGetNextEvent(&event, context, 0));
+    if (event.type != SYZ_EVENT_TYPE_INVALID) {
+      printf("%i %i\n", ecounter, event.type);
+      ++ecounter;
+    }
+
     syz_eventDeinit(&event);
   }
 
