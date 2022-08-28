@@ -96,7 +96,7 @@ SYZ_CAPI syz_ErrorCode syz_bufferGetChannels(unsigned int *out, syz_Handle buffe
 SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSamples(unsigned int *out, syz_Handle buffer) {
   SYZ_PROLOGUE
   auto b = fromC<Buffer>(buffer);
-  *out = b->getLengthInSamples();
+  *out = b->getLengthInSamples(false);
   return 0;
   SYZ_EPILOGUE
 }
@@ -104,7 +104,7 @@ SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSamples(unsigned int *out, syz_Handl
 SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSeconds(double *out, syz_Handle buffer) {
   SYZ_PROLOGUE
   auto b = fromC<Buffer>(buffer);
-  *out = b->getLengthInFrames() / (double)config::SR;
+  *out = b->getLengthInFrames(false) / (double)config::SR;
   return 0;
   SYZ_EPILOGUE
 }
@@ -112,7 +112,8 @@ SYZ_CAPI syz_ErrorCode syz_bufferGetLengthInSeconds(double *out, syz_Handle buff
 SYZ_CAPI syz_ErrorCode syz_bufferGetSizeInBytes(unsigned long long *size, syz_Handle buffer) {
   SYZ_PROLOGUE
   auto buf = fromC<Buffer>(buffer);
-  *size = buf->getLengthInSamples() * 2;
+  // True, because the last implicit zero frame counts as bytes.
+  *size = buf->getLengthInSamples(true) * 2;
   return 0;
   SYZ_EPILOGUE
 }

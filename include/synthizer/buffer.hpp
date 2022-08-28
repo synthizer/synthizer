@@ -30,16 +30,22 @@ class Context;
  * - Buffer is the user-exposed object wrapping a BufferData.
  * - BufferReader reads from a BufferData.
  *
+ * In order to make interpolation for things like pitch bend easier, buffers store an extra frame of zeros at the end.
+ *
  * Note that BufferReader doesn't use shared_ptr or weak_ptr; it's effectively "borrowing" to use Rust terminology.
  * */
 
 class BufferData {
 public:
-  BufferData(unsigned int channels, deferred_vector<std::int16_t> &&data) : channels(channels), data(std::move(data)) {}
+  BufferData(unsigned int channels, deferred_vector<std::int16_t> &&data) : channels(channels), data(std::move(data)) {
+    this->data.resize(this->data.size() + this->channels, 0);
+  }
 
   unsigned int getChannels() const { return this->channels; }
 
-  std::size_t getLengthInSamples() const { return this->data.size(); }
+  std::size_t getLengthInSamples(bool include_implicit_zero) const {
+    return this->data.size() + channels * include_implicit_zero;
+  }
 
   const std::int16_t *getData() const { return this->data.data(); }
 
@@ -65,9 +71,13 @@ public:
 
   unsigned int getChannels() const { return this->data->getChannels(); }
 
-  std::size_t getLengthInSamples() const { return this->data->getLengthInSamples(); }
+  std::size_t getLengthInSamples(bool include_implicit_zero) const {
+    return this->data->getLengthInSamples(include_implicit_zero);
+  }
 
-  std::size_t getLengthInFrames() const { return this->getLengthInSamples() / this->getChannels(); }
+  std::size_t getLengthInFrames(bool include_implicit_zero) const {
+    return this->getLengthInSamples(include_implicit_zero) / this->getChannels();
+  }
 
   int getObjectType() override;
 
@@ -90,21 +100,27 @@ public:
 
   unsigned int getChannels() const { return this->buffer->getChannels(); }
 
-  std::size_t getLengthInSamples() const { return this->buffer->getLengthInSamples(); }
+  std::size_t getLengthInSamples(bool include_implicit_zero) const {
+    return this->buffer->getLengthInSamples(include_implicit_zero);
+  }
 
-  std::size_t getLengthInFrames() const { return this->getLengthInSamples() / this->getChannels(); }
+  std::size_t getLengthInFrames(bool include_implicit_zero) const {
+    return this->getLengthInSamples(include_implicit_zero) / this->getChannels();
+  }
 
   /**
    * get a ModPointer over a slice of the buffer, whose start and end points are in frames.
    * */
-  DynamicModPointer<const std::int16_t> getFrameSlice(std::size_t start_frame, std::size_t will_read) {
-    assert(start_frame < this->getLengthInFrames());
+  DynamicModPointer<const std::int16_t> getFrameSlice(std::size_t start_frame, std::size_t will_read,
+                                                      bool include_implicit_zero) {
+    assert(start_frame < this->getLengthInFrames(include_implicit_zero));
 
     std::size_t samples_start = start_frame * this->getChannels();
     std::size_t will_read_samples = will_read * this->getChannels();
     const std::int16_t *buf = this->buffer->getBufferData()->getData();
 
-    return createDynamicModPointer(buf, samples_start, will_read_samples, this->getLengthInSamples());
+    return createDynamicModPointer(buf, samples_start, will_read_samples,
+                                   this->getLengthInSamples(include_implicit_zero));
   }
 
 private:

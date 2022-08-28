@@ -81,7 +81,7 @@ inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
   pitch_bend = this->getPitchBend();
 
   if (this->acquirePlaybackPosition(new_pos)) {
-    this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLengthInSamples());
+    this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLengthInSamples(false));
     this->sent_finished = false;
   }
 
@@ -104,7 +104,7 @@ template <bool L> inline void BufferGenerator::readInterpolated(double pos, floa
   std::size_t lower = std::floor(pos);
   std::size_t upper = lower + 1;
   if (L)
-    upper = upper % this->reader.getLengthInSamples();
+    upper = upper % this->reader.getLengthInSamples(false);
   // Important: upper < lower if upper was past the last sample.
   float w2 = pos - lower;
   float w1 = 1.0 - w2;
@@ -119,19 +119,19 @@ inline void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) 
   std::size_t pos = std::ceil(this->position_in_samples);
 
   std::size_t will_read_frames = config::BLOCK_SIZE;
-  if (pos + will_read_frames > this->reader.getLengthInFrames() && this->getLooping() == false) {
-    if (pos >= this->reader.getLengthInFrames()) {
+  if (pos + will_read_frames > this->reader.getLengthInFrames(false) && this->getLooping() == false) {
+    if (pos >= this->reader.getLengthInFrames(false)) {
       // There is nothing to do, since we always add to our output buffer and that's equivalent to adding zeros.
       return;
     }
 
-    will_read_frames = this->reader.getLengthInFrames() - pos - 1;
+    will_read_frames = this->reader.getLengthInFrames(false) - pos - 1;
   }
 
   // Compilers are bad about telling that channels doesn't change.
   unsigned int channels = this->getChannels();
 
-  auto mp = this->reader.getFrameSlice(pos, will_read_frames);
+  auto mp = this->reader.getFrameSlice(pos, will_read_frames, false);
   std::visit(
       [&](auto ptr) {
         gd->drive(this->getContextRaw()->getBlockTime(), [&](auto gain_cb) {
@@ -145,7 +145,7 @@ inline void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) 
       },
       mp);
 
-  this->position_in_samples = std::fmod(pos + will_read_frames, this->reader.getLengthInFrames());
+  this->position_in_samples = std::fmod(pos + will_read_frames, this->reader.getLengthInFrames(false));
 }
 
 inline bool BufferGenerator::handlePropertyConfig() {
@@ -170,7 +170,7 @@ inline bool BufferGenerator::handlePropertyConfig() {
   //
   // Hopefully, this is rare.
   if (this->acquirePlaybackPosition(new_pos)) {
-    this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLengthInSamples());
+    this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLengthInSamples(false));
   } else {
     this->setPlaybackPosition(0.0, false);
     this->position_in_samples = 0.0;
@@ -200,7 +200,7 @@ inline std::optional<double> BufferGenerator::startGeneratorLingering() {
   if (buf_strong == nullptr) {
     return 0.0;
   }
-  double remaining = buf_strong->getLengthInSamples() / (double)config::SR - pos;
+  double remaining = buf_strong->getLengthInSamples(false) / (double)config::SR - pos;
   if (remaining < 0.0) {
     return 0.0;
   }
