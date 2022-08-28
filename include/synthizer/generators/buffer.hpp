@@ -32,8 +32,6 @@ public:
 #include "synthizer/property_impl.hpp"
 
 private:
-  template <bool L> void readInterpolated(double pos, float *out, float gain);
-
   /* Adds to destination, per the generators API. */
   void generateNoPitchBend(float *out, FadeDriver *gain_driver);
 
@@ -72,13 +70,11 @@ inline unsigned int BufferGenerator::getChannels() {
 }
 
 inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
-  double new_pos, pitch_bend;
+  double new_pos;
 
   if (this->handlePropertyConfig() == false) {
     return;
   }
-
-  pitch_bend = this->getPitchBend();
 
   if (this->acquirePlaybackPosition(new_pos)) {
     this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLengthInSamples(false));
@@ -96,22 +92,6 @@ inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
   while (this->finished_count > 0) {
     sendFinishedEvent(this->getContext(), this->shared_from_this());
     this->finished_count--;
-  }
-}
-
-template <bool L> inline void BufferGenerator::readInterpolated(double pos, float *out, float gain) {
-  std::array<float, config::MAX_CHANNELS> f1, f2;
-  std::size_t lower = std::floor(pos);
-  std::size_t upper = lower + 1;
-  if (L)
-    upper = upper % this->reader.getLengthInSamples(false);
-  // Important: upper < lower if upper was past the last sample.
-  float w2 = pos - lower;
-  float w1 = 1.0 - w2;
-  this->reader.readFrame(lower, &f1[0]);
-  this->reader.readFrame(upper, &f2[0]);
-  for (unsigned int i = 0; i < this->reader.getChannels(); i++) {
-    out[i] += gain * (f1[i] * w1 + f2[i] * w2);
   }
 }
 
