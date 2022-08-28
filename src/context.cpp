@@ -236,8 +236,10 @@ void Context::generateAudio(unsigned int channels, float *destination) {
     });
 
     this->block_time.fetch_add(1, std::memory_order_relaxed);
+  } catch (std::exception &e) {
+    logError("Got an exception in the audio callback: %s", e.what());
   } catch (...) {
-    logError("Got an exception in the audio callback");
+    logError("Got an unknown exception in the audio callback");
   }
 
   logForClipping(channels, destination);
