@@ -53,7 +53,7 @@ private:
    * */
   bool finished = false;
 
-  std::size_t position_in_samples = 0;
+  std::size_t position_in_frames = 0;
 };
 
 inline BufferGenerator::BufferGenerator(std::shared_ptr<Context> ctx) : Generator(ctx) {}
@@ -77,7 +77,7 @@ inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
   }
 
   if (this->acquirePlaybackPosition(new_pos)) {
-    this->position_in_samples =
+    this->position_in_frames =
         std::min<std::size_t>(new_pos * config::SR, (double)this->reader.getLengthInSamples(false));
     this->finished = false;
   }
@@ -90,34 +90,34 @@ inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
   std::size_t pos_increment = this->generateNoPitchBend(output, gd);
 
   if (this->getLooping()) {
-    unsigned int loop_count = (this->position_in_samples + pos_increment + 1) / this->reader.getLengthInFrames(false);
+    unsigned int loop_count = (this->position_in_frames + pos_increment + 1) / this->reader.getLengthInFrames(false);
     for (unsigned int i = 0; i < loop_count; i++) {
       sendLoopedEvent(this->getContext(), this->shared_from_this());
     }
   } else if (this->finished == false &&
-             this->position_in_samples + pos_increment + 1 >= this->reader.getLengthInFrames(false)) {
+             this->position_in_frames + pos_increment + 1 >= this->reader.getLengthInFrames(false)) {
     sendFinishedEvent(this->getContext(), this->shared_from_this());
     this->finished = true;
   }
 
-  this->position_in_samples = (this->position_in_samples + pos_increment) % this->reader.getLengthInFrames(false);
-  this->setPlaybackPosition(this->position_in_samples / (double)config::SR, false);
+  this->position_in_frames = (this->position_in_frames + pos_increment) % this->reader.getLengthInFrames(false);
+  this->setPlaybackPosition(this->position_in_frames / (double)config::SR, false);
 }
 
 inline std::size_t BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) {
   assert(this->finished == false);
 
   std::size_t will_read_frames = config::BLOCK_SIZE;
-  if (this->position_in_samples + will_read_frames > this->reader.getLengthInFrames(false) &&
+  if (this->position_in_frames + will_read_frames > this->reader.getLengthInFrames(false) &&
       this->getLooping() == false) {
-    will_read_frames = this->reader.getLengthInFrames(false) - this->position_in_samples - 1;
+    will_read_frames = this->reader.getLengthInFrames(false) - this->position_in_frames - 1;
     will_read_frames = std::min<std::size_t>(will_read_frames, config::BLOCK_SIZE);
   }
 
   // Compilers are bad about telling that channels doesn't change.
   const unsigned int channels = this->getChannels();
 
-  auto mp = this->reader.getFrameSlice(this->position_in_samples, will_read_frames, false);
+  auto mp = this->reader.getFrameSlice(this->position_in_frames, will_read_frames, false);
   std::visit(
       [&](auto ptr) {
         gd->drive(this->getContextRaw()->getBlockTime(), [&](auto gain_cb) {
@@ -156,10 +156,10 @@ inline bool BufferGenerator::handlePropertyConfig() {
   //
   // Hopefully, this is rare.
   if (this->acquirePlaybackPosition(new_pos)) {
-    this->position_in_samples = std::min(new_pos * config::SR, (double)this->reader.getLengthInSamples(false));
+    this->position_in_frames = std::min(new_pos * config::SR, (double)this->reader.getLengthInSamples(false));
   } else {
     this->setPlaybackPosition(0.0, false);
-    this->position_in_samples = 0.0;
+    this->position_in_frames = 0.0;
   }
 
   return false;
