@@ -232,6 +232,8 @@ FLATTENED void ModSlice<T, MOD_PROVIDER_T>::operator+=(std::size_t increment) {
 template <typename T, std::size_t LEN>
 FLATTENED StaticModPointer<T, LEN> createStaticModPointer(T *data, std::size_t offset, std::size_t slice_len,
                                                           bool allow_asserting_provider) {
+  (void)allow_asserting_provider; // because this isn't referenced in release builds.
+
   if (offset + slice_len > LEN) {
     return ModSlice<T, mod_pointer_detail::StaticModProvider<LEN>>{data, offset,
                                                                    mod_pointer_detail::StaticModProvider<LEN>{}};
@@ -250,6 +252,8 @@ FLATTENED StaticModPointer<T, LEN> createStaticModPointer(T *data, std::size_t o
 template <typename T>
 FLATTENED DynamicModPointer<T> createDynamicModPointer(T *data, std::size_t offset, std::size_t slice_len,
                                                        std::size_t buffer_len, bool allow_asserting_provider) {
+  (void)allow_asserting_provider; // because this isn't referenced in release builds.
+
   if (offset + slice_len > buffer_len) {
     return ModSlice<T, mod_pointer_detail::DynamicModProvider>{data, offset,
                                                                mod_pointer_detail::DynamicModProvider{buffer_len}};

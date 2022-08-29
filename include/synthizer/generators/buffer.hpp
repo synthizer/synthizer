@@ -154,8 +154,8 @@ inline std::size_t BufferGenerator::generateNoPitchBend(float *output, FadeDrive
 inline std::size_t BufferGenerator::generatePitchBend(float *output, FadeDriver *gd) {
   assert(this->finished == false);
 
-  double pitch_pos = this->position_in_frames + this->pitch_fraction;
   double delta = this->getPitchBend();
+  std::size_t wrote_frames;
 
   // This is a bit complicated.  First, we will read up to 1 more than the block size * delta.  But if that's past the
   // end, we will instead read up to the end, and truncate our pitch bend early.
@@ -215,6 +215,8 @@ inline std::size_t BufferGenerator::generatePitchBend(float *output, FadeDriver 
               float o = l_s * w1 + u_s * w2;
               output[i * channels + ch] += o;
             }
+
+            wrote_frames++;
           }
 
           // If this was truncated and upper is not at or past the end, then we have one more sample at the end of the
@@ -226,10 +228,14 @@ inline std::size_t BufferGenerator::generatePitchBend(float *output, FadeDriver 
             for (std::size_t ch = 0; ch < channels; ch++) {
               output[i + ch] += ptr[final_frame_start + ch] * gain;
             }
+
+            wrote_frames++;
           }
         });
       },
       mp, vCond(truncated_non_vbool));
+
+  this->pitch_fraction = std::fmod(this->position_in_frames + delta * wrote_frames, 1.0);
 
   // The caller BufferGenerator::generate can handle going past the end of the buffer in the case when we're not
   // looping, and when we're looping will_read_frames == will_read_frames_original.
