@@ -309,7 +309,7 @@ private:
   /* Used by shutdown and the destructor only. Not safe to call elsewhere. */
   void drainDeletionQueues();
 
-  MpscRing<Command, 10000> command_queue;
+  MpscRing<Command, 32768> command_queue;
   template <typename T> void propertySetter(const std::shared_ptr<BaseObject> &obj, int property, const T &value);
 
   std::atomic<unsigned int> block_time = 0;
