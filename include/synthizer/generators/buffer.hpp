@@ -192,7 +192,9 @@ inline std::size_t BufferGenerator::generatePitchBend(float *output, FadeDriver 
           std::size_t i = 0, lower = 0;
 
           for (; i < config::BLOCK_SIZE; i++) {
-            float gain = gain_cb(i) * (1.0f / 32768.0f);
+            // We need to use doubles, because 65535 (the sum of two samples) is outside the range of integers a float
+            // can represent.
+            double gain = gain_cb(i) * (1.0 / 32768.0);
 
             lower = delta * i;
             std::size_t upper = lower + 1;
@@ -201,8 +203,8 @@ inline std::size_t BufferGenerator::generatePitchBend(float *output, FadeDriver 
               break;
             }
 
-            float w2 = delta * i - lower;
-            float w1 = 1.0f - w2;
+            double w2 = delta * i - lower;
+            double w1 = 1.0f - w2;
 
             // Work these in here and we can avoid doing them in the loop that handles channels individually.
             w1 *= gain;
