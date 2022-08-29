@@ -67,5 +67,10 @@ const std::size_t BUFFER_DECODE_CHUNK_SIZE = (1 << 14);
  * */
 const std::size_t MAX_COMMAND_SIZE = 128;
 
+/**
+ * Maximum number of commands to process per tick of a context.
+ * */
+const std::size_t MAX_COMMANDS_PER_TICK = 10000;
+
 } // namespace config
 } // namespace synthizer

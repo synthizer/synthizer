@@ -50,7 +50,7 @@ public:
    * */
   bool enqueue(const T &&value);
 
-  template <typename CB> void processAll(CB &&callback);
+  template <typename CB> void process(CB &&callback, std::size_t max_items);
 
 private:
   std::array<MpscRingEntry<T>, capacity> ring{};
@@ -108,8 +108,10 @@ template <typename T, std::size_t capacity> bool MpscRing<T, capacity>::enqueue(
 
 template <typename T, std::size_t capacity>
 template <typename CB>
-void MpscRing<T, capacity>::processAll(CB &&callback) {
-  while (1) {
+void MpscRing<T, capacity>::process(CB &&callback, std::size_t max_items) {
+  // We must limit ourselves. Otherwise, someone constantly enqueueueing on another thread can cause this to be an
+  // infinite loop.
+  for (std::size_t i = 0; i < max_items; i++) {
     auto r = this->reader_index.load(std::memory_order_relaxed);
     auto &cell = this->ring[r % capacity];
     auto state = cell.state.load(std::memory_order_acquire);
