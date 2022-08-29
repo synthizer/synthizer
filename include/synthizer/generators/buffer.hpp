@@ -8,6 +8,7 @@
 #include "synthizer/generator.hpp"
 #include "synthizer/property_internals.hpp"
 #include "synthizer/types.hpp"
+#include "synthizer/vbool.hpp"
 
 #include <memory>
 #include <optional>
@@ -37,6 +38,11 @@ private:
    * */
   std::size_t generateNoPitchBend(float *out, FadeDriver *gain_driver);
 
+  /**
+   * Adds to the buffer. Returns by how much to increment the position.
+   * */
+  std::size_t generatePitchBend(float *out, FadeDriver *gain_driver);
+
   /*
    * Handle configuring properties, and set the non-property state variables up appropriately.
    *
@@ -54,6 +60,11 @@ private:
   bool finished = false;
 
   std::size_t position_in_frames = 0;
+
+  /**
+   * The fractional part of the position used for handling pitch bend.
+   * */
+  double pitch_fraction = 0.0;
 };
 
 inline BufferGenerator::BufferGenerator(std::shared_ptr<Context> ctx) : Generator(ctx) {}
@@ -87,7 +98,13 @@ inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
     return;
   }
 
-  std::size_t pos_increment = this->generateNoPitchBend(output, gd);
+  std::size_t pos_increment;
+
+  if (this->getPitchBend() == 1.0) {
+    pos_increment = this->generateNoPitchBend(output, gd);
+  } else {
+    pos_increment = this->generatePitchBend(output, gd);
+  }
 
   if (this->getLooping()) {
     unsigned int loop_count = (this->position_in_frames + pos_increment + 1) / this->reader.getLengthInFrames(false);
@@ -117,7 +134,7 @@ inline std::size_t BufferGenerator::generateNoPitchBend(float *output, FadeDrive
   // Compilers are bad about telling that channels doesn't change.
   const unsigned int channels = this->getChannels();
 
-  auto mp = this->reader.getFrameSlice(this->position_in_frames, will_read_frames, false);
+  auto mp = this->reader.getFrameSlice(this->position_in_frames, will_read_frames, false, true);
   std::visit(
       [&](auto ptr) {
         gd->drive(this->getContextRaw()->getBlockTime(), [&](auto gain_cb) {
@@ -132,6 +149,91 @@ inline std::size_t BufferGenerator::generateNoPitchBend(float *output, FadeDrive
       mp);
 
   return will_read_frames;
+}
+
+inline std::size_t BufferGenerator::generatePitchBend(float *output, FadeDriver *gd) {
+  assert(this->finished == false);
+
+  double pitch_pos = this->position_in_frames + this->pitch_fraction;
+  double delta = this->getPitchBend();
+
+  // This is a bit complicated.  First, we will read up to 1 more than the block size * delta.  But if that's past the
+  // end, we will instead read up to the end, and truncate our pitch bend early.
+  //
+  // We might also read a little bit more if pitch_fraction is big enough.
+  //
+  // This computation doesn't include the implicit zero, though we do use that, below.
+  std::size_t read_span_original = std::ceil(config::BLOCK_SIZE * delta + this->pitch_fraction);
+  std::size_t read_span = read_span_original;
+  if (this->position_in_frames + read_span > this->reader.getLengthInFrames(false) && this->getLooping() == false) {
+    read_span = this->reader.getLengthInFrames(false) - this->position_in_frames - 1;
+  }
+
+  // Compilers are bad about telling that channels doesn't change.
+  const unsigned int channels = this->getChannels();
+
+  // if we aren't looping, we include the implicit zero so that we can go slightly past the end of the buffer if needed,
+  // but need to tell getFrameSlice that we'll read that as well as that we want it.
+  //
+  // If we are looping, then we don't cut things off at upper and will need to read one more sample.
+  auto mp = this->reader.getFrameSlice(this->position_in_frames, read_span + 1, this->getLooping() == false, true);
+
+  bool truncated_non_vbool = read_span != read_span_original;
+
+  // In the below, it is very important never to add or subtract positions and to always use i * delta.  This avoids
+  // accumulating fp error.
+  std::visit(
+      [&](auto ptr,
+          auto truncated // whether or not we can output BLOCK_SIZE samples.
+      ) {
+        gd->drive(this->getContextRaw()->getBlockTime(), [&](auto gain_cb) {
+          // we need these two at the end, but leave upper in the loop to help the compiler realize that it doesn't
+          // introduce loop dependencies.
+          std::size_t i = 0, lower = 0;
+
+          for (; i < config::BLOCK_SIZE; i++) {
+            float gain = gain_cb(i) * (1.0f / 32768.0f);
+
+            lower = delta * i;
+            std::size_t upper = lower + 1;
+
+            assert(static_cast<std::size_t>(i * delta) < read_span);
+
+            if (lower >= read_span && truncated == true) {
+              break;
+            }
+
+            float w2 = delta * i - lower;
+            float w1 = 1.0f - w2;
+
+            // Work these in here and we can avoid doing them in the loop that handles channels individually.
+            w1 *= gain;
+            w2 *= gain;
+
+            for (unsigned int ch = 0; ch < channels; ch++) {
+              float l_s = ptr[lower * channels + ch], u_s = ptr[upper * channels + ch];
+              float o = l_s * w1 + u_s * w2;
+              output[i * channels + ch] += o;
+            }
+          }
+
+          // If this was truncated and upper is not at or past the end, then we have one more sample at the end of the
+          // buffer that is worth writing this time.
+          if (truncated == true && (this->position_in_frames + lower) < this->reader.getLengthInFrames(false) - 1 &&
+              i + 1 < config::BLOCK_SIZE) {
+            std::size_t final_frame_start = this->reader.getLengthInFrames(false) - channels;
+            float gain = gain_cb(i) / 32768.0f;
+            for (std::size_t ch = 0; ch < channels; ch++) {
+              output[i + ch] += ptr[final_frame_start + ch] * gain;
+            }
+          }
+        });
+      },
+      mp, vCond(truncated_non_vbool));
+
+  // The caller BufferGenerator::generate can handle going past the end of the buffer in the case when we're not
+  // looping, and when we're looping will_read_frames == will_read_frames_original.
+  return read_span_original;
 }
 
 inline bool BufferGenerator::handlePropertyConfig() {

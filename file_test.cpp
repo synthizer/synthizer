@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
   CHECKED(syz_createBufferFromStreamParams(&buffer, "file", argv[1], NULL, NULL, NULL));
   CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL, NULL));
   //CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
-  // CHECKED(syz_setD(generator, SYZ_P_PITCH_BEND, 2.0));
+  CHECKED(syz_setD(generator, SYZ_P_PITCH_BEND, 2.0));
   CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
   CHECKED(syz_sourceAddGenerator(source, generator));
 
@@ -71,9 +71,9 @@ int main(int argc, char *argv[]) {
   CHECKED(syz_routingConfigRoute(context, source, effect, &route_config));
 
   std::this_thread::sleep_for(std::chrono::seconds(2));
-  CHECKED(syz_routingRemoveAllRoutes(context, source, 0.5));
-  // CHECKED(syz_pause(source));
-  // std::this_thread::sleep_for(std::chrono::seconds(5));
+  // CHECKED(syz_routingRemoveAllRoutes(context, source, 0.5));
+  //  CHECKED(syz_pause(source));
+  //  std::this_thread::sleep_for(std::chrono::seconds(5));
   CHECKED(syz_play(source));
 
   while (true) {

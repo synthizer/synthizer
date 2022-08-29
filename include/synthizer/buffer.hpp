@@ -44,7 +44,7 @@ public:
   unsigned int getChannels() const { return this->channels; }
 
   std::size_t getLengthInSamples(bool include_implicit_zero) const {
-    return this->data.size() + channels * include_implicit_zero;
+    return this->data.size() + this->channels * include_implicit_zero;
   }
 
   const std::int16_t *getData() const { return this->data.data(); }
@@ -112,7 +112,8 @@ public:
    * get a ModPointer over a slice of the buffer, whose start and end points are in frames.
    * */
   DynamicModPointer<const std::int16_t> getFrameSlice(std::size_t start_frame, std::size_t will_read,
-                                                      bool include_implicit_zero) {
+                                                      bool include_implicit_zero,
+                                                      bool allow_asserting_provider = false) {
     assert(start_frame < this->getLengthInFrames(include_implicit_zero));
 
     std::size_t samples_start = start_frame * this->getChannels();
@@ -120,7 +121,7 @@ public:
     const std::int16_t *buf = this->buffer->getBufferData()->getData();
 
     return createDynamicModPointer(buf, samples_start, will_read_samples,
-                                   this->getLengthInSamples(include_implicit_zero));
+                                   this->getLengthInSamples(include_implicit_zero), allow_asserting_provider);
   }
 
 private:
