@@ -197,8 +197,6 @@ inline std::size_t BufferGenerator::generatePitchBend(float *output, FadeDriver 
             lower = delta * i;
             std::size_t upper = lower + 1;
 
-            assert(static_cast<std::size_t>(i * delta) < read_span);
-
             if (lower >= read_span && truncated == true) {
               break;
             }
