@@ -124,25 +124,30 @@ private:
  * While the non-pointer variants aren't guaranteed to be anything in particular save that they offer a pointer-like
  * interface, there will always be a T* variant and it will always be used when no modulus is required.  See the below
  * helper function for construction of ModPointers.
+ *
+ * IMPLEMENTATION NOTE: the instrumented debug variant must be last in order to allow tests to reliably succeed on all
+ * platforms.
  * */
 template <typename T, std::size_t LEN>
-using StaticModPointer = std::variant<ModSlice<T, mod_pointer_detail::StaticModProvider<LEN>>,
+using StaticModPointer = std::variant<ModSlice<T, mod_pointer_detail::StaticModProvider<LEN>>, T *,
 #ifndef NDEBUG
-                                      ModSlice<T, mod_pointer_detail::StaticAssertingProvider<LEN>>,
+                                      ModSlice<T, mod_pointer_detail::StaticAssertingProvider<LEN>>
 #endif
-                                      T *>;
+                                      >;
 
 /**
  * The same as StaticModPointer, but the modulus case comes from a runtime value.
  *
  * This is significantly more expensive in most contexts.
+ *
+ * IMPLEMENTATION NOTE: the debug instrumentation variant must be last so tests can reliably pass on all platforms.
  * */
 template <typename T>
-using DynamicModPointer = std::variant<ModSlice<T, mod_pointer_detail::DynamicModProvider>,
+using DynamicModPointer = std::variant<ModSlice<T, mod_pointer_detail::DynamicModProvider>, T *,
 #ifndef NDEBUG
-                                       ModSlice<T, mod_pointer_detail::DynamicAssertingProvider>,
+                                       ModSlice<T, mod_pointer_detail::DynamicAssertingProvider>
 #endif
-                                       T *>;
+                                       >;
 
 /**
  * Given a pointer, an offset, and one past the maximum index which may be accessed, return a ModPointer that can handle
