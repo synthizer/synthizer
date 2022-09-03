@@ -109,7 +109,6 @@ BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r4", SYZ_PANNER_STRATEGY_STEREO, 1, 1
 BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r10", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 10);
 BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r100", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 100);
 
-
 // These match roughly what we might expect out of a shooter (namely System Fault, which was having performance problems
 // at time of writing).
 BENCHMARK_CAPTURE(bm_standard_setup, "hg1s30r2", SYZ_PANNER_STRATEGY_HRTF, 1, 30, 2);

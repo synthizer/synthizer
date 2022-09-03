@@ -84,6 +84,7 @@ public:
   virtual std::shared_ptr<Context> getContext();
 
   /* From the C API implementations, you usually want this one. */
+  virtual const Context *getContextRaw() const;
   virtual Context *getContextRaw();
 
   /*

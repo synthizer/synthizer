@@ -84,6 +84,7 @@ void BaseObject::clearAllPropertyAutomation() {}
 void BaseObject::clearAllAutomation() { this->clearAllPropertyAutomation(); }
 
 std::shared_ptr<Context> BaseObject::getContext() { return this->context; }
+const Context *BaseObject::getContextRaw() const { return this->context.get(); }
 Context *BaseObject::getContextRaw() { return this->context.get(); }
 router::InputHandle *BaseObject::getInputHandle() { return nullptr; }
 router::OutputHandle *BaseObject::getOutputHandle() { return nullptr; }

@@ -20,7 +20,7 @@ public:
   FastSineBankGenerator(const std::shared_ptr<Context> &context, const syz_SineBankConfig *cfg);
 
   int getObjectType() override;
-  unsigned int getChannels() override;
+  unsigned int getChannels() const override;
   void generateBlock(float *output, FadeDriver *gain_driver) override;
   std::optional<double> startGeneratorLingering() override;
 
@@ -47,7 +47,7 @@ inline FastSineBankGenerator::FastSineBankGenerator(const std::shared_ptr<Contex
 
 inline int FastSineBankGenerator::getObjectType() { return SYZ_OTYPE_FAST_SINE_BANK_GENERATOR; }
 
-inline unsigned int FastSineBankGenerator::getChannels() { return 1; }
+inline unsigned int FastSineBankGenerator::getChannels() const { return 1; }
 
 // The weird parameter name gd is due to what is basically a false positive warning from MSVC, which doesn't like that
 // the base class has a private member called gain_driver.
@@ -109,7 +109,7 @@ inline void sigmaApproximate(std::vector<syz_SineBankWave> *waves) {
 /**
  * Normalize a set of waves.
  * */
-inline  void normalizeSeries(std::vector<syz_SineBankWave> *waves) {
+inline void normalizeSeries(std::vector<syz_SineBankWave> *waves) {
   double gsum = 0.0;
   for (auto &w : *waves) {
     gsum += w.gain;
@@ -120,7 +120,7 @@ inline  void normalizeSeries(std::vector<syz_SineBankWave> *waves) {
   }
 }
 
-inline  std::vector<syz_SineBankWave> buildTriangleSeries(unsigned int partials) {
+inline std::vector<syz_SineBankWave> buildTriangleSeries(unsigned int partials) {
   std::vector<syz_SineBankWave> out;
 
   double sign = 1.0;

@@ -48,7 +48,7 @@ public:
   ~StreamingGenerator();
 
   int getObjectType() override;
-  unsigned int getChannels() override;
+  unsigned int getChannels() const override;
   void generateBlock(float *output, FadeDriver *gain_driver) override;
 
   std::optional<double> startGeneratorLingering() override;
@@ -174,7 +174,7 @@ inline StreamingGenerator::~StreamingGenerator() {
 
 inline int StreamingGenerator::getObjectType() { return SYZ_OTYPE_STREAMING_GENERATOR; }
 
-inline unsigned int StreamingGenerator::getChannels() { return channels; }
+inline unsigned int StreamingGenerator::getChannels() const { return channels; }
 
 inline void StreamingGenerator::generateBlock(float *output, FadeDriver *gd) {
   StreamingGeneratorCommand *cmd;

@@ -10,20 +10,29 @@
 #include "synthizer/types.hpp"
 #include "synthizer/vbool.hpp"
 
+#include <cstdint>
 #include <memory>
 #include <optional>
 
 namespace synthizer {
 
-class FadeDriver;
-
+/**
+ * Plays a buffer.
+ *
+ * It is worth taking a moment to notate what is going on with positions and pitch bend.  In order to implement precise
+ * pitch bend, this class uses a scaled position that can do what is in effect fixed point math (see
+ * config::BUFFER_POS_MULTIPLIER). This allows us to avoid fp error on that path, though is mildly inconvenient
+ * everywhere else.
+ * */
 class BufferGenerator : public Generator {
 public:
   BufferGenerator(std::shared_ptr<Context> ctx);
 
   int getObjectType() override;
-  unsigned int getChannels() override;
+  unsigned int getChannels() const override;
   void generateBlock(float *output, FadeDriver *gain_driver) override;
+  void seek(double new_pos);
+  std::uint64_t getPosInSamples() const;
 
   std::optional<double> startGeneratorLingering() override;
 
@@ -36,12 +45,12 @@ private:
   /**
    * Adds to the buffer. Returns by how much to increment the position.
    * */
-  std::size_t generateNoPitchBend(float *out, FadeDriver *gain_driver);
+  std::uint64_t generateNoPitchBend(float *out, FadeDriver *gain_driver);
 
   /**
    * Adds to the buffer. Returns by how much to increment the position.
    * */
-  std::size_t generatePitchBend(float *out, FadeDriver *gain_driver);
+  std::uint64_t generatePitchBend(float *out, FadeDriver *gain_driver) const;
 
   /*
    * Handle configuring properties, and set the non-property state variables up appropriately.
@@ -59,7 +68,7 @@ private:
    * */
   bool finished = false;
 
-  std::size_t position_in_frames = 0;
+  std::uint64_t scaled_position_in_frames = 0, scaled_position_increment = 0;
 
   /**
    * The fractional part of the position used for handling pitch bend.
@@ -71,13 +80,26 @@ inline BufferGenerator::BufferGenerator(std::shared_ptr<Context> ctx) : Generato
 
 inline int BufferGenerator::getObjectType() { return SYZ_OTYPE_BUFFER_GENERATOR; }
 
-inline unsigned int BufferGenerator::getChannels() {
+inline unsigned int BufferGenerator::getChannels() const {
   auto buf_weak = this->getBuffer();
 
   auto buffer = buf_weak.lock();
   if (buffer == nullptr)
     return 0;
   return buffer->getChannels();
+}
+
+inline void BufferGenerator::seek(double new_pos) {
+  std::uint64_t new_pos_samples = new_pos * config::SR;
+  new_pos_samples = new_pos_samples >= this->reader.getLengthInFrames(false) ? this->reader.getLengthInFrames(false) - 1
+                                                                             : new_pos_samples;
+  this->scaled_position_in_frames = new_pos_samples * config::BUFFER_POS_MULTIPLIER;
+  this->finished = false;
+  this->setPlaybackPosition(this->getPosInSamples() / (double)config::SR, false);
+}
+
+inline std::uint64_t BufferGenerator::getPosInSamples() const {
+  return this->scaled_position_in_frames / config::BUFFER_POS_MULTIPLIER;
 }
 
 inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
@@ -88,9 +110,7 @@ inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
   }
 
   if (this->acquirePlaybackPosition(new_pos)) {
-    this->position_in_frames =
-        std::min<std::size_t>(new_pos * config::SR, (double)this->reader.getLengthInSamples(false));
-    this->finished = false;
+    this->seek(new_pos);
   }
 
   // We saw the end and haven't seeked or set the buffer, so don't do anything.
@@ -98,43 +118,51 @@ inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
     return;
   }
 
-  std::size_t pos_increment;
+  this->scaled_position_increment = config::BUFFER_POS_MULTIPLIER * this->getPitchBend();
+  std::uint64_t scaled_pos_increment;
 
   if (this->getPitchBend() == 1.0) {
-    pos_increment = this->generateNoPitchBend(output, gd);
+    scaled_pos_increment = this->generateNoPitchBend(output, gd);
   } else {
-    pos_increment = this->generatePitchBend(output, gd);
+    scaled_pos_increment = this->generatePitchBend(output, gd);
   }
 
   if (this->getLooping()) {
-    unsigned int loop_count = (this->position_in_frames + pos_increment + 1) / this->reader.getLengthInFrames(false);
+    unsigned int loop_count = (this->scaled_position_in_frames + scaled_pos_increment + config::BUFFER_POS_MULTIPLIER) /
+                              (config::BUFFER_POS_MULTIPLIER * this->reader.getLengthInFrames(false));
     for (unsigned int i = 0; i < loop_count; i++) {
       sendLoopedEvent(this->getContext(), this->shared_from_this());
     }
   } else if (this->finished == false &&
-             this->position_in_frames + pos_increment + 1 >= this->reader.getLengthInFrames(false)) {
+             this->scaled_position_in_frames + scaled_pos_increment + config::BUFFER_POS_MULTIPLIER >=
+                 this->reader.getLengthInFrames(false) * config::BUFFER_POS_MULTIPLIER) {
     sendFinishedEvent(this->getContext(), this->shared_from_this());
     this->finished = true;
   }
 
-  this->position_in_frames = (this->position_in_frames + pos_increment) % this->reader.getLengthInFrames(false);
-  this->setPlaybackPosition(this->position_in_frames / (double)config::SR, false);
+  this->scaled_position_in_frames = (this->scaled_position_in_frames + scaled_pos_increment) %
+                                    (this->reader.getLengthInFrames(false) * config::BUFFER_POS_MULTIPLIER);
+  this->setPlaybackPosition(this->getPosInSamples() / (double)config::SR, false);
 }
 
-inline std::size_t BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) {
+inline std::uint64_t BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) {
   assert(this->finished == false);
 
+  // Bump scaled_position_in_frames up to the next multiplier, if necessary.
+  // this->scaled_position_in_frames = ceilByPowerOfTwo(this->scaled_position_in_frames, config::BUFFER_POS_MULTIPLIER);
+
   std::size_t will_read_frames = config::BLOCK_SIZE;
-  if (this->position_in_frames + will_read_frames > this->reader.getLengthInFrames(false) &&
+  if (this->getPosInSamples() + will_read_frames > this->reader.getLengthInFrames(false) &&
       this->getLooping() == false) {
-    will_read_frames = this->reader.getLengthInFrames(false) - this->position_in_frames - 1;
+    will_read_frames = this->reader.getLengthInFrames(false) - this->getPosInSamples() - 1;
     will_read_frames = std::min<std::size_t>(will_read_frames, config::BLOCK_SIZE);
   }
 
   // Compilers are bad about telling that channels doesn't change.
   const unsigned int channels = this->getChannels();
 
-  auto mp = this->reader.getFrameSlice(this->position_in_frames, will_read_frames, false, true);
+  auto mp = this->reader.getFrameSlice(this->scaled_position_in_frames / config::BUFFER_POS_MULTIPLIER,
+                                       will_read_frames, false, true);
   std::visit(
       [&](auto ptr) {
         gd->drive(this->getContextRaw()->getBlockTime(), [&](auto gain_cb) {
@@ -148,98 +176,96 @@ inline std::size_t BufferGenerator::generateNoPitchBend(float *output, FadeDrive
       },
       mp);
 
-  return will_read_frames;
+  return will_read_frames * config::BUFFER_POS_MULTIPLIER;
 }
 
-inline std::size_t BufferGenerator::generatePitchBend(float *output, FadeDriver *gd) {
+inline std::uint64_t BufferGenerator::generatePitchBend(float *output, FadeDriver *gd) const {
   assert(this->finished == false);
 
-  double delta = this->getPitchBend();
-  std::size_t wrote_frames;
+  // We have some fractional offset of the position, which we need to use to know how far from the first sample of this
+  // slice over the buffer is.
+  const std::uint64_t offset = this->scaled_position_in_frames % config::BUFFER_POS_MULTIPLIER;
+
+  const std::uint64_t delta = this->scaled_position_increment;
+
+  // If delta is 0 then computing our iterations can divide by zero, and it'd be 0 movement anyway.
+  if (delta == 0) {
+    return 0;
+  }
 
   // This is a bit complicated.  First, we will read up to 1 more than the block size * delta.  But if that's past the
   // end, we will instead read up to the end, and truncate our pitch bend early.
   //
-  // We might also read a little bit more if pitch_fraction is big enough.
-  //
-  // This computation doesn't include the implicit zero, though we do use that, below.
-  std::size_t read_span_original = std::ceil(config::BLOCK_SIZE * delta + this->pitch_fraction);
-  std::size_t read_span = read_span_original;
-  if (this->position_in_frames + read_span > this->reader.getLengthInFrames(false) && this->getLooping() == false) {
-    read_span = this->reader.getLengthInFrames(false) - this->position_in_frames - 1;
+  // Don't forget that the fractional part of the position contributes.
+  std::uint64_t scaled_read_span_tmp = offset + config::BLOCK_SIZE * delta;
+  // the actual bound is the scaled span's ceil.  If this is exactly equal to the scaled span, we must go one more
+  // sample: even though the below loop would use a 0 inbterpolation weight, it's stil going to try to read one after
+  // the end.
+  std::uint64_t scaled_read_span = ceilByPowerOfTwo(scaled_read_span_tmp, config::BUFFER_POS_MULTIPLIER);
+  scaled_read_span =
+      (scaled_read_span == scaled_read_span_tmp) ? scaled_read_span + config::BUFFER_POS_MULTIPLIER : scaled_read_span;
+  // Note that in the case where we had to bump scaled_read_span up by a sample, it's already an exact multiplier, so
+  // floor is fine.
+  std::uint64_t read_span = scaled_read_span / config::BUFFER_POS_MULTIPLIER;
+
+  std::size_t loop_iterations = config::BLOCK_SIZE;
+
+  // If the spamn is going to read past the end and we aren't looping, we must bring it down.
+  if (this->getLooping() == false) {
+    // Recall that the span can read into the implicit zero without issue.
+    if (this->getPosInSamples() + read_span >= this->reader.getLengthInFrames(true)) {
+      // When figuring out what's available, we must not include the implicit zero.  That is, available is the maximum
+      // movement of the lower sample in the interpolation.
+      std::uint64_t available = this->reader.getLengthInFrames(false) - this->getPosInSamples() - 1;
+      // We know read_span was going to read past the end, and thus that available is less than that. Available
+      // doesn't include the implicit zero, so we add it back.
+      read_span = available + 1;
+      // But the total number of iterations is based only on scaling available, in this case.
+      loop_iterations = available * config::BUFFER_POS_MULTIPLIER / delta;
+    }
   }
 
   // Compilers are bad about telling that channels doesn't change.
   const unsigned int channels = this->getChannels();
 
   // if we aren't looping, we include the implicit zero so that we can go slightly past the end of the buffer if needed,
-  // but need to tell getFrameSlice that we'll read that as well as that we want it.
-  //
-  // If we are looping, then we don't cut things off at upper and will need to read one more sample.
-  auto mp = this->reader.getFrameSlice(this->position_in_frames, read_span + 1, this->getLooping() == false, true);
+  auto mp = this->reader.getFrameSlice(this->getPosInSamples(), read_span, this->getLooping() == false, true);
 
-  bool truncated_non_vbool = read_span != read_span_original;
+  // In the case where the number of iterations is the block size, we can use VBool to let the compiler know.
+  bool _is_full_block = loop_iterations == config::BLOCK_SIZE;
 
-  // In the below, it is very important never to add or subtract positions and to always use i * delta.  This avoids
-  // accumulating fp error.
   std::visit(
-      [&](auto ptr,
-          auto truncated // whether or not we can output BLOCK_SIZE samples.
-      ) {
+      [&](auto ptr, auto full_block) {
         gd->drive(this->getContextRaw()->getBlockTime(), [&](auto gain_cb) {
-          // we need these two at the end, but leave upper in the loop to help the compiler realize that it doesn't
-          // introduce loop dependencies.
-          std::size_t i = 0, lower = 0;
+          // Let the compiler understand that, sometimes, it can fully unroll the loop.
+          const std::size_t iters = full_block ? config::BLOCK_SIZE : loop_iterations;
 
-          for (; i < config::BLOCK_SIZE; i++) {
-            // We need to use doubles, because 65535 (the sum of two samples) is outside the range of integers a float
-            // can represent.
-            double gain = gain_cb(i) * (1.0 / 32768.0);
+          for (std::size_t i = 0; i < iters; i++) {
+            std::uint64_t scaled_effective_pos = offset + delta * i;
+            std::size_t scaled_lower = floorByPowerOfTwo(scaled_effective_pos, config::BUFFER_POS_MULTIPLIER);
+            std::size_t lower = scaled_lower / config::BUFFER_POS_MULTIPLIER;
 
-            lower = delta * i;
-            std::size_t upper = lower + 1;
-
-            if (lower >= read_span && truncated == true) {
-              break;
-            }
-
-            double w2 = delta * i - lower;
-            double w1 = 1.0f - w2;
-
-            // Work these in here and we can avoid doing them in the loop that handles channels individually.
-            w1 *= gain;
-            w2 *= gain;
+            // We are close enough to the point where floats start erroring that we probably want doubles, or at least
+            // to do some sort of actual error analysis which hasn't been done as of this writing. Thus, doubles for
+            // now.
+            //
+            // Also factor in the conversion from 16-bit signed samples into these weights.
+            double w2 = (scaled_effective_pos - scaled_lower) * (1.0 / config::BUFFER_POS_MULTIPLIER);
+            double w1 = 1.0 - w2;
+            w1 *= (1.0 / 32768.0);
+            w2 *= (1.0 / 32768.0);
+            float gain = gain_cb(i);
 
             for (unsigned int ch = 0; ch < channels; ch++) {
-              float l_s = ptr[lower * channels + ch], u_s = ptr[upper * channels + ch];
-              float o = l_s * w1 + u_s * w2;
-              output[i * channels + ch] += o;
+              std::int16_t l = ptr[lower * channels + ch], u = ptr[(lower + 1) * channels + ch];
+              output[i * channels + ch] = gain * (w1 * l + w2 * u);
             }
-
-            wrote_frames++;
-          }
-
-          // If this was truncated and upper is not at or past the end, then we have one more sample at the end of the
-          // buffer that is worth writing this time.
-          if (truncated == true && (this->position_in_frames + lower) < this->reader.getLengthInFrames(false) - 1 &&
-              i + 1 < config::BLOCK_SIZE) {
-            std::size_t final_frame_start = this->reader.getLengthInFrames(false) - channels;
-            float gain = gain_cb(i) / 32768.0f;
-            for (std::size_t ch = 0; ch < channels; ch++) {
-              output[i + ch] += ptr[final_frame_start + ch] * gain;
-            }
-
-            wrote_frames++;
           }
         });
       },
-      mp, vCond(truncated_non_vbool));
+      mp, vCond(_is_full_block));
 
-  this->pitch_fraction = std::fmod(this->position_in_frames + delta * wrote_frames, 1.0);
-
-  // The caller BufferGenerator::generate can handle going past the end of the buffer in the case when we're not
-  // looping, and when we're looping will_read_frames == will_read_frames_original.
-  return read_span_original;
+  return loop_iterations * delta;
 }
 
 inline bool BufferGenerator::handlePropertyConfig() {
@@ -255,7 +281,6 @@ inline bool BufferGenerator::handlePropertyConfig() {
   }
 
   this->reader.setBuffer(buffer.get());
-  this->finished = false;
 
   // It is possible that the user set the buffer then changed the playback position.  It is very difficult to tell the
   // difference between this and setting the position immediately before changing the buffer without rewriting the
@@ -264,13 +289,12 @@ inline bool BufferGenerator::handlePropertyConfig() {
   //
   // Hopefully, this is rare.
   if (this->acquirePlaybackPosition(new_pos)) {
-    this->position_in_frames = std::min(new_pos * config::SR, (double)this->reader.getLengthInSamples(false));
+    this->seek(new_pos);
   } else {
-    this->setPlaybackPosition(0.0, false);
-    this->position_in_frames = 0.0;
+    this->seek(0.0);
   }
 
-  return false;
+  return buffer != nullptr;
 }
 
 inline std::optional<double> BufferGenerator::startGeneratorLingering() {

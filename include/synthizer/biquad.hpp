@@ -134,7 +134,7 @@ inline void ConcreteBiquadFilter<CHANNELS>::processBlockImpl(float *in, float *o
       return;
     }
 
-        for (unsigned int i = 0; i < config::BLOCK_SIZE * CHANNELS; i++) {
+    for (unsigned int i = 0; i < config::BLOCK_SIZE * CHANNELS; i++) {
       out[i] = ADD ? out[i] + in[i] : in[i];
     }
     return;

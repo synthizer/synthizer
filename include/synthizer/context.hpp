@@ -81,6 +81,7 @@ public:
 
   std::shared_ptr<Context> getContext() override;
   Context *getContextRaw() override { return this; }
+  const Context *getContextRaw() const override { return this; }
 
   int getObjectType() override;
 
@@ -172,7 +173,7 @@ public:
    *
    * This is used for crossfading and other applications.
    * */
-  unsigned int getBlockTime() { return this->block_time.load(std::memory_order_relaxed); }
+  unsigned int getBlockTime() const { return this->block_time.load(std::memory_order_relaxed); }
 
   /*
    * Helpers for the C API. to set properties in the context's thread.

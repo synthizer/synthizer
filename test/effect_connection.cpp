@@ -4,7 +4,7 @@
  * Introduced because of issue #50, which proved that this is fragile enough to deserve a test which tries to crash it.
  * In the case of #50, uncovered bugs in the command infrastructure.
  *
-* Currently, even though this compiles it doesn't work because headless contexts aren't good enough.  We disable by
+ * Currently, even though this compiles it doesn't work because headless contexts aren't good enough.  We disable by
  *default, and can revisit this whenever we revisit headless contexts.
  * */
 #include "synthizer.h"

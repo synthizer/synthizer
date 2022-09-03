@@ -140,7 +140,8 @@ public:
     std::size_t start_frame = (SIZE_IN_FRAMES + this->current_frame - delay) % SIZE_IN_FRAMES;
     std::size_t len_frames = delay + config::BLOCK_SIZE;
 
-    auto ptr = createStaticModPointer<float, SIZE_IN_FRAMES * LANES>(&this->data[0], start_frame * LANES, len_frames * LANES);
+    auto ptr =
+        createStaticModPointer<float, SIZE_IN_FRAMES * LANES>(&this->data[0], start_frame * LANES, len_frames * LANES);
     // This is at the beginning of the slice, so move it forward by the delay.
     std::visit([=](auto &x) { x += delay * LANES; }, ptr);
     return ptr;

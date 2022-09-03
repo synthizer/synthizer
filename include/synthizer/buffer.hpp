@@ -113,7 +113,7 @@ public:
    * */
   DynamicModPointer<const std::int16_t> getFrameSlice(std::size_t start_frame, std::size_t will_read,
                                                       bool include_implicit_zero,
-                                                      bool allow_asserting_provider = false) {
+                                                      bool allow_asserting_provider = false) const {
     assert(start_frame < this->getLengthInFrames(include_implicit_zero));
 
     std::size_t samples_start = start_frame * this->getChannels();

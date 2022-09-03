@@ -35,7 +35,7 @@ public:
   Generator(const std::shared_ptr<Context> &ctx) : BaseObject(ctx) {}
 
   /* Return the number of channels this generator wants to output on the next block. */
-  virtual unsigned int getChannels() = 0;
+  virtual unsigned int getChannels() const = 0;
 
   /**
    * Non-virtual internal callback. Implements pausing, gain, etc.

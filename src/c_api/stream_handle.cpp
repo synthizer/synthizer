@@ -7,9 +7,7 @@
 
 #include <memory>
 
-namespace synthizer {
-
-} // namespace synthizer
+namespace synthizer {} // namespace synthizer
 
 using namespace synthizer;
 

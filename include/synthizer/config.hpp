@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <cstdlib>
 
 namespace synthizer {
@@ -71,6 +72,17 @@ const std::size_t MAX_COMMAND_SIZE = 128;
  * Maximum number of commands to process per tick of a context.
  * */
 const std::size_t MAX_COMMANDS_PER_TICK = 10000;
+
+/**
+ * Control the precision of the BufferGenerator pitch bend.
+ *
+ * This value is used to allow computing fractional BufferGenerator positions using only integers.  Larger values allow
+ * for more individual discretized steps in the pitch bend.  We use 64-bit unsigned integers for this arithmetic.  As a
+ * rule of thumb, there are `BUFFER_POS_FACTOR` steps between 0 and 1, not counting the 0th value itself.
+ *
+ * This value must be a power of 2 for correct functioning of the library.
+ * */
+constexpr std::uint64_t BUFFER_POS_MULTIPLIER = 1 << 14;
 
 } // namespace config
 } // namespace synthizer

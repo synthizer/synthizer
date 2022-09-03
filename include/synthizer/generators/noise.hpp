@@ -30,7 +30,7 @@ public:
 
   int getObjectType() override;
 
-  unsigned int getChannels() override { return this->channels; }
+  unsigned int getChannels() const override { return this->channels; }
 
   void generateBlock(float *out, FadeDriver *gain_driver) override;
 

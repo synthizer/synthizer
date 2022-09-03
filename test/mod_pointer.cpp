@@ -18,8 +18,8 @@ TEST_CASE("ModSlice") {
   }
 
   SECTION("basic indexing") {
-    auto ptr = TestModSlice<NUM_INDICES>{data.data(), 5000,
-                                         synthizer::mod_pointer_detail::StaticModProvider<NUM_INDICES>{}};
+    auto ptr =
+        TestModSlice<NUM_INDICES>{data.data(), 5000, synthizer::mod_pointer_detail::StaticModProvider<NUM_INDICES>{}};
     REQUIRE(*ptr == 5000);
     REQUIRE(ptr[0] == 5000);
     REQUIRE(ptr[100] == 5100);
@@ -42,8 +42,8 @@ TEST_CASE("ModSlice") {
   }
 
   SECTION("Operator []") {
-    auto ptr = TestModSlice<NUM_INDICES>{data.data(), 5000,
-                                         synthizer::mod_pointer_detail::StaticModProvider<NUM_INDICES>{}};
+    auto ptr =
+        TestModSlice<NUM_INDICES>{data.data(), 5000, synthizer::mod_pointer_detail::StaticModProvider<NUM_INDICES>{}};
 
     for (std::size_t i = 0; i < 10000; i++) {
       REQUIRE(ptr[i] == (i + 5000) % NUM_INDICES);
