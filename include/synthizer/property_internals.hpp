@@ -80,9 +80,8 @@ public:
 
   T read() const { return this->field.load(std::memory_order_acquire); }
   void write(T value, bool track_change = true) {
-    auto old = this->field.load(std::memory_order_relaxed);
     this->field.store(value, std::memory_order_release);
-    if (track_change && old != value) {
+    if (track_change) {
       this->changed = true;
     }
   }
@@ -143,18 +142,19 @@ public:
 
   T read() const { return this->field.read(); }
   void write(const T &value, bool track_change = true) {
-    auto old = this->read();
     this->field.write(value);
-    if (track_change && old != value) {
+    if (track_change) {
       this->changed = true;
     }
   }
+
   bool acquire(T *out) {
     *out = this->read();
     bool _changed = this->changed;
     this->changed = false;
     return _changed;
   }
+
   void markUnchanged() { this->changed = false; }
 
 private:
