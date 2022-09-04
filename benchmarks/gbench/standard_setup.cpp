@@ -16,7 +16,7 @@
 #include <vector>
 
 void bm_standard_setup(benchmark::State &state, int panner_strategy, unsigned int num_generators,
-                       unsigned int num_sources, unsigned int num_reverbs) {
+                       unsigned int num_sources, unsigned int num_reverbs, double pitch_bend) {
   std::array<float, synthizer::config::BLOCK_SIZE * 2> output_buf;
   syz_bench::HandleSet handles{};
   syz_Handle context;
@@ -55,6 +55,7 @@ void bm_standard_setup(benchmark::State &state, int panner_strategy, unsigned in
       // and that breaks gbench's assumptions.
       SYZ_CHECKED(syz_setI(gen, SYZ_P_LOOPING, 1));
       SYZ_CHECKED(syz_setO(gen, SYZ_P_BUFFER, buffer));
+      SYZ_CHECKED(syz_setD(gen, SYZ_P_PITCH_BEND, pitch_bend));
       SYZ_CHECKED(syz_sourceAddGenerator(source, gen));
     }
   }
@@ -77,39 +78,42 @@ void bm_standard_setup(benchmark::State &state, int panner_strategy, unsigned in
   }
 }
 
-// pattern is panner strategy, generators per source, sources, reverbs.
+// pattern is panner strategy, generators per source, sources, reverbs, pitch bend.
 
 // Let's start by making sure that our really small cases don't do weird things.
-BENCHMARK_CAPTURE(bm_standard_setup, "sg0s0r0", SYZ_PANNER_STRATEGY_STEREO, 0, 0, 0);
-BENCHMARK_CAPTURE(bm_standard_setup, "hg0s0r0", SYZ_PANNER_STRATEGY_HRTF, 0, 0, 0);
-BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r0", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 0);
-BENCHMARK_CAPTURE(bm_standard_setup, "hg1s1r0", SYZ_PANNER_STRATEGY_HRTF, 1, 1, 0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg0s0r0", SYZ_PANNER_STRATEGY_STEREO, 0, 0, 0, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "hg0s0r0", SYZ_PANNER_STRATEGY_HRTF, 0, 0, 0, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r0", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 0, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "hg1s1r0", SYZ_PANNER_STRATEGY_HRTF, 1, 1, 0, 1.0);
 
 // Let's now just climb the sources up the HRTF ladder.
-BENCHMARK_CAPTURE(bm_standard_setup, "hg1s10r0", SYZ_PANNER_STRATEGY_HRTF, 1, 10, 0);
-BENCHMARK_CAPTURE(bm_standard_setup, "hg1s30r0", SYZ_PANNER_STRATEGY_HRTF, 1, 30, 0);
-BENCHMARK_CAPTURE(bm_standard_setup, "hg1s100r0", SYZ_PANNER_STRATEGY_HRTF, 1, 100, 0);
+BENCHMARK_CAPTURE(bm_standard_setup, "hg1s10r0", SYZ_PANNER_STRATEGY_HRTF, 1, 10, 0, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "hg1s30r0", SYZ_PANNER_STRATEGY_HRTF, 1, 30, 0, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "hg1s100r0", SYZ_PANNER_STRATEGY_HRTF, 1, 100, 0, 1.0);
 
 // And same thing, but this time for stereo.
-BENCHMARK_CAPTURE(bm_standard_setup, "sg1s10r0", SYZ_PANNER_STRATEGY_STEREO, 1, 10, 0);
-BENCHMARK_CAPTURE(bm_standard_setup, "sg1s30r0", SYZ_PANNER_STRATEGY_STEREO, 1, 30, 0);
-BENCHMARK_CAPTURE(bm_standard_setup, "sg1s100r0", SYZ_PANNER_STRATEGY_STEREO, 1, 100, 0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg1s10r0", SYZ_PANNER_STRATEGY_STEREO, 1, 10, 0, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg1s30r0", SYZ_PANNER_STRATEGY_STEREO, 1, 30, 0, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg1s100r0", SYZ_PANNER_STRATEGY_STEREO, 1, 100, 0, 1.0);
 
 // Let's see about using a single source to benchmark adding a bunch of generators.
-BENCHMARK_CAPTURE(bm_standard_setup, "sg2s1r0", SYZ_PANNER_STRATEGY_STEREO, 2, 1, 0);
-BENCHMARK_CAPTURE(bm_standard_setup, "sg5s1r0", SYZ_PANNER_STRATEGY_STEREO, 5, 1, 0);
-BENCHMARK_CAPTURE(bm_standard_setup, "sg30s1r0", SYZ_PANNER_STRATEGY_STEREO, 30, 1, 0);
-BENCHMARK_CAPTURE(bm_standard_setup, "sg100s1r0", SYZ_PANNER_STRATEGY_STEREO, 100, 1, 0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg2s1r0", SYZ_PANNER_STRATEGY_STEREO, 2, 1, 0, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg5s1r0", SYZ_PANNER_STRATEGY_STEREO, 5, 1, 0, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg30s1r0", SYZ_PANNER_STRATEGY_STEREO, 30, 1, 0, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg100s1r0", SYZ_PANNER_STRATEGY_STEREO, 100, 1, 0, 1.0);
 
 // Now climb the reverb ladder.
-BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r1", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 1);
-BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r2", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 2);
-BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r3", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 3);
-BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r4", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 4);
-BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r10", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 10);
-BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r100", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 100);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r1", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 1, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r2", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 2, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r3", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 3, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r4", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 4, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r10", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 10, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "sg1s1r100", SYZ_PANNER_STRATEGY_STEREO, 1, 1, 100, 1.0);
 
 // These match roughly what we might expect out of a shooter (namely System Fault, which was having performance problems
 // at time of writing).
-BENCHMARK_CAPTURE(bm_standard_setup, "hg1s30r2", SYZ_PANNER_STRATEGY_HRTF, 1, 30, 2);
-BENCHMARK_CAPTURE(bm_standard_setup, "hg1s100r2", SYZ_PANNER_STRATEGY_HRTF, 1, 100, 2);
+BENCHMARK_CAPTURE(bm_standard_setup, "hg1s30r2", SYZ_PANNER_STRATEGY_HRTF, 1, 30, 2, 1.0);
+BENCHMARK_CAPTURE(bm_standard_setup, "hg1s100r2", SYZ_PANNER_STRATEGY_HRTF, 1, 100, 2, 1.0);
+
+// Check that pitch bend is sane.
+BENCHMARK_CAPTURE(bm_standard_setup, "sg100s1r0p1.5", SYZ_PANNER_STRATEGY_STEREO, 100, 1, 0, 1.5);
