@@ -129,8 +129,9 @@ private:
  * platforms.
  * */
 template <typename T, std::size_t LEN>
-using StaticModPointer = std::variant<ModSlice<T, mod_pointer_detail::StaticModProvider<LEN>>, T *,
+using StaticModPointer = std::variant<ModSlice<T, mod_pointer_detail::StaticModProvider<LEN>>, T *
 #ifndef NDEBUG
+                                      ,
                                       ModSlice<T, mod_pointer_detail::StaticAssertingProvider<LEN>>
 #endif
                                       >;
@@ -143,8 +144,9 @@ using StaticModPointer = std::variant<ModSlice<T, mod_pointer_detail::StaticModP
  * IMPLEMENTATION NOTE: the debug instrumentation variant must be last so tests can reliably pass on all platforms.
  * */
 template <typename T>
-using DynamicModPointer = std::variant<ModSlice<T, mod_pointer_detail::DynamicModProvider>, T *,
+using DynamicModPointer = std::variant<ModSlice<T, mod_pointer_detail::DynamicModProvider>, T *
 #ifndef NDEBUG
+                                       ,
                                        ModSlice<T, mod_pointer_detail::DynamicAssertingProvider>
 #endif
                                        >;
