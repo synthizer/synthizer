@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 3.15.0)
 project(synthizer VERSION 0.1.0 LANGUAGES C CXX)
 
-OPTION(SYZ_INTEGRATING "Set to ON to avoid linking examples etc. when integrating into a language's bindings" OFF)
+set(BENCHMARK_ENABLE_TESTING OFF)
 
-include(FetchContent)
+OPTION(SYZ_INTEGRATING "Set to ON to avoid linking examples etc. when integrating into a language's bindings" OFF)
 
 # Do this first; some things will quietly pick it up and it's
 # really hard to tell which.
 set(CMAKE_CXX_STANDARD 17)
+
+add_subdirectory(deps)
 
 # Synthizer version.
 add_compile_definitions(SYZ_MAJOR=0 SYZ_MINOR=11 SYZ_PATCH=7)
@@ -185,8 +187,9 @@ example(print_version c)
 example(scalar_panned_source cpp)
 example(simple_automation c)
 
-# The following won't work on Windows unless compiled against a static build of Synthizer because we don't want to expose the C++ internals from the DLL.
-# Since these are just test programs and not actual utilities, disable them on all platforms if the build isn't static.
+# The following won't work on Windows unless compiled against a static build of Synthizer because we don't want to
+# expose the C++ internals from the DLL. Since these are just test programs and not actual utilities, disable them on
+# all platforms if the build isn't static.
 if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   add_executable(file_test file_test.cpp)
   target_link_libraries(file_test synthizer)
@@ -206,6 +209,10 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   add_executable(test_fast_sine_accuracy test/interactive/fast_sine_accuracy.cpp)
   target_link_libraries(test_fast_sine_accuracy synthizer)
 
+  FetchContent_MakeAvailable(benchmark catch2)
+  list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+  INCLUDE(Catch)
+
   # Set up benchmarks for things we can benchmark.
   #
   # Unfortunately Synthizer's state is too global for us to do this reliably until we pull the math out to a library,
@@ -214,13 +221,6 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   # Apparently we have to do this globally because CMake won't let us set a define for a subdirectory. Without it
   # google/benchmark wants gtest.
   set(BENCHMARK_ENABLE_TESTING OFF)
-
-  FetchContent_Declare(benchmark
-    GIT_REPOSITORY https://github.com/google/benchmark
-    GIT_TAG 37be1e8252527229cccad9f097afe68572f3c08a
-  )
-
-  FetchContent_MakeAvailable(benchmark)
 
   add_executable(gbench
     benchmarks/gbench/block_buffer_cache.cpp
@@ -232,10 +232,6 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
   target_link_libraries(gbench synthizer benchmark::benchmark)
   set_property(TARGET gbench PROPERTY CXX_STANDARD 17)
 
-  FetchContent_Declare(catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2
-    GIT_TAG v3.1.0
-  )
   FetchContent_MakeAvailable(benchmark catch2)
   list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
   INCLUDE(Catch)
