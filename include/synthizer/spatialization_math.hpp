@@ -36,7 +36,8 @@ template <typename T> DistanceParams materializeDistanceParamsFromProperties(T *
   DistanceParams ret;
   int distance_model;
 
-  ret.changed = source->acquireDistanceRef(ret.distance_ref) | source->acquireDistanceMax(ret.distance_max) |
+  // The cast silences a warning.
+  ret.changed = (int)source->acquireDistanceRef(ret.distance_ref) | source->acquireDistanceMax(ret.distance_max) |
                 source->acquireRolloff(ret.rolloff) | source->acquireClosenessBoost(ret.closeness_boost) |
                 source->acquireClosenessBoostDistance(ret.closeness_boost_distance) |
                 /* This one needs a cast, so pull it to a different vairable first. */
@@ -52,7 +53,8 @@ template <typename T> DistanceParams materializeDistanceParamsFromDefaultPropert
   DistanceParams ret;
   int distance_model;
 
-  ret.changed = source->acquireDefaultDistanceRef(ret.distance_ref) |
+  // The cast silences a clang warning.
+  ret.changed = (int)source->acquireDefaultDistanceRef(ret.distance_ref) |
                 source->acquireDefaultDistanceMax(ret.distance_max) | source->acquireDefaultRolloff(ret.rolloff) |
                 source->acquireDefaultClosenessBoost(ret.closeness_boost) |
                 source->acquireDefaultClosenessBoostDistance(ret.closeness_boost_distance) |

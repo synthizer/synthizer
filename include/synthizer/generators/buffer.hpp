@@ -69,11 +69,6 @@ private:
   bool finished = false;
 
   std::uint64_t scaled_position_in_frames = 0, scaled_position_increment = 0;
-
-  /**
-   * The fractional part of the position used for handling pitch bend.
-   * */
-  double pitch_fraction = 0.0;
 };
 
 inline BufferGenerator::BufferGenerator(std::shared_ptr<Context> ctx) : Generator(ctx) {}

@@ -32,7 +32,7 @@ inline int AngularPannedSource::getObjectType() { return SYZ_OTYPE_ANGULAR_PANNE
 inline void AngularPannedSource::preRun() {
   double azimuth, elevation;
 
-  bool angles_changed = this->acquireAzimuth(azimuth) | this->acquireElevation(elevation);
+  bool angles_changed = (int)this->acquireAzimuth(azimuth) | this->acquireElevation(elevation);
 
   if (angles_changed) {
     this->maybe_panner.value().setPanningAngles(azimuth, elevation);

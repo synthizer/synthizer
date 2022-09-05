@@ -4,15 +4,13 @@
       "name": "Win32",
       "includePath": [
         "${workspaceFolder}/include",
-        "${workspaceFolder}/third_party/boost_partial",
-        "${workspaceFolder}/third_party/cpp11-on-multicore/common",
-        "${workspaceFolder}/third_party/dr_libs",
-        "${workspaceFolder}/third_party/wdl",
-        "${workspaceFolder}/third_party/miniaudio",
-        "${workspaceFolder}/third_party/plf_colony",
-        "${workspaceFolder}/third_party/concurrentqueue",
-        "${workspaceFolder}/third_party/pdqsort",
-        "${workspaceFolder}/build/_deps/**"
+        "${workspaceFolder}/deps/deps/third_party/boost_partial",
+        "${workspaceFolder}/deps/deps/third_party/cpp11-on-multicore/common",
+        "${workspaceFolder}/deps/deps/third_party/dr_libs",
+        "${workspaceFolder}/deps/deps/third_party/wdl",
+        "${workspaceFolder}/deps/deps/third_party/miniaudio",
+        "${workspaceFolder}/deps/deps/third_party/concurrentqueue",
+        "${workspaceFolder}/deps/deps/third_party/pdqsort",
       ],
       "defines": [
         "_DEBUG",

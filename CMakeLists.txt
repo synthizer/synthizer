@@ -20,6 +20,27 @@ enable_testing()
 
 find_package(Threads)
 
+set(SYZ_DEPS
+  boost_partial
+  concurrentqueue
+  cpp11-on-multicore
+  dr_libs
+  hedley
+  miniaudio
+  pdqsort
+  # wdl is special because it's an object library.
+  #wdl
+)
+
+if(NOT "${SYZ_INTEGRATING}")
+  set(SYZ_TEST_DEPS benchmark catch2)
+endif()
+
+FetchContent_MakeAvailable(${SYZ_DEPS} ${SYZ_TEST_DEPS})
+FetchContent_MakeAvailable(wdl)
+
+include_directories(include)
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   add_compile_options(-Xclang -fno-caret-diagnostics
     -Xclang -Wno-deprecated-declarations
@@ -77,26 +98,14 @@ else()
   message(STATUS "Found C++17 filesystem support")
 endif()
 
-include(cmake/wdl.txt)
 
-include_directories(SYSTEM
-  include
-  third_party/boost_partial
-  third_party/miniaudio
-  third_party/dr_libs
-  third_party/stb
-  third_party/cpp11-on-multicore/common
-  third_party/wdl
-  third_party/plf_colony
-  third_party/concurrentqueue
-  third_party/pdqsort
-)
 
 # Needs to be factored out so that -Wall doesn't apply to third-party deps.
 add_library(synthizer_single_file_libs OBJECT
   src/single_file_libs.c
 )
 set_property(TARGET synthizer_single_file_libs PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(synthizer_single_file_libs dr_libs miniaudio)
 
 set(SYNTHIZER_LIB_TYPE STATIC CACHE STRING "The build type for Synthizer. Either STATIC or SHARED")
 add_library(synthizer ${SYNTHIZER_LIB_TYPE}
@@ -124,13 +133,13 @@ add_library(synthizer ${SYNTHIZER_LIB_TYPE}
   src/streams/file.cpp
   src/streams/memory_stream.cpp
 
-  $<TARGET_OBJECTS:wdl>
+  $<TARGET_OBJECTS:wdl_objlib>
   $<TARGET_OBJECTS:synthizer_single_file_libs>
 )
 target_compile_features(synthizer PUBLIC cxx_std_17)
-target_link_libraries(synthizer wdl Threads::Threads ${CMAKE_DL_LIBS})
-
-target_compile_definitions(synthizer PRIVATE BUILDING_SYNTHIZER)
+target_link_libraries(synthizer ${SYZ_DEPS} Threads::Threads ${CMAKE_DL_LIBS})
+target_include_directories(synthizer PRIVATE $<TARGET_PROPERTY:wdl_objlib,INTERFACE_INCLUDE_DIRECTORIES>)
+target_compile_definitions(synthizer PRIVATE BUILDING_SYNTHIZER WDL_RESAMPLE_TYPE=float)
 # tells synthizer.h to define SYZ_CAPI for exporting shared object/dll symbols.
 # On windows this is dllexport.
 if("${SYNTHIZER_LIB_TYPE}" STREQUAL "SHARED")

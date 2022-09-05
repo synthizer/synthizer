@@ -29,7 +29,8 @@ def check_path(p):
             return False
     return True
 
-# Don't go lazy here, or iglob recurses into the output.
+# Don't go lazy here, or iglob recurses into the output if the vendored copy is under the repo root, as sometimes
+# happens when testing.
 files = [i for i in files if check_path(i)]
 
 for f in files:

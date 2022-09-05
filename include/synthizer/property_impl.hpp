@@ -448,7 +448,7 @@ void applyPropertyAutomationPoints(int property, std::size_t points_len, Propert
 #undef DOUBLE6_P
 #undef APPLIER
 
-void clearAllPropertyAutomation() {
+void clearAllPropertyAutomation() override {
 #define CLEARER(IGN, UNDER_N, ...) this->PROPFIELD_NAME.UNDER_N.getTimeline()->clear();
 #define DOUBLE_P(...) CLEARER(__VA_ARGS__)
 #define DOUBLE3_P(...) CLEARER(__VA_ARGS__)
