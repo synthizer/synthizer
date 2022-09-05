@@ -17,7 +17,7 @@ if os.path.exists(dest):
     shutil.rmtree(sys.argv[1])
 
 this_dir = os.path.split(os.path.abspath(__file__))[0]
-patterns = [os.path.join(this_dir, "**", "*.{}".format(i)) for i in ["c", "h", "cpp", "hpp", "txt"]]
+patterns = [os.path.join(this_dir, "**", "*.{}".format(i)) for i in ["c", "h", "cpp", "hpp", "txt", "cmake", "in", "cc"]]
 files = itertools.chain(*[glob.iglob(pat, recursive=True) for pat in patterns])
 
 forbidden_prefixes = [".git", "build", os.path.join("bindings", "python")]
