@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <tuple>
+#include <utility>
 #include <variant>
 
 namespace synthizer {
@@ -52,7 +53,7 @@ public:
   void setPanningScalar(double scalar);
 
 private:
-  Panner(PannerVariant &&pv) : implementation(pv) {}
+  Panner(PannerVariant &&pv) : implementation(std::move(pv)) {}
   PannerVariant implementation;
 
   friend Panner buildPannerForStrategy(int panner_strategy);
