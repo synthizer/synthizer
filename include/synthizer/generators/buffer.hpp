@@ -42,15 +42,8 @@ public:
 #include "synthizer/property_impl.hpp"
 
 private:
-  /**
-   * Adds to the buffer. Returns by how much to increment the position.
-   * */
-  std::uint64_t generateNoPitchBend(float *out, FadeDriver *gain_driver);
-
-  /**
-   * Adds to the buffer. Returns by how much to increment the position.
-   * */
-  std::uint64_t generatePitchBend(float *out, FadeDriver *gain_driver) const;
+  void generateNoPitchBend(float *out, FadeDriver *gain_driver);
+  void generatePitchBend(float *out, FadeDriver *gain_driver) const;
 
   /*
    * Handle configuring properties, and set the non-property state variables up appropriately.
@@ -113,34 +106,43 @@ inline void BufferGenerator::generateBlock(float *output, FadeDriver *gd) {
     return;
   }
 
+  // it is possible for the generator to need to advance less if it is at or near the end, but we deal withv that below
+  // and avoid very complicated computations that try to work out what it actually is: we did that in the past, and it
+  // lead to no end of bugs.
   this->scaled_position_increment = config::BUFFER_POS_MULTIPLIER * this->getPitchBend();
-  std::uint64_t scaled_pos_increment;
+  std::uint64_t scaled_pos_increment = this->scaled_position_increment * config::BLOCK_SIZE;
 
   if (this->getPitchBend() == 1.0) {
-    scaled_pos_increment = this->generateNoPitchBend(output, gd);
+    this->generateNoPitchBend(output, gd);
   } else {
-    scaled_pos_increment = this->generatePitchBend(output, gd);
+    this->generatePitchBend(output, gd);
   }
 
   if (this->getLooping()) {
+    // If we are looping, then the position can always go past the end.
     unsigned int loop_count = (this->scaled_position_in_frames + scaled_pos_increment + config::BUFFER_POS_MULTIPLIER) /
                               (config::BUFFER_POS_MULTIPLIER * this->reader.getLengthInFrames(false));
     for (unsigned int i = 0; i < loop_count; i++) {
       sendLoopedEvent(this->getContext(), this->shared_from_this());
     }
+    this->scaled_position_in_frames = (this->scaled_position_in_frames + scaled_pos_increment) %
+                                      (this->reader.getLengthInFrames(false) * config::BUFFER_POS_MULTIPLIER);
   } else if (this->finished == false &&
              this->scaled_position_in_frames + scaled_pos_increment + config::BUFFER_POS_MULTIPLIER >=
                  this->reader.getLengthInFrames(false) * config::BUFFER_POS_MULTIPLIER) {
+    // In this case, the position might be past the end so we'll set it to the end exactly when we're done.
     sendFinishedEvent(this->getContext(), this->shared_from_this());
     this->finished = true;
+    this->scaled_position_in_frames = this->reader.getLengthInFrames(false) * config::BUFFER_POS_MULTIPLIER;
+  } else {
+    // this won't need modulus, because otherwise that would have meant looping or ending.
+    this->scaled_position_in_frames += scaled_pos_increment;
   }
 
-  this->scaled_position_in_frames = (this->scaled_position_in_frames + scaled_pos_increment) %
-                                    (this->reader.getLengthInFrames(false) * config::BUFFER_POS_MULTIPLIER);
   this->setPlaybackPosition(this->getPosInSamples() / (double)config::SR, false);
 }
 
-inline std::uint64_t BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) {
+inline void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) {
   assert(this->finished == false);
 
   // Bump scaled_position_in_frames up to the next multiplier, if necessary.
@@ -170,11 +172,9 @@ inline std::uint64_t BufferGenerator::generateNoPitchBend(float *output, FadeDri
         });
       },
       mp);
-
-  return will_read_frames * config::BUFFER_POS_MULTIPLIER;
 }
 
-inline std::uint64_t BufferGenerator::generatePitchBend(float *output, FadeDriver *gd) const {
+inline void BufferGenerator::generatePitchBend(float *output, FadeDriver *gd) const {
   assert(this->finished == false);
 
   // We have some fractional offset of the position, which we need to use to know how far from the first sample of this
@@ -185,7 +185,7 @@ inline std::uint64_t BufferGenerator::generatePitchBend(float *output, FadeDrive
 
   // If delta is 0 then computing our iterations can divide by zero, and it'd be 0 movement anyway.
   if (delta == 0) {
-    return 0;
+    return;
   }
 
   // This is a bit complicated.  First, we will read up to 1 more than the block size * delta.  But if that's past the
@@ -259,8 +259,6 @@ inline std::uint64_t BufferGenerator::generatePitchBend(float *output, FadeDrive
         });
       },
       mp, vCond(_is_full_block));
-
-  return loop_iterations * delta;
 }
 
 inline bool BufferGenerator::handlePropertyConfig() {

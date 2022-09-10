@@ -52,8 +52,8 @@ int main(int argc, char *argv[]) {
   CHECKED(syz_createSource3D(&source, context, SYZ_PANNER_STRATEGY_DELEGATE, 0.0, 0.0, 0.0, NULL, NULL, NULL));
   CHECKED(syz_createBufferFromStreamParams(&buffer, "file", argv[1], NULL, NULL, NULL));
   CHECKED(syz_createBufferGenerator(&generator, context, NULL, NULL, NULL));
-  //CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
-  CHECKED(syz_setD(generator, SYZ_P_PITCH_BEND, 2.0));
+  // CHECKED(syz_setI(generator, SYZ_P_LOOPING, 1));
+  //  CHECKED(syz_setD(generator, SYZ_P_PITCH_BEND, 2.0));
   CHECKED(syz_setO(generator, SYZ_P_BUFFER, buffer));
   CHECKED(syz_sourceAddGenerator(source, generator));
 
