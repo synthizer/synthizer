@@ -26,7 +26,7 @@ protected:
    * delegated the panning strategy because this is the only way to maintain the total order.  Rather than being
    * complicated in that API where the logic is, just make sources deal.
    * */
-  std::optional<Panner> maybe_panner;
+  std::optional<Panner> maybe_panner = std::nullopt;
 };
 
 inline PannedSource::PannedSource(const std::shared_ptr<Context> context, int _panner_strategy)
