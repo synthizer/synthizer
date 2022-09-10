@@ -57,7 +57,7 @@ jobs:
             OS: windows-2022
 
   osx:
-    runs-on: macos-latest
+    runs-on: ${{matrix.os}}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -72,6 +72,11 @@ jobs:
           cmake -G Ninja ..
           ninja
           ninja test
+    strategy:
+      matrix:
+        include:
+          - os: macos-12
+          - os: macos-11
 
   build_docs:
     runs-on: ubuntu-20.04
