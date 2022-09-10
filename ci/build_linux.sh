@@ -10,6 +10,7 @@ sudo apt update
 # GitHub doesn't give us Ninja
 sudo apt-fast install -y ninja-build virtualenv
 
+git submodule update --init --recursive
 mkdir -p build
 cd build
 cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Release
