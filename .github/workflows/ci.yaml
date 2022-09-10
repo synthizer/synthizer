@@ -27,6 +27,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Init submodules
+        shell: cmd
+        run: |
+          git submodule update --init --recursive
       - name: Configure MSVC Environment Variables
         shell: cmd
         run: |
@@ -62,6 +66,7 @@ jobs:
           set -ex
           brew install ninja
           cd $GITHUB_WORKSPACE
+          git submodule update --init --recursive
           mkdir build
           cd build
           cmake -G Ninja ..
@@ -114,7 +119,7 @@ jobs:
       - name: Clone Repository
         run: |
           cd $GITHUB_WORKSPACE
-          git clone git@github.com:synthizer/synthizer.github.io .
+          git clone --recursive git@github.com:synthizer/synthizer.github.io .
           rm -rf *
       - name: Download Docs
         uses: actions/download-artifact@v2
