@@ -27,8 +27,12 @@ public:
    * In order to use virtual functions, we have to start with PropertyAutomationTimeline<6> everywhere, then convert
    * down as needed.
    * */
-  PropertyAutomationPoint(const PropertyAutomationPoint<6> &other);
+  template <std::size_t N2> PropertyAutomationPoint(const PropertyAutomationPoint<N2> &other);
+  PropertyAutomationPoint<N>(const PropertyAutomationPoint<N> &) = default;
+
   PropertyAutomationPoint(double _time, unsigned int _interpolation_type, const std::array<double, N> &_values);
+
+  PropertyAutomationPoint<N> &operator=(const PropertyAutomationPoint<N> &) = default;
 
   unsigned int interpolation_type;
   double automation_time;
@@ -113,8 +117,10 @@ inline PropertyAutomationPoint<N>::PropertyAutomationPoint(double time, const st
 }
 
 template <std::size_t N>
-inline PropertyAutomationPoint<N>::PropertyAutomationPoint(const PropertyAutomationPoint<6> &other)
+template <std::size_t N2>
+inline PropertyAutomationPoint<N>::PropertyAutomationPoint(const PropertyAutomationPoint<N2> &other)
     : interpolation_type(other.interpolation_type), automation_time(other.automation_time) {
+  static_assert(N <= N2, "PropertyAutomationPoint only allows truncation when converting");
   for (std::size_t i = 0; i < N; i++) {
     this->values[i] = other.values[i];
   }

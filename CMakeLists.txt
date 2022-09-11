@@ -41,10 +41,13 @@ FetchContent_MakeAvailable(wdl)
 
 include_directories(include)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Xclang -fno-caret-diagnostics
-    -Xclang -Wno-deprecated-declarations
-    -Xclang -Wno-logical-op-parentheses
+    -Wno-deprecated-declarations
+    -Wno-logical-op-parentheses
+    -Wno-unknown-pragmas
+    # We have warning pragmas that are GCC specific.
+    -Wno-unknown-warning-option
   )
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   add_compile_options(

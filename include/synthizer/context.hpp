@@ -326,11 +326,6 @@ private:
   /* Effects to run. */
   deferred_vector<std::weak_ptr<GlobalEffect>> global_effects;
 
-  /* Parameters of the 3D environment: listener orientation/position, library-wide defaults for distance models, etc. */
-  std::array<double, 3> position{{0, 0, 0}};
-  /* Default to facing positive y with positive x as east and positive z as up. */
-  std::array<double, 6> orientation{{0, 1, 0, 0, 0, 1}};
-
   /* Effects support. */
   router::Router router{};
 

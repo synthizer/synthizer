@@ -5,6 +5,8 @@
 #include "synthizer/source.hpp"
 
 #include <memory>
+#include <optional>
+#include <utility>
 
 namespace synthizer {
 class Context;
@@ -38,7 +40,7 @@ inline void PannedSource::initInAudioThread() {
     effective_panner_strategy = this->getContextRaw()->getDefaultPannerStrategy();
   }
 
-  this->maybe_panner.emplace(buildPannerForStrategy(effective_panner_strategy));
+    this->maybe_panner.emplace(buildPannerForStrategy(effective_panner_strategy));
 }
 
 inline void PannedSource::run(unsigned int out_channels, float *out) {

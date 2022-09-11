@@ -84,12 +84,12 @@ public:
     deferredFree((void *)p);
   }
 
-  bool operator==(const DeferredAllocator &other) { return true; }
+  bool operator==(const DeferredAllocator &) { return true; }
 
-  bool operator!=(const DeferredAllocator &other) { return false; }
+  bool operator!=(const DeferredAllocator &) { return false; }
 };
 
-template <typename T> bool operator==(const DeferredAllocator<T> &a, const DeferredAllocator<T> &b) { return true; }
+template <typename T> bool operator==(const DeferredAllocator<T> &, const DeferredAllocator<T> &) { return true; }
 
 /*
  * Typedefs for std and plf types that are deferred.
