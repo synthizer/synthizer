@@ -174,18 +174,42 @@ inline void BufferGenerator::generateNoPitchBend(float *output, FadeDriver *gd) 
       mp);
 }
 
-inline void BufferGenerator::generatePitchBend(float *output, FadeDriver *gd) const {
-  assert(this->finished == false);
+namespace buffer_generator_detail {
+
+/**
+ * Parameters needed to do pitch bend.
+ *
+ * If pitch bend can't be done because delta is 0, this is zero-initialized and iterations = 0.
+ * */
+struct PitchBendParams {
+  std::uint64_t offset;
+  std::size_t iterations;
+
+  /**
+   * The span we must grab from the underlying buffer, in samples.
+   *
+   * Possibly includes the implicit zero, if required.
+   * */
+  std::size_t span_start, span_len;
+
+  /**
+   * Whether or not the buffer should include the implicit zero.
+   * */
+  bool include_implicit_zero;
+};
+
+PitchBendParams computePitchBendParams(std::uint64_t scaled_position, std::uint64_t delta,
+                                       std::uint64_t buffer_len_no_zero, bool looping) {
+  PitchBendParams ret{};
 
   // We have some fractional offset of the position, which we need to use to know how far from the first sample of this
   // slice over the buffer is.
-  const std::uint64_t offset = this->scaled_position_in_frames % config::BUFFER_POS_MULTIPLIER;
-
-  const std::uint64_t delta = this->scaled_position_increment;
+  const std::uint64_t offset = scaled_position % config::BUFFER_POS_MULTIPLIER;
 
   // If delta is 0 then computing our iterations can divide by zero, and it'd be 0 movement anyway.
   if (delta == 0) {
-    return;
+    ret.iterations = 0;
+    return ret;
   }
 
   // This is a bit complicated.  First, we will read up to 1 more than the block size * delta.  But if that's past the
@@ -206,12 +230,12 @@ inline void BufferGenerator::generatePitchBend(float *output, FadeDriver *gd) co
   std::size_t loop_iterations = config::BLOCK_SIZE;
 
   // If the spamn is going to read past the end and we aren't looping, we must bring it down.
-  if (this->getLooping() == false) {
+  if (looping == false) {
     // Recall that the span can read into the implicit zero without issue.
-    if (this->getPosInSamples() + read_span >= this->reader.getLengthInFrames(true)) {
+    if (scaled_position / config::BUFFER_POS_MULTIPLIER + read_span >= buffer_len_no_zero + 1) {
       // When figuring out what's available, we must not include the implicit zero.  That is, available is the maximum
       // movement of the lower sample in the interpolation.
-      std::uint64_t available = this->reader.getLengthInFrames(false) - this->getPosInSamples() - 1;
+      std::uint64_t available = buffer_len_no_zero - scaled_position / config::BUFFER_POS_MULTIPLIER - 1;
       // We know read_span was going to read past the end, and thus that available is less than that. Available
       // doesn't include the implicit zero, so we add it back.
       read_span = available + 1;
@@ -220,23 +244,43 @@ inline void BufferGenerator::generatePitchBend(float *output, FadeDriver *gd) co
     }
   }
 
-  // Compilers are bad about telling that channels doesn't change.
-  const unsigned int channels = this->getChannels();
+  ret.include_implicit_zero = looping == false;
+  ret.iterations = loop_iterations;
+  ret.offset = offset;
+  ret.span_start = scaled_position / config::BUFFER_POS_MULTIPLIER;
+  ret.span_len = read_span;
+  return ret;
+}
+} // namespace buffer_generator_detail
 
-  // if we aren't looping, we include the implicit zero so that we can go slightly past the end of the buffer if needed,
-  auto mp = this->reader.getFrameSlice(this->getPosInSamples(), read_span, this->getLooping() == false, true);
+inline void BufferGenerator::generatePitchBend(float *output, FadeDriver *gd) const {
+  assert(this->finished == false);
+
+  const auto params =
+      buffer_generator_detail::computePitchBendParams(this->scaled_position_in_frames, this->scaled_position_increment,
+                                                      this->reader.getLengthInFrames(false), this->getLooping());
+
+  if (params.iterations == 0) {
+    return;
+  }
+
+  auto mp = this->reader.getFrameSlice(params.span_start, params.span_len, params.include_implicit_zero, true);
 
   // In the case where the number of iterations is the block size, we can use VBool to let the compiler know.
-  bool _is_full_block = loop_iterations == config::BLOCK_SIZE;
+  bool _is_full_block = params.iterations == config::BLOCK_SIZE;
+
+  // the compiler is bad about telling that channels doens't change.
+  const unsigned int channels = this->getChannels();
 
   std::visit(
       [&](auto ptr, auto full_block) {
         gd->drive(this->getContextRaw()->getBlockTime(), [&](auto gain_cb) {
           // Let the compiler understand that, sometimes, it can fully unroll the loop.
-          const std::size_t iters = full_block ? config::BLOCK_SIZE : loop_iterations;
+          const std::size_t iters = full_block ? config::BLOCK_SIZE : params.iterations;
+          const std::uint64_t delta = this->scaled_position_increment;
 
           for (std::size_t i = 0; i < iters; i++) {
-            std::uint64_t scaled_effective_pos = offset + delta * i;
+            std::uint64_t scaled_effective_pos = params.offset + delta * i;
             std::size_t scaled_lower = floorByPowerOfTwo(scaled_effective_pos, config::BUFFER_POS_MULTIPLIER);
             std::size_t lower = scaled_lower / config::BUFFER_POS_MULTIPLIER;
 
