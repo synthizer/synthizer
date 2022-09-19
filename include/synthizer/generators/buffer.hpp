@@ -198,57 +198,45 @@ struct PitchBendParams {
   bool include_implicit_zero;
 };
 
-PitchBendParams computePitchBendParams(std::uint64_t scaled_position, std::uint64_t delta,
-                                       std::uint64_t buffer_len_no_zero, bool looping) {
+inline PitchBendParams computePitchBendParams(std::uint64_t scaled_position, std::uint64_t delta,
+                                              std::uint64_t buffer_len_no_zero, bool looping) {
   PitchBendParams ret{};
 
-  // We have some fractional offset of the position, which we need to use to know how far from the first sample of this
-  // slice over the buffer is.
-  const std::uint64_t offset = scaled_position % config::BUFFER_POS_MULTIPLIER;
-
-  // If delta is 0 then computing our iterations can divide by zero, and it'd be 0 movement anyway.
-  if (delta == 0) {
+  if (delta == 0 || scaled_position >= buffer_len_no_zero) {
     ret.iterations = 0;
     return ret;
   }
 
-  // This is a bit complicated.  First, we will read up to 1 more than the block size * delta.  But if that's past the
-  // end, we will instead read up to the end, and truncate our pitch bend early.
-  //
-  // Don't forget that the fractional part of the position contributes.
-  std::uint64_t scaled_read_span_tmp = offset + config::BLOCK_SIZE * delta;
-  // the actual bound is the scaled span's ceil.  If this is exactly equal to the scaled span, we must go one more
-  // sample: even though the below loop would use a 0 inbterpolation weight, it's stil going to try to read one after
-  // the end.
-  std::uint64_t scaled_read_span = ceilByPowerOfTwo(scaled_read_span_tmp, config::BUFFER_POS_MULTIPLIER);
-  scaled_read_span =
-      (scaled_read_span == scaled_read_span_tmp) ? scaled_read_span + config::BUFFER_POS_MULTIPLIER : scaled_read_span;
-  // Note that in the case where we had to bump scaled_read_span up by a sample, it's already an exact multiplier, so
-  // floor is fine.
-  std::uint64_t read_span = scaled_read_span / config::BUFFER_POS_MULTIPLIER;
+  ret.iterations = config::BLOCK_SIZE;
 
-  std::size_t loop_iterations = config::BLOCK_SIZE;
-
-  // If the spamn is going to read past the end and we aren't looping, we must bring it down.
+  // If we are going to read past the end and are not looping, we must do less than that.
   if (looping == false) {
-    // Recall that the span can read into the implicit zero without issue.
-    if (scaled_position / config::BUFFER_POS_MULTIPLIER + read_span >= buffer_len_no_zero + 1) {
-      // When figuring out what's available, we must not include the implicit zero.  That is, available is the maximum
-      // movement of the lower sample in the interpolation.
-      std::uint64_t available = buffer_len_no_zero - scaled_position / config::BUFFER_POS_MULTIPLIER - 1;
-      // We know read_span was going to read past the end, and thus that available is less than that. Available
-      // doesn't include the implicit zero, so we add it back.
-      read_span = available + 1;
-      // But the total number of iterations is based only on scaling available, in this case.
-      loop_iterations = available * config::BUFFER_POS_MULTIPLIER / delta;
+    // if the lower sample in the linear interpolation is going past the end of the buffer, more care is required.
+    if (scaled_position + ret.iterations * delta >= buffer_len_no_zero) {
+      // We must work out how many fractional samples remain before the lower sample hits the end of the buffer.
+      std::uint64_t remaining_data = buffer_len_no_zero - scaled_position - 1;
+      // If the available remaining data perfectly divides by delta, then the loop iterations is simply the division.
+      if (remaining_data % delta == 0) {
+        ret.iterations = remaining_data / delta;
+      } else {
+        // Otherwise, we can actually run one more iteration than it seems like we should be able to because the lower
+        // sample is still fine.
+        //
+        // This is effectively ceil, but written out for clarity.
+        ret.iterations = remaining_data / delta + 1;
+      }
     }
   }
 
   ret.include_implicit_zero = looping == false;
-  ret.iterations = loop_iterations;
-  ret.offset = offset;
+  ret.offset = scaled_position - floorByPowerOfTwo(scaled_position, config::BUFFER_POS_MULTIPLIER);
+
+  // We can work out the read span from the number of iterations.
   ret.span_start = scaled_position / config::BUFFER_POS_MULTIPLIER;
-  ret.span_len = read_span;
+
+  // The upper end of the range is the floor of the uppermost lower sample, plus 1.
+  ret.span_len = (ret.offset + (ret.iterations - 1) * delta) / config::BUFFER_POS_MULTIPLIER + 1;
+
   return ret;
 }
 } // namespace buffer_generator_detail
@@ -256,9 +244,9 @@ PitchBendParams computePitchBendParams(std::uint64_t scaled_position, std::uint6
 inline void BufferGenerator::generatePitchBend(float *output, FadeDriver *gd) const {
   assert(this->finished == false);
 
-  const auto params =
-      buffer_generator_detail::computePitchBendParams(this->scaled_position_in_frames, this->scaled_position_increment,
-                                                      this->reader.getLengthInFrames(false), this->getLooping());
+  const auto params = buffer_generator_detail::computePitchBendParams(
+      this->scaled_position_in_frames, this->scaled_position_increment,
+      this->reader.getLengthInFrames(false) * config::BUFFER_POS_MULTIPLIER, this->getLooping());
 
   if (params.iterations == 0) {
     return;
@@ -269,7 +257,7 @@ inline void BufferGenerator::generatePitchBend(float *output, FadeDriver *gd) co
   // In the case where the number of iterations is the block size, we can use VBool to let the compiler know.
   bool _is_full_block = params.iterations == config::BLOCK_SIZE;
 
-  // the compiler is bad about telling that channels doens't change.
+  // the compiler is bad about telling that channels doesn't change.
   const unsigned int channels = this->getChannels();
 
   std::visit(

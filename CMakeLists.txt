@@ -251,6 +251,7 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
 
   add_executable(tests
     test/block_delay_line.cpp
+    test/buffer_generator.cpp
     test/delay_line.cpp
     test/double_refcount.cpp
     test/effect_connection.cpp
@@ -265,6 +266,14 @@ if(("${SYNTHIZER_LIB_TYPE}" STREQUAL "STATIC") AND (NOT "${SYZ_INTEGRATING}"))
     test/verify_properties.cpp
   )
   target_link_libraries(tests PRIVATE Catch2::Catch2 synthizer)
+  target_include_directories(tests PRIVATE $<TARGET_PROPERTY:wdl_objlib,INTERFACE_INCLUDE_DIRECTORIES>)
+  target_compile_definitions(tests PRIVATE WDL_RESAMPLE_TYPE=float)
+  if (WIN32)
+    # Don't let MSVC define min and max from windows.h.
+    target_compile_definitions(tests PRIVATE NOMINMAX)
+  endif()
+
+
   catch_discover_tests(tests)
 
 endif()
