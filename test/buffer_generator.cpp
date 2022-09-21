@@ -32,19 +32,26 @@ static void simulateBuffer(std::uint64_t length, std::uint64_t delta) {
     }
 
     REQUIRE(scaled_position - params.span_start * config::BUFFER_POS_MULTIPLIER < config::BUFFER_POS_MULTIPLIER);
-    // Compute the last lower sample in this simulated iteration, and make sure it is within bounds of the buffer.
-    std::uint64_t lower =
+    // Compute the upper sample in this simulated iteration, and make sure it is within bounds of the buffer.
+    std::uint64_t upper =
         (params.span_start * config::BUFFER_POS_MULTIPLIER + params.offset + (params.iterations - 1) * delta) /
-        config::BUFFER_POS_MULTIPLIER;
-    REQUIRE(lower < length / config::BUFFER_POS_MULTIPLIER);
+        config::BUFFER_POS_MULTIPLIER + 1;
+    REQUIRE(upper < length / config::BUFFER_POS_MULTIPLIER + 1);
 
     // the returned span should also be in bounds of the buffer, except that it may include the implicit zero.  If it
     // includes the implicit zero, we get one more.
     std::uint64_t max_len =
         (length + config::BUFFER_POS_MULTIPLIER * params.include_implicit_zero) / config::BUFFER_POS_MULTIPLIER;
-    REQUIRE(params.span_start + params.span_len < max_len);
-    scaled_position += params.iterations * delta;
+    REQUIRE(params.span_start + params.span_len <= max_len);
 
+    // If we are being told to do some work, we must always have two samples.
+    REQUIRE(params.span_len >= 2);
+
+    // The distance of the upper index from the start of the span must be less than the length.
+    REQUIRE(upper >= params.span_start);
+    REQUIRE(upper - params.span_start < params.span_len);
+
+    scaled_position += params.iterations * delta;
     ++iterations;
   }
 

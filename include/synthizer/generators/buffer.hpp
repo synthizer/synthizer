@@ -234,8 +234,10 @@ inline PitchBendParams computePitchBendParams(std::uint64_t scaled_position, std
   // We can work out the read span from the number of iterations.
   ret.span_start = scaled_position / config::BUFFER_POS_MULTIPLIER;
 
-  // The upper end of the range is the floor of the uppermost lower sample, plus 1.
-  ret.span_len = (ret.offset + (ret.iterations - 1) * delta) / config::BUFFER_POS_MULTIPLIER + 1;
+  // The maximum index we will read is the `upper` value fropm the last iteration.
+  std::uint64_t max_index = (ret.offset + (ret.iterations - 1) * delta) / config::BUFFER_POS_MULTIPLIER + 1;
+  // And the length of the span is one more than that.
+  ret.span_len = max_index + 1;
 
   return ret;
 }
