@@ -1,3 +1,67 @@
+## 0.11.19 (2022-09-24)
+
+This is a major bugfix release and upgrading is recommended for all users.  Incompatibilities were deferred; see below
+for intended changes that will likely arrive in the 0.11.x releases.
+
+IMPORTANT: part of the motivation of this release is that avoiding breakage allows one final backport to Python.  But
+that's it.  If a Python contributor doesn't step up, those bindings will begin falling behind in the 0.11.x series,
+expected in roughly 3 to 6 months.
+
+Note that this Git repository now uses submodules.
+
+### Changes
+
+- `SYZ_P_PITCH_BEND`'s range is now restricted to `-0.0 <= value <= 2.0`.  This is not considered a breaking change
+  because it used to crash the program.
+- Many crashes related to pitch been have been fixed.
+- The command queue used internally to move user calls to the audio thread has been rewritten and can now be safely used
+  in multi-threaded applications.
+- FdnReverb was rewritten and improved internally to be faster and more reliable.
+- Many, many other bugs identified by @ndarilek have been fixed.
+- the library is now primarily header only, and as a consequence builds faster from scratch.
+- Bindings authors wishing to increase build speed may use the new CMake option `SYZ_INTEGRATING` to disable tests and
+  examples.
+- benchmarks and unit tests have been added.
+- the HRTF implementation was refactored and optimized.  This should have no audible changes.
+- Debug builds now contain more explicit instrumentation to detect out-of-bounds indexing.
+- A new internal abstraction, `ModPointer`, allows avoiding modulus when working with delay lines in many cases.
+
+### Anticipated Incompatible Changes
+
+The following changes are expected in the 0.11.x series but have not yet been implemented:
+
+- All objects will take a context and be bound to their context.  This includes decoding buffers.
+  - As a consequence, `syz_initialize` and `syz_shutdown` will be removed, and multiple instances of the library will be
+    able to coexist in the same project.
+  - rationale: people keep asking for this and I keep needing it.  Also, we'll have context-wide metrics and simplified
+    internals around handle management.
+- Userdata will be removed.  Instead, implement it as a hashmap over handles.
+  - If you need a truly unique id, open an issue.
+  - Rationale: not many users and a giant concurrency headache. Simplifies many bindings.
+- Synthizer will require Rust to build, possibly with a CMake option to install a local copy in the build tree.
+  - Rationale: we can run build-time tools to generate datasets and things and it will play nice with cross compiling.
+    Also, we can probably drop like a megabyte from the source code for the HRTF/prime numbers arrays, which is good for
+    package managers that wish to embed via `vendor.py`.
+- Libsndfile support will be dropped.
+  - Rationale: This doesn't exactly work. See [#70](https://github.com/synthizer/synthizer/issues/70).
+  - If you specifically need ogg, then I may be open to picking up a BSD-licensed dependency, but not until after 0.11
+    is released.
+  - I am not particularly interested in trying to support every codec under the sun.  If you are trying to write a media
+    player,. you will have much better luck with ffmpeg.
+
+Looking further out, the following changes may be implemented:
+
+- Synthizer may pick up dependencies which require credit in binary distributions, for example MIT or BSD licenses.
+  - Rationale: I liked the "let's not do this, you can just drop it in" stance.  But I am one person and it's time
+    consuming.
+  - We will maintain a compiled list of what these dependencies are and what their licenses are, and a file that you can
+    just drop in to give credit where it's needed.
+  - Note that source-credit-only dependencies (e.g. zlib license) handle themselves by having the license in the
+    Synthizer source tree and, indeed, we already use some for that reason.
+- Synthizer may begin requiring Boost.
+  - Rationale: time again. We are currently extracting header-only subsets; we'll see if that lasts.  But if it crosses
+    the line of needing a Boost library requiring building, we can't do it invisibly.
+
 ## 0.11.8 (2022-03-18)
 
 - Fix linking libm to examples on Linux.
