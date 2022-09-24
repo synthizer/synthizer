@@ -1,4 +1,9 @@
+## 0.11.10 (2022-09-24)
+
+- Fix a typo in CMakeLists.txt so the library embeds the correct version.
+
 ## 0.11.9 (2022-09-24)
+
 
 This is a major bugfix release and upgrading is recommended for all users.  Incompatibilities were deferred; see below
 for intended changes that will likely arrive in the 0.11.x releases.
