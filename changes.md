@@ -1,4 +1,4 @@
-## 0.11.19 (2022-09-24)
+## 0.11.9 (2022-09-24)
 
 This is a major bugfix release and upgrading is recommended for all users.  Incompatibilities were deferred; see below
 for intended changes that will likely arrive in the 0.11.x releases.
