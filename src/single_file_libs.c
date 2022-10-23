@@ -1,4 +1,3 @@
-#define MA_DEBUG_OUTPUT
 /* Implement all the header-only single file libraries. */
 
 #define DR_FLAC_IMPLEMENTATION

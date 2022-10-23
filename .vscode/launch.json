@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/file_test.exe",
       "args": [
-        "./corpus/test2.flac"
+        "./corpus/player_footstep.flac"
       ],
       "stopAtEntry": true,
       "cwd": "${workspaceFolder}",
