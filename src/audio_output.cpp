@@ -67,7 +67,7 @@ AudioOutputDevice::AudioOutputDevice() {
   // Miniaudio defaults will try for like 5 ms latency. We need more than that.
   config.periods = 7; // about 40 ms.
   /* Use default sample rate. */
-  config.sampleRate = 0;
+  config.sampleRate = 96000;
   config.dataCallback = miniaudioDataCallback;
   config.pUserData = (void *)this;
   config.performanceProfile = ma_performance_profile_low_latency;
