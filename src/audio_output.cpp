@@ -63,9 +63,17 @@ AudioOutputDevice::AudioOutputDevice() {
   config = ma_device_config_init(ma_device_type_playback);
   config.playback.format = ma_format_f32;
   config.playback.channels = 2;
-  config.periodSizeInFrames = config::BLOCK_SIZE;
-  // Miniaudio defaults will try for like 5 ms latency. We need more than that.
-  config.periods = 7; // about 40 ms.
+
+  /*
+   * We *must* use miniaudio defaults because some audio devices are pathological and will report minimum values which
+   * they don't actually support, for example Steel Series, which is claiming a period size of 1 sample is fine.  See
+   * issue #88.
+   *
+   * If this turns out to break because the latency is too low then we can revisit, but changing these is not simple.
+   */
+  config.periodSizeInFrames = 0;
+  config.periods = 0;
+
   /* Use default sample rate. */
   config.sampleRate = 0;
   config.dataCallback = miniaudioDataCallback;

@@ -1,5 +1,4 @@
 /* Implement all the header-only single file libraries. */
-
 #define DR_FLAC_IMPLEMENTATION
 #include "dr_flac.h"
 
