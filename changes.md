@@ -1,3 +1,7 @@
+## 0.11.11 (2022-11-12)
+
+- Fix miniaudio configuration to no longer request insanely low latencies (#88).
+
 ## 0.11.10 (2022-09-24)
 
 NOTE: 0.11.9 had a typo in CMakeLists.txt, and should be considered a bad release.
