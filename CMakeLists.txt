@@ -157,7 +157,7 @@ endif()
 if(MSVC)
   target_compile_options(synthizer PRIVATE /W4 /WX)
 else()
-  target_compile_options(synthizer PRIVATE -Wall -Wextra -Werror)
+  target_compile_options(synthizer PRIVATE -Wall -Wextra)
 endif()
 
 set_property(TARGET synthizer PROPERTY POSITION_INDEPENDENT_CODE ON)
