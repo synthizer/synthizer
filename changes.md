@@ -1,3 +1,9 @@
+## 0.11.12 (2022-12-16)
+
+This release disables `-Wall`.  Synthizer is now being [rewritten in
+Rust](https://github.com/synthizer/synthizer-rust-rewrite) and disabling `-Wall` enables compilations on various
+versions of compilers that decide to be problematic, notably Clang 11 on Linux.
+
 ## 0.11.11 (2022-11-12)
 
 - Fix miniaudio configuration to no longer request insanely low latencies (#88).
