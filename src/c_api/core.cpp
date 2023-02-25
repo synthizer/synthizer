@@ -14,10 +14,12 @@
 #include "synthizer/generators/streaming.hpp"
 #include "synthizer/logging.hpp"
 #include "synthizer/memory.hpp"
+#include "synthizer/spatialization_math.hpp"
 #include "synthizer/stream_handle.hpp"
 
 #include <array>
 #include <atomic>
+#include <sstream>
 #include <string>
 #include <tuple>
 
@@ -260,6 +262,15 @@ SYZ_CAPI syz_ErrorCode syz_getI(int *out, syz_Handle target, int property) {
   SYZ_EPILOGUE
 }
 
+static void throwIfNotFinite(double val) {
+  if (std::isfinite(val) != true) {
+    std::stringstream builder{};
+    builder << val << " is not finite";
+    auto err = builder.str();
+    throw EValidation(err);
+  }
+}
+
 SYZ_CAPI syz_ErrorCode syz_setI(syz_Handle target, int property, int value) {
   SYZ_PROLOGUE
   auto o = fromC<BaseObject>(target);
@@ -279,6 +290,7 @@ SYZ_CAPI syz_ErrorCode syz_getD(double *out, syz_Handle target, int property) {
 
 SYZ_CAPI syz_ErrorCode syz_setD(syz_Handle target, int property, double value) {
   SYZ_PROLOGUE
+  throwIfNotFinite(value);
   auto o = fromC<BaseObject>(target);
   auto ctx = o->getContextRaw();
   ctx->setDoubleProperty(o, property, value);
@@ -313,6 +325,9 @@ SYZ_CAPI syz_ErrorCode syz_getD3(double *x, double *y, double *z, syz_Handle tar
 
 SYZ_CAPI syz_ErrorCode syz_setD3(syz_Handle target, int property, double x, double y, double z) {
   SYZ_PROLOGUE
+  throwIfNotFinite(x);
+  throwIfNotFinite(y);
+  throwIfNotFinite(z);
   auto o = fromC<BaseObject>(target);
   auto ctx = o->getContextRaw();
   ctx->setDouble3Property(o, property, {x, y, z});
@@ -339,6 +354,23 @@ SYZ_CAPI syz_ErrorCode syz_getD6(double *x1, double *y1, double *z1, double *x2,
 SYZ_CAPI syz_ErrorCode syz_setD6(syz_Handle target, int property, double x1, double y1, double z1, double x2, double y2,
                                  double z2) {
   SYZ_PROLOGUE
+  throwIfNotFinite(x1);
+  throwIfNotFinite(y1);
+  throwIfNotFinite(z1);
+  throwIfNotFinite(x2);
+  throwIfNotFinite(y2);
+  throwIfNotFinite(z2);
+
+  auto cp = crossProduct({x1, y1, z1}, {x2, y2, z2});
+  auto mag = magnitude(cp);
+  // this shouldn't ever be possible.
+  if (std::isfinite(mag) != true) {
+    throw EValidation("This pair of vectors would result in a NaN cross product");
+  }
+  if (mag <= 0.0) {
+    throw EValidation("This pair of vectors would result in a negative distance in the cross product");
+  }
+
   auto o = fromC<BaseObject>(target);
   auto ctx = o->getContextRaw();
   ctx->setDouble6Property(o, property, {x1, y1, z1, x2, y2, z2});
