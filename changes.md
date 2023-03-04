@@ -1,3 +1,8 @@
+## 0.11.13 (2023-03-04)
+
+- Error if a user passes non-finite floating point values to `syz_setD*`.
+- Error if the pair of vectors to `syz_setD6` would result in a zero or non-finite cross product.
+
 ## 0.11.12 (2022-12-16)
 
 This release disables `-Wall`.  Synthizer is now being [rewritten in

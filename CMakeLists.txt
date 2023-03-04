@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 17)
 add_subdirectory(deps)
 
 # Synthizer version.
-add_compile_definitions(SYZ_MAJOR=0 SYZ_MINOR=11 SYZ_PATCH=12)
+add_compile_definitions(SYZ_MAJOR=0 SYZ_MINOR=11 SYZ_PATCH=13)
 
 include(CTest)
 include(CheckCXXSourceRuns)
