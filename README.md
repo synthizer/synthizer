@@ -8,6 +8,11 @@
 
 [GitHub Sponsors](https://github.com/sponsors/ahicks92)
 
+##WARNING: UNMAINTAINED
+
+This is unmaintained software. I am slowly moving toward a Rust only version of the library, but my primary focus is on other projects at this time.  PRs will not be accepted at this time.
+
+
 Synthizer is a library for game/VR audio applications.  The goal is that you statically link it and it does everything
 you need from file decoding and asset caching all the way down the stack.  Current features include:
 
